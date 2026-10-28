@@ -335,7 +335,6 @@ Ask a human before doing any of the following:
 | `shell-words` | Pre-processing of pipelines in text mode. |
 | `serde`, `serde_json` | Watchers; the `jsone` and `jsonu` transforms. |
 | `regex` | Regex parsing in several transforms. |
-| `memmap2` | **To be removed** — it introduces `unsafe`. Originally added to help with optimization. |
 | `urlencoding` | `urle` and `urld` transforms. |
 | `html-escape` | `htmle` and `htmlu` transforms. |
 | `uuid` | Identifying transforms in the processor. |

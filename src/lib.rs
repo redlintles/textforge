@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 #[cfg(not(feature = "test_access"))]
 mod context;
 #[cfg(not(feature = "test_access"))]

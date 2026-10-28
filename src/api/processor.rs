@@ -1,3 +1,4 @@
+mod file_io;
 #[cfg(feature = "buffered")]
 mod buffered;
 #[cfg(feature = "buffered")]
@@ -9,7 +10,6 @@ use std::io::Write;
 use std::path::Path;
 
 use colored::*;
-use memmap2::Mmap;
 use rayon::prelude::*;
 use uuid::Uuid;
 
@@ -908,59 +908,17 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     ) -> Result<(), TextForgeError> {
         use std::fs::File;
 
-        let file_path_str = file_path.to_string_lossy().into_owned();
         let output_path_str = output_path.to_string_lossy().into_owned();
+        let input = file_io::read_utf8_file(file_path, "processor.process_file")?;
 
-        let file = File::open(file_path).map_err(|e| {
-            TextForgeError::new(
-                TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
-                Cow::from("processor.process_file"),
-                file_path_str.clone()
-            )
-        })?;
-
-        // mmap(2) refuses to map a zero-length region, so an empty file is
-        // handled directly instead of going through Mmap::map.
-        let is_empty = file
-            .metadata()
-            .map(|m| m.len() == 0)
-            .map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
-                    Cow::from("processor.process_file"),
-                    file_path_str.clone()
-                )
-            })?;
-
-        let result = if is_empty {
-            self.process_all(pipeline_id, "")?
-        } else {
-            // SAFETY: mmap assume que o arquivo não é modificado por outro
-            // processo enquanto mapeado (truncar/escrever nele durante o mapeamento
-            // é UB — pode gerar SIGBUS ou dado inconsistente). TextForge não tem hoje
-            // nenhum lock exclusivo sobre o arquivo de input, então essa garantia
-            // fica por conta de quem chama process_file.
-            let mmap = (unsafe { Mmap::map(&file) }).map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
-                    Cow::from("processor.process_file"),
-                    file_path_str.clone()
-                )
-            })?;
-
-            let input = std::str
-                ::from_utf8(&mmap)
-                .map_err(|e| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::InvalidUtf8Error(Cow::from(e.to_string())),
-                        Cow::from("processor.process_file"),
-                        file_path_str.clone()
-                    )
-                })?;
-
-            self.process_all(pipeline_id, input)?
-            // mmap sai de escopo aqui e é desmapeado
-        };
+        // Transfer ownership to the whole-document engine instead of cloning input.
+        #[cfg(not(feature = "buffered"))]
+        let result = self
+            .run_transform(pipeline_id, Cow::Owned(input))
+            .map(Cow::into_owned)
+            .inspect_err(|error| self.errors.add_error(error.clone()))?;
+        #[cfg(feature = "buffered")]
+        let result = self.process_all(pipeline_id, &input)?;
 
         // Garante que o diretório de destino exista antes de criar o arquivo de saída,
         // no mesmo espírito do que process_batch já faz para cada `target`.
@@ -1030,67 +988,8 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                         );
                     }
 
-                    let file = std::fs::File
-                        ::open(origin)
-                        .map_err(|e| {
-                            TextForgeError::new(
-                                TextForgeErrorCode::FileOpeningError(
-                                    "Failed to open origin file".into()
-                                ),
-                                Cow::Borrowed("process_batch"),
-                                format!("{:?} - {}", origin, e)
-                            )
-                        })?;
-
-                    // mmap(2) refuses to map a zero-length region, so an empty
-                    // file is handled directly instead of going through Mmap::map.
-                    let is_empty = file
-                        .metadata()
-                        .map(|m| m.len() == 0)
-                        .map_err(|e| {
-                            TextForgeError::new(
-                                TextForgeErrorCode::FileReadingError(
-                                    "Failed to read origin file metadata".into()
-                                ),
-                                Cow::Borrowed("process_batch"),
-                                format!("{:?} - {}", origin, e)
-                            )
-                        })?;
-
-                    let output = if is_empty {
-                        self.run_transform(pipeline_id, "".into())?
-                    } else {
-                        // SAFETY: same assumption as process_file — origin isn't
-                        // expected to be truncated/written to by another process
-                        // while mapped. TextForge holds no exclusive lock on it,
-                        // and that's now true per-file across every concurrent
-                        // mapping this batch opens, not just a single one.
-                        let mmap = (unsafe { Mmap::map(&file) }).map_err(|e| {
-                            TextForgeError::new(
-                                TextForgeErrorCode::FileReadingError(
-                                    "Failed to map origin file".into()
-                                ),
-                                Cow::Borrowed("process_batch"),
-                                format!("{:?} - {}", origin, e)
-                            )
-                        })?;
-
-                        let input = std::str
-                            ::from_utf8(&mmap)
-                            .map_err(|e| {
-                                TextForgeError::new(
-                                    TextForgeErrorCode::InvalidUtf8Error(
-                                        "Origin file is not valid UTF-8".into()
-                                    ),
-                                    Cow::Borrowed("process_batch"),
-                                    format!("{:?} - {}", origin, e)
-                                )
-                            })?
-                            .to_owned();
-
-                        self.run_transform(pipeline_id, input.into())?
-                        // mmap drops here, at the end of this branch's scope
-                    };
+                    let input = file_io::read_utf8_file(origin, "process_batch")?;
+                    let output = self.run_transform(pipeline_id, Cow::Owned(input))?;
 
                     if
                         let Some(parent) = target.parent() &&
