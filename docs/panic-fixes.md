@@ -42,3 +42,23 @@ Four focused bytecode regressions passed, including serialization/deserializatio
 - `cargo test --features test_access`: exit 0.
 
 The full test_access suite passed; the same pre-existing repository checks remain failing. Instruction-count reservation is intentionally addressed in the next separate fix.
+
+## 3. Untrusted bytecode instruction count
+
+- Reproduction: `u32::MAX` in a tiny header previously attempted to reserve about 160 GiB of instruction storage and aborted under a process memory limit.
+- Change: require enough physical bytes for the minimum record count, start with an empty instruction list, and grow it fallibly only as records are decoded. No arbitrary maximum pipeline length is imposed.
+- Regressions: maximum count in a tiny file, inconsistent nonzero count, and a valid empty pipeline. Existing valid Unicode/padded round trips continue to run.
+
+### Step 3 validation
+
+All seven focused bytecode regressions passed. The release CLI replayed the original 186 bytecode mutations and 300 textual fuzz inputs under a 512 MiB virtual-memory limit: **486 cases, no panics or aborts**, only success or normal error exits. Full checklist:
+
+- `cargo fmt --check`: exit 1.
+- `cargo clippy --all-targets -- -D warnings`: exit 101.
+- `cargo clippy --all-targets --features test_access -- -D warnings`: exit 101.
+- `cargo test`: exit 101.
+- `cargo test --features bytecode`: exit 101.
+- `cargo test --features watchers`: exit 101.
+- `cargo test --features test_access`: exit 0.
+
+The full test_access suite passed; pre-existing format/Clippy/doctest failures remain. Trailing bytes and compatible padding retain their original handling.

@@ -310,7 +310,14 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         read_exact::<4>(&mut reader, "read_bytecode_from_file(instr_count)")?;
     let instruction_count = u32::from_be_bytes(instruction_count_bytes);
 
-    let mut result: Vec<TokenWrapper> = Vec::with_capacity(instruction_count as usize);
+    // Even a parameterless instruction needs size(8), opcode(4), count(1).
+    // Validate plausibility without reserving memory from an untrusted count.
+    ensure_available(
+        &mut reader,
+        u64::from(instruction_count) * 13,
+        "read_bytecode_from_file(instr_count)",
+    )?;
+    let mut result: Vec<TokenWrapper> = Vec::new();
 
     // --- body ---
     for _ in 0..instruction_count {
@@ -526,7 +533,14 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
             };
         let token = token_ref.into_box();
 
-        // wrapper runtime-ready
+        // Grow only for records actually decoded and report reservation failures.
+        result.try_reserve(1).map_err(|error| {
+            TextForgeError::new(
+                TextForgeErrorCode::BytecodeParsingError("Cannot allocate instruction list".into()),
+                "read_bytecode_from_file(instr_count)",
+                error.to_string(),
+            )
+        })?;
         result.push(TokenWrapper::new(token, Some(params)));
     }
 
@@ -549,6 +563,30 @@ mod tests {
         let path = directory.path().join("pipeline.textforgebc");
         std::fs::write(&path, bytes).unwrap();
         read_bytecode_from_file(&path)
+    }
+
+    #[test]
+    fn rejects_maximum_instruction_count_in_tiny_file() {
+        let error = parse(&header(u32::MAX)).err().unwrap();
+        assert!(matches!(
+            error.error_code,
+            TextForgeErrorCode::BytecodeParsingError(_)
+        ));
+        assert_eq!(error.instruction, "read_bytecode_from_file(instr_count)");
+    }
+
+    #[test]
+    fn rejects_count_exceeding_available_records() {
+        let mut bytes = header(2);
+        bytes.extend_from_slice(&5u64.to_be_bytes());
+        bytes.extend_from_slice(&0x38u32.to_be_bytes());
+        bytes.push(0);
+        assert!(parse(&bytes).is_err());
+    }
+
+    #[test]
+    fn empty_pipeline_remains_valid() {
+        assert!(parse(&header(0)).unwrap().is_empty());
     }
 
     #[test]
