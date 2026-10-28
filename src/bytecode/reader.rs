@@ -1,6 +1,6 @@
 use std::{
     fs::OpenOptions,
-    io::{BufReader, Read},
+    io::{BufReader, Read, Seek, SeekFrom},
     path::Path,
 };
 
@@ -67,12 +67,62 @@ fn read_exact<const N: usize>(
     Ok(buf)
 }
 
+/// Check the physical file bound before trusting a declared byte count.
+fn ensure_available(
+    reader: &mut BufReader<std::fs::File>,
+    len: u64,
+    ctx: &'static str,
+) -> Result<(), TextForgeError> {
+    let remaining = reader
+        .get_ref()
+        .metadata()
+        .and_then(|metadata| {
+            reader
+                .stream_position()
+                .map(|position| metadata.len().saturating_sub(position))
+        })
+        .map_err(|error| {
+            TextForgeError::new(
+                TextForgeErrorCode::BytecodeParsingError(
+                    "Cannot determine remaining bytecode size".into(),
+                ),
+                ctx,
+                error.to_string(),
+            )
+        })?;
+    if len > remaining {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::BytecodeParsingError(
+                "Declared size exceeds remaining bytecode".into(),
+            ),
+            ctx,
+            format!("declared={len}, remaining={remaining}"),
+        ));
+    }
+    Ok(())
+}
+
+/// Reserve fallibly so malformed sizes cannot trigger an allocator abort.
+fn byte_buffer(len: usize, ctx: &'static str) -> Result<Vec<u8>, TextForgeError> {
+    let mut buffer = Vec::new();
+    buffer.try_reserve_exact(len).map_err(|error| {
+        TextForgeError::new(
+            TextForgeErrorCode::BytecodeParsingError("Cannot allocate bytecode buffer".into()),
+            ctx,
+            error.to_string(),
+        )
+    })?;
+    Ok(buffer)
+}
+
 fn read_vec(
     reader: &mut BufReader<std::fs::File>,
     len: usize,
     ctx: &'static str,
 ) -> Result<Vec<u8>, TextForgeError> {
-    let mut buf = vec![0u8; len];
+    ensure_available(reader, len as u64, ctx)?;
+    let mut buf = byte_buffer(len, ctx)?;
+    buf.resize(len, 0);
     reader.read_exact(&mut buf).map_err(|e| {
         TextForgeError::new(
             TextForgeErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
@@ -81,6 +131,23 @@ fn read_vec(
         )
     })?;
     Ok(buf)
+}
+
+/// Skip compatible instruction padding without allocating a padding-sized buffer.
+fn skip_bytes(reader: &mut BufReader<std::fs::File>, len: u64) -> Result<(), TextForgeError> {
+    const CONTEXT: &str = "read_bytecode_from_file(skip)";
+    ensure_available(reader, len, CONTEXT)?;
+    reader
+        .stream_position()
+        .and_then(|position| reader.seek(SeekFrom::Start(position + len)))
+        .map_err(|error| {
+            TextForgeError::new(
+                TextForgeErrorCode::BytecodeParsingError("Failed skipping bytecode padding".into()),
+                CONTEXT,
+                error.to_string(),
+            )
+        })?;
+    Ok(())
 }
 
 /// Converte bytes UTF-8 em String com erro padronizado.
@@ -165,7 +232,17 @@ fn decode_param_record_to_valtype(param_record: &[u8]) -> Result<ValType, TextFo
             // (ele espera receber o param completo no formato param record ou no formato total_size+...,
             // então vamos reconstruir no formato "param completo": total(u64)+type+payload_size+payload.
             let total = 8u64 + 4 + 4 + (payload.len() as u64);
-            let mut full_param = Vec::with_capacity(total as usize);
+            let full_len = usize::try_from(total).map_err(|error| {
+                TextForgeError::new(
+                    TextForgeErrorCode::BytecodeParsingError(
+                        "Token parameter size overflow".into(),
+                    ),
+                    "decode_param_record_to_valtype(PARAM_TOKEN)",
+                    error.to_string(),
+                )
+            })?;
+            let mut full_param =
+                byte_buffer(full_len, "decode_param_record_to_valtype(PARAM_TOKEN)")?;
             full_param.extend_from_slice(&total.to_be_bytes());
             full_param.extend_from_slice(&PARAM_TOKEN.to_be_bytes());
             full_param.extend_from_slice(&(payload.len() as u32).to_be_bytes());
@@ -251,6 +328,12 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
             ));
         }
 
+        ensure_available(
+            &mut reader,
+            instruction_total_size,
+            "read_bytecode_from_file(instr_total)",
+        )?;
+
         // bytes consumidos dentro da instrução (sem contar os 8 do total_size)
         let mut consumed_in_instruction: u64 = 0;
 
@@ -322,8 +405,24 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
                 ));
             }
 
-            // param record = total_size-8 bytes
-            let param_record_len = (param_total_size - 8) as usize;
+            // A parameter record must also fit inside its enclosing instruction.
+            let record_size = param_total_size - 8;
+            if record_size > instruction_total_size.saturating_sub(consumed_in_instruction) {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::BytecodeParsingError(
+                        "Parameter exceeds instruction size".into(),
+                    ),
+                    "read_bytecode_from_file(param_record)",
+                    format!("param_total_size={param_total_size}"),
+                ));
+            }
+            let param_record_len = usize::try_from(record_size).map_err(|error| {
+                TextForgeError::new(
+                    TextForgeErrorCode::BytecodeParsingError("Parameter size overflow".into()),
+                    "read_bytecode_from_file(param_record)",
+                    error.to_string(),
+                )
+            })?;
             let param_record = read_vec(
                 &mut reader,
                 param_record_len,
@@ -401,8 +500,10 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         // guardrail instruction_total_size
         if consumed_in_instruction != instruction_total_size {
             if consumed_in_instruction < instruction_total_size {
-                let to_skip = (instruction_total_size - consumed_in_instruction) as usize;
-                let _ = read_vec(&mut reader, to_skip, "read_bytecode_from_file(skip)")?;
+                skip_bytes(
+                    &mut reader,
+                    instruction_total_size - consumed_in_instruction,
+                )?;
             } else {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
@@ -430,4 +531,77 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
     }
 
     Ok(result)
+}
+
+#[cfg(all(test, feature = "test_access"))]
+mod tests {
+    use super::*;
+
+    fn header(count: u32) -> Vec<u8> {
+        let mut bytes = vec![38, 235, 245, 8, 244, 137, 1, 179];
+        bytes.extend_from_slice(&1u64.to_be_bytes());
+        bytes.extend_from_slice(&count.to_be_bytes());
+        bytes
+    }
+
+    fn parse(bytes: &[u8]) -> Result<Vec<TokenWrapper>, TextForgeError> {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("pipeline.textforgebc");
+        std::fs::write(&path, bytes).unwrap();
+        read_bytecode_from_file(&path)
+    }
+
+    #[test]
+    fn rejects_maximum_instruction_size_before_allocation() {
+        let mut bytes = header(1);
+        bytes.extend_from_slice(&u64::MAX.to_be_bytes());
+        bytes.extend_from_slice(&0x38u32.to_be_bytes());
+        bytes.push(0);
+        assert!(matches!(
+            parse(&bytes).err().unwrap().error_code,
+            TextForgeErrorCode::BytecodeParsingError(_)
+        ));
+    }
+
+    #[test]
+    fn rejects_parameter_size_exceeding_instruction() {
+        let mut bytes = header(1);
+        bytes.extend_from_slice(&21u64.to_be_bytes());
+        bytes.extend_from_slice(&1u32.to_be_bytes());
+        bytes.push(1);
+        bytes.extend_from_slice(&u64::MAX.to_be_bytes());
+        bytes.extend_from_slice(&PARAM_STRING.to_be_bytes());
+        bytes.extend_from_slice(&0u32.to_be_bytes());
+        assert!(matches!(
+            parse(&bytes).err().unwrap().error_code,
+            TextForgeErrorCode::BytecodeParsingError(_)
+        ));
+    }
+
+    #[test]
+    fn preserves_padding_and_next_instruction() {
+        let mut bytes = header(2);
+        bytes.extend_from_slice(&8u64.to_be_bytes());
+        bytes.extend_from_slice(&0x38u32.to_be_bytes());
+        bytes.extend_from_slice(&[0, 7, 8, 9]);
+        bytes.extend_from_slice(&5u64.to_be_bytes());
+        bytes.extend_from_slice(&0x38u32.to_be_bytes());
+        bytes.push(0);
+        assert_eq!(parse(&bytes).unwrap().len(), 2);
+    }
+
+    #[test]
+    fn unicode_parameters_still_roundtrip() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("pipeline.textforgebc");
+        std::fs::write(&path, []).unwrap();
+        let token = crate::text::reader::read_from_text("atb \"👩🏽‍💻 é\";").unwrap();
+        crate::bytecode::writer::write_bytecode_to_file(&path, vec![token]).unwrap();
+        let tokens = read_bytecode_from_file(&path).unwrap();
+        let mut context = crate::context::execution_context::GlobalExecutionContext::new();
+        assert_eq!(
+            tokens[0].apply_token("x".into(), &mut context).unwrap(),
+            "👩🏽‍💻 éx"
+        );
+    }
 }
