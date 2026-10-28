@@ -1,0 +1,314 @@
+{
+  "implementation": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit": 1,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/0.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/1.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--features",
+        "test_access",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/2.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/3.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "bytecode"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/4.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "watchers"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/5.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "test_access"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/implementation/6.log.gz"
+    }
+  ],
+  "pre-implementation-commit": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit": 1,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/0.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/1.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--features",
+        "test_access",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/2.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/3.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "bytecode"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/4.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "watchers"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/5.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "test_access"
+      ],
+      "exit": 0,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-implementation-commit/6.log.gz"
+    }
+  ],
+  "indexed-implementation": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit": 1,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/0.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/1.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--features",
+        "test_access",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/2.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/3.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "bytecode"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/4.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "watchers"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/5.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "test_access"
+      ],
+      "exit": 0,
+      "log": "docs/benchmarks/safe-file-io/validation/indexed-implementation/6.log.gz"
+    }
+  ],
+  "cache-conflict-diagnosis": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "test_access"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/cache-conflict-diagnosis/6.log.gz"
+    }
+  ],
+  "pre-benchmark-commit": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit": 1,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/0.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/1.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--all-targets",
+        "--features",
+        "test_access",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/2.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/3.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "bytecode"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/4.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "watchers"
+      ],
+      "exit": 101,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/5.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--features",
+        "test_access"
+      ],
+      "exit": 0,
+      "log": "docs/benchmarks/safe-file-io/validation/pre-benchmark-commit/6.log.gz"
+    }
+  ]
+}
