@@ -7,6 +7,47 @@ mod tests {
     use crate::utils::errors::TextForgeErrorCode;
 
     #[test]
+    fn rejects_output_size_overflow_without_panicking() {
+        let error = Rpt::new(usize::MAX)
+            .transform("ab".into(), None)
+            .unwrap_err();
+        assert!(matches!(
+            error.error_code,
+            TextForgeErrorCode::ValidationError(_)
+        ));
+        assert_eq!(error.instruction, "rpt");
+    }
+
+    #[test]
+    fn rejects_capacity_overflow_without_panicking() {
+        let error = Rpt::new(usize::MAX)
+            .transform("x".into(), None)
+            .unwrap_err();
+        assert!(matches!(
+            error.error_code,
+            TextForgeErrorCode::ValidationError(_)
+        ));
+    }
+
+    #[test]
+    fn huge_repeat_of_empty_input_stays_empty() {
+        assert_eq!(Rpt::new(usize::MAX).transform("".into(), None).unwrap(), "");
+    }
+
+    #[test]
+    fn fallible_repetition_matches_standard_repeat_for_unicode() {
+        for input in ["", "a", "é", "é", "👍🏽", "👨‍👩‍👧‍👦", "🇧🇷 x"] {
+            for times in 0..65 {
+                assert_eq!(
+                    Rpt::new(times).transform(input.into(), None).unwrap(),
+                    input.repeat(times),
+                    "input={input:?}, times={times}",
+                );
+            }
+        }
+    }
+
+    #[test]
     fn get_string_repr_is_rpt() {
         let t = Rpt::default();
         assert_eq!(t.get_string_repr(), "rpt");

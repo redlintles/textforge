@@ -62,3 +62,34 @@ All seven focused bytecode regressions passed. The release CLI replayed the orig
 - `cargo test --features test_access`: exit 0.
 
 The full test_access suite passed; pre-existing format/Clippy/doctest failures remain. Trailing bytes and compatible padding retain their original handling.
+
+## 4. Repetition size and allocation failure
+
+- Reproduction: output-size multiplication overflow panicked; a legitimate large expansion aborted when the allocator refused its infallible allocation.
+- Change: checked byte-size multiplication and `String::try_reserve_exact` return existing ValidationError values. Empty/zero/one repetitions preserve behavior. The reserved buffer is filled by doubling complete input copies, keeping UTF-8 boundaries valid and avoiding a second infallible allocation.
+- No hard output limit or new public API is introduced. Fallible reservation handles allocator refusal; it cannot prevent OS-level termination under memory overcommit or guarantee that unrelated allocation paths are fallible.
+- Regressions: arithmetic/capacity overflow, huge repetition of empty input, 455 Unicode/count comparisons, and a Linux subprocess with a 256 MiB address-space limit requesting 800 MiB of repeated output.
+
+### Step 4 validation
+
+All 14 Rpt unit tests passed, including 455 Unicode/count comparisons. The Linux allocation-refusal subprocess regression passed. Under the same 256 MiB virtual-memory limit, the baseline release CLI aborted (SIGABRT), while the fixed release CLI returned exit 1 with ValidationError and no partial output.
+
+Release end-to-end repetition benchmark (three runs per version, same machine and inputs; median seconds; output hashes matched in all 18 runs):
+
+| Workload | Baseline | Fixed |
+|---|---:|---:|
+| 2-byte Unicode input repeated 1,000,000 times | 0.006131 | 0.005782 |
+| 64 KiB input repeated 1,024 times | 0.103657 | 0.093516 |
+| 16 MiB input repeated 4 times | 0.112903 | 0.113219 |
+
+These local end-to-end samples support keeping the doubling fill strategy; they do not establish universal performance gains. Full pre-commit checklist:
+
+- `cargo fmt --check`: exit 1.
+- `cargo clippy --all-targets -- -D warnings`: exit 101.
+- `cargo clippy --all-targets --features test_access -- -D warnings`: exit 101.
+- `cargo test`: exit 101.
+- `cargo test --features bytecode`: exit 101.
+- `cargo test --features watchers`: exit 101.
+- `cargo test --features test_access`: exit 0.
+
+Final test_access total: **948 passing tests**, including doctests. The existing format/Clippy and two private-parser doctest failures remain outside this crash-fix scope. No dependencies, public signatures, protocol versions, or opcode values changed. The four fixes are committed separately on `codex/fix-panic-paths`; earlier uncommitted skill/reference changes are intentionally excluded.

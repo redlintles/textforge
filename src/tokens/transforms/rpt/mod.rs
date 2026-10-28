@@ -6,7 +6,10 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, validations::check_vec_len},
+    utils::{
+        errors::{TextForgeError, TextForgeErrorCode},
+        validations::check_vec_len,
+    },
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -53,7 +56,36 @@ impl InstructionMethods for Rpt {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        Ok(input.repeat(self.times).into())
+        if input.is_empty() || self.times == 0 {
+            return Ok(Cow::Borrowed(""));
+        }
+        if self.times == 1 {
+            return Ok(input);
+        }
+        let output_len = input.len().checked_mul(self.times).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::ValidationError("Repeated output size overflow".into()),
+                "rpt",
+                format!("input_bytes={}, times={}", input.len(), self.times),
+            )
+        })?;
+        let mut output = String::new();
+        output.try_reserve_exact(output_len).map_err(|error| {
+            TextForgeError::new(
+                TextForgeErrorCode::ValidationError("Cannot allocate repeated output".into()),
+                "rpt",
+                error.to_string(),
+            )
+        })?;
+        // Fill the reserved allocation by doubling complete copies. Every prefix
+        // below ends on an input boundary, including for multibyte Unicode.
+        output.push_str(&input);
+        while output.len() <= output_len / 2 {
+            output.extend_from_within(..);
+        }
+        let remaining = output_len - output.len();
+        output.extend_from_within(..remaining);
+        Ok(output.into())
     }
 
     fn get_string_repr(&self) -> &'static str {
