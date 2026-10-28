@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    context::execution_context::{ GlobalContextMethods, GlobalExecutionContext },
+    context::execution_context::{GlobalContextMethods, GlobalExecutionContext},
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{ errors::TextForgeError, validations::check_vec_len },
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 #[cfg(feature = "test_access")]
@@ -17,6 +17,24 @@ pub struct End {
 }
 
 impl InstructionMethods for End {
+    #[cfg(feature = "buffered")]
+    fn transform_buffered(
+        &self,
+        input: crate::api::TextBuffer,
+        context: Option<&mut GlobalExecutionContext>,
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        {
+            if let Some(context) = context {
+                context.halt();
+                Ok(input)
+            } else {
+                let options = input.options().clone();
+                let result = self.transform(input.into_string()?.into(), None)?;
+                crate::api::TextBuffer::from_text(result.as_ref(), options)
+            }
+        }
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }
@@ -35,19 +53,19 @@ impl InstructionMethods for End {
     fn transform<'a>(
         &self,
         input: Cow<'a, str>,
-        context: Option<&mut GlobalExecutionContext>
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let s = input.into_owned();
         context
-            .ok_or_else(||
+            .ok_or_else(|| {
                 TextForgeError::new(
                     crate::utils::errors::TextForgeErrorCode::RequiredContextError(
-                        "Context required for end instruction".into()
+                        "Context required for end instruction".into(),
                     ),
                     "end",
-                    s.clone()
+                    s.clone(),
                 )
-            )?
+            })?
             .halt();
 
         Ok(s.into())

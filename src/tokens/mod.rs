@@ -25,6 +25,19 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError>;
 
+    /// Experimental whole-document execution. The compatibility implementation
+    /// materializes the input; individual tokens can override this for bounded I/O.
+    #[cfg(feature = "buffered")]
+    fn transform_buffered(
+        &self,
+        input: crate::api::TextBuffer,
+        context: Option<&mut GlobalExecutionContext>,
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        let options = input.options().clone();
+        let output = self.transform(input.into_string()?.into(), context)?;
+        crate::api::TextBuffer::from_text(output.as_ref(), options)
+    }
+
     /// get_string_repr
     ///
     /// Converts the token to a string representation without parameters, to be used in the mappings

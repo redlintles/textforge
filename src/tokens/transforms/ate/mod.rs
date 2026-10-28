@@ -39,6 +39,19 @@ impl Ate {
 }
 
 impl InstructionMethods for Ate {
+    #[cfg(feature = "buffered")]
+    fn transform_buffered(
+        &self,
+        input: crate::api::TextBuffer,
+        _context: Option<&mut GlobalExecutionContext>,
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        {
+            let mut input = input;
+            input.append_text(&self.text)?;
+            Ok(input)
+        }
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

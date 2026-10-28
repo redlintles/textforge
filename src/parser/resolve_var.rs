@@ -133,6 +133,18 @@ impl TokenWrapper {
         t.transform(input, Some(context))
     }
 
+    #[cfg(feature = "buffered")]
+    pub(crate) fn apply_buffered(
+        &self,
+        input: crate::api::TextBuffer,
+        context: &mut GlobalExecutionContext,
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        let params = ValType::resolve_variables(&self.token, &self.params, context)?;
+        let mut token = self.token.clone();
+        token.from_params(&params)?;
+        token.transform_buffered(input, Some(context))
+    }
+
     pub fn to_text_line_resolved(
         &self,
         context: &mut GlobalExecutionContext,

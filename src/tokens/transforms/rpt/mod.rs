@@ -44,6 +44,15 @@ impl Rpt {
 }
 
 impl InstructionMethods for Rpt {
+    #[cfg(feature = "buffered")]
+    fn transform_buffered(
+        &self,
+        input: crate::api::TextBuffer,
+        _context: Option<&mut GlobalExecutionContext>,
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        input.repeat(self.times)
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

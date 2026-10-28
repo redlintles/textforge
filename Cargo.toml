@@ -31,10 +31,12 @@ crate-type = ["rlib"]
 default = []
 bytecode = []
 watchers = []
+buffered = ["tempfile"]
 
 test_access = [
   "default",
   "bytecode",
+  "buffered",
   "tempfile",
   "rand",
   "random-string",

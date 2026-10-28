@@ -1,3 +1,8 @@
+#[cfg(feature = "buffered")]
+mod buffered;
+#[cfg(feature = "buffered")]
+pub use buffered::BufferedTask;
+
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::io::Write;

@@ -1,3 +1,8 @@
+#[cfg(feature = "buffered")]
+mod text_buffer;
+#[cfg(feature = "buffered")]
+pub use text_buffer::{TextBuffer, TextBufferOptions};
+
 pub mod block_builder;
 pub mod builder;
 pub mod conditional_builder;
