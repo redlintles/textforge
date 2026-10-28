@@ -40,13 +40,21 @@ pub fn read_from_text(token_string: &str) -> Result<TokenWrapper, TextForgeError
         }
     };
 
+    let identifier = chunks.first().ok_or_else(|| {
+        TextForgeError::new(
+            TextForgeErrorCode::TextParsingError("Missing instruction name".into()),
+            "read_from_text",
+            token_string.to_string(),
+        )
+    })?;
+
     let token_query = TOKEN_TABLE.find((
-        QuerySource::Identifier(chunks[0].clone().into()),
+        QuerySource::Identifier(identifier.clone().into()),
         QueryTarget::Token,
     ))?;
 
     let token_param_types = match TOKEN_TABLE.find((
-        QuerySource::Identifier(chunks[0].clone().into()),
+        QuerySource::Identifier(identifier.clone().into()),
         QueryTarget::Syntax,
     ))? {
         TargetValue::Syntax(p) => p,
@@ -109,4 +117,30 @@ pub fn read_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextForgeError> 
     }
 
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_empty_token_lists_without_panicking() {
+        for source in [";", "  ;  ", "\t;", "\\\n;"] {
+            let error = match read_from_text(source) {
+                Err(error) => error,
+                Ok(_) => panic!("expected an error for {source:?}"),
+            };
+            assert!(matches!(
+                error.error_code,
+                TextForgeErrorCode::TextParsingError(_)
+            ));
+        }
+    }
+
+    #[test]
+    fn preserves_comments_and_valid_unicode_parameters() {
+        for source in ["", "  ", "// comment", "null;", "atb \"👩🏽‍💻 é\";"] {
+            assert!(read_from_text(source).is_ok(), "{source:?}");
+        }
+    }
 }
