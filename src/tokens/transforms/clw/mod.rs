@@ -31,6 +31,10 @@ pub struct Clw {
 }
 
 impl InstructionMethods for Clw {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

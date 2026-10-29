@@ -44,6 +44,10 @@ impl Rpt {
 }
 
 impl InstructionMethods for Rpt {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     #[cfg(feature = "buffered")]
     fn transform_buffered(
         &self,

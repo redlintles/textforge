@@ -1,6 +1,7 @@
 //! Experimental owned UTF-8 documents backed by memory or an unnamed temporary file.
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
+use std::{borrow::Cow, sync::Arc};
 
 use tempfile::{SpooledData, SpooledTempFile};
 
@@ -64,6 +65,31 @@ pub struct TextBuffer {
     storage: SpooledTempFile,
     options: TextBufferOptions,
     len: u64,
+    materialized: Option<MaterializedText>,
+    retain_materialized: bool,
+}
+
+/// Internal owned/borrowed immutable text already required by String observers.
+///
+/// ```
+/// use textforge::api::{TextBuffer, TextBufferOptions};
+/// let buffer = TextBuffer::from_text("é", TextBufferOptions::new(1, std::env::temp_dir()))?;
+/// assert_eq!(buffer.into_string()?, "é");
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+/// ```
+#[derive(Debug)]
+enum MaterializedText {
+    Owned(String),
+    Shared(Arc<str>),
+}
+
+impl MaterializedText {
+    fn as_str(&self) -> &str {
+        match self {
+            Self::Owned(text) => text,
+            Self::Shared(text) => text,
+        }
+    }
 }
 
 fn io_error(error: std::io::Error) -> TextForgeError {
@@ -96,6 +122,67 @@ impl TextBuffer {
             storage: SpooledTempFile::new_in(options.memory_threshold, &options.spill_directory),
             options,
             len: 0,
+            materialized: None,
+            retain_materialized: false,
+        }
+    }
+
+    pub(crate) fn retain_materialized(mut self) -> Self {
+        self.retain_materialized = true;
+        self
+    }
+
+    fn from_owned(text: String, options: TextBufferOptions) -> Self {
+        let mut output = Self::empty(options);
+        output.len = text.len() as u64;
+        output.materialized = Some(MaterializedText::Owned(text));
+        output.retain_materialized = true;
+        output
+    }
+
+    pub(crate) fn from_shared(text: Arc<str>, options: TextBufferOptions) -> Self {
+        let mut output = Self::empty(options);
+        output.len = text.len() as u64;
+        output.materialized = Some(MaterializedText::Shared(text));
+        output.retain_materialized = true;
+        output
+    }
+
+    pub(crate) fn into_shared(mut self, previous: &Arc<str>) -> Result<Arc<str>, TextForgeError> {
+        match self.materialized.take() {
+            Some(MaterializedText::Shared(text)) => Ok(text),
+            Some(MaterializedText::Owned(text)) if text.as_str() == previous.as_ref() => {
+                Ok(Arc::clone(previous))
+            }
+            Some(MaterializedText::Owned(text)) => Ok(Arc::from(text)),
+            None => Ok(Arc::from(self.into_string()?)),
+        }
+    }
+
+    pub(crate) fn transform_with(
+        mut self,
+        transform: impl for<'a> FnOnce(Cow<'a, str>) -> Result<Cow<'a, str>, TextForgeError>,
+    ) -> Result<Self, TextForgeError> {
+        let options = self.options.clone();
+        let retain = self.retain_materialized;
+        let result = match self.materialized.take() {
+            Some(MaterializedText::Shared(text)) => {
+                let result = transform(Cow::Borrowed(text.as_ref()))?;
+                if let Cow::Borrowed(value) = &result
+                    && value.len() == text.len()
+                    && std::ptr::eq(value.as_ptr(), text.as_ptr())
+                {
+                    return Ok(Self::from_shared(text, options));
+                }
+                result.into_owned()
+            }
+            Some(MaterializedText::Owned(text)) => transform(Cow::Owned(text))?.into_owned(),
+            None => transform(Cow::Owned(self.into_string()?))?.into_owned(),
+        };
+        if retain {
+            Ok(Self::from_owned(result, options))
+        } else {
+            Self::from_text(&result, options)
         }
     }
 
@@ -179,6 +266,18 @@ impl TextBuffer {
 
     /// Move storage to a tempfile explicitly, preserving the document and cursor.
     pub fn spill(&mut self) -> Result<(), TextForgeError> {
+        if let Some(text) = &self.materialized {
+            let mut storage = SpooledTempFile::new_in(
+                self.options.memory_threshold,
+                &self.options.spill_directory,
+            );
+            storage.roll().map_err(write_error)?;
+            storage
+                .write_all(text.as_str().as_bytes())
+                .map_err(write_error)?;
+            self.storage = storage;
+            self.materialized = None;
+        }
         self.storage.roll().map_err(write_error)
     }
 
@@ -189,6 +288,16 @@ impl TextBuffer {
         offset: u64,
         destination: &mut [u8],
     ) -> Result<usize, TextForgeError> {
+        if let Some(text) = &self.materialized {
+            if offset >= self.len {
+                return Ok(0);
+            }
+            let start = usize::try_from(offset).map_err(|error| invalid_utf8(error.to_string()))?;
+            let bytes = text.as_str().as_bytes();
+            let count = destination.len().min(bytes.len() - start);
+            destination[..count].copy_from_slice(&bytes[start..start + count]);
+            return Ok(count);
+        }
         self.storage
             .seek(SeekFrom::Start(offset))
             .map_err(io_error)?;
@@ -197,13 +306,32 @@ impl TextBuffer {
 
     /// Copy the whole document from offset zero, regardless of earlier reads.
     pub fn copy_to(&mut self, mut destination: impl Write) -> Result<u64, TextForgeError> {
+        if let Some(text) = &self.materialized {
+            destination
+                .write_all(text.as_str().as_bytes())
+                .map_err(write_error)?;
+            return Ok(self.len);
+        }
         self.storage.rewind().map_err(io_error)?;
         std::io::copy(&mut self.storage, &mut destination).map_err(write_error)
     }
 
     /// Explicitly materialize and consume this document. Memory-backed storage
     /// transfers its byte allocation; disk-backed storage requires a full allocation.
-    pub fn into_string(self) -> Result<String, TextForgeError> {
+    pub fn into_string(mut self) -> Result<String, TextForgeError> {
+        if let Some(text) = self.materialized.take() {
+            return match text {
+                MaterializedText::Owned(text) => Ok(text),
+                MaterializedText::Shared(text) => {
+                    let mut output = String::new();
+                    output.try_reserve_exact(text.len()).map_err(|_| {
+                        io_error(std::io::Error::other("Cannot materialize TextBuffer"))
+                    })?;
+                    output.push_str(&text);
+                    Ok(output)
+                }
+            };
+        }
         match self.storage.into_inner() {
             SpooledData::InMemory(cursor) => {
                 String::from_utf8(cursor.into_inner()).map_err(invalid_utf8)
@@ -238,6 +366,9 @@ impl TextBuffer {
     }
 
     fn append_bytes(&mut self, bytes: &[u8]) -> Result<(), TextForgeError> {
+        if self.materialized.is_some() {
+            return self.append_text(std::str::from_utf8(bytes).map_err(invalid_utf8)?);
+        }
         let len = self.len.checked_add(bytes.len() as u64).ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::ValidationError("TextBuffer size overflow".into()),
@@ -252,10 +383,38 @@ impl TextBuffer {
     }
 
     pub(crate) fn append_text(&mut self, text: &str) -> Result<(), TextForgeError> {
-        self.append_bytes(text.as_bytes())
+        match &mut self.materialized {
+            Some(MaterializedText::Owned(current)) => {
+                current
+                    .try_reserve(text.len())
+                    .map_err(|error| io_error(std::io::Error::other(error.to_string())))?;
+                current.push_str(text);
+                self.len = current.len() as u64;
+                Ok(())
+            }
+            Some(MaterializedText::Shared(current)) => {
+                let size = current
+                    .len()
+                    .checked_add(text.len())
+                    .ok_or_else(|| io_error(std::io::Error::other("TextBuffer size overflow")))?;
+                let mut output = String::new();
+                output
+                    .try_reserve_exact(size)
+                    .map_err(|error| io_error(std::io::Error::other(error.to_string())))?;
+                output.push_str(current);
+                output.push_str(text);
+                self.len = output.len() as u64;
+                self.materialized = Some(MaterializedText::Owned(output));
+                Ok(())
+            }
+            None => self.append_bytes(text.as_bytes()),
+        }
     }
 
     fn copy_into(&mut self, output: &mut Self) -> Result<(), TextForgeError> {
+        if let Some(text) = &self.materialized {
+            return output.append_text(text.as_str());
+        }
         self.storage.rewind().map_err(io_error)?;
         let mut chunk = [0; COPY_SIZE];
         loop {
@@ -269,8 +428,22 @@ impl TextBuffer {
     }
 
     pub(crate) fn prepend(mut self, prefix: &str) -> Result<Self, TextForgeError> {
+        if let Some(text) = self.materialized.take() {
+            let size = prefix
+                .len()
+                .checked_add(text.as_str().len())
+                .ok_or_else(|| io_error(std::io::Error::other("TextBuffer size overflow")))?;
+            let mut output = String::new();
+            output
+                .try_reserve_exact(size)
+                .map_err(|error| io_error(std::io::Error::other(error.to_string())))?;
+            output.push_str(prefix);
+            output.push_str(text.as_str());
+            return Ok(Self::from_owned(output, self.options));
+        }
         let mut output = Self::from_text(prefix, self.options.clone())?;
         self.copy_into(&mut output)?;
+        output.retain_materialized = self.retain_materialized;
         Ok(output)
     }
 
@@ -285,7 +458,27 @@ impl TextBuffer {
         if times == 1 {
             return Ok(self);
         }
+        if let Some(text) = self.materialized.take() {
+            let input = text.as_str();
+            let size = input
+                .len()
+                .checked_mul(times)
+                .ok_or_else(|| io_error(std::io::Error::other("Repeated output size overflow")))?;
+            let mut result = String::new();
+            result
+                .try_reserve_exact(size)
+                .map_err(|_| io_error(std::io::Error::other("Cannot allocate repeated output")))?;
+            if size != 0 {
+                result.push_str(input);
+                while result.len() <= size / 2 {
+                    result.extend_from_within(..);
+                }
+                result.extend_from_within(..size - result.len());
+            }
+            return Ok(Self::from_owned(result, self.options));
+        }
         let mut output = Self::empty(self.options.clone());
+        output.retain_materialized = self.retain_materialized;
         if self.is_empty() || times == 0 {
             return Ok(output);
         }

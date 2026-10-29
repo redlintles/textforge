@@ -30,6 +30,10 @@ pub struct Tla {
 }
 
 impl InstructionMethods for Tla {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

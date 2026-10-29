@@ -69,6 +69,10 @@ impl Default for Emj {
 }
 
 impl InstructionMethods for Emj {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "emj", "")?;
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");

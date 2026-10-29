@@ -30,6 +30,10 @@ pub struct Tbs {
 }
 
 impl InstructionMethods for Tbs {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

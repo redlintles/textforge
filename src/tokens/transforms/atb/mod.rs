@@ -43,6 +43,10 @@ impl Atb {
 }
 
 impl InstructionMethods for Atb {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     #[cfg(feature = "buffered")]
     fn transform_buffered(
         &self,

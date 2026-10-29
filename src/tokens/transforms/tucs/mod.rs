@@ -45,6 +45,10 @@ impl Tucs {
 }
 
 impl InstructionMethods for Tucs {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

@@ -1,10 +1,21 @@
-//! Opt-in whole-document execution; existing String-returning APIs are unchanged.
+//! Opt-in whole-document execution and adapters preserving existing method signatures.
+//!
+//! With `buffered`, the three standard processing methods use a 1 MiB spool
+//! threshold and the system temporary directory. String-returning methods still
+//! materialize their final output. Batch retains parallel scheduling. Debug logs
+//! spill separately and print only after successful pipeline execution; colored
+//! snapshots materialize individually to preserve embedded ANSI reset handling.
 use std::path::{Path, PathBuf};
 
 use super::TextForgeProcessor;
 use crate::api::{TextBuffer, TextBufferOptions};
+use crate::context::execution_context::GlobalContextMethods;
 use crate::context::execution_context::GlobalExecutionContext;
+use crate::utils::errors::TextForgeErrorCode;
 use crate::utils::errors::{TextForgeError, token_array_not_found};
+use colored::Colorize;
+use rayon::prelude::*;
+use std::io::{Seek, Write};
 
 /// An owned batch input descriptor suitable for wrapping behind future FFI handles.
 /// Results keep descriptor order. The descriptor contains no Rust token objects.
@@ -136,3 +147,242 @@ impl TextForgeProcessor {
             .collect()
     }
 }
+
+fn adapter_options() -> TextBufferOptions {
+    TextBufferOptions::new(1024 * 1024, std::env::temp_dir())
+}
+
+fn adapter_io(error: std::io::Error) -> TextForgeError {
+    TextForgeError::new(
+        TextForgeErrorCode::FileWritingError(error.to_string().into()),
+        "buffered processor adapter",
+        "output or debug log",
+    )
+}
+
+fn write_document(
+    document: &mut TextBuffer,
+    writer: &mut impl Write,
+    color: &str,
+) -> Result<(), TextForgeError> {
+    if colored::control::SHOULD_COLORIZE.should_colorize() {
+        // ColoredString also restores the outer style after embedded ANSI resets.
+        // Preserve that behavior; color-enabled output materializes one snapshot.
+        let mut bytes = Vec::new();
+        document.copy_to(&mut bytes)?;
+        let text = String::from_utf8(bytes).map_err(|error| {
+            TextForgeError::new(
+                TextForgeErrorCode::InvalidUtf8Error(error.to_string().into()),
+                "buffered debug",
+                "snapshot",
+            )
+        })?;
+        if color == "\x1b[31m" {
+            write!(writer, "{}", text.red()).map_err(adapter_io)?;
+        } else {
+            write!(writer, "{}", text.green()).map_err(adapter_io)?;
+        }
+    } else {
+        document.copy_to(writer)?;
+    }
+    Ok(())
+}
+
+impl TextForgeProcessor {
+    pub(super) fn process_all_via_buffer(
+        &mut self,
+        id: &str,
+        input: &str,
+    ) -> Result<String, TextForgeError> {
+        let result = TextBuffer::from_text(input, adapter_options())
+            .and_then(|input| self.run_buffered(id, input.retain_materialized()))
+            .and_then(TextBuffer::into_string);
+        result.inspect_err(|error| self.errors.add_error(error.clone()))
+    }
+
+    // Preserve Rayon scheduling and per-task error isolation. Write each completed
+    // document immediately instead of retaining a batch of in-memory strings.
+    pub(super) fn process_batch_via_buffer(
+        &self,
+        tasks: Vec<(&Path, &str, &Path)>,
+    ) -> Vec<Result<(), TextForgeError>> {
+        tasks
+            .into_par_iter()
+            .map(|(origin, id, target)| {
+                if !origin.exists() {
+                    return Err(TextForgeError::new(
+                        TextForgeErrorCode::FileNotFound("Origin file does not exist".into()),
+                        "process_batch",
+                        format!("{origin:?}"),
+                    ));
+                }
+                if !origin.is_file() {
+                    return Err(TextForgeError::new(
+                        TextForgeErrorCode::ValidationError("Origin path is not a file".into()),
+                        "process_batch",
+                        format!("{origin:?}"),
+                    ));
+                }
+                let file = std::fs::File::open(origin).map_err(|error| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::FileOpeningError("Failed to open origin file".into()),
+                        "process_batch",
+                        format!("{origin:?} - {error}"),
+                    )
+                })?;
+                let input = TextBuffer::from_reader(file, adapter_options())?.retain_materialized();
+                let mut output = self.run_buffered(id, input)?;
+                if let Some(parent) = target.parent()
+                    && !parent.as_os_str().is_empty()
+                {
+                    std::fs::create_dir_all(parent).map_err(adapter_io)?;
+                }
+                let file = std::fs::File::create(target).map_err(adapter_io)?;
+                output.copy_to(file)?;
+                Ok(())
+            })
+            .collect()
+    }
+
+    // Keep the log spooled until the whole pipeline succeeds, matching the legacy
+    // no-partial-log behavior on transformation errors. No whole-log String exists.
+    pub(super) fn process_debug_via_buffer(
+        &mut self,
+        id: &str,
+        input: &str,
+    ) -> Result<String, TextForgeError> {
+        let result = (|| {
+            let options = adapter_options();
+            let mut log = tempfile::SpooledTempFile::new_in(
+                options.memory_threshold(),
+                options.spill_directory(),
+            );
+            let input = TextBuffer::from_text(input, options)?.retain_materialized();
+            let output = self.run_buffered_debug(id, input, &mut log)?;
+            log.rewind().map_err(adapter_io)?;
+            let stdout = std::io::stdout();
+            let mut stdout = stdout.lock();
+            std::io::copy(&mut log, &mut stdout).map_err(adapter_io)?;
+            output.into_string()
+        })();
+        result.inspect_err(|error| self.errors.add_error(error.clone()))
+    }
+
+    fn run_buffered_debug(
+        &self,
+        id: &str,
+        mut input: TextBuffer,
+        log: &mut impl Write,
+    ) -> Result<TextBuffer, TextForgeError> {
+        let tokens = self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))?;
+        let mut context = GlobalExecutionContext::new();
+        log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
+            .map_err(adapter_io)?;
+        for (counter, token) in tokens.iter().enumerate() {
+            if context.is_halted {
+                break;
+            }
+            if token.get_string_repr() == "blk" {
+                input = token.apply_buffered(input, &mut context)?;
+                let line = token.to_textforge_line();
+                let name = line.split_whitespace().nth(1).ok_or_else(|| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
+                        "process_all_with_debug",
+                        "",
+                    )
+                })?;
+                write!(log, "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
+                    counter.to_string().blue(), (counter + 1).to_string().blue(),
+                    "Block Declaration: ".green(), line.yellow(), name.green(),
+                    context.get_formatted_block_items(name)?).map_err(adapter_io)?;
+            } else {
+                write!(
+                    log,
+                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: ",
+                    counter.to_string().blue(),
+                    (counter + 1).to_string().blue(),
+                    token.to_textforge_line().yellow()
+                )
+                .map_err(adapter_io)?;
+                write_document(&mut input, log, "\x1b[31m")?;
+                input = token.apply_buffered(input, &mut context)?;
+                log.write_all(b"\nAfter: ").map_err(adapter_io)?;
+                write_document(&mut input, log, "\x1b[32m")?;
+                log.write_all(b"\n\n").map_err(adapter_io)?;
+            }
+            if counter + 1 < tokens.len() {
+                log.write_all(b"----------\n\n").map_err(adapter_io)?;
+            }
+        }
+        Ok(input)
+    }
+}
+
+#[cfg(feature = "watchers")]
+impl TextForgeProcessor {
+    // WatcherContext owns Arc<str> snapshots. Keep the same previous/current/next
+    // semantics, including after=None only at EOF and reset only after export.
+    // Transformations use the experimental engine, but observers still require
+    // whole-document materialization; this is not a bounded-memory watcher API.
+    pub(super) fn process_watchers_via_buffer(
+        &mut self,
+        id: &str,
+        input: &str,
+        watchers: &mut crate::watchers::WatcherList,
+        report_path: &Path,
+    ) -> Result<String, TextForgeError> {
+        use crate::watchers::WatcherContext;
+        use std::sync::Arc;
+        let tokens = match self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))
+        {
+            Ok(tokens) => tokens,
+            Err(error) => {
+                self.errors.add_error(error.clone());
+                return Err(error);
+            }
+        };
+        let mut context = GlobalExecutionContext::new();
+        let mut current: Arc<str> = Arc::from(input);
+        let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
+        for token in tokens {
+            let before = Arc::clone(&current);
+            let document = TextBuffer::from_shared(Arc::clone(&current), adapter_options());
+            let output = token.apply_buffered(document, &mut context)?;
+            current = output.into_shared(&before)?;
+            if let Some((previous_before, previous_current, instruction)) = pending.take() {
+                watchers.run_watchers(WatcherContext::new(
+                    previous_current,
+                    previous_before,
+                    Some(Arc::clone(&current)),
+                    instruction,
+                ))?;
+            }
+            pending = Some((
+                before,
+                Arc::clone(&current),
+                token.to_textforge_line().to_string(),
+            ));
+        }
+        if let Some((before, current, instruction)) = pending {
+            watchers.run_watchers(WatcherContext::new(
+                current,
+                before,
+                None::<Arc<str>>,
+                instruction,
+            ))?;
+        }
+        watchers.to_json(report_path)?;
+        watchers.reset();
+        Ok(current.to_string())
+    }
+}
+
+#[cfg(test)]
+mod adapter_tests;

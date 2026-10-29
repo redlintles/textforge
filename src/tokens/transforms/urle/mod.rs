@@ -31,6 +31,10 @@ pub struct Urle {
 }
 
 impl InstructionMethods for Urle {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

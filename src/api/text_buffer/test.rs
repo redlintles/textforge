@@ -123,3 +123,75 @@ fn reader_failure_and_repeat_overflow_return_errors() {
             .is_err()
     );
 }
+
+#[test]
+fn retained_owned_text_transfers_allocation_and_shared_noops_reuse_snapshot() {
+    let text = "é 👩🏽‍💻".repeat(1000);
+    let pointer = text.as_ptr();
+    let buffer = TextBuffer::from_owned(text, options(1));
+    let text = buffer.into_string().unwrap();
+    assert_eq!(pointer, text.as_ptr());
+    let shared: Arc<str> = Arc::from(text);
+    let buffer = TextBuffer::from_shared(Arc::clone(&shared), options(0));
+    let buffer = buffer.transform_with(|text| Ok(text)).unwrap();
+    let actual = buffer.into_shared(&shared).unwrap();
+    assert!(Arc::ptr_eq(&shared, &actual));
+    let unchanged = TextBuffer::from_owned(shared.to_string(), options(0))
+        .into_shared(&shared)
+        .unwrap();
+    assert!(Arc::ptr_eq(&shared, &unchanged));
+}
+
+#[test]
+fn retained_native_operations_reads_and_explicit_spill_preserve_unicode() {
+    for original in ["", "é", "é 👩🏽‍💻 🇧🇷"] {
+        let shared: Arc<str> = Arc::from(original);
+        let mut buffer = TextBuffer::from_shared(shared, options(0))
+            .prepend("<")
+            .unwrap()
+            .repeat(3)
+            .unwrap();
+        buffer.append_text(">").unwrap();
+        let expected = format!("{}>", format!("<{original}").repeat(3));
+        let mut bytes = Vec::new();
+        buffer.copy_to(&mut bytes).unwrap();
+        assert_eq!(bytes, expected.as_bytes());
+        let mut range = [0; 5];
+        let count = buffer.read_at(1, &mut range).unwrap();
+        assert_eq!(&range[..count], &expected.as_bytes()[1..1 + count]);
+        assert_eq!(buffer.read_at(u64::MAX, &mut range).unwrap(), 0);
+        buffer.spill().unwrap();
+        assert!(buffer.is_spilled());
+        assert_eq!(buffer.into_string().unwrap(), expected);
+    }
+}
+
+#[test]
+fn retaining_is_internal_and_explicit_file_policy_still_spills() {
+    let public = TextBuffer::from_text("abc", options(1))
+        .unwrap()
+        .transform_with(|text| Ok(Cow::Owned(text.to_uppercase())))
+        .unwrap();
+    assert!(public.is_spilled());
+    assert_eq!(public.into_string().unwrap(), "ABC");
+    let adaptive = TextBuffer::from_text("abc", options(1))
+        .unwrap()
+        .retain_materialized()
+        .prepend("<")
+        .unwrap()
+        .repeat(1)
+        .unwrap()
+        .transform_with(|text| Ok(Cow::Owned(text.to_uppercase())))
+        .unwrap();
+    assert!(!adaptive.is_spilled());
+    assert_eq!(adaptive.into_string().unwrap(), "<ABC");
+}
+
+#[test]
+fn failed_explicit_spill_does_not_destroy_retained_text() {
+    let directory = tempfile::tempdir().unwrap();
+    let missing = directory.path().join("missing");
+    let mut buffer = TextBuffer::from_shared(Arc::from("é 🦀"), TextBufferOptions::new(0, missing));
+    assert!(buffer.spill().is_err());
+    assert_eq!(buffer.into_string().unwrap(), "é 🦀");
+}

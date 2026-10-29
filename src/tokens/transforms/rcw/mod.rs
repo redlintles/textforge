@@ -69,6 +69,10 @@ impl Default for Rcw {
 }
 
 impl InstructionMethods for Rcw {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

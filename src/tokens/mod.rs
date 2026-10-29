@@ -33,9 +33,20 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
         input: crate::api::TextBuffer,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
-        let options = input.options().clone();
-        let output = self.transform(input.into_string()?.into(), context)?;
-        crate::api::TextBuffer::from_text(output.as_ref(), options)
+        input.transform_with(|text| self.transform(text, context))
+    }
+
+    /// Whether literal parameters may be bound once for a registered pipeline.
+    /// Opting in requires reusable immutable execution state; custom instructions
+    /// default to per-execution binding. Dynamic/interpolated parameters are never
+    /// prepared, and validation errors remain execution-time errors.
+    ///
+    /// ```
+    /// use textforge::tokens::{InstructionMethods, transforms::atb::Atb};
+    /// assert!(Atb::new("prefix").supports_preparation());
+    /// ```
+    fn supports_preparation(&self) -> bool {
+        false
     }
 
     /// get_string_repr

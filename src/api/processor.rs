@@ -10,19 +10,24 @@ use std::io::Write;
 use std::path::Path;
 
 use colored::*;
+#[cfg(not(feature = "buffered"))]
 use rayon::prelude::*;
 use uuid::Uuid;
 
-#[cfg(feature = "watchers")]
+#[cfg(all(feature = "watchers", not(feature = "buffered")))]
 use std::sync::Arc;
 
 #[cfg(feature = "bytecode")]
 use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
 #[cfg(feature = "watchers")]
-use crate::watchers::{ WatcherContext, WatcherList };
+use crate::watchers::WatcherList;
+#[cfg(all(feature = "watchers", not(feature = "buffered")))]
+use crate::watchers::WatcherContext;
 
 use crate::api::builder::TextForgeBuilder;
-use crate::context::execution_context::{ GlobalContextMethods, GlobalExecutionContext };
+use crate::context::execution_context::GlobalExecutionContext;
+#[cfg(not(feature = "buffered"))]
+use crate::context::execution_context::GlobalContextMethods;
 use crate::parser::resolve_var::TokenWrapper;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
@@ -672,16 +677,13 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             }
         };
 
-        let identifier = Uuid::new_v4();
-
-        self.transforms.insert(identifier.to_string(), tokens);
-
-        Ok(identifier.to_string())
+        Ok(self.add_transform(tokens))
     }
 
     // -- Pipeline registration & inspection ---------------------------
 
-    fn add_transform(&mut self, tokens: Vec<TokenWrapper>) -> String {
+    fn add_transform(&mut self, mut tokens: Vec<TokenWrapper>) -> String {
+        for token in &mut tokens { token.prepare_constant(); }
         let identifier = Uuid::new_v4().to_string();
         self.transforms.insert(identifier.clone(), tokens);
         identifier
@@ -770,6 +772,12 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         Ok(result)
     }
 
+    #[cfg(feature = "buffered")]
+    fn process_all(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
+        self.process_all_via_buffer(id, input)
+    }
+
+    #[cfg(not(feature = "buffered"))]
     fn process_all(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
         match self.run_transform(id, Cow::from(input)) {
             Ok(result) => Ok(result.into_owned()),
@@ -795,6 +803,12 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         }
     }
 
+    #[cfg(feature = "buffered")]
+    fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
+        self.process_debug_via_buffer(id, input)
+    }
+
+    #[cfg(not(feature = "buffered"))]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
         let mut result = Cow::from(input);
         let dashes = 10;
@@ -959,6 +973,12 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         Ok(())
     }
 
+    #[cfg(feature = "buffered")]
+    fn process_batch(&self, tasks: Vec<(&Path, &str, &Path)>) -> Vec<Result<(), TextForgeError>> {
+        self.process_batch_via_buffer(tasks)
+    }
+
+    #[cfg(not(feature = "buffered"))]
     fn process_batch(&self, tasks: Vec<(&Path, &str, &Path)>) -> Vec<Result<(), TextForgeError>> {
         tasks
             .into_par_iter()
@@ -1026,7 +1046,18 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             )
             .collect()
     }
-    #[cfg(feature = "watchers")]
+    #[cfg(all(feature = "watchers", feature = "buffered"))]
+    fn process_all_with_watchers(
+        &mut self,
+        id: &str,
+        input: &str,
+        watcher_list: &mut WatcherList,
+        report_path: &Path
+    ) -> Result<String, TextForgeError> {
+        self.process_watchers_via_buffer(id, input, watcher_list, report_path)
+    }
+
+    #[cfg(all(feature = "watchers", not(feature = "buffered")))]
     fn process_all_with_watchers(
         &mut self,
         id: &str,

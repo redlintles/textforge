@@ -49,10 +49,22 @@ impl From<ValType> for TextForgeParamTypes {
     }
 }
 
-#[derive(Clone)]
 pub struct TokenWrapper {
     params: Vec<ValType>,
     pub token: Box<dyn InstructionMethods>,
+    prepared: Option<Box<dyn InstructionMethods>>,
+}
+
+// Clones may leave the processor through get_transform_vec and expose a mutable
+// public token template. Only the private registered instance retains its cache.
+impl Clone for TokenWrapper {
+    fn clone(&self) -> Self {
+        Self {
+            params: self.params.clone(),
+            token: self.token.clone(),
+            prepared: None,
+        }
+    }
 }
 
 impl Default for TokenWrapper {
@@ -60,6 +72,7 @@ impl Default for TokenWrapper {
         TokenWrapper {
             params: Vec::new(),
             token: Box::new(Null::default()),
+            prepared: None,
         }
     }
 }
@@ -82,6 +95,7 @@ impl From<Box<dyn InstructionMethods>> for TokenWrapper {
         TokenWrapper {
             params: token_params,
             token: value,
+            prepared: None,
         }
     }
 }
@@ -93,6 +107,29 @@ impl From<TokenWrapper> for Box<dyn InstructionMethods> {
 }
 
 impl TokenWrapper {
+    // Only called after ownership moves into a processor's private pipeline map.
+    // Externally mutable public token templates never acquire a stale cache.
+    pub(crate) fn prepare_constant(&mut self) {
+        if !self.token.supports_preparation()
+            || !self.params.iter().all(|parameter| match parameter {
+                ValType::Literal(TextForgeParamTypes::Usize(_)) => true,
+                ValType::Literal(TextForgeParamTypes::String(text)) => !["{{", "}}", "[[", "]]"]
+                    .iter()
+                    .any(|marker| text.contains(marker)),
+                _ => false,
+            })
+        {
+            return;
+        }
+        let context = &mut GlobalExecutionContext::new();
+        if let Ok(parameters) = ValType::resolve_variables(&self.token, &self.params, context) {
+            let mut token = self.token.clone();
+            if token.from_params(&parameters).is_ok() {
+                self.prepared = Some(token);
+            }
+        }
+    }
+
     pub fn get_params(&self) -> &Vec<ValType> {
         &self.params
     }
@@ -104,6 +141,7 @@ impl TokenWrapper {
             Some(param_vec) => TokenWrapper {
                 params: param_vec,
                 token,
+                prepared: None,
             },
             None => {
                 let token_params = token
@@ -115,6 +153,7 @@ impl TokenWrapper {
                 TokenWrapper {
                     params: token_params,
                     token,
+                    prepared: None,
                 }
             }
         }
@@ -124,12 +163,12 @@ impl TokenWrapper {
         input: Cow<'a, str>,
         context: &mut GlobalExecutionContext,
     ) -> Result<Cow<'a, str>, TextForgeError> {
+        if let Some(prepared) = &self.prepared {
+            return prepared.transform(input, Some(context));
+        }
         let parsed_params = ValType::resolve_variables(&self.token, &self.params, &mut *context)?;
-
         let mut t = self.token.clone();
-
         t.from_params(&parsed_params)?;
-
         t.transform(input, Some(context))
     }
 
@@ -139,6 +178,9 @@ impl TokenWrapper {
         input: crate::api::TextBuffer,
         context: &mut GlobalExecutionContext,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        if let Some(prepared) = &self.prepared {
+            return prepared.transform_buffered(input, Some(context));
+        }
         let params = ValType::resolve_variables(&self.token, &self.params, context)?;
         let mut token = self.token.clone();
         token.from_params(&params)?;
@@ -347,3 +389,6 @@ impl ValType {
         Ok(result)
     }
 }
+
+#[cfg(all(test, feature = "test_access"))]
+mod preparation_test;

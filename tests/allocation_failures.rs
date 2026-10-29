@@ -33,7 +33,18 @@ fn repeat_reports_allocator_refusal_instead_of_aborting() {
         "{}",
         String::from_utf8_lossy(&result.stderr)
     );
-    assert!(String::from_utf8_lossy(&result.stderr).contains("Cannot allocate repeated output"));
+    // Native buffered repetition can spill the 800 MiB result successfully;
+    // the String-returning API must then reject final materialization safely.
+    let expected = if cfg!(feature = "buffered") {
+        "Cannot materialize TextBuffer"
+    } else {
+        "Cannot allocate repeated output"
+    };
+    assert!(
+        String::from_utf8_lossy(&result.stderr).contains(expected),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
     assert!(
         !output.exists(),
         "execution errors must not create partial output"

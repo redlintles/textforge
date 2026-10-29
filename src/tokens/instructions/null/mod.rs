@@ -17,6 +17,10 @@ pub struct Null {
 }
 
 impl InstructionMethods for Null {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     #[cfg(feature = "buffered")]
     fn transform_buffered(
         &self,

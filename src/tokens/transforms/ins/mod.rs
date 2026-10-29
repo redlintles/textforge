@@ -43,6 +43,10 @@ impl Ins {
     }
 }
 impl InstructionMethods for Ins {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

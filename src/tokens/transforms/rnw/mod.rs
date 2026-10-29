@@ -73,6 +73,10 @@ impl Default for Rnw {
 }
 
 impl InstructionMethods for Rnw {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

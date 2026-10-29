@@ -17,6 +17,10 @@ pub struct End {
 }
 
 impl InstructionMethods for End {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     #[cfg(feature = "buffered")]
     fn transform_buffered(
         &self,

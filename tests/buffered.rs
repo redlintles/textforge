@@ -38,7 +38,10 @@ fn preserves_legacy_results_for_native_and_fallback_instructions() {
         for (source, input) in cases {
             let mut processor = TextForgeProcessor::new();
             let id = pipeline(&mut processor, source);
-            let expected = processor.process_all(&id, input).unwrap();
+            let expected = processor
+                .run_transform(&id, std::borrow::Cow::Borrowed(input))
+                .unwrap()
+                .into_owned();
             let buffer = TextBuffer::from_text(
                 input,
                 TextBufferOptions::new(threshold, std::env::temp_dir()),
@@ -175,7 +178,10 @@ fn safe_all_tokens_pipeline_matches_the_reference_executor() {
     let id =
         textforge::utils::test_helpers::build_all_tokens_pipeline_safe(&mut processor).unwrap();
     let input = "Banana Laranja cheia de canja";
-    let expected = processor.process_all(&id, input).unwrap();
+    let expected = processor
+        .run_transform(&id, std::borrow::Cow::Borrowed(input))
+        .unwrap()
+        .into_owned();
     let buffer =
         TextBuffer::from_text(input, TextBufferOptions::new(1, std::env::temp_dir())).unwrap();
     assert_eq!(
@@ -205,7 +211,10 @@ fn generated_mixed_pipelines_match_reference_results() {
         let mut processor = TextForgeProcessor::new();
         let id = pipeline(&mut processor, &source);
         let input = " a é 👩🏽‍💻 é\r\n";
-        let expected = processor.process_all(&id, input).unwrap();
+        let expected = processor
+            .run_transform(&id, std::borrow::Cow::Borrowed(input))
+            .unwrap()
+            .into_owned();
         let buffer = TextBuffer::from_reader(
             input.as_bytes(),
             TextBufferOptions::new(2, std::env::temp_dir()),

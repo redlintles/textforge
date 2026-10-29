@@ -31,6 +31,10 @@ pub struct Jpsc {
 }
 
 impl InstructionMethods for Jpsc {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

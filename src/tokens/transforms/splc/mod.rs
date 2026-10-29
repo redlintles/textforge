@@ -30,6 +30,10 @@ pub struct Splc {
 }
 
 impl InstructionMethods for Splc {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

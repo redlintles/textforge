@@ -39,6 +39,10 @@ impl Ate {
 }
 
 impl InstructionMethods for Ate {
+    fn supports_preparation(&self) -> bool {
+        true
+    }
+
     #[cfg(feature = "buffered")]
     fn transform_buffered(
         &self,
