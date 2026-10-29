@@ -107,7 +107,7 @@ pub fn build_all_tokens_pipeline_safe(
         })?
         .call_block("x")?
         .call_block("x")?
-        .build();
+        .build()?;
 
     Ok(id)
 }

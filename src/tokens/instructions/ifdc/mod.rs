@@ -70,7 +70,12 @@ impl InstructionMethods for Ifdc {
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         if input.contains(&self.text) {
-            return self.inner.transform(input, context);
+            return match context {
+                Some(context) => self.inner.apply_token(input, context),
+                None => self
+                    .inner
+                    .apply_token(input, &mut GlobalExecutionContext::new()),
+            };
         }
 
         Ok(input)

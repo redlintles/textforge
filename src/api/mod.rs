@@ -40,7 +40,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     ///
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).trim_both_sides().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).trim_both_sides().unwrap().build().unwrap();
     /// let input = "   banana   ";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana".to_string()));
@@ -68,7 +68,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).trim_left_side().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).trim_left_side().unwrap().build().unwrap();
     /// let input = "   banana  ";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana  ".to_string()));
@@ -96,7 +96,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).trim_right_side().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).trim_right_side().unwrap().build().unwrap();
     /// let input = "  banana   ";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("  banana".to_string()));
@@ -123,7 +123,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).add_to_end("!").unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).add_to_end("!").unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banana!".to_string()));
@@ -149,7 +149,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).add_to_beginning("x").unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).add_to_beginning("x").unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("xbanana".to_string()));
@@ -177,7 +177,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).delete_first().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).delete_first().unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("anana".to_string()));
@@ -205,7 +205,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).delete_last().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).delete_last().unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banan".to_string()));
@@ -234,7 +234,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).delete_after(2).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).delete_after(2).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("ban".to_string()));
@@ -263,7 +263,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).delete_before(3).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).delete_before(3).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("ana".to_string()));
@@ -293,7 +293,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).delete_chunk(1, 3).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).delete_chunk(1, 3).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("bna".to_string()));
@@ -331,7 +331,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).replace_all_with("a", "x").unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).replace_all_with("a", "x").unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -372,7 +372,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).replace_first_with("a", "x").unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).replace_first_with("a", "x").unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -413,7 +413,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).replace_last_with("a", "x").unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).replace_last_with("a", "x").unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -456,7 +456,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).replace_nth_with("a", "x", 1).unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).replace_nth_with("a", "x", 1).unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -499,7 +499,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).replace_count_with("a", "x", 2).unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).replace_count_with("a", "x", 2).unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -541,7 +541,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).rotate_left(2).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).rotate_left(2).unwrap().build().unwrap();
     ///
     /// let input = "abcd";
     ///
@@ -575,7 +575,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).rotate_right(1).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).rotate_right(1).unwrap().build().unwrap();
     ///
     /// let input = "abcd";
     ///
@@ -608,7 +608,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).repeat(3).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).repeat(3).unwrap().build().unwrap();
     ///
     /// let input = "hi";
     ///
@@ -642,7 +642,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).select(1, 3).unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).select(1, 3).unwrap().build().unwrap();
     ///
     /// let input = "abcdef";
     ///
@@ -683,7 +683,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_all().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_all().unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -716,7 +716,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     ///
-    /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_all().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_all().unwrap().build().unwrap();
     ///
     /// let input = "BaNaNa";
     ///
@@ -751,7 +751,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).to_uppercase_single(1).unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).to_uppercase_single(1).unwrap().build().unwrap();
     ///
     /// let input = "banana";
     ///
@@ -789,7 +789,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).to_lowercase_single(0).unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).to_lowercase_single(0).unwrap().build().unwrap();
     ///
     /// let input = "Banana";
     ///
@@ -829,7 +829,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_uppercase_chunk(1, 3)
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     ///
     /// let input = "abcdef";
@@ -874,7 +874,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_lowercase_chunk(2, 5)
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     ///
     /// let input = "ABCD EF";
@@ -917,7 +917,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).capitalize_first_word().unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).capitalize_first_word().unwrap().build().unwrap();
     ///
     /// let input = "hello world";
     ///
@@ -951,7 +951,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     ///
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).capitalize_last_word().unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).capitalize_last_word().unwrap().build().unwrap();
     ///
     /// let input = "hello world";
     ///
@@ -985,7 +985,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id =
-    ///     TextForgeBuilder::new(&mut processor).split_select("-", 1).unwrap().build();
+    ///     TextForgeBuilder::new(&mut processor).split_select("-", 1).unwrap().build().unwrap();
     ///
     /// let input = "aa-bb-cc";
     ///
@@ -1027,7 +1027,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .capitalize_chunk(6, 16)
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "hello brave world";
     ///
@@ -1070,7 +1070,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .capitalize_range(1, 4)
-    ///     .unwrap().build(); // required because this method returns Result
+    ///     .unwrap().build().unwrap(); // required because this method returns Result
     ///
     ///
     /// let input = "foo bar mar jar tar rar";
@@ -1111,7 +1111,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .capitalize_single_word(2)
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "hello brave world";
     /// assert_eq!(
@@ -1146,7 +1146,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_url_encoded()
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "hello world!";
     /// assert_eq!(
@@ -1179,7 +1179,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_url_decoded()
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "hello%20world%21";
     /// assert_eq!(
@@ -1210,7 +1210,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_reverse()
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "abc";
     /// assert_eq!(
@@ -1240,7 +1240,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .split_characters()
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "hello";
     /// assert_eq!(
@@ -1274,7 +1274,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_html_escaped()
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "<b>Hello</b>";
     /// assert_eq!(
@@ -1307,7 +1307,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_html_unescaped()
-    ///     .unwrap().build();
+    ///     .unwrap().build().unwrap();
     ///
     /// let input = "&lt;b&gt;Hi&lt;/b&gt;";
     /// assert_eq!(
@@ -1338,7 +1338,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).to_json_escaped().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).to_json_escaped().unwrap().build().unwrap();
     /// let input = "{banana: '10'}";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("\"{banana: '10'}\"".to_string()));
@@ -1366,7 +1366,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).to_json_unescaped().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).to_json_unescaped().unwrap().build().unwrap();
     /// let input = "\"{banana: '10'}\"";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("{banana: '10'}".to_string()));
@@ -1395,7 +1395,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).insert(1, " laranja").unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).insert(1, " laranja").unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("ba laranjanana".to_string()));
@@ -1430,7 +1430,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_word(1).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_word(1).unwrap().build().unwrap();
     /// let input = "BANANA LARANJA CHEIA DE CANJA";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("BANANA laranja CHEIA DE CANJA".to_string()));
@@ -1460,7 +1460,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_word(1).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_word(1).unwrap().build().unwrap();
     /// let input = "banana laranja cheia de canja";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana LARANJA cheia de canja".to_string()));
@@ -1492,7 +1492,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).join_to_kebab_case().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).join_to_kebab_case().unwrap().build().unwrap();
     /// let input = "banana laranja cheia de canja";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana-laranja-cheia-de-canja".to_string()));
@@ -1521,7 +1521,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).join_to_snake_case().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).join_to_snake_case().unwrap().build().unwrap();
     /// let input = "banana laranja cheia de canja";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana_laranja_cheia_de_canja".to_string()));
@@ -1549,7 +1549,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).join_to_camel_case().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).join_to_camel_case().unwrap().build().unwrap();
     /// let input = "banana laranja cheia de canja";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananaLaranjaCheiaDeCanja".to_string()));
@@ -1577,7 +1577,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).join_to_pascal_case().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).join_to_pascal_case().unwrap().build().unwrap();
     /// let input = "banana laranja cheia de canja";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("BananaLaranjaCheiaDeCanja".to_string()));
@@ -1603,7 +1603,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).pad_left("x", 7).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).pad_left("x", 7).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     ///
@@ -1637,7 +1637,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).pad_right("x", 7).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).pad_right("x", 7).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     ///
@@ -1668,7 +1668,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).remove_whitespace().unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).remove_whitespace().unwrap().build().unwrap();
     /// let input = "banana laranja cheia de canja";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("bananalaranjacheiadecanja".to_string()));
@@ -1694,7 +1694,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).delete_single(3).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).delete_single(3).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));
@@ -1720,7 +1720,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).extract_matches_joined("a", ",").unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).extract_matches_joined("a", ",").unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("a,a,a".to_string()));
@@ -1756,7 +1756,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     get_var
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).val("x", 3).unwrap().delete_single(get_var("x")).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).val("x", 3).unwrap().delete_single(get_var("x")).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));
@@ -1799,7 +1799,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     get_var
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).var("x", 3).unwrap().delete_single(get_var("x")).unwrap().build();
+    /// let id = TextForgeBuilder::new(&mut processor).var("x", 3).unwrap().delete_single(get_var("x")).unwrap().build().unwrap();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));

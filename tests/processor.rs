@@ -22,7 +22,8 @@ pub mod processor {
             .add_to_beginning("Banana")?
             .add_to_end("Laranja")?
             .repeat(3 as usize)?
-            .build();
+            .build()
+            .unwrap();
         let input = "Carimbo verde de deus";
 
         let output = processor.process_all(&identifier, input)?;
@@ -41,7 +42,8 @@ pub mod processor {
             .add_to_beginning("Banana")?
             .add_to_end("Laranja")?
             .repeat(3 as usize)?
-            .build();
+            .build()
+            .unwrap();
         let input = "Carimbo verde de deus";
 
         let output = processor.process_all_with_debug(&identifier, input)?;
@@ -126,7 +128,8 @@ pub mod processor {
             .add_to_beginning("Banana")?
             .add_to_end("Laranja")?
             .repeat(3usize)?
-            .build();
+            .build()
+            .unwrap();
 
         // ✅ não ignore o erro
         processor.write_pipeline_to_file(&identifier, path)?;

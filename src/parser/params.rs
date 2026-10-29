@@ -185,8 +185,8 @@ enum AssocMode {
     AssocPayload,
 }
 
-const MAX_DEPTH_NORMAL: u8 = 1;
-const MAX_DEPTH_ASSOC_PAYLOAD: u8 = 3;
+pub(crate) const MAX_DEPTH_NORMAL: u8 = 1;
+pub(crate) const MAX_DEPTH_ASSOC_PAYLOAD: u8 = 3;
 
 // Bytecode param types
 const PARAM_STRING: u32 = 0x01;
@@ -567,7 +567,17 @@ impl TextForgeParamTypes {
             }
 
             PARAM_TOKEN => {
-                let mut reader = Cursor::new(payload.as_slice());
+                // Existing writers include an instruction-size prefix in token
+                // payloads; externally assembled payloads start at the opcode.
+                // Accept both representations without changing emitted bytecode.
+                let token_payload = if payload.len() >= 13
+                    && Self::peek_u64_be(&payload[..8])? == (payload.len() - 8) as u64
+                {
+                    &payload[8..]
+                } else {
+                    payload.as_slice()
+                };
+                let mut reader = Cursor::new(token_payload);
 
                 let opcode = Self::read_u32_be(
                     &mut reader,
@@ -903,12 +913,32 @@ impl TextForgeParamTypes {
         out: &mut Vec<u8>,
         context: &mut GlobalExecutionContext,
     ) -> Result<(), TextForgeError> {
+        self.write_instruction_param(out, Some(context))
+    }
+
+    #[cfg(feature = "bytecode")]
+    pub(crate) fn write_unresolved_instruction_param(
+        &self,
+        out: &mut Vec<u8>,
+    ) -> Result<(), TextForgeError> {
+        self.write_instruction_param(out, None)
+    }
+
+    #[cfg(feature = "bytecode")]
+    fn write_instruction_param(
+        &self,
+        out: &mut Vec<u8>,
+        context: Option<&mut GlobalExecutionContext>,
+    ) -> Result<(), TextForgeError> {
         let param_type = self.get_param_type_code();
 
         let payload: Vec<u8> = match self {
             TextForgeParamTypes::String(s) => s.as_bytes().to_vec(),
             TextForgeParamTypes::Usize(n) => n.to_be_bytes().to_vec(),
-            TextForgeParamTypes::Token(t) => t.to_bytecode_resolved(context)?,
+            TextForgeParamTypes::Token(t) => match context {
+                Some(context) => t.to_bytecode_resolved(context)?,
+                None => t.to_bytecode_unresolved()?,
+            },
             TextForgeParamTypes::VarRef(s) => s.as_bytes().to_vec(),
         };
 

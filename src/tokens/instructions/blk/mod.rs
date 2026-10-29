@@ -7,10 +7,7 @@ use crate::{
     parser::resolve_var::TokenWrapper,
     tokens::InstructionMethods,
     utils::{
-        errors::{
-            TextForgeError,
-            TextForgeErrorCode::{self, RequiredContextError},
-        },
+        errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
         validations::check_vec_len,
     },
 };
@@ -85,19 +82,13 @@ impl InstructionMethods for Blk {
             "param parsing error, invalid vec len",
         )?;
 
-        self.block_name = parse_args!(params, 0, String, "Block name should be of string type");
-
-        self.inner = parse_args!(params, 1, Token, "Block inner should be of token type");
-
-        if self.inner.get_string_repr() == "blk" {
-            return Err(TextForgeError::new(
-                TextForgeErrorCode::NestedBlocksNotAllowedError(Cow::from(
-                    "Nested blocks are not allowed",
-                )),
-                Cow::from("blk"),
-                Cow::from("blk"),
-            ));
+        let block_name = parse_args!(params, 0, String, "Block name should be of string type");
+        if let TextForgeParamTypes::Token(inner) = &params[1] {
+            crate::parser::structure::validate_block_child(inner)?;
         }
+        let inner = parse_args!(params, 1, Token, "Block inner should be of token type");
+        self.block_name = block_name;
+        self.inner = inner;
 
         self.params = vec![
             TextForgeParamTypes::String(parse_args!(

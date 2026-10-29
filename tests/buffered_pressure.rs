@@ -13,7 +13,12 @@ fn native_repetition_does_not_materialize_its_output() {
         let input =
             TextBuffer::from_reader(std::io::repeat(b'x').take(4 * 1024 * 1024), options).unwrap();
         let mut processor = TextForgeProcessor::new();
-        let id = processor.create_pipeline().repeat(32).unwrap().build();
+        let id = processor
+            .create_pipeline()
+            .repeat(32)
+            .unwrap()
+            .build()
+            .unwrap();
         let mut result = processor.process_all_buffered(&id, input).unwrap();
         assert!(result.is_spilled());
         assert_eq!(result.len_bytes(), 128 * 1024 * 1024);

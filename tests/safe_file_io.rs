@@ -24,7 +24,8 @@ fn file_preserves_unicode_newlines_nul_empty_and_large_documents() {
         .unwrap()
         .add_to_end(">")
         .unwrap()
-        .build();
+        .build()
+        .unwrap();
     for text in [String::new(), "João é 👩🏽‍💻 🇧🇷\r\n\0".repeat(5000)] {
         let input = directory.join("input");
         let output = directory.join("nested/output");
@@ -41,7 +42,12 @@ fn file_reads_before_replacing_the_same_path() {
     let file = directory.join("document");
     fs::write(&file, "é 👩🏽‍💻").unwrap();
     let mut processor = TextForgeProcessor::new();
-    let id = processor.create_pipeline().add_to_end("!").unwrap().build();
+    let id = processor
+        .create_pipeline()
+        .add_to_end("!")
+        .unwrap()
+        .build()
+        .unwrap();
     processor.process_file(&id, &file, &file).unwrap();
     assert_eq!(fs::read_to_string(&file).unwrap(), "é 👩🏽‍💻!");
     fs::remove_dir_all(directory).unwrap();
@@ -54,7 +60,12 @@ fn file_errors_keep_existing_output_untouched() {
     let output = directory.join("output");
     fs::write(&output, "previous").unwrap();
     let mut processor = TextForgeProcessor::new();
-    let id = processor.create_pipeline().add_to_end("!").unwrap().build();
+    let id = processor
+        .create_pipeline()
+        .add_to_end("!")
+        .unwrap()
+        .build()
+        .unwrap();
     let missing = processor.process_file(&id, &input, &output).unwrap_err();
     assert!(matches!(
         missing.error_code,
@@ -81,7 +92,12 @@ fn output_path_errors_are_propagated() {
     fs::write(&input, "valid").unwrap();
     fs::write(&blocker, "blocking").unwrap();
     let mut processor = TextForgeProcessor::new();
-    let id = processor.create_pipeline().add_to_end("!").unwrap().build();
+    let id = processor
+        .create_pipeline()
+        .add_to_end("!")
+        .unwrap()
+        .build()
+        .unwrap();
     assert!(
         processor
             .process_file(&id, &input, &blocker.join("output"))

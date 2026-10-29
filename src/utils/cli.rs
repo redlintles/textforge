@@ -109,7 +109,7 @@ mod cli_tests {
                 .create_pipeline()
                 .add_to_beginning("b")?
                 .add_to_end("l")?
-                .build();
+                .build()?;
 
             let input = "coxinha";
             let expected_output = "bcolbxilbnhlbal".to_string();
@@ -136,7 +136,7 @@ mod cli_tests {
                 .create_pipeline()
                 .add_to_beginning("b")?
                 .add_to_end("l")?
-                .build();
+                .build()?;
 
             let input = "coxinha\nlaranja";
             let expected_output = "bcoxinhal\nblaranjal".to_string();
@@ -163,7 +163,7 @@ mod cli_tests {
                 .create_pipeline()
                 .add_to_beginning("b")?
                 .add_to_end("l")?
-                .build();
+                .build()?;
 
             let input = "coxinha";
             let expected_output = "bcoxinhal".to_string();

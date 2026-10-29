@@ -73,7 +73,7 @@ impl TextForgeProcessor {
     /// use textforge::api::{TextBuffer, TextBufferOptions, TextForgeBuilderMethods};
     /// use textforge::api::processor::TextForgeProcessor;
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().add_to_beginning("<")?.add_to_end(">")?.build();
+    /// let id = processor.create_pipeline().add_to_beginning("<")?.add_to_end(">")?.build()?;
     /// let input = TextBuffer::from_text("👩🏽‍💻", TextBufferOptions::new(1, std::env::temp_dir()))?;
     /// let output = processor.process_all_buffered(&id, input)?;
     /// assert!(output.is_spilled());
@@ -124,7 +124,7 @@ impl TextForgeProcessor {
     /// use textforge::api::{TextBufferOptions, TextForgeBuilderMethods};
     /// use textforge::api::processor::TextForgeProcessor;
     /// let mut processor = TextForgeProcessor::new();
-    /// let _id = processor.create_pipeline().add_to_end("!")?.build();
+    /// let _id = processor.create_pipeline().add_to_end("!")?.build()?;
     /// let results = processor.process_batch_buffered(&[], &TextBufferOptions::new(1024, std::env::temp_dir()));
     /// assert!(results.is_empty());
     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())

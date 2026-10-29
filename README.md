@@ -94,7 +94,7 @@ Use the builder API through a `TextForgeProcessor`:
 
 ```rust
 use textforge::api::{
-    textforge_processor::{ TextForgeProcessor, TextForgeProcessorMethods },
+    processor::{ TextForgeProcessor, TextForgeProcessorMethods },
     TextForgeBuilderMethods,
 };
 
@@ -105,7 +105,7 @@ let id = processor
     .trim_both_sides()?
     .replace_all_with("world", "Rust")?
     .to_uppercase_all()?
-    .build();
+    .build()?;
 
 let result = processor.process_all(&id, "  hello world  ")?;
 assert_eq!(result, "HELLO RUST");

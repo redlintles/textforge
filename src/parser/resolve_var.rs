@@ -12,8 +12,6 @@ use crate::{
     },
 };
 
-#[cfg(feature = "bytecode")]
-use crate::to_bytecode;
 #[derive(Clone, Debug)]
 pub enum ValType {
     Literal(TextForgeParamTypes),
@@ -199,25 +197,50 @@ impl TokenWrapper {
     }
 
     pub fn to_text_line_unresolved(&self) -> Result<String, TextForgeError> {
-        let mut parsed_params = Vec::new();
-
-        for param in self.params.iter() {
-            match param {
-                ValType::Literal(x) => parsed_params.push(x.clone()),
-                ValType::VarRef(var_name) => {
-                    parsed_params.push(TextForgeParamTypes::String(format!(
-                        "{{{{{}}}}}",
-                        var_name.clone()
-                    )));
+        crate::parser::structure::validate(self)?;
+        // Post-order traversal binds children before their parent. Calling the
+        // template's serializer directly would lose the wrapper's parameters.
+        let mut pending = vec![(self, false)];
+        let mut bound: Vec<Box<dyn InstructionMethods>> = Vec::new();
+        while let Some((wrapper, visited)) = pending.pop() {
+            if !visited {
+                pending.push((wrapper, true));
+                for parameter in &wrapper.params {
+                    if let ValType::Literal(TextForgeParamTypes::Token(child)) = parameter {
+                        pending.push((child, false));
+                    }
                 }
+                continue;
             }
+            let mut parameters = Vec::with_capacity(wrapper.params.len());
+            for parameter in &wrapper.params {
+                parameters.push(match parameter {
+                    ValType::Literal(TextForgeParamTypes::Token(_)) => {
+                        let child = bound.pop().ok_or_else(|| {
+                            TextForgeError::new(
+                                TextForgeErrorCode::ValidationError("Missing bound child".into()),
+                                "to_text_line_unresolved",
+                                "",
+                            )
+                        })?;
+                        TextForgeParamTypes::Token(child.into())
+                    }
+                    ValType::Literal(value) => value.clone(),
+                    ValType::VarRef(name) => TextForgeParamTypes::String(format!("{{{{{name}}}}}")),
+                });
+            }
+            let mut token = wrapper.token.clone();
+            token.from_params(&parameters)?;
+            bound.push(token);
         }
-
-        let mut t = self.token.clone();
-
-        t.from_params(&parsed_params)?;
-
-        Ok(t.to_textforge_line().into())
+        let token = bound.pop().ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::ValidationError("Missing bound root".into()),
+                "to_text_line_unresolved",
+                "",
+            )
+        })?;
+        Ok(token.to_textforge_line().into())
     }
     #[cfg(feature = "bytecode")]
     pub fn to_bytecode_resolved(
@@ -242,8 +265,24 @@ impl TokenWrapper {
             }
         }
 
-        let result = to_bytecode!(self.get_opcode(), unresolved_params);
-
+        // This persistence path must not resolve nested references. The public
+        // context-aware parameter writer keeps its existing resolved semantics.
+        let count = u8::try_from(unresolved_params.len()).map_err(|_| {
+            TextForgeError::new(
+                TextForgeErrorCode::BytecodeParsingError("Parameter count exceeds u8".into()),
+                "to_bytecode_unresolved",
+                "",
+            )
+        })?;
+        let mut body = Vec::new();
+        body.extend_from_slice(&self.get_opcode().to_be_bytes());
+        body.push(count);
+        for parameter in &unresolved_params {
+            parameter.write_unresolved_instruction_param(&mut body)?;
+        }
+        let mut result = Vec::with_capacity(8 + body.len());
+        result.extend_from_slice(&(body.len() as u64).to_be_bytes());
+        result.extend_from_slice(&body);
         Ok(result)
     }
 }

@@ -86,7 +86,7 @@ use crate::utils::errors::{
 ///     .create_pipeline()
 ///     .trim_both_sides()?
 ///     .add_to_end("!")?
-///     .build();
+///     .build().unwrap();
 ///
 /// let out = processor.process_all(&id, "   banana   ")?;
 /// assert_eq!(out, "banana!");
@@ -107,7 +107,7 @@ use crate::utils::errors::{
 ///     .add_to_end("pizza")?
 ///     .repeat(3)?
 ///     .trim_both_sides()?
-///     .build();
+///     .build().unwrap();
 ///
 /// // Prints each step: instruction + before/after.
 /// let out = processor.process_all_with_debug(&id, "Banana Laranja cheia de canja")?;
@@ -198,7 +198,7 @@ use crate::utils::errors::{
 ///     .join_to_snake_case()?
 ///     .pad_left("xy", 12)?
 ///     .pad_right("yx", 20)?
-///     .build();
+///     .build().unwrap();
 ///
 /// for _ in 0..runs {
 ///     let start = Instant::now();
@@ -639,7 +639,7 @@ impl TextForgeProcessor {
     ///     .create_pipeline()
     ///     .trim_both_sides()?
     ///     .add_to_end("!")?
-    ///     .build();
+    ///     .build().unwrap();
     ///
     /// let out = processor.process_all(&id, "   banana   ")?;
     /// assert_eq!(out, "banana!");

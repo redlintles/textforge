@@ -322,3 +322,39 @@ mod tests {
         ));
     }
 }
+
+#[cfg(all(test, feature = "bytecode"))]
+mod opcode_regression {
+    use crate::{
+        globals::table::{QuerySource, QueryTarget, TOKEN_TABLE, TargetValue},
+        parser::{params::TextForgeParamTypes, resolve_var::TokenWrapper},
+        tokens::{InstructionMethods, instructions::val::Val},
+    };
+
+    #[test]
+    fn val_opcode_matches_registry_and_survives_parameter_roundtrip() {
+        let mut token = Val::default();
+        token
+            .from_params(&vec!["prefix".to_string().into(), "🍌".to_string().into()])
+            .unwrap();
+        let opcode = match TOKEN_TABLE
+            .find((QuerySource::Identifier("val".into()), QueryTarget::Bytecode))
+            .unwrap()
+        {
+            TargetValue::Bytecode(opcode) => opcode,
+            _ => panic!("expected opcode"),
+        };
+        assert_eq!(token.get_opcode(), opcode);
+        assert_eq!(opcode, 0x36);
+        let parameter = TextForgeParamTypes::Token(TokenWrapper::new(Box::new(token), None));
+        let (_, bytes) = parameter
+            .param_to_bytecode(
+                &mut crate::context::execution_context::GlobalExecutionContext::new(),
+            )
+            .unwrap();
+        match TextForgeParamTypes::from_bytecode(bytes).unwrap() {
+            TextForgeParamTypes::Token(wrapper) => assert_eq!(wrapper.get_string_repr(), "val"),
+            _ => panic!("expected val token"),
+        }
+    }
+}

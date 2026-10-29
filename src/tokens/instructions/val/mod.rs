@@ -41,7 +41,7 @@ impl InstructionMethods for Val {
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
-        0x38
+        0x36
     }
     fn get_string_repr(&self) -> &'static str {
         "val"
