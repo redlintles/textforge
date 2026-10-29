@@ -1,0 +1,1489 @@
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:11:
+ use crate::api::block_builder::BlockBuilder;
+ use crate::api::conditional_builder::ConditionalBuilderEach;
+ use crate::parser::params::TextForgeParamTypes;
+-use crate::parser::resolve_var::{ TokenWrapper, ValType };
+-use crate::tokens::{ InstructionMethods, instructions::*, transforms::* };
++use crate::parser::resolve_var::{TokenWrapper, ValType};
++use crate::tokens::{InstructionMethods, instructions::*, transforms::*};
+ use crate::utils::errors::TextForgeError;
+ 
+ // Helper for referencing variables in code
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:302:
+     fn delete_chunk(
+         &mut self,
+         start_index: impl Into<ValType>,
+-        end_index: impl Into<ValType>
++        end_index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(dlc::Dlc::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:309:
+-            Some(vec![start_index.into(), end_index.into()])
++            Some(vec![start_index.into(), end_index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:344:
+     fn replace_all_with(
+         &mut self,
+         pattern: impl Into<ValType>,
+-        text_to_replace: impl Into<ValType>
++        text_to_replace: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(raw::Raw::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:351:
+-            Some(vec![pattern.into(), text_to_replace.into()])
++            Some(vec![pattern.into(), text_to_replace.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:385:
+     fn replace_first_with(
+         &mut self,
+         pattern: impl Into<ValType>,
+-        text_to_replace: impl Into<ValType>
++        text_to_replace: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(rfw::Rfw::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:392:
+-            Some(vec![pattern.into(), text_to_replace.into()])
++            Some(vec![pattern.into(), text_to_replace.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:426:
+     fn replace_last_with(
+         &mut self,
+         pattern: impl Into<ValType>,
+-        text_to_replace: impl Into<ValType>
++        text_to_replace: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(rlw::Rlw::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:433:
+-            Some(vec![pattern.into(), text_to_replace.into()])
++            Some(vec![pattern.into(), text_to_replace.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:470:
+         &mut self,
+         pattern: impl Into<ValType>,
+         text_to_replace: impl Into<ValType>,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(rnw::Rnw::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:477:
+-            Some(vec![pattern.into(), text_to_replace.into(), index.into()])
++            Some(vec![pattern.into(), text_to_replace.into(), index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:513:
+         &mut self,
+         pattern: impl Into<ValType>,
+         text_to_replace: impl Into<ValType>,
+-        count: impl Into<ValType>
++        count: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(rcw::Rcw::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:520:
+-            Some(vec![pattern.into(), text_to_replace.into(), count.into()])
++            Some(vec![pattern.into(), text_to_replace.into(), count.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:655:
+     fn select(
+         &mut self,
+         start_index: impl Into<ValType>,
+-        end_index: impl Into<ValType>
++        end_index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(slt::Slt::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:662:
+-            Some(vec![start_index.into(), end_index.into()])
++            Some(vec![start_index.into(), end_index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:763:
+ 
+     fn to_uppercase_single(
+         &mut self,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(Box::new(tucs::Tucs::default()), Some(vec![index.into()]));
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:801:
+ 
+     fn to_lowercase_single(
+         &mut self,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(Box::new(tlcs::Tlcs::default()), Some(vec![index.into()]));
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:843:
+     fn to_uppercase_chunk(
+         &mut self,
+         start_index: impl Into<ValType>,
+-        end_index: impl Into<ValType>
++        end_index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(tucc::Tucc::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:850:
+-            Some(vec![start_index.into(), end_index.into()])
++            Some(vec![start_index.into(), end_index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:888:
+     fn to_lowercase_chunk(
+         &mut self,
+         start_index: impl Into<ValType>,
+-        end_index: impl Into<ValType>
++        end_index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(tlcc::Tlcc::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:895:
+-            Some(vec![start_index.into(), end_index.into()])
++            Some(vec![start_index.into(), end_index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:998:
+     fn split_select(
+         &mut self,
+         pattern: impl Into<ValType>,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(sslt::Sslt::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1005:
+-            Some(vec![pattern.into(), index.into()])
++            Some(vec![pattern.into(), index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1040:
+     fn capitalize_chunk(
+         &mut self,
+         start_index: impl Into<ValType>,
+-        end_index: impl Into<ValType>
++        end_index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(ctc::Ctc::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1047:
+-            Some(vec![start_index.into(), end_index.into()])
++            Some(vec![start_index.into(), end_index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1082:
+     fn capitalize_range(
+         &mut self,
+         start_index: impl Into<ValType>,
+-        end_index: impl Into<ValType>
++        end_index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(ctr::Ctr::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1089:
+-            Some(vec![start_index.into(), end_index.into()])
++            Some(vec![start_index.into(), end_index.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1121:
+     /// ```
+     fn capitalize_single_word(
+         &mut self,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(Box::new(cts::Cts::default()), Some(vec![index.into()]));
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1403:
+     fn insert(
+         &mut self,
+         index: impl Into<ValType>,
+-        text_to_insert: impl Into<ValType>
++        text_to_insert: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(ins::Ins::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1410:
+-            Some(vec![index.into(), text_to_insert.into()])
++            Some(vec![index.into(), text_to_insert.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1437:
+     /// ```
+     fn to_lowercase_word(
+         &mut self,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(Box::new(tlcw::Tlcw::default()), Some(vec![index.into()]));
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1467:
+     /// ```
+     fn to_uppercase_word(
+         &mut self,
+-        index: impl Into<ValType>
++        index: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(Box::new(tucw::Tucw::default()), Some(vec![index.into()]));
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1612:
+     fn pad_left(
+         &mut self,
+         text: impl Into<ValType>,
+-        times: impl Into<ValType>
++        times: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(padl::Padl::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1619:
+-            Some(vec![text.into(), times.into()])
++            Some(vec![text.into(), times.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1646:
+     fn pad_right(
+         &mut self,
+         text: impl Into<ValType>,
+-        times: impl Into<ValType>
++        times: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(padr::Padr::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1653:
+-            Some(vec![text.into(), times.into()])
++            Some(vec![text.into(), times.into()]),
+         );
+         self.push_token(tok)?;
+         Ok(self)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1729:
+     fn extract_matches_joined(
+         &mut self,
+         pattern: impl Into<ValType>,
+-        separator: impl Into<ValType>
++        separator: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(emj::Emj::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1736:
+-            Some(vec![pattern.into(), separator.into()])
++            Some(vec![pattern.into(), separator.into()]),
+         );
+ 
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1765:
+     fn val(
+         &mut self,
+         var_name: impl Into<ValType>,
+-        var_value: impl Into<ValType>
++        var_value: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let var_value: ValType = var_value.into();
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1778:
+ 
+         let tok = TokenWrapper::new(
+             Box::new(val::Val::default()),
+-            Some(vec![var_name.into(), var_value])
++            Some(vec![var_name.into(), var_value]),
+         );
+ 
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1808:
+     fn var(
+         &mut self,
+         var_name: impl Into<ValType>,
+-        var_value: impl Into<ValType>
++        var_value: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let var_value: ValType = var_value.into();
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1821:
+ 
+         let tok = TokenWrapper::new(
+             Box::new(var::Var::default()),
+-            Some(vec![var_name.into(), var_value])
++            Some(vec![var_name.into(), var_value]),
+         );
+ 
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1830:
+     fn mut_var(
+         &mut self,
+         var_name: impl Into<ValType>,
+-        var_value: impl Into<ValType>
++        var_value: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let var_value: ValType = var_value.into();
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1843:
+ 
+         let tok = TokenWrapper::new(
+             Box::new(mutv::Mutv::default()),
+-            Some(vec![var_name.into(), var_value])
++            Some(vec![var_name.into(), var_value]),
+         );
+ 
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1853:
+     fn eval(
+         &mut self,
+         expr: impl Into<ValType>,
+-        var_name: impl Into<ValType>
++        var_name: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(eval::Eval::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1860:
+-            Some(vec![expr.into(), var_name.into()])
++            Some(vec![expr.into(), var_name.into()]),
+         );
+ 
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1867:
+     fn iter(
+         &mut self,
+         times: impl Into<ValType>,
+-        inner: impl Into<ValType>
++        inner: impl Into<ValType>,
+     ) -> Result<&mut Self, TextForgeError> {
+         let tok = TokenWrapper::new(
+             Box::new(iter::Iter::default()),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1874:
+-            Some(vec![times.into(), inner.into()])
++            Some(vec![times.into(), inner.into()]),
+         );
+ 
+         self.push_token(tok)?;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1893:
+ 
+ pub trait TextForgeConditionalMethods: TextForgeBuilderMethods {
+     fn if_do_contains_each<F>(&mut self, value: &str, f: F) -> Result<&mut Self, TextForgeError>
+-        where F: FnOnce(&mut ConditionalBuilderEach) -> Result<(), TextForgeError>
++    where
++        F: FnOnce(&mut ConditionalBuilderEach) -> Result<(), TextForgeError>,
+     {
+         let params = vec![TextForgeParamTypes::String(value.to_string())];
+         let token: Box<dyn InstructionMethods> = Box::new(ifdc::Ifdc::default());
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/mod.rs:1915:
+     fn block_assoc<F>(
+         &mut self,
+         block_name: &'static str,
+-        f: F
++        f: F,
+     ) -> Result<&mut Self, TextForgeError>
+-        where F: FnOnce(&mut BlockBuilder) -> Result<(), TextForgeError>
++    where
++        F: FnOnce(&mut BlockBuilder) -> Result<(), TextForgeError>,
+     {
+         let mut block_builder = BlockBuilder::new(block_name);
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:17:
+ use std::sync::Arc;
+ 
+ #[cfg(feature = "bytecode")]
+-use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
++use crate::bytecode::{reader::read_bytecode_from_file, writer::write_bytecode_to_file};
+ #[cfg(feature = "watchers")]
+-use crate::watchers::{ WatcherContext, WatcherList };
++use crate::watchers::{WatcherContext, WatcherList};
+ 
+ use crate::api::builder::TextForgeBuilder;
+-use crate::context::execution_context::{ GlobalContextMethods, GlobalExecutionContext };
++use crate::context::execution_context::{GlobalContextMethods, GlobalExecutionContext};
+ use crate::parser::resolve_var::TokenWrapper;
+ use crate::text::reader::read_from_file;
+ use crate::text::writer::write_to_file;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:29:
+ use crate::utils::apply::apply_transform;
+ use crate::utils::errors::{
+-    ErrorManager,
+-    TextForgeError,
+-    TextForgeErrorCode,
+-    token_array_not_found,
++    ErrorManager, TextForgeError, TextForgeErrorCode, token_array_not_found,
+ };
+ 
+ /// TextForge Processor
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:384:
+     fn run_transform<'a>(
+         &self,
+         id: &str,
+-        input: Cow<'a, str>
++        input: Cow<'a, str>,
+     ) -> Result<Cow<'a, str>, TextForgeError>;
+ 
+     /// Executes all tokens of a registered transform from left to right.
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:424:
+     fn process_single(
+         &mut self,
+         token: TokenWrapper,
+-        input: &str
++        input: &str,
+     ) -> Result<String, TextForgeError>;
+ 
+     /// Executes a registered transform like `process_all`, but prints each step.
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:458:
+     fn process_single_with_debug(
+         &mut self,
+         token: TokenWrapper,
+-        input: &str
++        input: &str,
+     ) -> Result<String, TextForgeError>;
+ 
+     /// Reads `file_path` via a memory-mapped file, runs the registered pipeline
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:491:
+         &mut self,
+         pipeline_id: &str,
+         file_path: &Path,
+-        output_path: &Path
++        output_path: &Path,
+     ) -> Result<(), TextForgeError>;
+ 
+     /// Runs a pipeline over many `(input file, output file)` pairs in parallel.
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:562:
+         id: &str,
+         input: &str,
+         watcher_list: &mut WatcherList,
+-        report_path: &Path
++        report_path: &Path,
+     ) -> Result<String, TextForgeError>;
+ 
+     // -----------------------------------------------------------------
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:652:
+     // -- Pipeline persistence (text format) --------------------------
+ 
+     fn write_pipeline_to_file(&mut self, id: &str, path: &Path) -> Result<(), TextForgeError> {
+-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
++        let tokens = match self
++            .transforms
++            .get(id)
++            .ok_or_else(token_array_not_found(id))
++        {
+             Ok(x) => x,
+             Err(e) => {
+                 self.errors.add_error(e.clone());
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:688:
+     }
+ 
+     fn remove_transform(&mut self, id: &str) -> Result<(), TextForgeError> {
+-        match
+-            self.transforms
+-                .remove(id)
+-                .ok_or_else(|| {
+-                    TextForgeError::new(
+-                        TextForgeErrorCode::TokenNotFound("Transformation not found".into()),
+-                        "remove_transform",
+-                        id.to_string()
+-                    )
+-                })
+-        {
++        match self.transforms.remove(id).ok_or_else(|| {
++            TextForgeError::new(
++                TextForgeErrorCode::TokenNotFound("Transformation not found".into()),
++                "remove_transform",
++                id.to_string(),
++            )
++        }) {
+             Ok(_) => Ok(()),
+             Err(e) => Err(e),
+         }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:715:
+     }
+ 
+     fn get_transform_vec(&self, id: &str) -> Result<Vec<TokenWrapper>, TextForgeError> {
+-        Ok(
+-            self.transforms
+-                .get(id)
+-                .ok_or_else(|| {
+-                    TextForgeError::new(
+-                        TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
+-                        "get_transform_vec".to_string(),
+-                        id.to_string()
+-                    )
+-                })?
+-                .clone()
+-        )
++        Ok(self
++            .transforms
++            .get(id)
++            .ok_or_else(|| {
++                TextForgeError::new(
++                    TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
++                    "get_transform_vec".to_string(),
++                    id.to_string(),
++                )
++            })?
++            .clone())
+     }
+ 
+     fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, TextForgeError> {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:736:
+                 TextForgeError::new(
+                     TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
+                     "get_transform_vec",
+-                    id.to_string()
++                    id.to_string(),
+                 )
+             })?
+             .clone()
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:750:
+     fn run_transform<'a>(
+         &self,
+         id: &str,
+-        input: Cow<'a, str>
++        input: Cow<'a, str>,
+     ) -> Result<Cow<'a, str>, TextForgeError> {
+         let mut result = input;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:757:
+-        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
++        let tokens = self
++            .transforms
++            .get(id)
++            .ok_or_else(token_array_not_found(id))?;
+         let mut context = GlobalExecutionContext::new();
+ 
+         // ErrorManager local, descartável — não é o self.errors compartilhado
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:783:
+     fn process_single(
+         &mut self,
+         token: TokenWrapper,
+-        input: &str
++        input: &str,
+     ) -> Result<String, TextForgeError> {
+         let mut context = GlobalExecutionContext::new();
+         match token.apply_token(Cow::from(input), &mut context) {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:799:
+         let mut result = Cow::from(input);
+         let dashes = 10;
+ 
+-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
++        let tokens = match self
++            .transforms
++            .get(id)
++            .ok_or_else(token_array_not_found(id))
++        {
+             Ok(x) => x,
+             Err(e) => {
+                 self.errors.add_error(e.clone());
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:827:
+                 let mut it = line.split_whitespace();
+ 
+                 it.next();
+-                let v = it
+-                    .next()
+-                    .ok_or_else(|| {
+-                        TextForgeError::new(
+-                            TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
+-                            "process_all_with_debug",
+-                            ""
+-                        )
+-                    })?;
++                let v = it.next().ok_or_else(|| {
++                    TextForgeError::new(
++                        TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
++                        "process_all_with_debug",
++                        "",
++                    )
++                })?;
+ 
+                 log.push_str(
+                     &format!(
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:851:
+             } else {
+                 // Note: format! aloca, mas agora você faz 1 print no final.
+ 
+-                log.push_str(
+-                    &format!(
+-                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
+-                        counter.to_string().blue(),
+-                        (counter + 1).to_string().blue(),
+-                        token.to_textforge_line().yellow(),
+-                        red_result,
+-                        temp.green()
+-                    )
+-                );
++                log.push_str(&format!(
++                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
++                    counter.to_string().blue(),
++                    (counter + 1).to_string().blue(),
++                    token.to_textforge_line().yellow(),
++                    red_result,
++                    temp.green()
++                ));
+             }
+ 
+             if (counter as usize) + 1 < tokens.len() {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:878:
+     fn process_single_with_debug(
+         &mut self,
+         token: TokenWrapper,
+-        input: &str
++        input: &str,
+     ) -> Result<String, TextForgeError> {
+         let mut ctx = GlobalExecutionContext::new();
+         let output = match token.apply_token(Cow::from(input), &mut ctx) {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:904:
+         &mut self,
+         pipeline_id: &str,
+         file_path: &Path,
+-        output_path: &Path
++        output_path: &Path,
+     ) -> Result<(), TextForgeError> {
+         use std::fs::File;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:915:
+             TextForgeError::new(
+                 TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
+                 Cow::from("processor.process_file"),
+-                file_path_str.clone()
++                file_path_str.clone(),
+             )
+         })?;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:922:
+         // mmap(2) refuses to map a zero-length region, so an empty file is
+         // handled directly instead of going through Mmap::map.
+-        let is_empty = file
+-            .metadata()
+-            .map(|m| m.len() == 0)
+-            .map_err(|e| {
+-                TextForgeError::new(
+-                    TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
+-                    Cow::from("processor.process_file"),
+-                    file_path_str.clone()
+-                )
+-            })?;
++        let is_empty = file.metadata().map(|m| m.len() == 0).map_err(|e| {
++            TextForgeError::new(
++                TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
++                Cow::from("processor.process_file"),
++                file_path_str.clone(),
++            )
++        })?;
+ 
+         let result = if is_empty {
+             self.process_all(pipeline_id, "")?
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:944:
+                 TextForgeError::new(
+                     TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
+                     Cow::from("processor.process_file"),
+-                    file_path_str.clone()
++                    file_path_str.clone(),
+                 )
+             })?;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:951:
+-            let input = std::str
+-                ::from_utf8(&mmap)
+-                .map_err(|e| {
+-                    TextForgeError::new(
+-                        TextForgeErrorCode::InvalidUtf8Error(Cow::from(e.to_string())),
+-                        Cow::from("processor.process_file"),
+-                        file_path_str.clone()
+-                    )
+-                })?;
++            let input = std::str::from_utf8(&mmap).map_err(|e| {
++                TextForgeError::new(
++                    TextForgeErrorCode::InvalidUtf8Error(Cow::from(e.to_string())),
++                    Cow::from("processor.process_file"),
++                    file_path_str.clone(),
++                )
++            })?;
+ 
+             self.process_all(pipeline_id, input)?
+             // mmap sai de escopo aqui e é desmapeado
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:964:
+ 
+         // Garante que o diretório de destino exista antes de criar o arquivo de saída,
+         // no mesmo espírito do que process_batch já faz para cada `target`.
+-        if
+-            let Some(parent) = output_path.parent() &&
+-            !parent.as_os_str().is_empty() &&
+-            !parent.exists()
++        if let Some(parent) = output_path.parent()
++            && !parent.as_os_str().is_empty()
++            && !parent.exists()
+         {
+-            std::fs
+-                ::create_dir_all(parent)
+-                .map_err(|e| {
+-                    TextForgeError::new(
+-                        TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
+-                        Cow::from("processor.process_file"),
+-                        output_path_str.clone()
+-                    )
+-                })?;
++            std::fs::create_dir_all(parent).map_err(|e| {
++                TextForgeError::new(
++                    TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
++                    Cow::from("processor.process_file"),
++                    output_path_str.clone(),
++                )
++            })?;
+         }
+ 
+         let mut out = File::create(output_path).map_err(|e| {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:984:
+             TextForgeError::new(
+                 TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
+                 Cow::from("processor.process_file"),
+-                output_path_str.clone()
++                output_path_str.clone(),
+             )
+         })?;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:991:
+-        out
+-            .write_all(result.as_bytes())
+-            .map_err(|e| {
+-                TextForgeError::new(
+-                    TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
+-                    Cow::from("processor.process_file"),
+-                    output_path_str.clone()
+-                )
+-            })?;
++        out.write_all(result.as_bytes()).map_err(|e| {
++            TextForgeError::new(
++                TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
++                Cow::from("processor.process_file"),
++                output_path_str.clone(),
++            )
++        })?;
+ 
+         Ok(())
+     }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1007:
+             .map(
+                 |(origin, pipeline_id, target)| -> Result<(), TextForgeError> {
+                     if !origin.exists() {
+-                        return Err(
+-                            TextForgeError::new(
+-                                TextForgeErrorCode::FileNotFound(
+-                                    "Origin file does not exist".into()
+-                                ),
+-                                Cow::Borrowed("process_batch"),
+-                                format!("{:?}", origin)
+-                            )
+-                        );
++                        return Err(TextForgeError::new(
++                            TextForgeErrorCode::FileNotFound("Origin file does not exist".into()),
++                            Cow::Borrowed("process_batch"),
++                            format!("{:?}", origin),
++                        ));
+                     }
+ 
+                     if !origin.is_file() {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1022:
+-                        return Err(
+-                            TextForgeError::new(
+-                                TextForgeErrorCode::ValidationError(
+-                                    "Origin path is not a file".into()
+-                                ),
+-                                Cow::Borrowed("process_batch"),
+-                                format!("{:?}", origin)
+-                            )
+-                        );
++                        return Err(TextForgeError::new(
++                            TextForgeErrorCode::ValidationError("Origin path is not a file".into()),
++                            Cow::Borrowed("process_batch"),
++                            format!("{:?}", origin),
++                        ));
+                     }
+ 
+-                    let file = std::fs::File
+-                        ::open(origin)
+-                        .map_err(|e| {
+-                            TextForgeError::new(
+-                                TextForgeErrorCode::FileOpeningError(
+-                                    "Failed to open origin file".into()
+-                                ),
+-                                Cow::Borrowed("process_batch"),
+-                                format!("{:?} - {}", origin, e)
+-                            )
+-                        })?;
++                    let file = std::fs::File::open(origin).map_err(|e| {
++                        TextForgeError::new(
++                            TextForgeErrorCode::FileOpeningError(
++                                "Failed to open origin file".into(),
++                            ),
++                            Cow::Borrowed("process_batch"),
++                            format!("{:?} - {}", origin, e),
++                        )
++                    })?;
+ 
+                     // mmap(2) refuses to map a zero-length region, so an empty
+                     // file is handled directly instead of going through Mmap::map.
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1047:
+-                    let is_empty = file
+-                        .metadata()
+-                        .map(|m| m.len() == 0)
+-                        .map_err(|e| {
+-                            TextForgeError::new(
+-                                TextForgeErrorCode::FileReadingError(
+-                                    "Failed to read origin file metadata".into()
+-                                ),
+-                                Cow::Borrowed("process_batch"),
+-                                format!("{:?} - {}", origin, e)
+-                            )
+-                        })?;
++                    let is_empty = file.metadata().map(|m| m.len() == 0).map_err(|e| {
++                        TextForgeError::new(
++                            TextForgeErrorCode::FileReadingError(
++                                "Failed to read origin file metadata".into(),
++                            ),
++                            Cow::Borrowed("process_batch"),
++                            format!("{:?} - {}", origin, e),
++                        )
++                    })?;
+ 
+                     let output = if is_empty {
+                         self.run_transform(pipeline_id, "".into())?
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1068:
+                         let mmap = (unsafe { Mmap::map(&file) }).map_err(|e| {
+                             TextForgeError::new(
+                                 TextForgeErrorCode::FileReadingError(
+-                                    "Failed to map origin file".into()
++                                    "Failed to map origin file".into(),
+                                 ),
+                                 Cow::Borrowed("process_batch"),
+-                                format!("{:?} - {}", origin, e)
++                                format!("{:?} - {}", origin, e),
+                             )
+                         })?;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1078:
+-                        let input = std::str
+-                            ::from_utf8(&mmap)
++                        let input = std::str::from_utf8(&mmap)
+                             .map_err(|e| {
+                                 TextForgeError::new(
+                                     TextForgeErrorCode::InvalidUtf8Error(
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1083:
+-                                        "Origin file is not valid UTF-8".into()
++                                        "Origin file is not valid UTF-8".into(),
+                                     ),
+                                     Cow::Borrowed("process_batch"),
+-                                    format!("{:?} - {}", origin, e)
++                                    format!("{:?} - {}", origin, e),
+                                 )
+                             })?
+                             .to_owned();
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1092:
+                         // mmap drops here, at the end of this branch's scope
+                     };
+ 
+-                    if
+-                        let Some(parent) = target.parent() &&
+-                        !parent.as_os_str().is_empty() &&
+-                        !parent.exists()
++                    if let Some(parent) = target.parent()
++                        && !parent.as_os_str().is_empty()
++                        && !parent.exists()
+                     {
+-                        std::fs
+-                            ::create_dir_all(parent)
+-                            .map_err(|e| {
+-                                TextForgeError::new(
+-                                    TextForgeErrorCode::FileWritingError(
+-                                        "Failed to create target directory".into()
+-                                    ),
+-                                    Cow::Borrowed("process_batch"),
+-                                    format!("{:?} - {}", parent, e)
+-                                )
+-                            })?;
+-                    }
+-
+-                    std::fs
+-                        ::write(target, output.as_bytes())
+-                        .map_err(|e| {
++                        std::fs::create_dir_all(parent).map_err(|e| {
+                             TextForgeError::new(
+                                 TextForgeErrorCode::FileWritingError(
+-                                    "Failed to write target file".into()
++                                    "Failed to create target directory".into(),
+                                 ),
+                                 Cow::Borrowed("process_batch"),
+-                                format!("{:?} - {}", target, e)
++                                format!("{:?} - {}", parent, e),
+                             )
+                         })?;
++                    }
+ 
++                    std::fs::write(target, output.as_bytes()).map_err(|e| {
++                        TextForgeError::new(
++                            TextForgeErrorCode::FileWritingError(
++                                "Failed to write target file".into(),
++                            ),
++                            Cow::Borrowed("process_batch"),
++                            format!("{:?} - {}", target, e),
++                        )
++                    })?;
++
+                     Ok(())
+-                }
++                },
+             )
+             .collect()
+     }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1133:
+         id: &str,
+         input: &str,
+         watcher_list: &mut WatcherList,
+-        report_path: &Path
++        report_path: &Path,
+     ) -> Result<String, TextForgeError> {
+-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
++        let tokens = match self
++            .transforms
++            .get(id)
++            .ok_or_else(token_array_not_found(id))
++        {
+             Ok(x) => x,
+             Err(e) => {
+                 self.errors.add_error(e.clone());
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1163:
+                 token,
+                 Cow::Borrowed(current_arc.as_ref()),
+                 &mut local_errors,
+-                &mut context
++                &mut context,
+             )?;
+ 
+             // Única cópia de texto inteiro por passo: a saída do transform
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1177:
+                     prev_current,
+                     prev_before,
+                     Some(Arc::clone(&current_arc)), // O(1)
+-                    prev_instruction
++                    prev_instruction,
+                 );
+                 watcher_list.run_watchers(watcher_ctx)?;
+             }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/api/processor.rs:1207:
+ 
+     #[cfg(feature = "bytecode")]
+     fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), TextForgeError> {
+-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
++        let tokens = match self
++            .transforms
++            .get(id)
++            .ok_or_else(token_array_not_found(id))
++        {
+             Ok(x) => x,
+             Err(e) => {
+                 self.errors.add_error(e.clone());
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:1:
+ use crate::{
+     parser::resolve_var::TokenWrapper,
+-    utils::errors::{ TextForgeError, TextForgeErrorCode::{ self, VariableNotFound } },
++    utils::errors::{
++        TextForgeError,
++        TextForgeErrorCode::{self, VariableNotFound},
++    },
+ };
+-use std::{ borrow::Cow, collections::HashMap };
++use std::{borrow::Cow, collections::HashMap};
+ #[derive(Clone)]
+ pub enum VarValues {
+     String(String),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:101:
+     }
+ 
+     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError> {
+-        self.blocks
+-            .remove(block_id)
+-            .ok_or_else(|| {
+-                TextForgeError::new(
+-                    TextForgeErrorCode::BlockNotFound("Block not found".into()),
+-                    "context.take_block",
+-                    block_id.to_string()
+-                )
+-            })
++        self.blocks.remove(block_id).ok_or_else(|| {
++            TextForgeError::new(
++                TextForgeErrorCode::BlockNotFound("Block not found".into()),
++                "context.take_block",
++                block_id.to_string(),
++            )
++        })
+     }
+ 
+     fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>) {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:142:
+                 "".normal()
+             };
+ 
+-            result.push_str(&format!("\t\t\t\t{}{}\n", prefix, token.to_textforge_line().yellow()));
++            result.push_str(&format!(
++                "\t\t\t\t{}{}\n",
++                prefix,
++                token.to_textforge_line().yellow()
++            ));
+         }
+ 
+         self.put_block(block_id, block_items);
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:157:
+     fn rm_var(&mut self, var_id: &str) -> Result<(), TextForgeError> {
+         let var_id_owned = var_id.to_owned();
+ 
+-        self.variables
+-            .remove(var_id)
+-            .ok_or_else(|| {
+-                TextForgeError::new(
+-                    VariableNotFound(
+-                        Cow::from(format!("Could not find var {} to remove", var_id_owned))
+-                    ),
+-                    Cow::from("context.rm_var"),
+-                    Cow::from(var_id_owned)
+-                )
+-            })?;
++        self.variables.remove(var_id).ok_or_else(|| {
++            TextForgeError::new(
++                VariableNotFound(Cow::from(format!(
++                    "Could not find var {} to remove",
++                    var_id_owned
++                ))),
++                Cow::from("context.rm_var"),
++                Cow::from(var_id_owned),
++            )
++        })?;
+ 
+         Ok(())
+     }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:174:
+ 
+     fn get_var(&self, var_id: &str) -> Result<&VarEntry, TextForgeError> {
+-        self.variables
+-            .get(var_id)
+-            .ok_or_else(|| {
+-                TextForgeError::new(
+-                    TextForgeErrorCode::VariableNotFound("Variable not found".into()),
+-                    "get_var",
+-                    var_id.to_string()
+-                )
+-            })
++        self.variables.get(var_id).ok_or_else(|| {
++            TextForgeError::new(
++                TextForgeErrorCode::VariableNotFound("Variable not found".into()),
++                "get_var",
++                var_id.to_string(),
++            )
++        })
+     }
+ 
+     fn get_mut_var(&mut self, var_id: &str) -> Result<&mut VarEntry, TextForgeError> {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:188:
+-        let v = self.variables
+-            .get_mut(var_id)
+-            .ok_or_else(|| {
+-                TextForgeError::new(
+-                    TextForgeErrorCode::VariableNotFound("Variable not found".into()),
+-                    "get_var",
+-                    var_id.to_string()
+-                )
+-            })?;
++        let v = self.variables.get_mut(var_id).ok_or_else(|| {
++            TextForgeError::new(
++                TextForgeErrorCode::VariableNotFound("Variable not found".into()),
++                "get_var",
++                var_id.to_string(),
++            )
++        })?;
+         if v.mutable {
+             Ok(v)
+         } else {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/context/execution_context.rs:200:
+-            Err(
+-                TextForgeError::new(
+-                    TextForgeErrorCode::NonMutableVariableError("Variable is not mutable".into()),
+-                    "get_mut_var",
+-                    var_id.to_string()
+-                )
+-            )
++            Err(TextForgeError::new(
++                TextForgeErrorCode::NonMutableVariableError("Variable is not mutable".into()),
++                "get_mut_var",
++                var_id.to_string(),
++            ))
+         }
+     }
+ }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/globals/table.rs:1:
+-use std::{ borrow::Cow, collections::HashMap, sync::{ Arc, LazyLock } };
++use std::{
++    borrow::Cow,
++    collections::HashMap,
++    sync::{Arc, LazyLock},
++};
+ 
+-use crate::{ tokens::InstructionMethods, utils::errors::{ TextForgeError, TextForgeErrorCode } };
++use crate::{
++    tokens::InstructionMethods,
++    utils::errors::{TextForgeError, TextForgeErrorCode},
++};
+ 
+-use crate::tokens::{ instructions::*, transforms::* };
++use crate::tokens::{instructions::*, transforms::*};
+ 
+ #[derive(Clone)]
+ pub enum TokenRef {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/globals/table.rs:60:
+ impl TokenTable {
+     pub fn find(
+         &self,
+-        (query_source, query_target): (QuerySource, QueryTarget)
++        (query_source, query_target): (QuerySource, QueryTarget),
+     ) -> Result<TargetValue, TextForgeError> {
+         let err = || {
+             TextForgeError::new(
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/globals/table.rs:67:
+                 TextForgeErrorCode::TokenNotFound("Token Not Found in mapping".into()),
+                 "TOKEN_TABLE.find()",
+-                "query"
++                "query",
+             )
+         };
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/tokens/instructions/end/test.rs:1:
++
++
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/tokens/instructions/mod.rs:1:
+ pub mod blk;
+ pub mod cblk;
++pub mod end;
+ pub mod eval;
+ pub mod ifdc;
+ pub mod iter;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/tokens/instructions/mod.rs:7:
+ pub mod null;
+ pub mod val;
+ pub mod var;
+-pub mod end;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:1:
+-use std::{ collections::HashMap, fs::OpenOptions, io::Write, path::Path };
++use std::{collections::HashMap, fs::OpenOptions, io::Write, path::Path};
+ 
+ use crate::{
+-    utils::errors::{ TextForgeError, TextForgeErrorCode },
++    utils::errors::{TextForgeError, TextForgeErrorCode},
+     watchers::ExecutionWindows::All,
+ };
+ use std::borrow::Cow;
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:39:
+     /// ```
+ 
+     pub fn new<C, B, A, I>(current: C, before: B, after: Option<A>, instruction: I) -> Self
+-        where C: Into<Arc<str>>, B: Into<Arc<str>>, A: Into<Arc<str>>, I: Into<Arc<str>>
++    where
++        C: Into<Arc<str>>,
++        B: Into<Arc<str>>,
++        A: Into<Arc<str>>,
++        I: Into<Arc<str>>,
+     {
+         WatcherContext {
+             current: current.into(),
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:148:
+         &mut self,
+         counter: u64,
+         watcher_name: String,
+-        return_value: String
++        return_value: String,
+     ) -> Result<(), TextForgeError> {
+         self.result.push(HashMap::new());
+-        let iteration_result = self.result
+-            .get_mut(counter as usize)
+-            .ok_or_else(|| {
+-                TextForgeError::new(
+-                    TextForgeErrorCode::GenericError(Cow::from("Iteration result not found")),
+-                    Cow::from("add_to_result"),
+-                    Cow::from("vec.get")
+-                )
+-            })?;
++        let iteration_result = self.result.get_mut(counter as usize).ok_or_else(|| {
++            TextForgeError::new(
++                TextForgeErrorCode::GenericError(Cow::from("Iteration result not found")),
++                Cow::from("add_to_result"),
++                Cow::from("vec.get"),
++            )
++        })?;
+ 
+         iteration_result.insert(watcher_name, return_value);
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:183:
+     /// watchers.set_watcher("is_empty", |ctx: WatcherContext| ctx.current.is_empty().to_string());
+     /// ```
+     pub fn set_watcher<F>(&mut self, watcher_name: &'static str, watcher: F)
+-        where F: Fn(WatcherContext) -> String + 'static
++    where
++        F: Fn(WatcherContext) -> String + 'static,
+     {
+         self.watchers.insert(watcher_name, Box::new(watcher));
+     }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:209:
+     pub fn schedule_watcher(
+         &mut self,
+         watcher_name: &'static str,
+-        when: ExecutionWindows
++        when: ExecutionWindows,
+     ) -> Result<(), TextForgeError> {
+         if self.watchers.contains_key(watcher_name) {
+             self.schedule.insert(watcher_name, when);
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:216:
+             return Ok(());
+         }
+-        return Err(
+-            TextForgeError::new(
+-                crate::utils::errors::TextForgeErrorCode::WatcherNotFoundError(
+-                    Cow::from(format!("Watcher {} not found", watcher_name))
+-                ),
+-                Cow::from("WatcherList.schedule_watcher"),
+-                Cow::from(watcher_name.to_string())
+-            )
+-        );
++        return Err(TextForgeError::new(
++            crate::utils::errors::TextForgeErrorCode::WatcherNotFoundError(Cow::from(format!(
++                "Watcher {} not found",
++                watcher_name
++            ))),
++            Cow::from("WatcherList.schedule_watcher"),
++            Cow::from(watcher_name.to_string()),
++        ));
+     }
+ 
+     /// Executa todos os watchers agendados contra `input`, armazenando
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:256:
+     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+     /// ```
+     pub fn run_watchers(&mut self, input: WatcherContext) -> Result<(), TextForgeError> {
+-        for (watcher_name, when) in self.schedule
++        for (watcher_name, when) in self
++            .schedule
+             .iter()
+             .map(|(k, v)| (*k, *v))
+-            .collect::<Vec<_>>() {
++            .collect::<Vec<_>>()
++        {
+             match when {
+                 All => {
+                     let return_value = {
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:266:
+-                        let watcher_fn = self.watchers
+-                            .get(watcher_name)
+-                            .ok_or_else(|| {
+-                                TextForgeError::new(
+-                                    crate::utils::errors::TextForgeErrorCode::IndexOutOfRange(
+-                                        Cow::from("Watcher Not Found")
+-                                    ),
+-                                    Cow::from(""),
+-                                    Cow::from("")
+-                                )
+-                            })?;
++                        let watcher_fn = self.watchers.get(watcher_name).ok_or_else(|| {
++                            TextForgeError::new(
++                                crate::utils::errors::TextForgeErrorCode::IndexOutOfRange(
++                                    Cow::from("Watcher Not Found"),
++                                ),
++                                Cow::from(""),
++                                Cow::from(""),
++                            )
++                        })?;
+                         watcher_fn(input.clone())
+                     };
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:318:
+     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+     /// ```
+     pub fn to_json(&self, filename: &Path) -> Result<(), TextForgeError> {
+-        let json = serde_json
+-            ::to_string_pretty(&self.result)
+-            .map_err(|e| {
+-                TextForgeError::new(
+-                    crate::utils::errors::TextForgeErrorCode::SerializationError(
+-                        Cow::from(e.to_string())
+-                    ),
+-                    Cow::from("WatcherList.to_json"),
+-                    Cow::from(filename.display().to_string())
+-                )
+-            })?;
++        let json = serde_json::to_string_pretty(&self.result).map_err(|e| {
++            TextForgeError::new(
++                crate::utils::errors::TextForgeErrorCode::SerializationError(Cow::from(
++                    e.to_string(),
++                )),
++                Cow::from("WatcherList.to_json"),
++                Cow::from(filename.display().to_string()),
++            )
++        })?;
+         let mut file = OpenOptions::new()
+             .create(true)
+             .write(true)
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:337:
+             .map_err(|_| {
+                 TextForgeError::new(
+                     crate::utils::errors::TextForgeErrorCode::FileOpeningError(
+-                        "Failed opening File".into()
++                        "Failed opening File".into(),
+                     ),
+                     "",
+-                    format!("{:?}", filename)
++                    format!("{:?}", filename),
+                 )
+             })?;
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:347:
+-        file
+-            .write(json.as_bytes())
+-            .map_err(|_| {
+-                TextForgeError::new(
+-                    crate::utils::errors::TextForgeErrorCode::FileWritingError(
+-                        "Failed writing text to textforge file".into()
+-                    ),
+-                    "",
+-                    ""
+-                )
+-            })?;
++        file.write(json.as_bytes()).map_err(|_| {
++            TextForgeError::new(
++                crate::utils::errors::TextForgeErrorCode::FileWritingError(
++                    "Failed writing text to textforge file".into(),
++                ),
++                "",
++                "",
++            )
++        })?;
+ 
+         Ok(())
+     }
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:372:
+             current.to_string(),
+             before.to_string(),
+             after.map(|s| s.to_string()),
+-            instruction.to_string()
++            instruction.to_string(),
+         )
+     }
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:390:
+         let mut wl = WatcherList::default();
+         wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
+         // Nunca agendado -> run_watchers não deve produzir nenhuma entrada
+-        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
++            .unwrap();
+         assert!(wl.result.get(0).is_none());
+     }
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:414:
+         wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
+         wl.schedule_watcher("len", ExecutionWindows::All).unwrap();
+ 
+-        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
++            .unwrap();
+ 
+         let step0 = wl.result.get(0).expect("step 0 deveria existir");
+         assert_eq!(step0.get("len").unwrap(), "6");
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:426:
+         wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
+         wl.schedule_watcher("len", ExecutionWindows::All).unwrap();
+ 
+-        wl.run_watchers(ctx("", "a", None::<&str>, "add_to_end")).unwrap();
+-        wl.run_watchers(ctx("a", "ab", None::<&str>, "add_to_end")).unwrap();
+-        wl.run_watchers(ctx("ab", "abc", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "a", None::<&str>, "add_to_end"))
++            .unwrap();
++        wl.run_watchers(ctx("a", "ab", None::<&str>, "add_to_end"))
++            .unwrap();
++        wl.run_watchers(ctx("ab", "abc", None::<&str>, "add_to_end"))
++            .unwrap();
+ 
+         assert_eq!(wl.result.get(0).unwrap().get("len").unwrap(), "1");
+         assert_eq!(wl.result.get(1).unwrap().get("len").unwrap(), "2");
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:439:
+     fn test_run_watchers_runs_multiple_scheduled_watchers_per_call() {
+         let mut wl = WatcherList::default();
+         wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
+-        wl.set_watcher("is_empty", |c: WatcherContext| { c.current.is_empty().to_string() });
++        wl.set_watcher("is_empty", |c: WatcherContext| {
++            c.current.is_empty().to_string()
++        });
+         wl.schedule_watcher("len", ExecutionWindows::All).unwrap();
+-        wl.schedule_watcher("is_empty", ExecutionWindows::All).unwrap();
++        wl.schedule_watcher("is_empty", ExecutionWindows::All)
++            .unwrap();
+ 
+-        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
++            .unwrap();
+ 
+         let step0 = wl.result.get(0).unwrap();
+         assert_eq!(step0.get("len").unwrap(), "6");
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:455:
+         let mut wl = WatcherList::default();
+         wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
+         wl.schedule_watcher("len", ExecutionWindows::All).unwrap();
+-        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
++            .unwrap();
+ 
+         wl.reset();
+         assert!(wl.result.is_empty());
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:463:
+ 
+         // "len" continua registrado e agendado: run_watchers volta a produzir resultado
+         // sem precisar chamar set_watcher/schedule_watcher de novo.
+-        wl.run_watchers(ctx("", "abcd", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "abcd", None::<&str>, "add_to_end"))
++            .unwrap();
+         assert_eq!(wl.result.get(0).unwrap().get("len").unwrap(), "4");
+     }
+ 
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:480:
+         let mut wl = WatcherList::default();
+         wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
+         wl.schedule_watcher("len", ExecutionWindows::All).unwrap();
+-        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end")).unwrap();
+-        wl.run_watchers(ctx("banana", "banana!", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
++            .unwrap();
++        wl.run_watchers(ctx("banana", "banana!", None::<&str>, "add_to_end"))
++            .unwrap();
+ 
+         let file = NamedTempFile::new().unwrap();
+         wl.to_json(file.path()).unwrap();
+Diff in /home/jota/.codex/worktrees/benchmark-comparison/atp_project/src/watchers/mod.rs:503:
+         let file = NamedTempFile::new().unwrap();
+         fs::write(file.path(), "conteudo antigo que deve ser substituido").unwrap();
+ 
+-        wl.run_watchers(ctx("", "ab", None::<&str>, "add_to_end")).unwrap();
++        wl.run_watchers(ctx("", "ab", None::<&str>, "add_to_end"))
++            .unwrap();
+         wl.to_json(file.path()).unwrap();
+ 
+         let content = fs::read_to_string(file.path()).unwrap();

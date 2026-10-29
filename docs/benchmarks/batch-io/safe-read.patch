@@ -1,0 +1,70 @@
+--- a/src/api/processor.rs
++++ b/src/api/processor.rs
+@@ -1062,55 +1062,18 @@
+                             )
+                         })?;
+ 
+-                    // mmap(2) refuses to map a zero-length region, so an empty
+-                    // file is handled directly instead of going through Mmap::map.
+-                    let is_empty = file
+-                        .metadata()
+-                        .map(|m| m.len() == 0)
+-                        .map_err(|e| {
+-                            TextForgeError::new(
+-                                TextForgeErrorCode::FileReadingError(
+-                                    "Failed to read origin file metadata".into()
+-                                ),
+-                                Cow::Borrowed("process_batch"),
+-                                format!("{:?} - {}", origin, e)
+-                            )
+-                        })?;
+-
+-                    let output = if is_empty {
+-                        self.run_transform(pipeline_id, "".into())?
+-                    } else {
+-                        // SAFETY: same assumption as process_file — origin isn't
+-                        // expected to be truncated/written to by another process
+-                        // while mapped. TextForge holds no exclusive lock on it,
+-                        // and that's now true per-file across every concurrent
+-                        // mapping this batch opens, not just a single one.
+-                        let mmap = (unsafe { Mmap::map(&file) }).map_err(|e| {
+-                            TextForgeError::new(
+-                                TextForgeErrorCode::FileReadingError(
+-                                    "Failed to map origin file".into()
+-                                ),
+-                                Cow::Borrowed("process_batch"),
+-                                format!("{:?} - {}", origin, e)
+-                            )
+-                        })?;
+-
+-                        let input = std::str
+-                            ::from_utf8(&mmap)
+-                            .map_err(|e| {
+-                                TextForgeError::new(
+-                                    TextForgeErrorCode::InvalidUtf8Error(
+-                                        "Origin file is not valid UTF-8".into()
+-                                    ),
+-                                    Cow::Borrowed("process_batch"),
+-                                    format!("{:?} - {}", origin, e)
+-                                )
+-                            })?
+-                            .to_owned();
+-
+-                        self.run_transform(pipeline_id, input.into())?
+-                        // mmap drops here, at the end of this branch's scope
+-                    };
++                    let mut bytes = Vec::new();
++                    std::io::Read::read_to_end(&mut &file, &mut bytes).map_err(|e| {
++                        TextForgeError::new(
++                            TextForgeErrorCode::FileReadingError("Failed to read origin file".into()),
++                            Cow::Borrowed("process_batch"), format!("{:?} - {}", origin, e))
++                    })?;
++                    let input = String::from_utf8(bytes).map_err(|e| {
++                        TextForgeError::new(
++                            TextForgeErrorCode::InvalidUtf8Error("Origin file is not valid UTF-8".into()),
++                            Cow::Borrowed("process_batch"), format!("{:?} - {}", origin, e))
++                    })?;
++                    let output = self.run_transform(pipeline_id, input.into())?;
+ 
+                     if
+                         let Some(parent) = target.parent() &&

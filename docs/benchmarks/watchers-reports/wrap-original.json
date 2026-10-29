@@ -1,0 +1,36 @@
+[
+  {
+    "byte_delta": "1",
+    "bytes": "1048594",
+    "characters": "759851",
+    "instruction": "atb ;\n",
+    "lines": "15197",
+    "next_bytes": "1048595",
+    "unchanged": "false",
+    "words": "121576"
+  },
+  {
+    "byte_delta": "1",
+    "bytes": "1048595",
+    "characters": "759852",
+    "instruction": "ate ;\n",
+    "lines": "15198",
+    "next_bytes": "none",
+    "unchanged": "false",
+    "words": "121577"
+  },
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {}
+]

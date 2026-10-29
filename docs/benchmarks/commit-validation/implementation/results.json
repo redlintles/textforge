@@ -1,0 +1,68 @@
+[
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--check"
+    ],
+    "exit": 1
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 101
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--all-targets",
+      "--features",
+      "test_access",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 101
+  },
+  {
+    "command": [
+      "cargo",
+      "test"
+    ],
+    "exit": 101
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--features",
+      "bytecode"
+    ],
+    "exit": 101
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--features",
+      "watchers"
+    ],
+    "exit": 101
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--features",
+      "test_access"
+    ],
+    "exit": 0
+  }
+]

@@ -1,0 +1,828 @@
+   Compiling crossbeam-utils v0.8.22
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling crossbeam-epoch v0.9.20
+   Compiling libc v0.2.189
+    Checking memchr v2.8.3
+   Compiling serde_core v1.0.229
+    Checking utf8parse v0.2.2
+   Compiling crossbeam-deque v0.8.7
+   Compiling zmij v1.0.23
+   Compiling rayon-core v1.13.0
+    Checking is_terminal_polyfill v1.70.2
+    Checking anstyle-parse v1.0.0
+    Checking colorchoice v1.0.5
+    Checking anstyle-query v1.1.5
+    Checking anstyle v1.0.14
+   Compiling getrandom v0.4.3
+   Compiling serde v1.0.229
+    Checking regex-syntax v0.8.11
+   Compiling serde_json v1.0.151
+    Checking strsim v0.11.1
+    Checking clap_lex v1.1.0
+    Checking cfg-if v1.0.4
+    Checking either v1.18.0
+    Checking itoa v1.0.18
+    Checking anstream v1.0.0
+    Checking html-escape v0.2.15
+    Checking evalexpr v13.1.0
+    Checking colored v3.1.1
+    Checking aho-corasick v1.1.5
+    Checking urlencoding v2.1.3
+    Checking shell-words v1.1.1
+    Checking clap_builder v4.6.6
+   Compiling syn v3.0.4
+    Checking regex-automata v0.4.18
+    Checking rayon v1.12.0
+    Checking memmap2 v0.9.11
+    Checking uuid v1.26.0
+    Checking clap v4.6.6
+   Compiling serde_derive v1.0.229
+    Checking regex v1.13.1
+    Checking textforge v0.1.7 (/home/jota/Documentos/atp_project)
+error: empty line after doc comment
+  --> src/api/mod.rs:92:5
+   |
+92 | /     /// let mut processor = TextForgeProcessor::new();
+93 | |
+   | |_^
+...
+99 |       fn trim_right_side(&mut self) -> Result<&mut Self, TextForgeError> {
+   |       ------------------ the comment documents this function
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+   = note: `-D clippy::empty-line-after-doc-comments` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::empty_line_after_doc_comments)]`
+   = help: if the empty line is unintentional, remove it
+help: if the documentation should include the empty line include it in the comment
+   |
+93 |     ///
+   |
+
+error: empty line after doc comment
+   --> src/api/mod.rs:119:5
+    |
+119 | /     /// let mut processor = TextForgeProcessor::new();
+120 | |
+    | |_^
+...
+126 |       fn add_to_end(&mut self, text: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       ------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty line is unintentional, remove it
+help: if the documentation should include the empty line include it in the comment
+    |
+120 |     ///
+    |
+
+error: empty line after doc comment
+   --> src/api/mod.rs:151:5
+    |
+151 | /     /// ```
+152 | |
+    | |_^
+153 |       fn add_to_beginning(&mut self, text: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       ------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty line is unintentional, remove it
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:173:5
+    |
+173 | /     /// let mut processor = TextForgeProcessor::new();
+174 | |
+175 | |     /// let id = TextForgeBuilder::new(&mut processor).delete_first().unwrap().build();
+176 | |     /// let input = "banana";
+...   |
+179 | |     /// ```
+180 | |
+    | |_^
+181 |       fn delete_first(&mut self) -> Result<&mut Self, TextForgeError> {
+    |       --------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:201:5
+    |
+201 | /     /// let mut processor = TextForgeProcessor::new();
+202 | |
+203 | |     /// let id = TextForgeBuilder::new(&mut processor).delete_last().unwrap().build();
+204 | |     /// let input = "banana";
+...   |
+207 | |     /// ```
+208 | |
+    | |_^
+209 |       fn delete_last(&mut self) -> Result<&mut Self, TextForgeError> {
+    |       -------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:230:5
+    |
+230 | /     /// let mut processor = TextForgeProcessor::new();
+231 | |
+232 | |     /// let id = TextForgeBuilder::new(&mut processor).delete_after(2).unwrap().build();
+233 | |     /// let input = "banana";
+...   |
+236 | |     /// ```
+237 | |
+    | |_^
+238 |       fn delete_after(&mut self, index: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       --------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:259:5
+    |
+259 | /     /// let mut processor = TextForgeProcessor::new();
+260 | |
+261 | |     /// let id = TextForgeBuilder::new(&mut processor).delete_before(3).unwrap().build();
+262 | |     /// let input = "banana";
+...   |
+265 | |     /// ```
+266 | |
+    | |_^
+267 |       fn delete_before(&mut self, index: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       ---------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:289:5
+    |
+289 | /     /// let mut processor = TextForgeProcessor::new();
+290 | |
+291 | |     /// let id = TextForgeBuilder::new(&mut processor).delete_chunk(1, 3).unwrap().build();
+292 | |     /// let input = "banana";
+...   |
+295 | |     /// ```
+296 | |
+    | |_^
+297 |       fn delete_chunk(
+    |       --------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:326:5
+    |
+326 | /     /// let mut processor = TextForgeProcessor::new();
+327 | |
+328 | |     /// let id =
+329 | |     ///     TextForgeBuilder::new(&mut processor).replace_all_with("a", "x").unwrap().build();
+...   |
+337 | |     /// ```
+338 | |
+    | |_^
+339 |       fn replace_all_with(
+    |       ------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty line after doc comment
+   --> src/api/mod.rs:378:5
+    |
+378 | /     /// ```
+379 | |
+    | |_^
+380 |       fn replace_first_with(
+    |       --------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty line is unintentional, remove it
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:408:5
+    |
+408 | /     /// let mut processor = TextForgeProcessor::new();
+409 | |
+410 | |     /// let id =
+411 | |     ///     TextForgeBuilder::new(&mut processor).replace_last_with("a", "x").unwrap().build();
+...   |
+419 | |     /// ```
+420 | |
+    | |_^
+421 |       fn replace_last_with(
+    |       -------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:451:5
+    |
+451 | /     /// let mut processor = TextForgeProcessor::new();
+452 | |
+453 | |     /// let id =
+454 | |     ///     TextForgeBuilder::new(&mut processor).replace_nth_with("a", "x", 1).unwrap().build();
+...   |
+462 | |     /// ```
+463 | |
+    | |_^
+464 |       fn replace_nth_with(
+    |       ------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:494:5
+    |
+494 | /     /// let mut processor = TextForgeProcessor::new();
+495 | |
+496 | |     /// let id =
+497 | |     ///     TextForgeBuilder::new(&mut processor).replace_count_with("a", "x", 2).unwrap().build();
+...   |
+505 | |     /// ```
+506 | |
+    | |_^
+507 |       fn replace_count_with(
+    |       --------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:537:5
+    |
+537 | /     /// let mut processor = TextForgeProcessor::new();
+538 | |
+539 | |     /// let id = TextForgeBuilder::new(&mut processor).rotate_left(2).unwrap().build();
+540 | |     ///
+...   |
+547 | |     /// ```
+548 | |
+    | |_^
+549 |       fn rotate_left(&mut self, times: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       -------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:571:5
+    |
+571 | /     /// let mut processor = TextForgeProcessor::new();
+572 | |
+573 | |     /// let id = TextForgeBuilder::new(&mut processor).rotate_right(1).unwrap().build();
+574 | |     ///
+...   |
+581 | |     /// ```
+582 | |
+    | |_^
+583 |       fn rotate_right(&mut self, times: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       --------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:604:5
+    |
+604 | /     /// let mut processor = TextForgeProcessor::new();
+605 | |
+606 | |     /// let id = TextForgeBuilder::new(&mut processor).repeat(3).unwrap().build();
+607 | |     ///
+...   |
+614 | |     /// ```
+615 | |
+    | |_^
+616 |       fn repeat(&mut self, times: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+    |       --------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:637:5
+    |
+637 | /     /// let mut processor = TextForgeProcessor::new();
+638 | |
+639 | |     /// let id =
+640 | |     ///     TextForgeBuilder::new(&mut processor).select(1, 3).unwrap().build();
+...   |
+648 | |     /// ```
+649 | |
+    | |_^
+650 |       fn select(
+    |       --------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:679:5
+    |
+679 | /     /// let mut processor = TextForgeProcessor::new();
+680 | |
+681 | |     /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_all().unwrap().build();
+682 | |     ///
+...   |
+689 | |     /// ```
+690 | |
+    | |_^
+691 |       fn to_uppercase_all(&mut self) -> Result<&mut Self, TextForgeError> {
+    |       ------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:712:5
+    |
+712 | /     /// let mut processor = TextForgeProcessor::new();
+713 | |
+714 | |     /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_all().unwrap().build();
+715 | |     ///
+...   |
+722 | |     /// ```
+723 | |
+    | |_^
+724 |       fn to_lowercase_all(&mut self) -> Result<&mut Self, TextForgeError> {
+    |       ------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:746:5
+    |
+746 | /     /// let mut processor = TextForgeProcessor::new();
+747 | |
+748 | |     /// let id =
+749 | |     ///     TextForgeBuilder::new(&mut processor).to_uppercase_single(1).unwrap().build();
+...   |
+757 | |     /// ```
+758 | |
+    | |_^
+759 |       fn to_uppercase_single(
+    |       ---------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:784:5
+    |
+784 | /     /// let mut processor = TextForgeProcessor::new();
+785 | |
+786 | |     /// let id =
+787 | |     ///     TextForgeBuilder::new(&mut processor).to_lowercase_single(0).unwrap().build();
+...   |
+795 | |     /// ```
+796 | |
+    | |_^
+797 |       fn to_lowercase_single(
+    |       ---------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:823:5
+    |
+823 | /     /// let mut processor = TextForgeProcessor::new();
+824 | |
+825 | |     /// let id = TextForgeBuilder::new(&mut processor)
+826 | |     ///     .to_uppercase_chunk(1, 3)
+...   |
+836 | |     /// ```
+837 | |
+    | |_^
+838 |       fn to_uppercase_chunk(
+    |       --------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:868:5
+    |
+868 | /     /// let mut processor = TextForgeProcessor::new();
+869 | |
+870 | |     /// let id = TextForgeBuilder::new(&mut processor)
+871 | |     ///     .to_lowercase_chunk(2, 5)
+...   |
+881 | |     /// ```
+882 | |
+    | |_^
+883 |       fn to_lowercase_chunk(
+    |       --------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty line after doc comment
+   --> src/api/mod.rs:923:5
+    |
+923 | /     /// ```
+924 | |
+    | |_^
+925 |       fn capitalize_first_word(&mut self) -> Result<&mut Self, TextForgeError> {
+    |       ------------------------ the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty line is unintentional, remove it
+
+error: empty lines after doc comment
+   --> src/api/mod.rs:946:5
+    |
+946 | /     /// let mut processor = TextForgeProcessor::new();
+947 | |
+948 | |     /// let id =
+949 | |     ///     TextForgeBuilder::new(&mut processor).capitalize_last_word().unwrap().build();
+...   |
+957 | |     /// ```
+958 | |
+    | |_^
+959 |       fn capitalize_last_word(&mut self) -> Result<&mut Self, TextForgeError> {
+    |       ----------------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty lines are unintentional, remove them
+
+error: empty line after doc comment
+   --> src/api/mod.rs:991:5
+    |
+991 | /     /// ```
+992 | |
+    | |_^
+993 |       fn split_select(
+    |       --------------- the comment documents this function
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+    = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1033:5
+     |
+1033 | /     /// ```
+1034 | |
+     | |_^
+1035 |       fn capitalize_chunk(
+     |       ------------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1151:5
+     |
+1151 | /     /// ```
+1152 | |
+     | |_^
+1153 |       fn to_url_encoded(&mut self) -> Result<&mut Self, TextForgeError> {
+     |       ----------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1184:5
+     |
+1184 | /     /// ```
+1185 | |
+     | |_^
+1186 |       fn to_url_decoded(&mut self) -> Result<&mut Self, TextForgeError> {
+     |       ----------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1245:5
+     |
+1245 | /     /// ```
+1246 | |
+     | |_^
+1247 |       fn split_characters(&mut self) -> Result<&mut Self, TextForgeError> {
+     |       ------------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1279:5
+     |
+1279 | /     /// ```
+1280 | |
+     | |_^
+1281 |       fn to_html_escaped(&mut self) -> Result<&mut Self, TextForgeError> {
+     |       ------------------ the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1340:5
+     |
+1340 | /     /// ```
+1341 | |
+     | |_^
+1342 |       fn to_json_escaped(&mut self) -> Result<&mut Self, TextForgeError> {
+     |       ------------------ the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1494:5
+     |
+1494 | /     ///
+1495 | |
+     | |_^
+1496 |       fn join_to_kebab_case(&mut self) -> Result<&mut Self, TextForgeError> {
+     |       --------------------- the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1758:5
+     |
+1758 | /     /// ```
+1759 | |
+     | |_^
+1760 |       fn val(
+     |       ------ the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: empty line after doc comment
+    --> src/api/mod.rs:1801:5
+     |
+1801 | /     /// ```
+1802 | |
+     | |_^
+1803 |       fn var(
+     |       ------ the comment documents this function
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#empty_line_after_doc_comments
+     = help: if the empty line is unintentional, remove it
+
+error: enum `ToClean` is never used
+  --> src/context/execution_context.rs:13:10
+   |
+13 | pub enum ToClean {
+   |          ^^^^^^^
+   |
+   = note: `-D dead-code` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: method `clean_context` is never used
+  --> src/context/execution_context.rs:60:8
+   |
+50 | pub trait GlobalContextMethods {
+   |           -------------------- method in this trait
+...
+60 |     fn clean_context(&mut self) {}
+   |        ^^^^^^^^^^^^^
+
+error: variant `Boxed` is never constructed
+ --> src/globals/table.rs:9:5
+  |
+8 | pub enum TokenRef {
+  |          -------- variant in this enum
+9 |     Boxed(Box<dyn InstructionMethods>),
+  |     ^^^^^
+  |
+  = note: `TokenRef` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+error: variants `Identifier` and `Bytecode` are never constructed
+  --> src/globals/table.rs:37:5
+   |
+36 | pub enum QueryTarget {
+   |          ----------- variants in this enum
+37 |     Identifier,
+   |     ^^^^^^^^^^
+38 |     Bytecode,
+   |     ^^^^^^^^
+   |
+   = note: `QueryTarget` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+error: field `0` is never read
+  --> src/globals/table.rs:45:16
+   |
+45 |     Identifier(&'static str),
+   |     ---------- ^^^^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+45 -     Identifier(&'static str),
+45 +     Identifier(()),
+   |
+
+error: field `0` is never read
+  --> src/globals/table.rs:46:14
+   |
+46 |     Bytecode(u32),
+   |     -------- ^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+46 -     Bytecode(u32),
+46 +     Bytecode(()),
+   |
+
+error: function `dummy_context` is never used
+   --> src/parser/params.rs:110:4
+    |
+110 | fn dummy_context() -> GlobalExecutionContext {
+    |    ^^^^^^^^^^^^^
+
+error: calls to `push` immediately after creation
+  --> src/context/execution_context.rs:93:17
+   |
+93 | /                 let mut block_vec = Vec::new();
+94 | |                 block_vec.push(token);
+   | |______________________________________^ help: consider using the `vec![]` macro: `let block_vec = vec![..];`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#vec_init_then_push
+   = note: `-D clippy::vec-init-then-push` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::vec_init_then_push)]`
+
+error: implementation of inherent method `to_string(&self) -> String` for type `parser::params::TextForgeParamTypes`
+   --> src/parser/params.rs:198:5
+    |
+198 | /     pub fn to_string(&self) -> String {
+199 | |         match self {
+200 | |             TextForgeParamTypes::String(payload) => payload.to_string(),
+201 | |             TextForgeParamTypes::VarRef(payload) => payload.to_string(),
+...   |
+205 | |     }
+    | |_____^
+    |
+    = help: implement trait `Display` for type `parser::params::TextForgeParamTypes` instead
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#inherent_to_string
+    = note: `-D clippy::inherent-to-string` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::inherent_to_string)]`
+
+error: this `if` has identical blocks
+   --> src/parser/params.rs:306:85
+    |
+306 |                       let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
+    |  _____________________________________________________________________________________^
+307 | |                         AssocMode::AssocPayload
+308 | |                     } else if this_is_block_like {
+    | |_____________________^
+    |
+note: same as this
+   --> src/parser/params.rs:308:50
+    |
+308 |                       } else if this_is_block_like {
+    |  __________________________________________________^
+309 | |                         AssocMode::AssocPayload
+310 | |                     } else {
+    | |_____________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#if_same_then_else
+    = note: `-D clippy::if-same-then-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::if_same_then_else)]`
+
+error: the loop variable `idx` is only used to index `expected_effective`
+   --> src/parser/params.rs:605:28
+    |
+605 |                 for idx in 0..param_count {
+    |                            ^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator
+    |
+605 -                 for idx in 0..param_count {
+605 +                 for <item> in expected_effective.iter().take(param_count) {
+    |
+
+error: this `if` has identical blocks
+   --> src/parser/params.rs:643:85
+    |
+643 |                       let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
+    |  _____________________________________________________________________________________^
+644 | |                         AssocMode::AssocPayload
+645 | |                     } else if this_is_block_like
+    | |_____________________^
+    |
+note: same as this
+   --> src/parser/params.rs:647:21
+    |
+647 | /                     {
+648 | |                         AssocMode::AssocPayload
+649 | |                     } else {
+    | |_____________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#if_same_then_else
+
+error: you seem to be trying to use `&Box<T>`
+   --> src/parser/resolve_var.rs:262:12
+    |
+262 |         t: &Box<dyn InstructionMethods>,
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using just `&T`: `&dyn InstructionMethods`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#borrowed_box
+    = note: `-D clippy::borrowed-box` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::borrowed_box)]`
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+   --> src/parser/resolve_var.rs:263:17
+    |
+263 |         values: &Vec<ValType>,
+    |                 ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#ptr_arg
+    = note: `-D clippy::ptr-arg` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::ptr_arg)]`
+help: change this to
+    |
+263 -         values: &Vec<ValType>,
+263 +         values: &[ValType],
+    |
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+ --> src/text/writer.rs:8:43
+  |
+8 | pub fn write_to_file(path: &Path, tokens: &Vec<TokenWrapper>) -> Result<(), TextForgeError> {
+  |                                           ^^^^^^^^^^^^^^^^^^
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#ptr_arg
+help: change this to
+  |
+8 - pub fn write_to_file(path: &Path, tokens: &Vec<TokenWrapper>) -> Result<(), TextForgeError> {
+8 + pub fn write_to_file(path: &Path, tokens: &[TokenWrapper]) -> Result<(), TextForgeError> {
+  |
+
+error: you should consider adding a `Default` implementation for `TextForgeProcessor`
+   --> src/api/processor.rs:611:5
+    |
+611 | /     pub fn new() -> Self {
+612 | |         TextForgeProcessor {
+613 | |             transforms: HashMap::new(),
+614 | |             errors: ErrorManager::default(),
+615 | |         }
+616 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#new_without_default
+    = note: `-D clippy::new-without-default` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::new_without_default)]`
+help: try adding this
+    |
+644 ~ }
+645 + 
+646 + impl Default for TextForgeProcessor {
+647 +     fn default() -> Self {
+648 +         Self::new()
+649 +     }
+650 + }
+    |
+
+error: writing `&Vec` instead of `&[_]` involves a new object where a slice will do
+  --> src/tokens/mod.rs:33:39
+   |
+33 |     fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError>;
+   |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^ help: change this to: `&[TextForgeParamTypes]`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#ptr_arg
+
+error: methods called `from_*` usually take no `self`
+  --> src/tokens/mod.rs:33:20
+   |
+33 |     fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError>;
+   |                    ^^^^^^^^^
+   |
+   = help: consider choosing a less ambiguous name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#wrong_self_convention
+   = note: `-D clippy::wrong-self-convention` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::wrong_self_convention)]`
+
+error: could not compile `textforge` (lib) due to 53 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: this assertion is always `true`
+   --> src/utils/validations.rs:488:13
+    |
+488 |             assert!(true);
+    |             ^^^^^^^^^^^^^
+    |
+    = help: remove the assertion
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#assertions_on_constants
+    = note: `-D clippy::assertions-on-constants` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::assertions_on_constants)]`
+
+error: could not compile `textforge` (lib test) due to 54 previous errors

@@ -1,0 +1,16 @@
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana
+2026 INFO user=alice texto=João é 👩🏽‍💻 🇧🇷 banana

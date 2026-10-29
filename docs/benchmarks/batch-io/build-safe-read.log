@@ -1,0 +1,78 @@
+   Compiling textforge v0.1.7 (/tmp/textforge-batch-io-8qymqd0w/safe-read)
+warning: enum `ToClean` is never used
+  --> src/context/execution_context.rs:13:10
+   |
+13 | pub enum ToClean {
+   |          ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `clean_context` is never used
+  --> src/context/execution_context.rs:60:8
+   |
+50 | pub trait GlobalContextMethods {
+   |           -------------------- method in this trait
+...
+60 |     fn clean_context(&mut self) {}
+   |        ^^^^^^^^^^^^^
+
+warning: variant `Boxed` is never constructed
+ --> src/globals/table.rs:9:5
+  |
+8 | pub enum TokenRef {
+  |          -------- variant in this enum
+9 |     Boxed(Box<dyn InstructionMethods>),
+  |     ^^^^^
+  |
+  = note: `TokenRef` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: variants `Identifier` and `Bytecode` are never constructed
+  --> src/globals/table.rs:37:5
+   |
+36 | pub enum QueryTarget {
+   |          ----------- variants in this enum
+37 |     Identifier,
+   |     ^^^^^^^^^^
+38 |     Bytecode,
+   |     ^^^^^^^^
+   |
+   = note: `QueryTarget` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+  --> src/globals/table.rs:45:16
+   |
+45 |     Identifier(&'static str),
+   |     ---------- ^^^^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+45 -     Identifier(&'static str),
+45 +     Identifier(()),
+   |
+
+warning: field `0` is never read
+  --> src/globals/table.rs:46:14
+   |
+46 |     Bytecode(u32),
+   |     -------- ^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+46 -     Bytecode(u32),
+46 +     Bytecode(()),
+   |
+
+warning: function `dummy_context` is never used
+   --> src/parser/params.rs:110:4
+    |
+110 | fn dummy_context() -> GlobalExecutionContext {
+    |    ^^^^^^^^^^^^^
+
+warning: `textforge` (lib) generated 7 warnings
+    Finished `release` profile [optimized] target(s) in 4.08s

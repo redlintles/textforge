@@ -1,0 +1,382 @@
+   Compiling textforge v0.1.7 (/home/jota/.codex/worktrees/benchmark-comparison/atp_project)
+warning: enum `ToClean` is never used
+  --> src/context/execution_context.rs:13:10
+   |
+13 | pub enum ToClean {
+   |          ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `clean_context` is never used
+  --> src/context/execution_context.rs:60:8
+   |
+50 | pub trait GlobalContextMethods {
+   |           -------------------- method in this trait
+...
+60 |     fn clean_context(&mut self) {}
+   |        ^^^^^^^^^^^^^
+
+warning: variant `Boxed` is never constructed
+ --> src/globals/table.rs:9:5
+  |
+8 | pub enum TokenRef {
+  |          -------- variant in this enum
+9 |     Boxed(Box<dyn InstructionMethods>),
+  |     ^^^^^
+  |
+  = note: `TokenRef` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: variants `Identifier` and `Bytecode` are never constructed
+  --> src/globals/table.rs:37:5
+   |
+36 | pub enum QueryTarget {
+   |          ----------- variants in this enum
+37 |     Identifier,
+   |     ^^^^^^^^^^
+38 |     Bytecode,
+   |     ^^^^^^^^
+   |
+   = note: `QueryTarget` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+  --> src/globals/table.rs:45:16
+   |
+45 |     Identifier(&'static str),
+   |     ---------- ^^^^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+45 -     Identifier(&'static str),
+45 +     Identifier(()),
+   |
+
+warning: field `0` is never read
+  --> src/globals/table.rs:46:14
+   |
+46 |     Bytecode(u32),
+   |     -------- ^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+46 -     Bytecode(u32),
+46 +     Bytecode(()),
+   |
+
+warning: function `dummy_context` is never used
+   --> src/parser/params.rs:110:4
+    |
+110 | fn dummy_context() -> GlobalExecutionContext {
+    |    ^^^^^^^^^^^^^
+
+warning: `textforge` (lib) generated 7 warnings
+warning: `textforge` (lib test) generated 7 warnings (7 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.98s
+     Running unittests src/lib.rs (target/debug/deps/textforge-0ddf28ec26a8156a)
+
+running 37 tests
+test api::text_buffer::test::independent_reads_and_copies_ignore_previous_cursor ... ok
+test api::text_buffer::test::rejects_invalid_and_incomplete_utf8 ... ok
+test api::text_buffer::test::reader_failure_and_repeat_overflow_return_errors ... ok
+test api::text_buffer::test::threshold_and_consuming_materialization ... ok
+test api::text_buffer::test::zero_threshold_empty_and_explicit_spill ... ok
+test api::text_buffer::test::reports_io_errors_without_exposing_tempfile ... ok
+test api::text_buffer::test::unicode_code_points_survive_one_byte_reads ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_end_out_of_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_ge_end_no_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_ge_end_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_out_of_range_with_text ... ok
+test utils::validations::tests::bytecode_tests::placeholder ... ok
+test text::reader::tests::rejects_empty_token_lists_without_panicking ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::ok_when_indices_in_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::ok_when_start_lt_end_and_no_text ... ok
+test utils::validations::tests::check_file_path_tests::err_for_directory_path ... ok
+test utils::validations::tests::check_file_path_tests::err_for_nonexistent_path_canonicalize_fails ... ok
+test utils::validations::tests::check_file_path_tests::err_for_missing_extension ... ok
+test utils::validations::tests::check_index_against_input_tests::err_when_index_out_of_range ... ok
+test utils::validations::tests::check_index_against_input_tests::err_when_input_empty ... ok
+test utils::validations::tests::check_index_against_input_tests::ok_when_index_in_range ... ok
+test utils::validations::tests::check_file_path_tests::ok_for_existing_file_with_custom_ext ... ok
+test utils::validations::tests::check_file_path_tests::ok_for_existing_file_with_default_ext_textforge ... ok
+test utils::validations::tests::check_index_against_words_tests::err_when_input_has_no_words ... ok
+test utils::validations::tests::check_file_path_tests::err_for_wrong_extension ... ok
+test utils::validations::tests::check_index_against_words_tests::err_when_index_out_of_range ... ok
+test utils::validations::tests::check_index_against_words_tests::ok_when_index_in_range ... ok
+test utils::validations::tests::check_index_against_words_tests::ok_with_multiple_spaces_and_newlines ... ok
+test utils::validations::tests::check_index_against_words_tests::supports_unicode_words ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_err_for_string_vec ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_is_generic_for_any_type ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_ok_for_string_vec ... ok
+test text::reader::tests::preserves_comments_and_valid_unicode_parameters ... ok
+test api::processor::buffered::adapter_tests::adapters_record_pipeline_and_parameter_errors ... ok
+test api::processor::buffered::adapter_tests::batch_keeps_order_and_continues_after_invalid_input ... ok
+test api::text_buffer::test::bounded_operations_match_strings_in_both_storage_modes ... ok
+test api::processor::buffered::adapter_tests::adapters_preserve_legacy_transforms_context_and_halt ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running unittests src/bin/atp-game.rs (target/debug/deps/atp_game-824749f0e989f66e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/atp-shell.rs (target/debug/deps/atp_shell-83b54d4ac5ba5710)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/txf-e2787975118a640c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation_failures.rs (target/debug/deps/allocation_failures-1fe1409af4d75787)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/benchmark.rs (target/debug/deps/benchmark-8a44c8dbc5095ad4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/buffered.rs (target/debug/deps/buffered-7936913965d61cf4)
+
+running 8 tests
+test byte_range_export_can_reconstruct_utf8_without_a_string_conversion ... ok
+test dropping_spilled_buffers_cleans_the_storage_directory ... ok
+test file_and_single_instruction_apis_preserve_document_and_newlines ... ok
+test batch_keeps_order_context_isolation_and_errors_and_spills_results ... ok
+test errors_remain_errors_instead_of_partial_success ... ok
+test regex_matches_across_physical_read_boundaries ... ok
+test preserves_legacy_results_for_native_and_fallback_instructions ... ok
+test generated_mixed_pipelines_match_reference_results ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/buffered_pressure.rs (target/debug/deps/buffered_pressure-9a7f297733bac3a4)
+
+running 1 test
+test native_repetition_does_not_materialize_its_output ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/bytecode.rs (target/debug/deps/bytecode-84f05a5461152a8b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/params.rs (target/debug/deps/params-fb1057130333fab9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/processor.rs (target/debug/deps/processor-eb1060857dbab41e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests textforge
+
+running 114 tests
+test src/api/mod.rs - api::TextForgeBuilderMethods::add_to_beginning (line 145) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_first_word (line 912) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_before (line 258) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_last_word (line 945) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_range (line 1064) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_chunk (line 288) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_last (line 200) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_first (line 172) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_chunk (line 1021) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_single_word (line 1105) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_after (line 229) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::add_to_end (line 118) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::remove_whitespace (line 1675) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::extract_matches_joined (line 1716) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_camel_case (line 1545) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_pascal_case (line 1573) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_snake_case (line 1517) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_single (line 1690) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_all_with (line 325) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::repeat (line 603) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::pad_right (line 1633) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_kebab_case (line 1488) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::insert (line 1391) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::pad_left (line 1599) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_count_with (line 493) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_first_with (line 367) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_last_with (line 407) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_html_escaped (line 1268) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::split_characters (line 1234) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::rotate_left (line 536) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::select (line 636) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::rotate_right (line 570) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_html_unescaped (line 1301) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::split_select (line 980) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_nth_with (line 450) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_json_escaped (line 1334) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_json_unescaped (line 1362) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_all (line 711) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_single (line 783) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_chunk (line 867) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_chunk (line 822) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_reverse (line 1204) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_word (line 1426) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_single (line 745) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_url_decoded (line 1173) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_all (line 678) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_word (line 1456) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 123) ... FAILED
+test src/api/mod.rs - api::TextForgeBuilderMethods::trim_both_sides (line 35) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::trim_left_side (line 64) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_url_encoded (line 1140) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::trim_right_side (line 91) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::val (line 1750) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 101) ... ok
+test src/api/processor/buffered.rs - api::processor::buffered::BufferedTask (line 23) ... ok
+test src/tokens/instructions/ifdc/mod.rs - tokens::instructions::ifdc::Ifdc (line 24) ... FAILED
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 81) ... ok
+test src/api/text_buffer.rs - api::text_buffer::TextBuffer (line 52) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::var (line 1793) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor::create_pipeline (line 635) ... ok
+test src/api/text_buffer.rs - api::text_buffer::TextBufferOptions (line 14) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 140) ... ok
+test src/api/processor/buffered.rs - api::processor::buffered::TextForgeProcessor::process_all_buffered (line 72) ... ok
+test src/api/processor/buffered.rs - api::processor::buffered::TextForgeProcessor::process_batch_buffered (line 123) ... ok
+test src/tokens/transforms/atb/mod.rs - tokens::transforms::atb::Atb (line 24) ... ok
+test src/tokens/transforms/cfw/mod.rs - tokens::transforms::cfw::Cfw (line 19) ... ok
+test src/tokens/transforms/ctc/mod.rs - tokens::transforms::ctc::Ctc (line 27) ... ok
+test src/tokens/transforms/clw/mod.rs - tokens::transforms::clw::Clw (line 22) ... ok
+test src/tokens/transforms/ate/mod.rs - tokens::transforms::ate::Ate (line 19) ... ok
+test src/tokens/transforms/dlb/mod.rs - tokens::transforms::dlb::Dlb (line 20) ... ok
+test src/tokens/transforms/cts/mod.rs - tokens::transforms::cts::Cts (line 30) ... ok
+test src/tokens/transforms/ctr/mod.rs - tokens::transforms::ctr::Ctr (line 28) ... ok
+test src/tokens/transforms/dla/mod.rs - tokens::transforms::dla::Dla (line 20) ... ok
+test src/tokens/transforms/dlc/mod.rs - tokens::transforms::dlc::Dlc (line 19) ... ok
+test src/tokens/transforms/dlf/mod.rs - tokens::transforms::dlf::Dlf (line 19) ... ok
+test src/tokens/transforms/dll/mod.rs - tokens::transforms::dll::Dll (line 20) ... ok
+test src/tokens/transforms/dls/mod.rs - tokens::transforms::dls::Dls (line 25) ... ok
+test src/tokens/transforms/htmle/mod.rs - tokens::transforms::htmle::Htmle (line 23) ... ok
+test src/tokens/transforms/emj/mod.rs - tokens::transforms::emj::Emj (line 30) ... ok
+test src/tokens/transforms/htmlu/mod.rs - tokens::transforms::htmlu::Htmlu (line 23) ... ok
+test src/tokens/transforms/ins/mod.rs - tokens::transforms::ins::Ins (line 22) ... ok
+test src/tokens/transforms/jpsc/mod.rs - tokens::transforms::jpsc::Jpsc (line 20) ... ok
+test src/tokens/transforms/jcmc/mod.rs - tokens::transforms::jcmc::Jcmc (line 20) ... ok
+test src/tokens/transforms/jsnc/mod.rs - tokens::transforms::jsnc::Jsnc (line 26) ... ok
+test src/tokens/transforms/jkbc/mod.rs - tokens::transforms::jkbc::Jkbc (line 26) ... ok
+test src/tokens/transforms/jsone/mod.rs - tokens::transforms::jsone::Jsone (line 20) ... ok
+test src/tokens/transforms/jsonu/mod.rs - tokens::transforms::jsonu::Jsonu (line 20) ... ok
+test src/tokens/transforms/padl/mod.rs - tokens::transforms::padl::Padl (line 26) ... ok
+test src/tokens/transforms/padr/mod.rs - tokens::transforms::padr::Padr (line 23) ... ok
+test src/tokens/transforms/rev/mod.rs - tokens::transforms::rev::Rev (line 18) ... ok
+test src/tokens/transforms/rmws/mod.rs - tokens::transforms::rmws::Rmws (line 20) ... ok
+test src/tokens/transforms/rcw/mod.rs - tokens::transforms::rcw::Rcw (line 28) ... ok
+test src/tokens/transforms/raw/mod.rs - tokens::transforms::raw::Raw (line 31) ... ok
+test src/tokens/transforms/rlw/mod.rs - tokens::transforms::rlw::Rlw (line 31) ... ok
+test src/tokens/transforms/rpt/mod.rs - tokens::transforms::rpt::Rpt (line 23) ... ok
+test src/tokens/transforms/rfw/mod.rs - tokens::transforms::rfw::Rfw (line 31) ... ok
+test src/tokens/transforms/rtl/mod.rs - tokens::transforms::rtl::Rtl (line 19) ... ok
+test src/tokens/transforms/rtr/mod.rs - tokens::transforms::rtr::Rtr (line 19) ... ok
+test src/tokens/transforms/rnw/mod.rs - tokens::transforms::rnw::Rnw (line 32) ... ok
+test src/tokens/transforms/splc/mod.rs - tokens::transforms::splc::Splc (line 19) ... ok
+test src/tokens/transforms/sslt/mod.rs - tokens::transforms::sslt::Sslt (line 22) ... ok
+test src/tokens/transforms/slt/mod.rs - tokens::transforms::slt::Slt (line 20) ... ok
+test src/tokens/transforms/tbs/mod.rs - tokens::transforms::tbs::Tbs (line 19) ... ok
+test src/tokens/transforms/tla/mod.rs - tokens::transforms::tla::Tla (line 19) ... ok
+test src/tokens/transforms/tlcs/mod.rs - tokens::transforms::tlcs::Tlcs (line 23) ... ok
+test src/tokens/transforms/tlcw/mod.rs - tokens::transforms::tlcw::Tlcw (line 20) ... ok
+test src/tokens/transforms/tlcc/mod.rs - tokens::transforms::tlcc::Tlcc (line 23) ... ok
+test src/tokens/transforms/trs/mod.rs - tokens::transforms::trs::Trs (line 20) ... ok
+test src/tokens/transforms/tls/mod.rs - tokens::transforms::tls::Tls (line 20) ... ok
+test src/tokens/transforms/tucc/mod.rs - tokens::transforms::tucc::Tucc (line 22) ... ok
+test src/tokens/transforms/tucs/mod.rs - tokens::transforms::tucs::Tucs (line 23) ... ok
+test src/tokens/transforms/tucw/mod.rs - tokens::transforms::tucw::Tucw (line 21) ... ok
+test src/tokens/transforms/urle/mod.rs - tokens::transforms::urle::Urle (line 20) ... ok
+test src/tokens/transforms/urld/mod.rs - tokens::transforms::urld::Urld (line 22) ... ok
+
+failures:
+
+---- src/api/processor.rs - api::processor::TextForgeProcessor (line 123) stdout ----
+error[E0603]: module `parser` is private
+   --> src/api/processor.rs:126:16
+    |
+126 | use textforge::parser::resolve_var::TokenWrapper;
+    |                ^^^^^^               ------------ struct `TokenWrapper` is not publicly re-exported
+    |                |
+    |                private module
+    |
+note: the module `parser` is defined here
+   --> src/lib.rs:8:1
+    |
+  8 | mod parser;
+    | ^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0603`.
+Couldn't compile the test.
+---- src/tokens/instructions/ifdc/mod.rs - tokens::instructions::ifdc::Ifdc (line 24) stdout ----
+error[E0603]: module `parser` is private
+  --> src/tokens/instructions/ifdc/mod.rs:27:16
+   |
+27 | use textforge::parser::resolve_var::{TokenWrapper, ValType};
+   |                ^^^^^^ private module ------------ struct `TokenWrapper` is not publicly re-exported
+   |
+note: the module `parser` is defined here
+  --> src/lib.rs:8:1
+   |
+ 8 | mod parser;
+   | ^^^^^^^^^^
+
+error[E0603]: module `parser` is private
+  --> src/tokens/instructions/ifdc/mod.rs:27:16
+   |
+27 | use textforge::parser::resolve_var::{TokenWrapper, ValType};
+   |                ^^^^^^ private module               ------- enum `ValType` is not publicly re-exported
+   |
+note: the module `parser` is defined here
+  --> src/lib.rs:8:1
+   |
+ 8 | mod parser;
+   | ^^^^^^^^^^
+
+error[E0603]: module `parser` is private
+  --> src/tokens/instructions/ifdc/mod.rs:28:16
+   |
+28 | use textforge::parser::params::TextForgeParamTypes;
+   |                ^^^^^^          ------------------- enum `TextForgeParamTypes` is not publicly re-exported
+   |                |
+   |                private module
+   |
+note: the module `parser` is defined here
+  --> src/lib.rs:8:1
+   |
+ 8 | mod parser;
+   | ^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+
+For more information about this error, try `rustc --explain E0603`.
+Couldn't compile the test.
+
+failures:
+    src/api/processor.rs - api::processor::TextForgeProcessor (line 123)
+    src/tokens/instructions/ifdc/mod.rs - tokens::instructions::ifdc::Ifdc (line 24)
+
+test result: FAILED. 112 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.93s
+
+all doctests ran in 5.09s; merged doctests compilation took 0.16s
+error: doctest failed, to rerun pass `--doc`

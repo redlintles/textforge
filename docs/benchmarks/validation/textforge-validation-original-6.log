@@ -1,0 +1,1029 @@
+   Compiling rand_core v0.10.1
+   Compiling linux-raw-sys v0.12.1
+   Compiling bitflags v2.13.1
+   Compiling cpufeatures v0.3.1
+   Compiling once_cell v1.21.4
+   Compiling fastrand v1.9.0
+   Compiling fastrand v2.5.0
+   Compiling getrandom v0.4.3
+   Compiling chacha20 v0.10.2
+   Compiling random-string v1.1.0
+   Compiling uuid v1.26.0
+   Compiling rand v0.10.2
+   Compiling rustix v1.1.4
+   Compiling tempfile v3.27.0
+   Compiling textforge v0.1.7 (/home/jota/Documentos/atp_project)
+warning: unused import: `TextForgeError`
+ --> src/tokens/transforms/rtl/test.rs:8:32
+  |
+8 |     use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
+  |                                ^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `TextForgeError`
+ --> src/tokens/transforms/rtr/test.rs:8:32
+  |
+8 |     use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
+  |                                ^^^^^^^^^^^^^^
+
+warning: function `dummy_context` is never used
+   --> src/parser/params.rs:110:4
+    |
+110 | fn dummy_context() -> GlobalExecutionContext {
+    |    ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `textforge` (lib) generated 1 warning
+warning: `textforge` (lib test) generated 3 warnings (1 duplicate) (run `cargo fix --lib -p textforge --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.71s
+     Running unittests src/lib.rs (target/debug/deps/textforge-de0ad53886b0638a)
+
+running 786 tests
+test tokens::instructions::blk::test::bytecode::opcode_is_expected ... ok
+test tokens::instructions::blk::test::common::default_has_expected_shape ... ok
+test tokens::instructions::blk::test::common::from_params_rejects_wrong_param_count_too_few ... ok
+test tokens::instructions::blk::test::common::from_params_rejects_wrong_param_count_too_many ... ok
+test tokens::instructions::blk::test::common::from_params_rejects_wrong_type_for_block_name ... ok
+test tokens::instructions::blk::test::common::from_params_rejects_wrong_type_for_inner ... ok
+test tokens::instructions::blk::test::common::from_params_sets_block_name_and_inner ... ok
+test tokens::instructions::blk::test::common::get_params_reflects_last_from_params_call ... ok
+test tokens::instructions::blk::test::common::transform_appends_to_existing_block_instead_of_overwriting ... ok
+test tokens::instructions::blk::test::common::transform_creates_block_with_single_instruction ... ok
+test tokens::instructions::blk::test::common::transform_keeps_different_block_names_independent ... ok
+test tokens::instructions::blk::test::common::transform_on_unknown_block_after_take_recreates_it ... ok
+test tokens::instructions::blk::test::common::transform_requires_context ... ok
+test tokens::instructions::cblk::test::bytecode::opcode_is_expected ... ok
+test tokens::instructions::blk::test::common::transform_returns_input_unchanged ... ok
+test tokens::instructions::cblk::test::bytecode::to_bytecode_can_be_parsed_into_params_and_fed_back_into_from_params ... ok
+test tokens::instructions::cblk::test::bytecode::to_bytecode_has_expected_header_and_param_layout ... ok
+test tokens::instructions::cblk::test::bytecode::to_bytecode_reflects_block_name_length ... ok
+test tokens::instructions::cblk::test::common::from_params_rejects_wrong_param_count_too_few ... ok
+test tokens::instructions::cblk::test::common::default_has_expected_shape ... ok
+test tokens::instructions::cblk::test::common::from_params_rejects_wrong_param_count_too_many ... ok
+test tokens::instructions::cblk::test::common::from_params_rejects_wrong_type_for_block_name ... ok
+test tokens::instructions::cblk::test::common::from_params_sets_block_name ... ok
+test tokens::instructions::cblk::test::common::get_params_reflects_last_from_params_call ... ok
+test tokens::instructions::cblk::test::common::transform_errors_when_block_not_found ... ok
+test tokens::instructions::cblk::test::common::transform_requires_context ... ok
+test tokens::instructions::cblk::test::common::transform_returns_input_unchanged_for_empty_block ... ok
+test tokens::instructions::eval::test::tests::build_eval_context_keeps_non_numeric_string_as_string ... ok
+test tokens::instructions::eval::test::tests::build_eval_context_converts_usize_var_to_int ... ok
+test tokens::instructions::eval::test::tests::build_eval_context_keeps_float_like_string_as_string ... ok
+test tokens::instructions::eval::test::tests::build_eval_context_parses_numeric_string_as_int ... ok
+test tokens::instructions::eval::test::tests::from_params_rejects_non_string_expr ... ok
+test tokens::instructions::eval::test::tests::build_eval_context_skips_token_vars ... ok
+test tokens::instructions::eval::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::instructions::eval::test::tests::from_params_sets_expr_and_target ... ok
+test tokens::instructions::eval::test::tests::get_string_repr_is_eval ... ok
+test tokens::instructions::eval::test::tests::to_textforge_line_matches_eval_syntax ... ok
+test tokens::instructions::eval::test::tests::transform_computes_simple_arithmetic ... ok
+test tokens::instructions::eval::test::tests::transform_concatenates_non_numeric_string_vars_without_literal_quotes ... ok
+test tokens::instructions::eval::test::tests::transform_fails_on_invalid_expression_syntax ... ok
+test tokens::instructions::eval::test::tests::transform_fails_when_expression_references_unknown_variable ... ok
+test tokens::instructions::eval::test::tests::transform_fails_when_mixing_float_like_string_var_with_arithmetic ... ok
+test tokens::instructions::eval::test::tests::transform_fails_when_target_var_is_not_mutable ... ok
+test tokens::instructions::eval::test::tests::transform_fails_without_context ... ok
+test tokens::instructions::eval::test::tests::transform_preserves_input_unchanged ... ok
+test tokens::instructions::eval::test::tests::transform_skips_token_variable_without_erroring ... ok
+test tokens::instructions::eval::test::tests::value_to_plain_string_formats_boolean ... ok
+test tokens::instructions::eval::test::tests::transform_string_literal_result_has_no_literal_quotes ... ok
+test tokens::instructions::cblk::test::common::transform_applies_single_instruction_in_block ... ok
+test tokens::instructions::blk::test::bytecode::to_bytecode_has_expected_header_and_param_layout ... ok
+test tokens::instructions::cblk::test::common::transform_applies_multiple_instructions_in_order ... ok
+test tokens::instructions::cblk::test::common::transform_propagates_error_from_inner_instruction ... ok
+test tokens::instructions::eval::test::tests::transform_uses_context_variable_in_expression ... ok
+test tokens::instructions::blk::test::bytecode::to_bytecode_reflects_block_name_changes ... ok
+test tokens::instructions::cblk::test::common::transform_supports_nested_call_block ... ok
+test tokens::instructions::cblk::test::common::transform_puts_block_back_so_it_can_run_again ... ok
+test tokens::instructions::eval::test::tests::value_to_plain_string_formats_int_and_float ... ok
+test tokens::instructions::eval::test::tests::value_to_plain_string_formats_empty ... ok
+test tokens::instructions::eval::test::tests::value_to_plain_string_formats_tuple_without_inner_quotes ... ok
+test tokens::instructions::eval::test::tests::value_to_plain_string_strips_quotes_from_string_value ... ok
+test tokens::instructions::ifdc::test::tests::bytecode_tests::from_params_accepts_string_as_first_param ... ok
+test tokens::instructions::ifdc::test::tests::bytecode_tests::from_params_rejects_wrong_len ... ok
+test tokens::instructions::ifdc::test::tests::bytecode_tests::opcode_ok ... ok
+test tokens::instructions::ifdc::test::tests::to_textforge_line_ok ... ok
+test tokens::instructions::ifdc::test::tests::transform_executes_inner_if_contains ... ok
+test tokens::instructions::mutv::test::tests::default_params_match_mutv_syntax ... ok
+test tokens::instructions::mutv::test::tests::from_params_accepts_varref_as_value ... ok
+test tokens::instructions::mutv::test::tests::from_params_rejects_non_string_name ... ok
+test tokens::instructions::mutv::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::instructions::mutv::test::tests::from_params_sets_name_and_string_value ... ok
+test tokens::instructions::mutv::test::tests::get_string_repr_is_mutv ... ok
+test tokens::instructions::mutv::test::tests::to_textforge_line_is_reparseable ... ok
+test tokens::instructions::mutv::test::tests::mutv_cannot_alter_a_variable_declared_by_val ... ok
+test tokens::instructions::mutv::test::tests::transform_aliases_new_value_from_existing_variable_via_varref ... ok
+test tokens::instructions::mutv::test::tests::transform_allows_changing_the_stored_type ... ok
+test tokens::instructions::mutv::test::tests::transform_fails_when_variable_does_not_exist ... ok
+test tokens::instructions::mutv::test::tests::transform_fails_when_variable_is_not_mutable ... ok
+test tokens::instructions::mutv::test::tests::transform_fails_when_varref_source_is_missing ... ok
+test tokens::instructions::mutv::test::tests::transform_fails_without_context ... ok
+test tokens::instructions::mutv::test::tests::transform_updates_existing_mutable_variable ... ok
+test tokens::instructions::mutv::test::tests::var_then_mutv_updates_the_declared_variable ... ok
+test tokens::instructions::val::test::tests::default_params_should_match_val_syntax_but_currently_dont ... ok
+test tokens::instructions::val::test::tests::from_params_accepts_varref_as_value ... ok
+test tokens::instructions::val::test::tests::from_params_rejects_non_string_name ... ok
+test tokens::instructions::val::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::instructions::val::test::tests::from_params_sets_name_and_string_value ... ok
+test tokens::instructions::val::test::tests::get_string_repr_is_val ... ok
+test tokens::instructions::val::test::tests::resolve_variables_coerces_string_var_into_usize_slot ... ok
+test tokens::instructions::val::test::tests::resolve_variables_errors_when_string_var_is_not_numeric ... ok
+test tokens::instructions::val::test::tests::to_textforge_line_should_be_reparseable_but_is_missing_the_terminator ... ok
+test tokens::instructions::val::test::tests::transform_aliases_existing_variable_via_varref ... ok
+test tokens::instructions::val::test::tests::transform_declares_immutable_string_variable ... ok
+test tokens::instructions::val::test::tests::transform_fails_when_varref_source_is_missing ... ok
+test tokens::instructions::val::test::tests::transform_fails_without_context ... ok
+test tokens::instructions::var::test::tests::default_params_match_var_syntax ... ok
+test tokens::instructions::var::test::tests::from_params_accepts_varref_as_value ... ok
+test tokens::instructions::val::test::tests::resolve_variables_rejects_token_var_in_string_slot ... ok
+test tokens::instructions::var::test::tests::from_params_rejects_non_string_name ... ok
+test tokens::instructions::var::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::instructions::val::test::tests::resolve_variables_coerces_usize_var_into_string_slot ... ok
+test tokens::instructions::var::test::tests::from_params_sets_name_and_string_value ... ok
+test tokens::instructions::var::test::tests::get_string_repr_is_var ... ok
+test tokens::instructions::var::test::tests::transform_aliases_existing_variable_via_varref ... ok
+test tokens::instructions::var::test::tests::to_textforge_line_is_reparseable ... ok
+test tokens::instructions::var::test::tests::transform_declares_mutable_string_variable ... ok
+test tokens::instructions::var::test::tests::transform_declares_mutable_usize_variable ... ok
+test tokens::instructions::var::test::tests::transform_fails_when_varref_source_is_missing ... ok
+test tokens::instructions::var::test::tests::transform_fails_without_context ... ok
+test tokens::transforms::atb::test::bytecode::opcode_is_expected ... ok
+test tokens::instructions::var::test::tests::transform_redeclaring_existing_name_overwrites_it ... ok
+test tokens::transforms::atb::test::bytecode::textforgeparam_from_bytecode_string_roundtrip_decoder_format ... ok
+test tokens::transforms::atb::test::bytecode::textforgeparam_from_bytecode_usize_decoder_format ... ok
+test tokens::transforms::atb::test::bytecode::textforgeparam_param_to_bytecode_has_internal_structure ... ok
+test tokens::transforms::atb::test::common::atb_from_params_accepts_single_string_param ... ok
+test tokens::transforms::atb::test::common::atb_from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::atb::test::common::atb_to_bytecode_can_be_parsed_into_params_and_feed_from_params ... ok
+test tokens::transforms::atb::test::common::get_string_repr_is_atb ... ok
+test tokens::transforms::atb::test::common::params_sets_text ... ok
+test tokens::transforms::atb::test::common::to_textforge_line_exact_format ... ok
+test tokens::transforms::atb::test::common::transform_empty_input ... ok
+test tokens::transforms::atb::test::common::transform_empty_prefix ... ok
+test tokens::transforms::atb::test::common::transform_prepends_text ... ok
+test tokens::transforms::ate::test::tests::bytecode_tests::get_opcode_is_02 ... ok
+test tokens::transforms::ate::test::tests::bytecode_tests::to_bytecode_has_expected_layout_and_decodes_param ... ok
+test tokens::transforms::ate::test::tests::from_params_accepts_single_string_param ... ok
+test tokens::transforms::ate::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::ate::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::ate::test::tests::get_string_repr_is_ate ... ok
+test tokens::transforms::ate::test::tests::params_sets_text ... ok
+test tokens::transforms::ate::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::ate::test::tests::transform_appends_text ... ok
+test tokens::transforms::ate::test::tests::transform_with_empty_input_returns_only_text ... ok
+test tokens::transforms::ate::test::tests::transform_with_empty_text_keeps_input ... ok
+test tokens::transforms::cfw::test::tests::bytecode_tests::get_opcode_is_18 ... ok
+test tokens::transforms::cfw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::cfw::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::cfw::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::cfw::test::tests::get_string_repr_is_cfw ... ok
+test tokens::transforms::cfw::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::cfw::test::tests::transform_capitalizes_first_word ... ok
+test tokens::transforms::cfw::test::tests::transform_empty_input_stays_empty ... ok
+test tokens::transforms::cfw::test::tests::transform_preserves_rest_of_string_basic_case ... ok
+test tokens::transforms::cfw::test::tests::transform_single_word ... ok
+test tokens::transforms::clw::test::tests::bytecode_tests::get_opcode_is_19 ... ok
+test tokens::transforms::clw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::clw::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::clw::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::clw::test::tests::get_string_repr_is_clw ... ok
+test tokens::transforms::clw::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::clw::test::tests::transform_capitalizes_last_word_basic_case ... ok
+test tokens::transforms::clw::test::tests::transform_empty_input_stays_empty ... ok
+test tokens::transforms::clw::test::tests::transform_preserves_previous_words ... ok
+test tokens::transforms::clw::test::tests::transform_single_word_capitalizes_that_word ... ok
+test tokens::transforms::clw::test::tests::transform_trailing_space_edge_case_current_behavior ... ok
+test tokens::transforms::ctc::test::tests::bytecode_tests::get_opcode_is_1b ... ok
+test tokens::transforms::ctc::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_two_params ... ok
+test tokens::transforms::ctc::test::tests::from_params_accepts_two_usize_params ... ok
+test tokens::transforms::ctc::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::ctc::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::ctc::test::tests::get_string_repr_is_ctc ... ok
+test tokens::transforms::ctc::test::tests::params_accepts_valid_range ... ok
+test tokens::transforms::ctc::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::ctc::test::tests::transform_capitalizes_chunk_simple_letters ... ok
+test tokens::transforms::ctc::test::tests::transform_capitalizes_words_inside_chunk_and_reinserts ... ok
+test tokens::transforms::ctc::test::tests::transform_end_index_clamps_to_len ... ok
+test tokens::transforms::ctc::test::tests::transform_errors_on_out_of_bounds_start ... ok
+test tokens::transforms::ctc::test::tests::transform_on_unicode_char_indices ... ok
+test tokens::transforms::ctr::test::tests::bytecode_tests::get_opcode_is_1c ... ok
+test tokens::transforms::ctr::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_two_params ... ok
+test tokens::transforms::ctr::test::tests::from_params_accepts_two_usize_params ... ok
+test tokens::transforms::ctr::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::ctr::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::ctr::test::tests::get_string_repr_is_ctr ... ok
+test tokens::transforms::ctr::test::tests::params_accepts_valid_range ... ok
+test tokens::transforms::ctr::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::ctr::test::tests::transform_capitalizes_only_inside_range ... ok
+test tokens::transforms::ctr::test::tests::transform_capitalizes_range_basic_case ... ok
+test tokens::transforms::ctr::test::tests::transform_empty_input_stays_empty ... ok
+test tokens::transforms::ctr::test::tests::transform_end_index_is_clamped_when_too_big ... ok
+test tokens::transforms::ctr::test::tests::transform_errors_when_start_out_of_bounds_for_input_words ... ok
+test tokens::transforms::cts::test::tests::bytecode_tests::get_opcode_is_1d ... ok
+test tokens::transforms::cts::test::tests::from_params_accepts_single_usize_param ... ok
+test tokens::transforms::cts::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_one_param ... ok
+test tokens::transforms::cts::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::cts::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::cts::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::cts::test::tests::get_string_repr_is_cts ... ok
+test tokens::transforms::cts::test::tests::params_sets_index ... ok
+test tokens::transforms::cts::test::tests::transform_capitalizes_first_word ... ok
+test tokens::transforms::cts::test::tests::transform_capitalizes_last_word ... ok
+test tokens::transforms::cts::test::tests::transform_capitalizes_word_at_index ... ok
+test tokens::transforms::cts::test::tests::transform_collapses_whitespace_due_to_split_whitespace ... ok
+test tokens::transforms::cts::test::tests::transform_errors_when_index_out_of_bounds ... ok
+test tokens::transforms::dla::test::tests::bytecode_tests::get_opcode_is_09 ... ok
+test tokens::transforms::dla::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_one_param ... ok
+test tokens::transforms::dla::test::tests::from_params_accepts_single_usize_param ... ok
+test tokens::transforms::dla::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::dla::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::dla::test::tests::get_string_repr_is_dla ... ok
+test tokens::transforms::dla::test::tests::params_sets_index ... ok
+test tokens::transforms::dla::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::dla::test::tests::transform_deletes_after_index_example_like_doc ... ok
+test tokens::transforms::dla::test::tests::transform_errors_when_index_out_of_bounds ... ok
+test tokens::transforms::dla::test::tests::transform_index_zero_keeps_first_char_only ... ok
+test tokens::transforms::dla::test::tests::transform_returns_index_out_of_range_when_index_is_last_char ... ok
+test tokens::transforms::dla::test::tests::transform_unicode_safe_char_indexing ... ok
+test tokens::transforms::dlb::test::tests::bytecode_tests::get_opcode_is_0a ... ok
+test tokens::transforms::dlb::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_one_param ... ok
+test tokens::transforms::dlb::test::tests::from_params_accepts_single_usize_param ... ok
+test tokens::transforms::dlb::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::dlb::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::dlb::test::tests::get_string_repr_is_dlb ... ok
+test tokens::transforms::dlb::test::tests::params_sets_index ... ok
+test tokens::transforms::dlb::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::dlb::test::tests::transform_deletes_before_index_example_like_doc ... ok
+test tokens::transforms::dlb::test::tests::transform_errors_when_index_out_of_bounds ... ok
+test tokens::transforms::dlb::test::tests::transform_index_zero_keeps_string_intact ... ok
+test tokens::transforms::dlb::test::tests::transform_unicode_safe_char_indexing ... ok
+test tokens::transforms::dlc::test::tests::bytecode_tests::get_opcode_is_08 ... ok
+test tokens::transforms::dlc::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_params ... ok
+test tokens::transforms::dlc::test::tests::from_params_accepts_two_usize_params ... ok
+test tokens::transforms::dlc::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::dlc::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::dlc::test::tests::get_string_repr_is_dlc ... ok
+test tokens::transforms::dlc::test::tests::params_sets_indices ... ok
+test tokens::transforms::dlc::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::dlc::test::tests::transform_fails_on_invalid_index ... ok
+test tokens::transforms::dlc::test::tests::transform_removes_entire_string ... ok
+test tokens::transforms::dlc::test::tests::transform_removes_middle_chunk ... ok
+test tokens::transforms::dlc::test::tests::transform_unicode_safe ... ok
+test tokens::transforms::dlf::test::tests::bytecode_tests::get_opcode_is_03 ... ok
+test tokens::transforms::dlf::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::dlf::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::dlf::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::dlf::test::tests::get_string_repr_is_dlf ... ok
+test tokens::transforms::dlf::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::dlf::test::tests::transform_deletes_first_char_basic ... ok
+test tokens::transforms::dlf::test::tests::transform_empty_string_stays_empty ... ok
+test tokens::transforms::dlf::test::tests::transform_single_char_becomes_empty ... ok
+test tokens::transforms::dlf::test::tests::transform_unicode_first_char_removed_safely_accented ... ok
+test tokens::transforms::dlf::test::tests::transform_unicode_first_char_removed_safely_emoji ... ok
+test tokens::transforms::dll::test::tests::bytecode_tests::get_opcode_is_04 ... ok
+test tokens::transforms::dll::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::dll::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::dll::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::dll::test::tests::get_string_repr_is_dll ... ok
+test tokens::transforms::dll::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::dll::test::tests::transform_deletes_last_char_basic ... ok
+test tokens::transforms::dll::test::tests::transform_unicode_last_char_removed_safely_accented ... ok
+test tokens::transforms::dll::test::tests::transform_empty_string_stays_empty ... ok
+test tokens::transforms::dls::test::tests::bytecode_tests::get_opcode_is_32 ... ok
+test tokens::transforms::dll::test::tests::transform_unicode_last_char_removed_safely_emoji ... ok
+test tokens::transforms::dls::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_one_param ... ok
+test tokens::transforms::dll::test::tests::transform_single_char_becomes_empty ... ok
+test tokens::transforms::dls::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::dls::test::tests::from_params_accepts_single_usize_param ... ok
+test tokens::transforms::dls::test::tests::from_params_rejects_wrong_param_type ... ok
+test tokens::transforms::dls::test::tests::get_string_repr_is_dls ... ok
+test tokens::transforms::dls::test::tests::params_sets_index ... ok
+test tokens::transforms::dls::test::tests::to_textforge_line_formats_correctly ... ok
+test tokens::transforms::dls::test::tests::transform_deletes_first_char ... ok
+test tokens::transforms::dls::test::tests::transform_deletes_last_char ... ok
+test tokens::transforms::dls::test::tests::transform_deletes_single_char_basic_example ... ok
+test tokens::transforms::dls::test::tests::transform_errors_when_index_out_of_bounds ... ok
+test tokens::transforms::dls::test::tests::transform_unicode_safe_deletes_accented_char ... ok
+test tokens::transforms::dls::test::tests::transform_unicode_safe_deletes_emoji ... ok
+test tokens::transforms::emj::test::tests::constructor_rejects_invalid_regex ... ok
+test tokens::transforms::emj::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_two_string_params ... ok
+test tokens::transforms::emj::test::tests::bytecode_tests::get_opcode_is_37 ... ok
+test tokens::transforms::emj::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::emj::test::tests::to_textforge_line_contains_pattern_and_separator ... ok
+test tokens::transforms::emj::test::tests::get_string_repr_is_emj ... ok
+test tokens::transforms::emj::test::tests::transform_collects_and_joins_matches_doc_example ... ok
+test tokens::transforms::emj::test::tests::from_params_rejects_invalid_regex_payload ... ok
+test tokens::transforms::emj::test::tests::from_params_rejects_wrong_param_types ... ok
+test tokens::transforms::emj::test::tests::transform_no_matches_returns_empty_string ... ok
+test tokens::transforms::htmle::test::tests::bytecode_tests::get_opcode_is_24 ... ok
+test tokens::transforms::htmle::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::htmle::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::htmle::test::tests::get_string_repr_is_htmle ... ok
+test tokens::transforms::htmle::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::htmle::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::htmle::test::tests::transform_escapes_html_like_doc_example ... ok
+test tokens::transforms::htmle::test::tests::transform_escapes_quotes_and_ampersand ... ok
+test tokens::transforms::htmle::test::tests::transform_no_special_chars_is_identity ... ok
+test tokens::transforms::htmle::test::tests::transform_preserves_unicode_text ... ok
+test tokens::transforms::emj::test::tests::transform_discards_non_matching_text ... ok
+test tokens::transforms::htmlu::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::htmlu::test::tests::bytecode_tests::get_opcode_is_25 ... ok
+test tokens::transforms::htmlu::test::tests::get_string_repr_is_htmlu ... ok
+test tokens::transforms::htmlu::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::htmlu::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::htmlu::test::tests::transform_no_entities_is_identity ... ok
+test tokens::transforms::htmlu::test::tests::transform_preserves_unicode_text ... ok
+test tokens::transforms::htmlu::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::ins::test::tests::from_params_accepts_usize_and_string ... ok
+test tokens::transforms::emj::test::tests::constructor_creates_valid_regex_and_stores_separator ... ok
+test tokens::transforms::emj::test::tests::transform_empty_separator_concatenates_matches ... ok
+test tokens::transforms::emj::test::tests::transform_with_regex_pattern ... ok
+test tokens::transforms::emj::test::tests::from_params_parses_pattern_and_separator_and_builds_regex ... ok
+test tokens::transforms::emj::test::tests::transform_preserves_order_of_appearance ... ok
+test tokens::transforms::htmlu::test::tests::transform_unescapes_html_like_doc_example ... ok
+test tokens::transforms::htmlu::test::tests::transform_unescapes_quotes_and_ampersand ... ok
+test tokens::transforms::ins::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::ins::test::tests::from_params_rejects_wrong_param_types ... ok
+test tokens::transforms::ins::test::tests::params_sets_fields_and_to_textforge_line_formats ... ok
+test tokens::transforms::ins::test::tests::transform_errors_when_index_too_large ... ok
+test tokens::transforms::ins::test::tests::transform_index_equal_char_count_appends_current_behavior ... ok
+test tokens::transforms::ins::test::tests::transform_index_last_char_appends_after_last_char ... ok
+test tokens::transforms::ins::test::tests::bytecode_tests::get_opcode_is_28 ... ok
+test tokens::transforms::ins::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_decodes_two_params ... ok
+test tokens::transforms::htmlu::test::tests::transform_roundtrip_with_htmle_string_expectation ... ok
+test tokens::transforms::ins::test::tests::transform_index_zero_inserts_after_first_char ... ok
+test tokens::transforms::ins::test::tests::transform_inserts_after_index_like_doc_example ... ok
+test tokens::transforms::jcmc::test::tests::bytecode_tests::get_opcode_is_2d ... ok
+test tokens::transforms::ins::test::tests::transform_unicode_safe_insertion_boundary ... ok
+test tokens::transforms::jcmc::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::jcmc::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::jcmc::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::jcmc::test::tests::get_string_repr_is_jcmc ... ok
+test tokens::transforms::jcmc::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::jcmc::test::tests::transform_empty_string_returns_empty ... ok
+test tokens::transforms::jcmc::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::jcmc::test::tests::transform_single_word_is_identity ... ok
+test tokens::transforms::jcmc::test::tests::transform_trims_and_collapses_whitespace ... ok
+test tokens::transforms::jcmc::test::tests::transform_unicode_preserved ... ok
+test tokens::transforms::jkbc::test::tests::bytecode_tests::get_opcode_is_2b ... ok
+test tokens::transforms::jkbc::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::jkbc::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::jkbc::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::jkbc::test::tests::get_string_repr_is_jkbc ... ok
+test tokens::transforms::jkbc::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::jkbc::test::tests::transform_collapses_whitespace_and_lowercases ... ok
+test tokens::transforms::jkbc::test::tests::transform_empty_string_returns_empty ... ok
+test tokens::transforms::jkbc::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::jkbc::test::tests::transform_single_word_lowercases ... ok
+test tokens::transforms::jkbc::test::tests::transform_unicode_lowercase_behavior ... ok
+test tokens::transforms::jpsc::test::tests::bytecode_tests::get_opcode_is_2e ... ok
+test tokens::transforms::jpsc::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::jpsc::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::jpsc::test::tests::get_string_repr_is_jpsc ... ok
+test tokens::transforms::jpsc::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::jpsc::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::jpsc::test::tests::transform_collapses_whitespace ... ok
+test tokens::transforms::jpsc::test::tests::transform_empty_string_returns_empty ... ok
+test tokens::transforms::jpsc::test::tests::transform_single_word_capitalizes ... ok
+test tokens::transforms::jsnc::test::tests::bytecode_tests::get_opcode_is_2c ... ok
+test tokens::transforms::jpsc::test::tests::transform_unicode_preserved ... ok
+test tokens::transforms::jsnc::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::jsnc::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::jpsc::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::jsnc::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::jsnc::test::tests::get_string_repr_is_jsnc ... ok
+test tokens::transforms::jsnc::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::jsnc::test::tests::transform_collapses_whitespace ... ok
+test tokens::transforms::jsnc::test::tests::transform_empty_string_returns_empty ... ok
+test tokens::transforms::jsnc::test::tests::transform_single_word_lowercases ... ok
+test tokens::transforms::jsnc::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::jsnc::test::tests::transform_unicode_preserved_and_lowercased ... ok
+test tokens::transforms::jsone::test::tests::bytecode_tests::get_opcode_is_26 ... ok
+test tokens::transforms::jsone::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::jsone::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::jsone::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::jsone::test::tests::get_string_repr_is_jsone ... ok
+test tokens::transforms::jsone::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::jsone::test::tests::transform_empty_string_is_quoted_empty ... ok
+test tokens::transforms::jsone::test::tests::transform_escapes_newlines_tabs_and_returns ... ok
+test tokens::transforms::jsone::test::tests::transform_escapes_quotes_and_backslashes ... ok
+test tokens::transforms::jsone::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::jsone::test::tests::transform_unicode_is_preserved ... ok
+test tokens::transforms::jsonu::test::tests::bytecode_tests::get_opcode_is_27 ... ok
+test tokens::transforms::jsonu::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::jsonu::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::jsonu::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::jsonu::test::tests::get_string_repr_is_jsonu ... ok
+test tokens::transforms::jsonu::test::tests::roundtrip_jsone_then_jsonu_returns_original ... ok
+test tokens::transforms::jsonu::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::jsonu::test::tests::transform_empty_json_string_returns_empty ... ok
+test tokens::transforms::jsonu::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::jsonu::test::tests::transform_returns_error_on_invalid_json_string ... ok
+test tokens::transforms::jsonu::test::tests::transform_unescapes_quotes_backslashes_and_controls ... ok
+test tokens::transforms::jsonu::test::tests::transform_unicode_is_preserved ... ok
+test tokens::transforms::padl::test::tests::bytecode_tests::bytecode_param_order_currently_conflicts_with_from_params_expectation ... ok
+test tokens::transforms::padl::test::tests::bytecode_tests::get_opcode_is_2f ... ok
+test tokens::transforms::padl::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_two_params ... ok
+test tokens::transforms::padl::test::tests::from_params_accepts_text_then_max_len ... ok
+test tokens::transforms::padl::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::padl::test::tests::from_params_rejects_wrong_param_types ... ok
+test tokens::transforms::padl::test::tests::get_string_repr_is_padl ... ok
+test tokens::transforms::padl::test::tests::to_textforge_line_matches_params ... ok
+test tokens::transforms::padl::test::tests::transform_pads_left_multiple_chars ... ok
+test tokens::transforms::padl::test::tests::transform_pads_left_until_max_len_doc_example ... ok
+test tokens::transforms::padl::test::tests::transform_returns_input_unchanged_if_already_at_or_above_max_len ... ok
+test tokens::transforms::padr::test::tests::bytecode_tests::get_opcode_is_30 ... ok
+test tokens::transforms::padr::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_two_params_in_correct_order ... ok
+test tokens::transforms::padr::test::tests::from_params_accepts_text_then_max_len ... ok
+test tokens::transforms::padr::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::padr::test::tests::from_params_rejects_wrong_param_types ... ok
+test tokens::transforms::padr::test::tests::get_string_repr_is_padr ... ok
+test tokens::transforms::padr::test::tests::to_textforge_line_matches_params ... ok
+test tokens::transforms::padr::test::tests::transform_pads_right_multiple_chars ... ok
+test tokens::transforms::padr::test::tests::transform_pads_right_until_max_len_doc_example ... ok
+test tokens::transforms::padr::test::tests::transform_returns_input_unchanged_if_already_at_or_above_max_len ... ok
+test tokens::transforms::raw::test::tests::bytecode_tests::get_opcode_is_0b ... ok
+test tokens::transforms::raw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_two_string_params ... ok
+test tokens::transforms::raw::test::tests::from_params_rejects_invalid_regex_payload ... ok
+test tokens::transforms::raw::test::tests::from_params_rejects_wrong_param_types ... ok
+test tokens::transforms::raw::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::raw::test::tests::transform_no_matches_returns_same_string ... ok
+test tokens::transforms::rcw::test::tests::bytecode_tests::from_params_rejects_invalid_regex_payload ... ok
+test tokens::transforms::raw::test::tests::params_creates_valid_regex ... ok
+test tokens::transforms::raw::test::tests::transform_replaces_all_occurrences_doc_example ... ok
+test tokens::transforms::raw::test::tests::get_string_repr_is_raw ... ok
+test tokens::transforms::rcw::test::tests::bytecode_tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rcw::test::tests::bytecode_tests::from_params_parses_three_params ... ok
+test tokens::transforms::raw::test::tests::params_rejects_invalid_regex ... ok
+test tokens::transforms::raw::test::tests::from_params_parses_two_strings_and_builds_regex ... ok
+test tokens::transforms::rcw::test::tests::params_rejects_invalid_regex ... ok
+test tokens::transforms::rcw::test::tests::params_creates_valid_regex_and_fields ... ok
+test tokens::transforms::rcw::test::tests::transform_count_larger_than_matches_replaces_all_matches ... ok
+test tokens::transforms::rcw::test::tests::bytecode_tests::get_opcode_is_0x10 ... ok
+test tokens::transforms::rcw::test::tests::bytecode_tests::from_params_rejects_wrong_types ... ok
+test tokens::transforms::rcw::test::tests::to_textforge_line_contains_pattern_replacement_and_count ... ok
+test tokens::transforms::rcw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_three_params ... ok
+test tokens::transforms::rcw::test::tests::get_string_repr_is_rcw ... ok
+test tokens::transforms::raw::test::tests::to_textforge_line_contains_pattern_and_replacement ... ok
+test tokens::transforms::rev::test::tests::bytecode_tests::get_opcode_is_0x22 ... ok
+test tokens::transforms::rcw::test::tests::transform_replaces_count_occurrences_doc_example ... ok
+test tokens::transforms::raw::test::tests::transform_with_regex_pattern ... ok
+test tokens::transforms::rev::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::rev::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::rev::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::rev::test::tests::get_string_repr_is_rev ... ok
+test tokens::transforms::rcw::test::tests::transform_count_zero_returns_same_string ... ok
+test tokens::transforms::rev::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::rev::test::tests::transform_reverses_ascii ... ok
+test tokens::transforms::rev::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::rev::test::tests::transform_single_char_is_same ... ok
+test tokens::transforms::rev::test::tests::transform_unicode_safe ... ok
+test tokens::transforms::rfw::test::tests::bytecode_tests::from_params_rejects_invalid_regex_payload ... ok
+test tokens::transforms::rfw::test::tests::bytecode_tests::from_params_rejects_wrong_types ... ok
+test tokens::transforms::rfw::test::tests::bytecode_tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rfw::test::tests::bytecode_tests::get_opcode_is_0x0c ... ok
+test tokens::transforms::rfw::test::tests::bytecode_tests::from_params_parses_two_params ... ok
+test tokens::transforms::rfw::test::tests::get_string_repr_is_rfw ... ok
+test tokens::transforms::rfw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_two_params ... ok
+test tokens::transforms::rfw::test::tests::transform_replaces_first_occurrence_doc_example ... ok
+test tokens::transforms::rfw::test::tests::transform_when_no_match_returns_original ... ok
+test tokens::transforms::rfw::test::tests::params_rejects_invalid_regex ... ok
+test tokens::transforms::rcw::test::tests::transform_with_regex_pattern_replaces_n_times ... ok
+test tokens::transforms::rfw::test::tests::transform_replaces_first_match_when_regex_groups ... ok
+test tokens::transforms::rlw::test::tests::bytecode_tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rfw::test::tests::to_textforge_line_contains_pattern_and_replacement ... ok
+test tokens::transforms::rlw::test::tests::bytecode_tests::from_params_parses_two_params ... ok
+test tokens::transforms::rlw::test::tests::bytecode_tests::from_params_rejects_invalid_regex_payload ... ok
+test tokens::transforms::rfw::test::tests::params_creates_valid_regex_and_fields ... ok
+test tokens::transforms::rfw::test::tests::transform_with_regex_works_on_first_match_only ... ok
+test tokens::transforms::rlw::test::tests::params_rejects_invalid_regex ... ok
+test tokens::transforms::rlw::test::tests::bytecode_tests::from_params_rejects_wrong_types ... ok
+test tokens::transforms::rlw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_two_params ... ok
+test tokens::transforms::rlw::test::tests::params_creates_valid_regex_and_fields ... ok
+test tokens::transforms::rlw::test::tests::bytecode_tests::get_opcode_is_0x1e ... ok
+test tokens::transforms::rlw::test::tests::transform_handles_utf8_safely ... ok
+test tokens::transforms::rlw::test::tests::get_string_repr_is_rlw ... ok
+test tokens::transforms::rlw::test::tests::to_textforge_line_contains_pattern_and_replacement ... ok
+test tokens::transforms::rmws::test::tests::bytecode::rmws_opcode_ok ... ok
+test tokens::transforms::rmws::test::tests::bytecode::rmws_to_bytecode_non_empty_and_no_params ... ok
+test tokens::transforms::rlw::test::tests::transform_when_no_match_returns_original ... ok
+test tokens::transforms::rlw::test::tests::transform_replaces_last_occurrence_doc_example ... ok
+test tokens::transforms::rmws::test::tests::rmws_from_params_err_when_not_empty ... ok
+test tokens::transforms::rmws::test::tests::rmws_get_string_repr_ok ... ok
+test tokens::transforms::rmws::test::tests::rmws_to_textforge_line_ok ... ok
+test tokens::transforms::rmws::test::tests::rmws_from_params_ok_empty ... ok
+test tokens::transforms::rmws::test::tests::rmws_transform_basic_ok ... ok
+test tokens::transforms::rmws::test::tests::rmws_transform_empty_ok ... ok
+test tokens::transforms::rlw::test::tests::transform_replaces_last_match_when_regex_groups ... ok
+test tokens::transforms::rmws::test::tests::rmws_transform_only_whitespace_ok ... ok
+test tokens::transforms::rmws::test::tests::rmws_transform_preserves_non_whitespace_ok ... ok
+test tokens::transforms::rmws::test::tests::rmws_transform_unicode_whitespace_ok ... ok
+test tokens::transforms::rnw::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rnw::test::tests::bytecode_tests::get_opcode_is_0x1f ... ok
+test tokens::transforms::rnw::test::tests::from_params_rejects_invalid_regex_payload ... ok
+test tokens::transforms::rnw::test::tests::from_params_rejects_wrong_types ... ok
+test tokens::transforms::rnw::test::tests::from_params_parses_three_params ... ok
+test tokens::transforms::rnw::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_three_params ... ok
+test tokens::transforms::rnw::test::tests::get_string_repr_is_rnw ... ok
+test tokens::transforms::rnw::test::tests::params_rejects_invalid_regex ... ok
+test tokens::transforms::rnw::test::tests::params_creates_valid_regex_and_fields ... ok
+test tokens::transforms::rnw::test::tests::transform_handles_utf8_safely ... ok
+test tokens::transforms::rnw::test::tests::transform_index_0_replaces_first_occurrence ... ok
+test tokens::transforms::rnw::test::tests::to_textforge_line_contains_pattern_replacement_and_index ... ok
+test tokens::transforms::rnw::test::tests::transform_large_index_no_match_returns_original ... ok
+test tokens::transforms::rnw::test::tests::transform_replaces_nth_occurrence_doc_example_zero_based ... ok
+test tokens::transforms::rnw::test::tests::transform_replaces_correct_nth_for_multi_length_matches ... ok
+test tokens::transforms::rnw::test::tests::transform_when_pattern_not_found_returns_original ... ok
+test tokens::transforms::rpt::test::tests::bytecode_tests::get_opcode_is_0x0d ... ok
+test tokens::transforms::rnw::test::tests::transform_handles_zero_length_matches_without_crash ... ok
+test tokens::transforms::rpt::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_one_param ... ok
+test tokens::transforms::rpt::test::tests::from_params_parses_single_usize ... ok
+test tokens::transforms::rpt::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rpt::test::tests::from_params_rejects_wrong_type ... ok
+test tokens::transforms::rpt::test::tests::get_string_repr_is_rpt ... ok
+test tokens::transforms::rlw::test::tests::transform_replaces_last_match_only ... ok
+test tokens::transforms::rpt::test::tests::transform_zero_times_returns_empty_string ... ok
+test tokens::transforms::rpt::test::tests::transform_empty_input_still_empty ... ok
+test tokens::transforms::rpt::test::tests::to_textforge_line_contains_times ... ok
+test tokens::transforms::rpt::test::tests::transform_repeats_input_n_times ... ok
+test tokens::transforms::rtl::test::tests::bytecode_tests::get_opcode_is_0x0e ... ok
+test tokens::transforms::rtl::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_one_param ... ok
+test tokens::transforms::rtl::test::tests::from_params_parses_single_usize ... ok
+test tokens::transforms::rtl::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rtl::test::tests::from_params_rejects_wrong_type ... ok
+test tokens::transforms::rtl::test::tests::get_string_repr_is_rtl ... ok
+test tokens::transforms::rtl::test::tests::to_textforge_line_contains_times ... ok
+test tokens::transforms::rtl::test::tests::transform_empty_input_returns_error ... ok
+test tokens::transforms::rtl::test::tests::transform_rotates_left_basic ... ok
+test tokens::transforms::rtl::test::tests::transform_single_char_always_same ... ok
+test tokens::transforms::rtl::test::tests::transform_times_equal_len_returns_same ... ok
+test tokens::transforms::rtl::test::tests::transform_times_greater_than_len_uses_modulo ... ok
+test tokens::transforms::rtl::test::tests::transform_times_zero_returns_same ... ok
+test tokens::transforms::rtl::test::tests::transform_unicode_safe_rotation ... ok
+test tokens::transforms::rtr::test::tests::bytecode_tests::get_opcode_is_0x0f ... ok
+test tokens::transforms::rtr::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_one_param ... ok
+test tokens::transforms::rtr::test::tests::from_params_parses_single_usize ... ok
+test tokens::transforms::rtr::test::tests::from_params_rejects_wrong_param_count ... ok
+test tokens::transforms::rtr::test::tests::from_params_rejects_wrong_type ... ok
+test tokens::transforms::rtr::test::tests::get_string_repr_is_rtr ... ok
+test tokens::transforms::rtr::test::tests::to_textforge_line_contains_times ... ok
+test tokens::transforms::rtr::test::tests::transform_empty_input_returns_error ... ok
+test tokens::transforms::rtr::test::tests::transform_rotates_right_basic ... ok
+test tokens::transforms::rtr::test::tests::transform_single_char_always_same ... ok
+test tokens::transforms::rtr::test::tests::transform_times_equal_len_returns_same ... ok
+test tokens::transforms::rtr::test::tests::transform_times_greater_than_len_uses_modulo ... ok
+test tokens::transforms::rtr::test::tests::transform_times_zero_returns_same ... ok
+test tokens::transforms::rtr::test::tests::transform_unicode_safe_rotation ... ok
+test tokens::transforms::slt::test::tests::bytecode_tests::get_opcode_is_0x11 ... ok
+test tokens::transforms::slt::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_two_params ... ok
+test tokens::transforms::slt::test::tests::from_params_accepts_two_params ... ok
+test tokens::transforms::slt::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::slt::test::tests::get_string_repr_is_slt ... ok
+test tokens::transforms::slt::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::slt::test::tests::transform_end_index_beyond_len_selects_until_end ... ok
+test tokens::transforms::slt::test::tests::transform_rejects_invalid_bounds ... ok
+test tokens::transforms::slt::test::tests::transform_selects_basic_slice ... ok
+test tokens::transforms::slt::test::tests::transform_supports_unicode_safely ... ok
+test tokens::transforms::splc::test::tests::bytecode_tests::get_opcode_is_0x23 ... ok
+test tokens::transforms::splc::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::splc::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::splc::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::splc::test::tests::get_string_repr_is_splc ... ok
+test tokens::transforms::splc::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::splc::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::splc::test::tests::transform_keeps_existing_spaces_as_chars ... ok
+test tokens::transforms::splc::test::tests::transform_splits_ascii_chars ... ok
+test tokens::transforms::splc::test::tests::transform_unicode_chars_ok ... ok
+test tokens::transforms::sslt::test::tests::bytecode_tests::to_bytecode_has_opcode_and_two_params ... ok
+test tokens::transforms::sslt::test::tests::to_textforge_line_is_correctish ... ok
+test tokens::transforms::sslt::test::tests::transform_errors_on_out_of_range ... ok
+test tokens::transforms::sslt::test::tests::get_string_repr_is_sslt ... ok
+test tokens::transforms::sslt::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::sslt::test::tests::from_params_accepts_two_params ... ok
+test tokens::transforms::sslt::test::tests::bytecode_tests::get_opcode_is_0x1a ... ok
+test tokens::transforms::sslt::test::tests::transform_selects_expected_piece ... ok
+test tokens::transforms::tbs::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::tbs::test::tests::get_string_repr_is_tbs ... ok
+test tokens::transforms::tbs::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::tbs::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tbs::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::tbs::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::tbs::test::tests::bytecode_tests::get_opcode_is_0x05 ... ok
+test tokens::transforms::tbs::test::tests::transform_no_outer_whitespace_unchanged ... ok
+test tokens::transforms::tbs::test::tests::transform_only_whitespace_becomes_empty ... ok
+test tokens::transforms::sslt::test::tests::transform_supports_empty_segments ... ok
+test tokens::transforms::tbs::test::tests::transform_trims_both_sides_spaces ... ok
+test tokens::transforms::tla::test::tests::bytecode_tests::get_opcode_is_0x13 ... ok
+test tokens::transforms::tbs::test::tests::transform_trims_tabs_newlines_too ... ok
+test tokens::transforms::tla::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::tla::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::tla::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::tla::test::tests::get_string_repr_is_tla ... ok
+test tokens::transforms::tla::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tla::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::tla::test::tests::transform_lowercases_ascii ... ok
+test tokens::transforms::tla::test::tests::transform_preserves_non_letters ... ok
+test tokens::transforms::tla::test::tests::transform_unicode_lowercase ... ok
+test tokens::transforms::tlcc::test::tests::bytecode_tests::get_opcode_is_0x17 ... ok
+test tokens::transforms::tlcc::test::tests::bytecode_tests::to_bytecode_has_opcode_and_two_params ... ok
+test tokens::transforms::tlcc::test::tests::from_params_accepts_two_usizes ... ok
+test tokens::transforms::tlcc::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::tlcc::test::tests::get_string_repr_is_tlcc ... ok
+test tokens::transforms::tlcc::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tlcc::test::tests::transform_errors_on_invalid_bounds ... ok
+test tokens::transforms::tlcc::test::tests::transform_lowercases_only_the_chunk ... ok
+test tokens::transforms::tlcs::test::tests::bytecode_tests::get_opcode_is_0x15 ... ok
+test tokens::transforms::tlcc::test::tests::transform_supports_unicode_safely ... ok
+test tokens::transforms::tlcs::test::tests::bytecode_tests::to_bytecode_has_opcode_and_one_param ... ok
+test tokens::transforms::tlcs::test::tests::from_params_accepts_one_usize ... ok
+test tokens::transforms::tlcs::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::tlcs::test::tests::get_string_repr_is_tlcs ... ok
+test tokens::transforms::tlcs::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tlcs::test::tests::transform_lowercases_single_char_ascii ... ok
+test tokens::transforms::tlcs::test::tests::transform_lowercases_single_char_unicode ... ok
+test tokens::transforms::tlcw::test::tests::bytecode_tests::get_opcode_is_0x29 ... ok
+test tokens::transforms::tlcw::test::tests::bytecode_tests::to_bytecode_has_opcode_and_one_param ... ok
+test tokens::transforms::tlcw::test::tests::from_params_accepts_one_usize ... ok
+test tokens::transforms::tlcw::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::tlcw::test::tests::get_string_repr_is_tlcw ... ok
+test tokens::transforms::tlcw::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tlcw::test::tests::transform_index_zero_lowercases_first_word ... ok
+test tokens::transforms::tlcw::test::tests::transform_lowercases_one_word_by_index ... ok
+test tokens::transforms::tls::test::tests::bytecode_tests::get_opcode_is_0x06 ... ok
+test tokens::transforms::tls::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::tls::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::tls::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::tls::test::tests::get_string_repr_is_tls ... ok
+test tokens::transforms::tls::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tls::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::tls::test::tests::transform_no_left_whitespace_unchanged ... ok
+test tokens::transforms::tls::test::tests::transform_only_whitespace_becomes_empty ... ok
+test tokens::transforms::tls::test::tests::transform_trims_left_spaces_only ... ok
+test tokens::transforms::tls::test::tests::transform_trims_left_whitespace_tabs_newlines_too ... ok
+test tokens::transforms::trs::test::tests::bytecode_tests::get_opcode_is_0x07 ... ok
+test tokens::transforms::trs::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::trs::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::trs::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::trs::test::tests::get_string_repr_is_trs ... ok
+test tokens::transforms::trs::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::trs::test::tests::transform_does_not_trim_start ... ok
+test tokens::transforms::trs::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::trs::test::tests::transform_no_trailing_whitespace_unchanged ... ok
+test tokens::transforms::trs::test::tests::transform_only_whitespace_becomes_empty ... ok
+test tokens::transforms::trs::test::tests::transform_trims_end_spaces_only ... ok
+test tokens::transforms::trs::test::tests::transform_trims_tabs_and_newlines_at_end ... ok
+test tokens::transforms::tua::test::tests::bytecode_tests::get_opcode_is_0x12 ... ok
+test tokens::transforms::tua::test::tests::bytecode_tests::to_bytecode_contains_opcode_and_zero_params ... ok
+test tokens::transforms::tua::test::tests::from_params_accepts_empty ... ok
+test tokens::transforms::tua::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::tua::test::tests::get_string_repr_is_tua ... ok
+test tokens::transforms::tua::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tua::test::tests::transform_empty_is_empty ... ok
+test tokens::transforms::tua::test::tests::transform_preserves_non_letters ... ok
+test tokens::transforms::tua::test::tests::transform_unicode_uppercase ... ok
+test tokens::transforms::tua::test::tests::transform_uppercases_ascii ... ok
+test tokens::transforms::tucc::test::tests::bytecode_tests::get_opcode_is_0x16 ... ok
+test tokens::transforms::tucc::test::tests::bytecode_tests::to_bytecode_has_opcode_and_two_params ... ok
+test tokens::transforms::tucc::test::tests::from_params_accepts_two_usize ... ok
+test tokens::transforms::tucc::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::tucc::test::tests::get_string_repr_is_tucc ... ok
+test tokens::transforms::tucc::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tucc::test::tests::transform_uppercases_chunk_inclusive ... ok
+test tokens::transforms::tucs::test::tests::bytecode_tests::get_opcode_is_0x14 ... ok
+test tokens::transforms::tucs::test::tests::bytecode_tests::to_bytecode_has_opcode_and_one_param ... ok
+test tokens::transforms::tucs::test::tests::transform_uppercases_single_char ... ok
+test tokens::transforms::tucs::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::tucs::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::tucs::test::tests::from_params_accepts_one_usize ... ok
+test tokens::transforms::tucw::test::tests::bytecode_tests::get_opcode_is_0x2a ... ok
+test tokens::transforms::tucs::test::tests::get_string_repr_is_tucs ... ok
+test tokens::transforms::tucw::test::tests::from_params_accepts_one_usize ... ok
+test tokens::transforms::tucw::test::tests::bytecode_tests::to_bytecode_has_opcode_and_one_param ... ok
+test tokens::transforms::tucw::test::tests::from_params_rejects_wrong_len ... ok
+test tokens::transforms::tucw::test::tests::to_textforge_line_is_correct ... ok
+test tokens::transforms::urld::test::tests::bytecode_tests::get_opcode_is_21 ... ok
+test tokens::transforms::tucw::test::tests::transform_uppercases_one_word_by_index ... ok
+test tokens::transforms::urld::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::urld::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::urld::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::tucw::test::tests::get_string_repr_is_tucw ... ok
+test tokens::transforms::urld::test::tests::roundtrip_urle_then_urld_returns_original ... ok
+test tokens::transforms::urld::test::tests::get_string_repr_is_urld ... ok
+test tokens::transforms::urld::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::urld::test::tests::transform_decodes_plus_literal_not_space ... ok
+test tokens::transforms::urld::test::tests::transform_decodes_reserved_characters ... ok
+test tokens::transforms::urld::test::tests::transform_decodes_unicode_utf8 ... ok
+test tokens::transforms::urld::test::tests::transform_empty_string_returns_empty ... ok
+test tokens::transforms::urld::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::urld::test::tests::transform_returns_error_on_invalid_percent_encoding ... ok
+test tokens::transforms::urle::test::tests::bytecode_tests::get_opcode_is_20 ... ok
+test tokens::transforms::urle::test::tests::bytecode_tests::to_bytecode_has_expected_header_and_no_params ... ok
+test tokens::transforms::urle::test::tests::from_params_rejects_any_params ... ok
+test tokens::transforms::urle::test::tests::from_params_accepts_empty_param_list ... ok
+test tokens::transforms::urle::test::tests::get_string_repr_is_urle ... ok
+test tokens::transforms::urle::test::tests::to_textforge_line_is_constant ... ok
+test tokens::transforms::urle::test::tests::transform_empty_string_returns_empty ... ok
+test tokens::transforms::urle::test::tests::transform_encodes_plus_as_percent2b ... ok
+test tokens::transforms::urle::test::tests::transform_encodes_reserved_characters ... ok
+test tokens::transforms::urle::test::tests::transform_matches_doc_example ... ok
+test tokens::transforms::urle::test::tests::transform_unicode_is_percent_encoded_utf8 ... ok
+test utils::errors::tests::error_code_message_and_get_message_match_and_are_borrowed ... ok
+test utils::errors::tests::error_code_display_includes_labels_code_and_message ... ok
+test utils::errors::tests::error_manager_default_and_add_error_has_errors ... ok
+test utils::errors::tests::error_manager_reserve_errors_does_not_decrease_capacity ... ok
+test utils::errors::tests::get_error_code_matches_all_variants ... ok
+test utils::errors::tests::handle_error_stores_error_and_does_not_panic_when_panic_mode_off ... ok
+test utils::errors::tests::message_returns_the_same_inner_reference_for_all_variants ... ok
+test utils::errors::tests::severity_color_magenta_for_indexish ... ok
+test utils::errors::tests::handle_error_panics_when_panic_mode_on_and_still_stores_error_first ... ok
+test utils::errors::tests::severity_color_red_for_hard_errors ... ok
+test utils::errors::tests::severity_color_yellow_for_missing_things ... ok
+test utils::errors::tests::textforge_error_display_contains_sections_and_no_weird_comma ... ok
+test utils::errors::tests::textforge_error_new_sets_fields_and_helpers_return_strs ... ok
+test utils::cli::cli_tests::process_input_single_chunk_tests::it_works_correctly ... ok
+test utils::errors::tests::token_array_not_found_closure_returns_stable_clone_and_contains_identifier ... ok
+test utils::cli::cli_tests::process_input_line_by_line_tests::it_works_correctly ... ok
+test utils::cli::cli_tests::process_input_by_chunks_tests::it_works_correctly ... ok
+test utils::errors::tests::will_panic_toggles_panic_mode_flag ... ok
+test utils::transforms::test_access::capitalize_tests::capitalizes_first_char_ascii ... ok
+test utils::errors::tests::write_errors_writes_expected_sections_and_indices_for_multiple_errors ... ok
+test utils::transforms::test_access::capitalize_tests::handles_case_where_uppercase_expands_to_multiple_chars ... ok
+test utils::transforms::test_access::capitalize_tests::handles_utf8_first_char ... ok
+test utils::transforms::test_access::capitalize_tests::preserves_rest_of_string_without_lowercasing ... ok
+test utils::transforms::test_access::capitalize_tests::returns_empty_for_empty_input ... ok
+test utils::errors::tests::will_log_toggles_show_warnings_and_does_not_panic ... ok
+test utils::transforms::test_access::extend_string_tests::respects_char_count_not_byte_count_utf8 ... ok
+test utils::transforms::test_access::extend_string_tests::output_len_equals_max_len_in_chars ... ok
+test utils::transforms::test_access::extend_string_tests::returns_empty_if_input_empty ... ok
+test utils::transforms::test_access::extend_string_tests::returns_empty_if_max_len_zero ... ok
+test utils::transforms::test_access::extend_string_tests::works_with_multi_char_input_utf8 ... ok
+test utils::transforms::test_access::extend_string_tests::repeats_and_truncates_ascii ... ok
+test utils::transforms::test_access::get_safe_utf8_char_index_tests::errors_when_index_out_of_range ... ok
+test utils::transforms::test_access::get_safe_utf8_char_index_tests::returns_correct_byte_index_ascii ... ok
+test utils::transforms::test_access::string_to_usize_tests::rejects_semicolon_only ... ok
+test utils::transforms::test_access::string_to_usize_tests::rejects_overflow ... ok
+test utils::transforms::test_access::get_safe_utf8_char_index_tests::returns_correct_byte_index_utf8 ... ok
+test utils::transforms::test_access::get_safe_utf8_char_index_tests::returns_correct_byte_index_with_emoji ... ok
+test utils::transforms::test_access::string_to_usize_tests::parses_integer_with_trailing_semicolon ... ok
+test utils::transforms::test_access::string_to_usize_tests::parses_plain_integer ... ok
+test utils::transforms::test_access::string_to_usize_tests::rejects_negative_number_for_usize ... ok
+test utils::transforms::test_access::string_to_usize_tests::rejects_non_numeric ... ok
+test utils::transforms::test_access::get_safe_utf8_char_index_tests::errors_on_empty_input_for_any_index ... ok
+test utils::transforms::test_access::string_to_usize_tests::rejects_with_whitespace_if_not_trimmed_by_caller ... ok
+test utils::validations::tests::bytecode_tests::placeholder ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_end_out_of_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_ge_end_no_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_ge_end_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_out_of_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::ok_when_indices_in_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::ok_when_start_lt_end_and_no_text ... ok
+test utils::validations::tests::check_index_against_input_tests::ok_when_index_in_range ... ok
+test utils::validations::tests::check_index_against_words_tests::err_when_index_out_of_range ... ok
+test utils::validations::tests::check_index_against_input_tests::err_when_index_out_of_range ... ok
+test utils::validations::tests::check_index_against_input_tests::err_when_input_empty ... ok
+test utils::validations::tests::check_index_against_words_tests::err_when_input_has_no_words ... ok
+test utils::validations::tests::check_file_path_tests::err_for_directory_path ... ok
+test utils::validations::tests::check_file_path_tests::err_for_missing_extension ... ok
+test utils::validations::tests::check_file_path_tests::err_for_wrong_extension ... ok
+test utils::validations::tests::check_index_against_words_tests::ok_with_multiple_spaces_and_newlines ... ok
+test utils::validations::tests::check_index_against_words_tests::ok_when_index_in_range ... ok
+test utils::validations::tests::check_file_path_tests::err_for_nonexistent_path_canonicalize_fails ... ok
+test utils::validations::tests::check_vec_len_tests::bytecode_tests::check_vec_len_ok_for_textforgeparamtypes_vec ... ok
+test utils::validations::tests::check_index_against_words_tests::supports_unicode_words ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_err_for_string_vec ... ok
+test utils::validations::tests::check_file_path_tests::ok_for_existing_file_with_custom_ext ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_ok_for_string_vec ... ok
+test utils::validations::tests::check_file_path_tests::ok_for_existing_file_with_default_ext_textforge ... ok
+test watchers::default_watchers::tests::test_byte_delta_positive_on_growth ... ok
+test watchers::default_watchers::tests::test_char_delta_negative_on_shrink_no_panic ... ok
+test watchers::default_watchers::tests::test_current_len_bytes_counts_utf8_bytes_not_chars ... ok
+test watchers::default_watchers::tests::test_alpha_count ... ok
+test watchers::default_watchers::tests::test_current_len_chars_counts_scalar_values ... ok
+test utils::validations::tests::check_vec_len_tests::bytecode_tests::check_vec_len_err_for_textforgeparamtypes_vec ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_is_generic_for_any_type ... ok
+test watchers::default_watchers::tests::test_byte_delta_negative_on_shrink ... ok
+test watchers::default_watchers::tests::test_digit_count ... ok
+test watchers::default_watchers::tests::test_is_empty_false ... ok
+test watchers::default_watchers::tests::test_is_empty_true ... ok
+test watchers::default_watchers::tests::test_is_unchanged_false_when_text_changes ... ok
+test watchers::default_watchers::tests::test_is_unchanged_true_when_instruction_is_noop ... ok
+test watchers::default_watchers::tests::test_line_count ... ok
+test watchers::default_watchers::tests::test_lowercase_count ... ok
+test watchers::default_watchers::tests::test_unique_char_count_empty_string ... ok
+test watchers::default_watchers::tests::test_unique_char_count ... ok
+test watchers::default_watchers::tests::test_uppercase_count ... ok
+test watchers::default_watchers::tests::test_word_count_basic ... ok
+test watchers::default_watchers::tests::test_whitespace_count ... ok
+test watchers::default_watchers::tests::test_word_count_delta_negative ... ok
+test watchers::tests::test_run_watchers_increments_counter_across_calls ... ok
+test watchers::tests::test_reset_clears_result_and_counter_but_keeps_registration ... ok
+test watchers::tests::test_run_watchers_runs_multiple_scheduled_watchers_per_call ... ok
+test watchers::tests::test_schedule_watcher_succeeds_for_registered_name ... ok
+test watchers::tests::test_schedule_watcher_fails_for_unregistered_name ... ok
+test watchers::tests::test_run_watchers_stores_result_under_current_counter ... ok
+test watchers::tests::test_set_watcher_without_schedule_does_not_run ... ok
+test watchers::tests::test_watcher_context_new_stores_fields_verbatim ... ok
+test watchers::tests::test_to_json_writes_valid_json_matching_result ... ok
+test watchers::tests::test_to_json_overwrites_existing_file ... ok
+
+test result: ok. 786 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src/bin/atp-game.rs (target/debug/deps/atp_game-010fd3e3efaed7d2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/atp-shell.rs (target/debug/deps/atp_shell-c5c994af62d31f01)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/txf-49ff241f4f2a142f)
+
+running 2 tests
+test textforge_tests::parser_tests::test_all_with_short_params ... ok
+test textforge_tests::parser_tests::test_all_with_long_params ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/benchmark.rs (target/debug/deps/benchmark-6c7fa427e4f1c1e1)
+
+running 3 tests
+test benchmark::process_all_tokens ... ok
+test benchmark::process_sbs_all_tokens ... ok
+test benchmark::debug_overhead_too_high ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/bytecode.rs (target/debug/deps/bytecode-a3ec507f6cd9de90)
+
+running 6 tests
+test bytecode::write_bytecode_to_file_tests::directory_path_is_rejected_by_check_file_path ... ok
+test bytecode::write_bytecode_to_file_tests::invalid_extension_is_rejected_by_check_file_path ... ok
+test bytecode::test_read_bytecode_from_file ... ok
+test bytecode::test_write_bytecode_to_file ... ok
+test bytecode::write_bytecode_to_file_tests::writes_header_and_all_token_bytecodes_in_order ... ok
+test bytecode::write_bytecode_to_file_tests::instruction_count_is_zero_when_no_tokens ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/params.rs (target/debug/deps/params-3052a15fe52f4553)
+
+running 14 tests
+test tests::bytecode_string_roundtrip ... ok
+test tests::bytecode_usize_roundtrip ... ok
+test tests::bytecode_rejects_nested_ifdc_outside_blk_assoc ... ok
+test tests::bytecode_rejects_blk_inside_blk_assoc ... ok
+test tests::bytecode_token_ifdc_atb ... ok
+test tests::bytecode_rejects_excessive_assoc_depth ... ok
+test tests::text_rejects_blk_inside_blk_assoc ... ok
+test tests::text_rejects_excessive_assoc_depth ... ok
+test tests::text_ifdc_nest_blk_assoc_raw ... ok
+test tests::text_blk_assoc_valid ... ok
+test tests::text_ifdc_nest_blk_assoc_ifdc_raw_ok ... ok
+test tests::text_rejects_ifdc_inside_ifdc ... ok
+test tests::text_basic_ifdc_valid ... ok
+test tests::bytecode_allows_ifdc_blk_assoc_raw ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/processor.rs (target/debug/deps/processor-49bd3e07abb22b93)
+
+running 7 tests
+test processor::test_add_transform ... ok
+test processor::test_write_to_file ... ok
+test processor::test_process_single_with_debug ... ok
+test processor::test_process_single ... ok
+test processor::test_process_all ... ok
+test processor::test_process_all_with_debug ... ok
+test processor::test_read_from_file ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests textforge
+
+running 116 tests
+test src/api/mod.rs - api::TextForgeBuilderMethods::add_to_beginning (line 140) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::add_to_end (line 113) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_before (line 253) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_chunk (line 1016) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_after (line 224) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_first (line 167) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_single_word (line 1100) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_last (line 195) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_range (line 1059) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_last_word (line 940) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_chunk (line 283) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::capitalize_first_word (line 907) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_kebab_case (line 1483) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_pascal_case (line 1568) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_camel_case (line 1540) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::extract_matches_joined (line 1711) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::pad_left (line 1594) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::remove_whitespace (line 1670) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::delete_single (line 1685) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::insert (line 1386) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::repeat (line 598) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::join_to_snake_case (line 1512) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::pad_right (line 1628) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_all_with (line 320) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_count_with (line 488) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_last_with (line 402) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_nth_with (line 445) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::replace_first_with (line 362) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::rotate_left (line 531) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::split_characters (line 1229) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::select (line 631) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::rotate_right (line 565) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_html_escaped (line 1263) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::split_select (line 975) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_json_unescaped (line 1357) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_json_escaped (line 1329) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_chunk (line 862) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_single (line 778) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_html_unescaped (line 1296) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_all (line 673) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_word (line 1421) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_reverse (line 1199) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_single (line 740) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_chunk (line 817) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_lowercase_all (line 706) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_uppercase_word (line 1451) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_url_decoded (line 1168) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::to_url_encoded (line 1135) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::trim_left_side (line 59) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 113) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 71) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::trim_right_side (line 86) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 91) ... ok
+test src/tokens/instructions/ifdc/mod.rs - tokens::instructions::ifdc::Ifdc (line 24) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor::create_pipeline (line 625) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::trim_both_sides (line 30) ... ok
+test src/tokens/transforms/atb/mod.rs - tokens::transforms::atb::Atb (line 24) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::var (line 1788) ... ok
+test src/api/mod.rs - api::TextForgeBuilderMethods::val (line 1745) ... ok
+test src/tokens/transforms/ate/mod.rs - tokens::transforms::ate::Ate (line 19) ... ok
+test src/tokens/transforms/cts/mod.rs - tokens::transforms::cts::Cts (line 30) ... ok
+test src/tokens/transforms/clw/mod.rs - tokens::transforms::clw::Clw (line 22) ... ok
+test src/tokens/transforms/ctc/mod.rs - tokens::transforms::ctc::Ctc (line 27) ... ok
+test src/tokens/transforms/cfw/mod.rs - tokens::transforms::cfw::Cfw (line 19) ... ok
+test src/tokens/transforms/ctr/mod.rs - tokens::transforms::ctr::Ctr (line 28) ... ok
+test src/tokens/transforms/dla/mod.rs - tokens::transforms::dla::Dla (line 20) ... ok
+test src/tokens/transforms/dll/mod.rs - tokens::transforms::dll::Dll (line 20) ... ok
+test src/tokens/transforms/dlf/mod.rs - tokens::transforms::dlf::Dlf (line 19) ... ok
+test src/tokens/transforms/dlc/mod.rs - tokens::transforms::dlc::Dlc (line 19) ... ok
+test src/tokens/transforms/dls/mod.rs - tokens::transforms::dls::Dls (line 25) ... ok
+test src/tokens/transforms/htmlu/mod.rs - tokens::transforms::htmlu::Htmlu (line 23) ... ok
+test src/tokens/transforms/jcmc/mod.rs - tokens::transforms::jcmc::Jcmc (line 20) ... ok
+test src/tokens/transforms/htmle/mod.rs - tokens::transforms::htmle::Htmle (line 23) ... ok
+test src/tokens/transforms/jkbc/mod.rs - tokens::transforms::jkbc::Jkbc (line 26) ... ok
+test src/tokens/transforms/ins/mod.rs - tokens::transforms::ins::Ins (line 22) ... ok
+test src/tokens/transforms/emj/mod.rs - tokens::transforms::emj::Emj (line 30) ... ok
+test src/tokens/transforms/dlb/mod.rs - tokens::transforms::dlb::Dlb (line 20) ... ok
+test src/tokens/transforms/jpsc/mod.rs - tokens::transforms::jpsc::Jpsc (line 20) ... ok
+test src/tokens/transforms/jsonu/mod.rs - tokens::transforms::jsonu::Jsonu (line 20) ... ok
+test src/tokens/transforms/jsnc/mod.rs - tokens::transforms::jsnc::Jsnc (line 26) ... ok
+test src/tokens/transforms/jsone/mod.rs - tokens::transforms::jsone::Jsone (line 20) ... ok
+test src/tokens/transforms/padl/mod.rs - tokens::transforms::padl::Padl (line 26) ... ok
+test src/tokens/transforms/rlw/mod.rs - tokens::transforms::rlw::Rlw (line 31) ... ok
+test src/tokens/transforms/rnw/mod.rs - tokens::transforms::rnw::Rnw (line 32) ... ok
+test src/tokens/transforms/rpt/mod.rs - tokens::transforms::rpt::Rpt (line 20) ... ok
+test src/tokens/transforms/rcw/mod.rs - tokens::transforms::rcw::Rcw (line 28) ... ok
+test src/tokens/transforms/rev/mod.rs - tokens::transforms::rev::Rev (line 18) ... ok
+test src/tokens/transforms/raw/mod.rs - tokens::transforms::raw::Raw (line 31) ... ok
+test src/tokens/transforms/rfw/mod.rs - tokens::transforms::rfw::Rfw (line 31) ... ok
+test src/tokens/transforms/rmws/mod.rs - tokens::transforms::rmws::Rmws (line 20) ... ok
+test src/tokens/transforms/padr/mod.rs - tokens::transforms::padr::Padr (line 23) ... ok
+test src/tokens/transforms/rtl/mod.rs - tokens::transforms::rtl::Rtl (line 19) ... ok
+test src/tokens/transforms/rtr/mod.rs - tokens::transforms::rtr::Rtr (line 19) ... ok
+test src/tokens/transforms/tlcc/mod.rs - tokens::transforms::tlcc::Tlcc (line 23) ... ok
+test src/tokens/transforms/sslt/mod.rs - tokens::transforms::sslt::Sslt (line 22) ... ok
+test src/tokens/transforms/tbs/mod.rs - tokens::transforms::tbs::Tbs (line 19) ... ok
+test src/tokens/transforms/splc/mod.rs - tokens::transforms::splc::Splc (line 19) ... ok
+test src/tokens/transforms/tla/mod.rs - tokens::transforms::tla::Tla (line 19) ... ok
+test src/tokens/transforms/tlcw/mod.rs - tokens::transforms::tlcw::Tlcw (line 20) ... ok
+test src/tokens/transforms/slt/mod.rs - tokens::transforms::slt::Slt (line 20) ... ok
+test src/tokens/transforms/tlcs/mod.rs - tokens::transforms::tlcs::Tlcs (line 23) ... ok
+test src/tokens/transforms/tls/mod.rs - tokens::transforms::tls::Tls (line 20) ... ok
+test src/tokens/transforms/urle/mod.rs - tokens::transforms::urle::Urle (line 20) ... ok
+test src/tokens/transforms/tucw/mod.rs - tokens::transforms::tucw::Tucw (line 21) ... ok
+test src/tokens/transforms/urld/mod.rs - tokens::transforms::urld::Urld (line 22) ... ok
+test src/watchers/mod.rs - watchers::WatcherContext::new (line 26) ... ok
+test src/tokens/transforms/tucs/mod.rs - tokens::transforms::tucs::Tucs (line 23) ... ok
+test src/tokens/transforms/trs/mod.rs - tokens::transforms::trs::Trs (line 20) ... ok
+test src/tokens/transforms/tucc/mod.rs - tokens::transforms::tucc::Tucc (line 22) ... ok
+test src/watchers/mod.rs - watchers::WatcherList::set_watcher (line 179) ... ok
+test src/watchers/mod.rs - watchers::WatcherList::run_watchers (line 247) ... ok
+test src/watchers/mod.rs - watchers::WatcherList::schedule_watcher (line 200) ... ok
+test src/watchers/mod.rs - watchers::WatcherList::reset (line 126) ... ok
+test src/watchers/mod.rs - watchers::WatcherList::to_json (line 303) ... ok
+test src/watchers/mod.rs - watchers::WatcherList (line 85) ... ok
+test src/api/processor.rs - api::processor::TextForgeProcessor (line 130) ... ok
+
+test result: ok. 116 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+all doctests ran in 0.64s; merged doctests compilation took 0.57s

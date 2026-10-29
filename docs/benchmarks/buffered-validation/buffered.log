@@ -1,0 +1,191 @@
+   Compiling textforge v0.1.7 (/home/jota/.codex/worktrees/benchmark-comparison/atp_project)
+warning: enum `ToClean` is never used
+  --> src/context/execution_context.rs:13:10
+   |
+13 | pub enum ToClean {
+   |          ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `clean_context` is never used
+  --> src/context/execution_context.rs:60:8
+   |
+50 | pub trait GlobalContextMethods {
+   |           -------------------- method in this trait
+...
+60 |     fn clean_context(&mut self) {}
+   |        ^^^^^^^^^^^^^
+
+warning: variant `Boxed` is never constructed
+ --> src/globals/table.rs:9:5
+  |
+8 | pub enum TokenRef {
+  |          -------- variant in this enum
+9 |     Boxed(Box<dyn InstructionMethods>),
+  |     ^^^^^
+  |
+  = note: `TokenRef` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: variants `Identifier` and `Bytecode` are never constructed
+  --> src/globals/table.rs:37:5
+   |
+36 | pub enum QueryTarget {
+   |          ----------- variants in this enum
+37 |     Identifier,
+   |     ^^^^^^^^^^
+38 |     Bytecode,
+   |     ^^^^^^^^
+   |
+   = note: `QueryTarget` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+  --> src/globals/table.rs:45:16
+   |
+45 |     Identifier(&'static str),
+   |     ---------- ^^^^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+45 -     Identifier(&'static str),
+45 +     Identifier(()),
+   |
+
+warning: field `0` is never read
+  --> src/globals/table.rs:46:14
+   |
+46 |     Bytecode(u32),
+   |     -------- ^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `TargetValue` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+46 -     Bytecode(u32),
+46 +     Bytecode(()),
+   |
+
+warning: function `dummy_context` is never used
+   --> src/parser/params.rs:110:4
+    |
+110 | fn dummy_context() -> GlobalExecutionContext {
+    |    ^^^^^^^^^^^^^
+
+warning: `textforge` (lib) generated 7 warnings
+warning: `textforge` (lib test) generated 7 warnings (7 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.06s
+     Running unittests src/lib.rs (target/debug/deps/textforge-0ddf28ec26a8156a)
+
+running 37 tests
+test api::text_buffer::test::independent_reads_and_copies_ignore_previous_cursor ... ok
+test api::text_buffer::test::reader_failure_and_repeat_overflow_return_errors ... ok
+test api::text_buffer::test::rejects_invalid_and_incomplete_utf8 ... ok
+test api::text_buffer::test::threshold_and_consuming_materialization ... ok
+test api::text_buffer::test::unicode_code_points_survive_one_byte_reads ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_end_out_of_range_with_text ... ok
+test utils::validations::tests::bytecode_tests::placeholder ... ok
+test api::text_buffer::test::reports_io_errors_without_exposing_tempfile ... ok
+test api::text_buffer::test::zero_threshold_empty_and_explicit_spill ... ok
+test text::reader::tests::rejects_empty_token_lists_without_panicking ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_ge_end_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_ge_end_no_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::err_when_start_out_of_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::ok_when_indices_in_range_with_text ... ok
+test utils::validations::tests::check_chunk_bound_indexes_tests::ok_when_start_lt_end_and_no_text ... ok
+test utils::validations::tests::check_file_path_tests::err_for_nonexistent_path_canonicalize_fails ... ok
+test utils::validations::tests::check_file_path_tests::err_for_directory_path ... ok
+test utils::validations::tests::check_index_against_input_tests::err_when_index_out_of_range ... ok
+test utils::validations::tests::check_file_path_tests::err_for_missing_extension ... ok
+test utils::validations::tests::check_file_path_tests::err_for_wrong_extension ... ok
+test utils::validations::tests::check_index_against_words_tests::err_when_index_out_of_range ... ok
+test utils::validations::tests::check_index_against_input_tests::err_when_input_empty ... ok
+test utils::validations::tests::check_file_path_tests::ok_for_existing_file_with_custom_ext ... ok
+test utils::validations::tests::check_index_against_input_tests::ok_when_index_in_range ... ok
+test utils::validations::tests::check_file_path_tests::ok_for_existing_file_with_default_ext_textforge ... ok
+test utils::validations::tests::check_index_against_words_tests::err_when_input_has_no_words ... ok
+test utils::validations::tests::check_index_against_words_tests::ok_when_index_in_range ... ok
+test utils::validations::tests::check_index_against_words_tests::ok_with_multiple_spaces_and_newlines ... ok
+test utils::validations::tests::check_index_against_words_tests::supports_unicode_words ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_err_for_string_vec ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_is_generic_for_any_type ... ok
+test utils::validations::tests::check_vec_len_tests::check_vec_len_ok_for_string_vec ... ok
+test text::reader::tests::preserves_comments_and_valid_unicode_parameters ... ok
+test api::processor::buffered::adapter_tests::adapters_record_pipeline_and_parameter_errors ... ok
+test api::text_buffer::test::bounded_operations_match_strings_in_both_storage_modes ... ok
+test api::processor::buffered::adapter_tests::batch_keeps_order_and_continues_after_invalid_input ... ok
+test api::processor::buffered::adapter_tests::adapters_preserve_legacy_transforms_context_and_halt ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+     Running unittests src/bin/atp-game.rs (target/debug/deps/atp_game-824749f0e989f66e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/atp-shell.rs (target/debug/deps/atp_shell-83b54d4ac5ba5710)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/txf-e2787975118a640c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation_failures.rs (target/debug/deps/allocation_failures-1fe1409af4d75787)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/benchmark.rs (target/debug/deps/benchmark-8a44c8dbc5095ad4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/buffered.rs (target/debug/deps/buffered-7936913965d61cf4)
+
+running 8 tests
+test byte_range_export_can_reconstruct_utf8_without_a_string_conversion ... ok
+test dropping_spilled_buffers_cleans_the_storage_directory ... ok
+test file_and_single_instruction_apis_preserve_document_and_newlines ... ok
+test batch_keeps_order_context_isolation_and_errors_and_spills_results ... ok
+test errors_remain_errors_instead_of_partial_success ... ok
+test regex_matches_across_physical_read_boundaries ... ok
+test preserves_legacy_results_for_native_and_fallback_instructions ... ok
+test generated_mixed_pipelines_match_reference_results ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/buffered_pressure.rs (target/debug/deps/buffered_pressure-9a7f297733bac3a4)
+
+running 1 test
+test native_repetition_does_not_materialize_its_output ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/bytecode.rs (target/debug/deps/bytecode-84f05a5461152a8b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/params.rs (target/debug/deps/params-fb1057130333fab9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/processor.rs (target/debug/deps/processor-eb1060857dbab41e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
