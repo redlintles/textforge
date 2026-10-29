@@ -1,9 +1,9 @@
-use serde::{ Serialize, Serializer, ser::SerializeSeq };
+use serde::{Serialize, Serializer, ser::SerializeSeq};
 use std::{
-    collections::{ BTreeMap, HashMap },
-    fs::{ File, OpenOptions },
-    io::{ BufWriter, Write },
-    path::{ Path, PathBuf },
+    collections::{BTreeMap, HashMap},
+    fs::{File, OpenOptions},
+    io::{BufWriter, Write},
+    path::{Path, PathBuf},
     rc::Rc,
 };
 
@@ -12,13 +12,13 @@ const MAX_RETAINED_COLUMNS: usize = 128;
 const MAX_RETAINED_RESULT_CAPACITY: usize = 4096;
 
 use crate::{
-    utils::errors::{ TextForgeError, TextForgeErrorCode },
+    utils::errors::{TextForgeError, TextForgeErrorCode},
     watchers::ExecutionWindows::All,
 };
 
 pub mod default_watchers;
 mod shared_statistics;
-use shared_statistics::{ SharedMetric, Statistics };
+use shared_statistics::{SharedMetric, Statistics};
 
 use std::sync::Arc;
 
@@ -50,7 +50,11 @@ impl WatcherContext {
     /// assert_eq!(ctx.after.as_deref(), Some("BANANA!"));
     /// ```
     pub fn new<C, B, A, I>(current: C, before: B, after: Option<A>, instruction: I) -> Self
-        where C: Into<Arc<str>>, B: Into<Arc<str>>, A: Into<Arc<str>>, I: Into<Arc<str>>
+    where
+        C: Into<Arc<str>>,
+        B: Into<Arc<str>>,
+        A: Into<Arc<str>>,
+        I: Into<Arc<str>>,
     {
         WatcherContext {
             current: current.into(),
@@ -183,15 +187,22 @@ impl WatcherList {
     /// watchers.set_watcher("is_empty", |ctx: WatcherContext| ctx.current.is_empty().to_string());
     /// ```
     pub fn set_watcher<F>(&mut self, watcher_name: &'static str, watcher: F)
-        where F: Fn(WatcherContext) -> String + 'static
+    where
+        F: Fn(WatcherContext) -> String + 'static,
     {
         let metric = SharedMetric::identify::<F>();
         let callback: WatcherCallback = Rc::new(watcher);
-        self.watchers.insert(watcher_name, RegisteredWatcher {
-            callback: Rc::clone(&callback),
-            metric,
-        });
-        if let Ok(index) = self.schedule.binary_search_by_key(&watcher_name, |entry| entry.name) {
+        self.watchers.insert(
+            watcher_name,
+            RegisteredWatcher {
+                callback: Rc::clone(&callback),
+                metric,
+            },
+        );
+        if let Ok(index) = self
+            .schedule
+            .binary_search_by_key(&watcher_name, |entry| entry.name)
+        {
             self.schedule[index].callback = callback;
             self.schedule[index].metric = metric;
         }
@@ -218,30 +229,33 @@ impl WatcherList {
     pub fn schedule_watcher(
         &mut self,
         watcher_name: &'static str,
-        when: ExecutionWindows
+        when: ExecutionWindows,
     ) -> Result<(), TextForgeError> {
-        let callback = self.watchers
-            .get(watcher_name)
-            .ok_or_else(|| {
-                TextForgeError::new(
-                    TextForgeErrorCode::WatcherNotFoundError(
-                        format!("Watcher {watcher_name} not found").into()
-                    ),
-                    "WatcherList.schedule_watcher",
-                    watcher_name.to_string()
-                )
-            })?;
-        match self.schedule.binary_search_by_key(&watcher_name, |entry| entry.name) {
+        let callback = self.watchers.get(watcher_name).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::WatcherNotFoundError(
+                    format!("Watcher {watcher_name} not found").into(),
+                ),
+                "WatcherList.schedule_watcher",
+                watcher_name.to_string(),
+            )
+        })?;
+        match self
+            .schedule
+            .binary_search_by_key(&watcher_name, |entry| entry.name)
+        {
             Ok(index) => {
                 self.schedule[index].when = when;
             }
-            Err(index) =>
-                self.schedule.insert(index, ScheduledWatcher {
+            Err(index) => self.schedule.insert(
+                index,
+                ScheduledWatcher {
                     name: watcher_name,
                     when,
                     callback: Rc::clone(&callback.callback),
                     metric: callback.metric,
-                }),
+                },
+            ),
         }
         Ok(())
     }
@@ -276,7 +290,8 @@ impl WatcherList {
     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
     /// ```
     pub fn run_watchers(&mut self, input: WatcherContext) -> Result<(), TextForgeError> {
-        let next = self.counter
+        let next = self
+            .counter
             .checked_add(1)
             .ok_or_else(|| report_error("Watcher step counter overflow"))?;
         if self.schedule.is_empty() {
@@ -286,11 +301,15 @@ impl WatcherList {
         self.result.try_reserve(1).map_err(report_error)?;
         let mut row = self.spare_rows.pop().unwrap_or_default();
         row.try_reserve(self.schedule.len()).map_err(report_error)?;
-        let (current_mask, before_mask) = self.schedule
+        let (current_mask, before_mask) = self
+            .schedule
             .iter()
             .filter_map(|entry| entry.metric)
             .fold((0, 0), |(current, before), metric| {
-                (current | metric.current_mask(), before | metric.before_mask())
+                (
+                    current | metric.current_mask(),
+                    before | metric.before_mask(),
+                )
             });
         let current_statistics = Statistics::compute(&input.current, current_mask);
         let before_statistics = Statistics::compute(&input.before, before_mask);
@@ -349,16 +368,16 @@ impl WatcherList {
     }
 
     fn write_json(&self, writer: &mut dyn Write) -> Result<(), TextForgeError> {
-        serde_json
-            ::to_writer_pretty(&mut *writer, &(ReportView { rows: &self.result }))
-            .map_err(|error| {
+        serde_json::to_writer_pretty(&mut *writer, &(ReportView { rows: &self.result })).map_err(
+            |error| {
                 let code = if error.is_io() {
                     TextForgeErrorCode::FileWritingError(error.to_string().into())
                 } else {
                     TextForgeErrorCode::SerializationError(error.to_string().into())
                 };
                 TextForgeError::new(code, "WatcherList.to_json", "report serialization")
-            })?;
+            },
+        )?;
         writer.flush().map_err(write_error)
     }
 }
@@ -367,7 +386,7 @@ fn report_error(error: impl std::fmt::Display) -> TextForgeError {
     TextForgeError::new(
         TextForgeErrorCode::ValidationError(error.to_string().into()),
         "WatcherList",
-        "report allocation or counter"
+        "report allocation or counter",
     )
 }
 
@@ -375,7 +394,7 @@ fn write_error(error: std::io::Error) -> TextForgeError {
     TextForgeError::new(
         TextForgeErrorCode::FileWritingError(error.to_string().into()),
         "WatcherList.to_json",
-        "report output"
+        "report output",
     )
 }
 
@@ -440,7 +459,7 @@ struct ReportView<'a> {
 
 fn serialize_rows<S: Serializer>(
     rows: &[HashMap<&'static str, String>],
-    serializer: S
+    serializer: S,
 ) -> Result<S::Ok, S::Error> {
     let mut sequence = serializer.serialize_seq(Some(rows.len()))?;
     for row in rows {
@@ -472,7 +491,7 @@ impl Drop for PendingReport {
 
 fn publish_report(
     path: &Path,
-    emit: impl FnOnce(&mut dyn Write) -> Result<(), TextForgeError>
+    emit: impl FnOnce(&mut dyn Write) -> Result<(), TextForgeError>,
 ) -> Result<(), TextForgeError> {
     let parent = path
         .parent()
@@ -487,7 +506,7 @@ fn publish_report(
             TextForgeError::new(
                 TextForgeErrorCode::FileOpeningError(error.to_string().into()),
                 "WatcherList.to_json",
-                temporary.display().to_string()
+                temporary.display().to_string(),
             )
         })?;
     let pending = PendingReport { path: temporary };

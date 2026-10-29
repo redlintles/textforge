@@ -1,6 +1,6 @@
-mod file_io;
 #[cfg(feature = "buffered")]
 mod buffered;
+mod file_io;
 #[cfg(feature = "buffered")]
 pub use buffered::BufferedTask;
 
@@ -18,25 +18,22 @@ use uuid::Uuid;
 use std::sync::Arc;
 
 #[cfg(feature = "bytecode")]
-use crate::bytecode::{ reader::read_bytecode_from_file, writer::write_bytecode_to_file };
-#[cfg(feature = "watchers")]
-use crate::watchers::WatcherList;
+use crate::bytecode::{reader::read_bytecode_from_file, writer::write_bytecode_to_file};
 #[cfg(all(feature = "watchers", not(feature = "buffered")))]
 use crate::watchers::WatcherContext;
+#[cfg(feature = "watchers")]
+use crate::watchers::WatcherList;
 
 use crate::api::builder::TextForgeBuilder;
-use crate::context::execution_context::GlobalExecutionContext;
 #[cfg(not(feature = "buffered"))]
 use crate::context::execution_context::GlobalContextMethods;
+use crate::context::execution_context::GlobalExecutionContext;
 use crate::parser::resolve_var::TokenWrapper;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
 use crate::utils::apply::apply_transform;
 use crate::utils::errors::{
-    ErrorManager,
-    TextForgeError,
-    TextForgeErrorCode,
-    token_array_not_found,
+    ErrorManager, TextForgeError, TextForgeErrorCode, token_array_not_found,
 };
 
 /// TextForge Processor
@@ -389,7 +386,7 @@ pub trait TextForgeProcessorMethods {
     fn run_transform<'a>(
         &self,
         id: &str,
-        input: Cow<'a, str>
+        input: Cow<'a, str>,
     ) -> Result<Cow<'a, str>, TextForgeError>;
 
     /// Executes all tokens of a registered transform from left to right.
@@ -429,7 +426,7 @@ pub trait TextForgeProcessorMethods {
     fn process_single(
         &mut self,
         token: TokenWrapper,
-        input: &str
+        input: &str,
     ) -> Result<String, TextForgeError>;
 
     /// Executes a registered transform like `process_all`, but prints each step.
@@ -463,7 +460,7 @@ pub trait TextForgeProcessorMethods {
     fn process_single_with_debug(
         &mut self,
         token: TokenWrapper,
-        input: &str
+        input: &str,
     ) -> Result<String, TextForgeError>;
 
     /// Reads `file_path` via a memory-mapped file, runs the registered pipeline
@@ -496,7 +493,7 @@ pub trait TextForgeProcessorMethods {
         &mut self,
         pipeline_id: &str,
         file_path: &Path,
-        output_path: &Path
+        output_path: &Path,
     ) -> Result<(), TextForgeError>;
 
     /// Runs a pipeline over many `(input file, output file)` pairs in parallel.
@@ -567,7 +564,7 @@ pub trait TextForgeProcessorMethods {
         id: &str,
         input: &str,
         watcher_list: &mut WatcherList,
-        report_path: &Path
+        report_path: &Path,
     ) -> Result<String, TextForgeError>;
 
     // -----------------------------------------------------------------
@@ -657,7 +654,11 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     // -- Pipeline persistence (text format) --------------------------
 
     fn write_pipeline_to_file(&mut self, id: &str, path: &Path) -> Result<(), TextForgeError> {
-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+        let tokens = match self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))
+        {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -683,24 +684,22 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     // -- Pipeline registration & inspection ---------------------------
 
     fn add_transform(&mut self, mut tokens: Vec<TokenWrapper>) -> String {
-        for token in &mut tokens { token.prepare_constant(); }
+        for token in &mut tokens {
+            token.prepare_constant();
+        }
         let identifier = Uuid::new_v4().to_string();
         self.transforms.insert(identifier.clone(), tokens);
         identifier
     }
 
     fn remove_transform(&mut self, id: &str) -> Result<(), TextForgeError> {
-        match
-            self.transforms
-                .remove(id)
-                .ok_or_else(|| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::TokenNotFound("Transformation not found".into()),
-                        "remove_transform",
-                        id.to_string()
-                    )
-                })
-        {
+        match self.transforms.remove(id).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::TokenNotFound("Transformation not found".into()),
+                "remove_transform",
+                id.to_string(),
+            )
+        }) {
             Ok(_) => Ok(()),
             Err(e) => Err(e),
         }
@@ -717,18 +716,17 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     }
 
     fn get_transform_vec(&self, id: &str) -> Result<Vec<TokenWrapper>, TextForgeError> {
-        Ok(
-            self.transforms
-                .get(id)
-                .ok_or_else(|| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
-                        "get_transform_vec".to_string(),
-                        id.to_string()
-                    )
-                })?
-                .clone()
-        )
+        Ok(self
+            .transforms
+            .get(id)
+            .ok_or_else(|| {
+                TextForgeError::new(
+                    TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
+                    "get_transform_vec".to_string(),
+                    id.to_string(),
+                )
+            })?
+            .clone())
     }
 
     fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, TextForgeError> {
@@ -738,7 +736,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                 TextForgeError::new(
                     TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
                     "get_transform_vec",
-                    id.to_string()
+                    id.to_string(),
                 )
             })?
             .clone()
@@ -752,11 +750,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     fn run_transform<'a>(
         &self,
         id: &str,
-        input: Cow<'a, str>
+        input: Cow<'a, str>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let mut result = input;
 
-        let tokens = self.transforms.get(id).ok_or_else(token_array_not_found(id))?;
+        let tokens = self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))?;
         let mut context = GlobalExecutionContext::new();
 
         // ErrorManager local, descartável — não é o self.errors compartilhado
@@ -791,7 +792,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     fn process_single(
         &mut self,
         token: TokenWrapper,
-        input: &str
+        input: &str,
     ) -> Result<String, TextForgeError> {
         let mut context = GlobalExecutionContext::new();
         match token.apply_token(Cow::from(input), &mut context) {
@@ -813,7 +814,11 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         let mut result = Cow::from(input);
         let dashes = 10;
 
-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+        let tokens = match self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))
+        {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -841,15 +846,13 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                 let mut it = line.split_whitespace();
 
                 it.next();
-                let v = it
-                    .next()
-                    .ok_or_else(|| {
-                        TextForgeError::new(
-                            TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
-                            "process_all_with_debug",
-                            ""
-                        )
-                    })?;
+                let v = it.next().ok_or_else(|| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
+                        "process_all_with_debug",
+                        "",
+                    )
+                })?;
 
                 log.push_str(
                     &format!(
@@ -865,16 +868,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             } else {
                 // Note: format! aloca, mas agora você faz 1 print no final.
 
-                log.push_str(
-                    &format!(
-                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
-                        counter.to_string().blue(),
-                        (counter + 1).to_string().blue(),
-                        token.to_textforge_line().yellow(),
-                        red_result,
-                        temp.green()
-                    )
-                );
+                log.push_str(&format!(
+                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
+                    counter.to_string().blue(),
+                    (counter + 1).to_string().blue(),
+                    token.to_textforge_line().yellow(),
+                    red_result,
+                    temp.green()
+                ));
             }
 
             if (counter as usize) + 1 < tokens.len() {
@@ -892,7 +893,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     fn process_single_with_debug(
         &mut self,
         token: TokenWrapper,
-        input: &str
+        input: &str,
     ) -> Result<String, TextForgeError> {
         let mut ctx = GlobalExecutionContext::new();
         let output = match token.apply_token(Cow::from(input), &mut ctx) {
@@ -918,7 +919,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         &mut self,
         pipeline_id: &str,
         file_path: &Path,
-        output_path: &Path
+        output_path: &Path,
     ) -> Result<(), TextForgeError> {
         use std::fs::File;
 
@@ -936,39 +937,34 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
         // Garante que o diretório de destino exista antes de criar o arquivo de saída,
         // no mesmo espírito do que process_batch já faz para cada `target`.
-        if
-            let Some(parent) = output_path.parent() &&
-            !parent.as_os_str().is_empty() &&
-            !parent.exists()
+        if let Some(parent) = output_path.parent()
+            && !parent.as_os_str().is_empty()
+            && !parent.exists()
         {
-            std::fs
-                ::create_dir_all(parent)
-                .map_err(|e| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
-                        Cow::from("processor.process_file"),
-                        output_path_str.clone()
-                    )
-                })?;
+            std::fs::create_dir_all(parent).map_err(|e| {
+                TextForgeError::new(
+                    TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
+                    Cow::from("processor.process_file"),
+                    output_path_str.clone(),
+                )
+            })?;
         }
 
         let mut out = File::create(output_path).map_err(|e| {
             TextForgeError::new(
                 TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
                 Cow::from("processor.process_file"),
-                output_path_str.clone()
+                output_path_str.clone(),
             )
         })?;
 
-        out
-            .write_all(result.as_bytes())
-            .map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
-                    Cow::from("processor.process_file"),
-                    output_path_str.clone()
-                )
-            })?;
+        out.write_all(result.as_bytes()).map_err(|e| {
+            TextForgeError::new(
+                TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
+                Cow::from("processor.process_file"),
+                output_path_str.clone(),
+            )
+        })?;
 
         Ok(())
     }
@@ -985,64 +981,51 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             .map(
                 |(origin, pipeline_id, target)| -> Result<(), TextForgeError> {
                     if !origin.exists() {
-                        return Err(
-                            TextForgeError::new(
-                                TextForgeErrorCode::FileNotFound(
-                                    "Origin file does not exist".into()
-                                ),
-                                Cow::Borrowed("process_batch"),
-                                format!("{:?}", origin)
-                            )
-                        );
+                        return Err(TextForgeError::new(
+                            TextForgeErrorCode::FileNotFound("Origin file does not exist".into()),
+                            Cow::Borrowed("process_batch"),
+                            format!("{:?}", origin),
+                        ));
                     }
 
                     if !origin.is_file() {
-                        return Err(
-                            TextForgeError::new(
-                                TextForgeErrorCode::ValidationError(
-                                    "Origin path is not a file".into()
-                                ),
-                                Cow::Borrowed("process_batch"),
-                                format!("{:?}", origin)
-                            )
-                        );
+                        return Err(TextForgeError::new(
+                            TextForgeErrorCode::ValidationError("Origin path is not a file".into()),
+                            Cow::Borrowed("process_batch"),
+                            format!("{:?}", origin),
+                        ));
                     }
 
                     let input = file_io::read_utf8_file(origin, "process_batch")?;
                     let output = self.run_transform(pipeline_id, Cow::Owned(input))?;
 
-                    if
-                        let Some(parent) = target.parent() &&
-                        !parent.as_os_str().is_empty() &&
-                        !parent.exists()
+                    if let Some(parent) = target.parent()
+                        && !parent.as_os_str().is_empty()
+                        && !parent.exists()
                     {
-                        std::fs
-                            ::create_dir_all(parent)
-                            .map_err(|e| {
-                                TextForgeError::new(
-                                    TextForgeErrorCode::FileWritingError(
-                                        "Failed to create target directory".into()
-                                    ),
-                                    Cow::Borrowed("process_batch"),
-                                    format!("{:?} - {}", parent, e)
-                                )
-                            })?;
-                    }
-
-                    std::fs
-                        ::write(target, output.as_bytes())
-                        .map_err(|e| {
+                        std::fs::create_dir_all(parent).map_err(|e| {
                             TextForgeError::new(
                                 TextForgeErrorCode::FileWritingError(
-                                    "Failed to write target file".into()
+                                    "Failed to create target directory".into(),
                                 ),
                                 Cow::Borrowed("process_batch"),
-                                format!("{:?} - {}", target, e)
+                                format!("{:?} - {}", parent, e),
                             )
                         })?;
+                    }
+
+                    std::fs::write(target, output.as_bytes()).map_err(|e| {
+                        TextForgeError::new(
+                            TextForgeErrorCode::FileWritingError(
+                                "Failed to write target file".into(),
+                            ),
+                            Cow::Borrowed("process_batch"),
+                            format!("{:?} - {}", target, e),
+                        )
+                    })?;
 
                     Ok(())
-                }
+                },
             )
             .collect()
     }
@@ -1052,7 +1035,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         id: &str,
         input: &str,
         watcher_list: &mut WatcherList,
-        report_path: &Path
+        report_path: &Path,
     ) -> Result<String, TextForgeError> {
         self.process_watchers_via_buffer(id, input, watcher_list, report_path)
     }
@@ -1063,9 +1046,13 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         id: &str,
         input: &str,
         watcher_list: &mut WatcherList,
-        report_path: &Path
+        report_path: &Path,
     ) -> Result<String, TextForgeError> {
-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+        let tokens = match self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))
+        {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -1093,7 +1080,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                 token,
                 Cow::Borrowed(current_arc.as_ref()),
                 &mut local_errors,
-                &mut context
+                &mut context,
             )?;
 
             // Única cópia de texto inteiro por passo: a saída do transform
@@ -1107,7 +1094,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                     prev_current,
                     prev_before,
                     Some(Arc::clone(&current_arc)), // O(1)
-                    prev_instruction
+                    prev_instruction,
                 );
                 watcher_list.run_watchers(watcher_ctx)?;
             }
@@ -1137,7 +1124,11 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
     #[cfg(feature = "bytecode")]
     fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), TextForgeError> {
-        let tokens = match self.transforms.get(id).ok_or_else(token_array_not_found(id)) {
+        let tokens = match self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))
+        {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());

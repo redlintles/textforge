@@ -1,8 +1,11 @@
 use crate::{
     parser::resolve_var::TokenWrapper,
-    utils::errors::{ TextForgeError, TextForgeErrorCode::{ self, VariableNotFound } },
+    utils::errors::{
+        TextForgeError,
+        TextForgeErrorCode::{self, VariableNotFound},
+    },
 };
-use std::{ borrow::Cow, collections::HashMap };
+use std::{borrow::Cow, collections::HashMap};
 #[derive(Clone)]
 pub enum VarValues {
     String(String),
@@ -101,15 +104,13 @@ impl GlobalContextMethods for GlobalExecutionContext {
     }
 
     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError> {
-        self.blocks
-            .remove(block_id)
-            .ok_or_else(|| {
-                TextForgeError::new(
-                    TextForgeErrorCode::BlockNotFound("Block not found".into()),
-                    "context.take_block",
-                    block_id.to_string()
-                )
-            })
+        self.blocks.remove(block_id).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::BlockNotFound("Block not found".into()),
+                "context.take_block",
+                block_id.to_string(),
+            )
+        })
     }
 
     fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>) {
@@ -142,7 +143,11 @@ impl GlobalContextMethods for GlobalExecutionContext {
                 "".normal()
             };
 
-            result.push_str(&format!("\t\t\t\t{}{}\n", prefix, token.to_textforge_line().yellow()));
+            result.push_str(&format!(
+                "\t\t\t\t{}{}\n",
+                prefix,
+                token.to_textforge_line().yellow()
+            ));
         }
 
         self.put_block(block_id, block_items);
@@ -157,53 +162,46 @@ impl GlobalContextMethods for GlobalExecutionContext {
     fn rm_var(&mut self, var_id: &str) -> Result<(), TextForgeError> {
         let var_id_owned = var_id.to_owned();
 
-        self.variables
-            .remove(var_id)
-            .ok_or_else(|| {
-                TextForgeError::new(
-                    VariableNotFound(
-                        Cow::from(format!("Could not find var {} to remove", var_id_owned))
-                    ),
-                    Cow::from("context.rm_var"),
-                    Cow::from(var_id_owned)
-                )
-            })?;
+        self.variables.remove(var_id).ok_or_else(|| {
+            TextForgeError::new(
+                VariableNotFound(Cow::from(format!(
+                    "Could not find var {} to remove",
+                    var_id_owned
+                ))),
+                Cow::from("context.rm_var"),
+                Cow::from(var_id_owned),
+            )
+        })?;
 
         Ok(())
     }
 
     fn get_var(&self, var_id: &str) -> Result<&VarEntry, TextForgeError> {
-        self.variables
-            .get(var_id)
-            .ok_or_else(|| {
-                TextForgeError::new(
-                    TextForgeErrorCode::VariableNotFound("Variable not found".into()),
-                    "get_var",
-                    var_id.to_string()
-                )
-            })
+        self.variables.get(var_id).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::VariableNotFound("Variable not found".into()),
+                "get_var",
+                var_id.to_string(),
+            )
+        })
     }
 
     fn get_mut_var(&mut self, var_id: &str) -> Result<&mut VarEntry, TextForgeError> {
-        let v = self.variables
-            .get_mut(var_id)
-            .ok_or_else(|| {
-                TextForgeError::new(
-                    TextForgeErrorCode::VariableNotFound("Variable not found".into()),
-                    "get_var",
-                    var_id.to_string()
-                )
-            })?;
+        let v = self.variables.get_mut(var_id).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::VariableNotFound("Variable not found".into()),
+                "get_var",
+                var_id.to_string(),
+            )
+        })?;
         if v.mutable {
             Ok(v)
         } else {
-            Err(
-                TextForgeError::new(
-                    TextForgeErrorCode::NonMutableVariableError("Variable is not mutable".into()),
-                    "get_mut_var",
-                    var_id.to_string()
-                )
-            )
+            Err(TextForgeError::new(
+                TextForgeErrorCode::NonMutableVariableError("Variable is not mutable".into()),
+                "get_mut_var",
+                var_id.to_string(),
+            ))
         }
     }
 }
