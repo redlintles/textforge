@@ -13,6 +13,7 @@ const MAX_RETAINED_RESULT_CAPACITY: usize = 4096;
 
 use crate::{
     utils::errors::{TextForgeError, TextForgeErrorCode},
+    utils::errors::{TextForgeError, TextForgeErrorCode},
     watchers::ExecutionWindows::All,
 };
 
@@ -50,6 +51,11 @@ impl WatcherContext {
     /// assert_eq!(ctx.after.as_deref(), Some("BANANA!"));
     /// ```
     pub fn new<C, B, A, I>(current: C, before: B, after: Option<A>, instruction: I) -> Self
+    where
+        C: Into<Arc<str>>,
+        B: Into<Arc<str>>,
+        A: Into<Arc<str>>,
+        I: Into<Arc<str>>,
     where
         C: Into<Arc<str>>,
         B: Into<Arc<str>>,
@@ -189,6 +195,8 @@ impl WatcherList {
     pub fn set_watcher<F>(&mut self, watcher_name: &'static str, watcher: F)
     where
         F: Fn(WatcherContext) -> String + 'static,
+    where
+        F: Fn(WatcherContext) -> String + 'static,
     {
         let metric = SharedMetric::identify::<F>();
         let callback: WatcherCallback = Rc::new(watcher);
@@ -229,6 +237,7 @@ impl WatcherList {
     pub fn schedule_watcher(
         &mut self,
         watcher_name: &'static str,
+        when: ExecutionWindows,
         when: ExecutionWindows,
     ) -> Result<(), TextForgeError> {
         let callback = self.watchers.get(watcher_name).ok_or_else(|| {
