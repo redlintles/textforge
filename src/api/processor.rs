@@ -60,7 +60,7 @@ use crate::utils::errors::{
 /// in-memory via [`create_pipeline`](Self::create_pipeline), parsed from a `.textforge` text
 /// file via [`get_pipeline_from_file`](TextForgeProcessorMethods::get_pipeline_from_file), or
 /// loaded from a `.textforgebc` bytecode file via
-/// [`read_from_bytecode_file`](TextForgeProcessorMethods::read_from_bytecode_file) — but once
+/// `read_from_bytecode_file` — but once
 /// registered, every pipeline is executed the exact same way by the `process_*` methods.
 /// Reading/writing bytecode never processes input directly; it only moves pipelines in and out
 /// of `self.transforms`.
@@ -248,7 +248,7 @@ pub struct TextForgeProcessor {
 /// - **Bytecode persistence** (`bytecode` feature) — move a pipeline to/from a `.textforgebc`
 ///   binary file. Like the text persistence methods, these never process input directly; they
 ///   only read/write `self.transforms`. To run a bytecode-loaded pipeline, register it with
-///   [`read_from_bytecode_file`](Self::read_from_bytecode_file) and then call any of the
+///   `read_from_bytecode_file` and then call any of the
 ///   `process_*` methods, the same way you would for a text- or builder-originated pipeline.
 pub trait TextForgeProcessorMethods {
     // -----------------------------------------------------------------
@@ -540,7 +540,7 @@ pub trait TextForgeProcessorMethods {
     /// Executes a registered transform like [`process_all`](Self::process_all), but also runs
     /// `watcher_list`'s diagnostics after each step and exports the resulting report as JSON.
     ///
-    /// For every step after the first, a [`WatcherContext`] is built from the *previous* step's
+    /// For every step after the first, a [`WatcherContext`](crate::watchers::WatcherContext) is built from the *previous* step's
     /// `before`/`current` values plus the *current* step's output (as that previous step's
     /// `after`), then passed to `watcher_list.run_watchers`. The final step has no following
     /// step to supply an `after`, so its context is run with `after = None`. Once every step has

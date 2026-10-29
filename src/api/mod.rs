@@ -1661,7 +1661,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// # Example:
     ///
-    /// /// ```rust
+    /// ```rust
     /// use textforge::api::{
     ///     builder::TextForgeBuilder,
     ///     processor::{TextForgeProcessor,TextForgeProcessorMethods},

@@ -54,6 +54,19 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     /// Converts the token to a string representation without parameters, to be used in the mappings
     fn get_string_repr(&self) -> &'static str;
 
+    /// Binds already parsed parameters to this instruction.
+    ///
+    /// Implementations validate the parameter count and types and return
+    /// [`TextForgeError`] on failure. Runtime variable resolution is performed by
+    /// the processor before this method is called. See [`Self::get_params`].
+    ///
+    /// ```
+    /// use textforge::tokens::{InstructionMethods, transforms::atb::Atb};
+    /// let mut token = Atb::new("before");
+    /// let replacement = Atb::new("🍌").get_params().clone();
+    /// token.set_params(&replacement).unwrap();
+    /// assert_eq!(token.transform("x".into(), None).unwrap(), "🍌x");
+    /// ```
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError>;
 
     fn get_params(&self) -> &Vec<TextForgeParamTypes>;
