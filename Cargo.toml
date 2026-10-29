@@ -48,5 +48,5 @@ path = "src/main.rs"
 
 
 [workspace]
-members = [".", "bindings/python"]
+members = [".", "./src/bindings/python"]
 resolver = "3"
