@@ -1,8 +1,15 @@
-use std::{ borrow::Cow, collections::HashMap, sync::{ Arc, LazyLock } };
+use std::{
+    borrow::Cow,
+    collections::HashMap,
+    sync::{Arc, LazyLock},
+};
 
-use crate::{ tokens::InstructionMethods, utils::errors::{ TextForgeError, TextForgeErrorCode } };
+use crate::{
+    tokens::InstructionMethods,
+    utils::errors::{TextForgeError, TextForgeErrorCode},
+};
 
-use crate::tokens::{ instructions::*, transforms::* };
+use crate::tokens::{instructions::*, transforms::*};
 
 #[derive(Clone)]
 pub enum TokenRef {
@@ -60,13 +67,13 @@ pub struct TokenTable {
 impl TokenTable {
     pub fn find(
         &self,
-        (query_source, query_target): (QuerySource, QueryTarget)
+        (query_source, query_target): (QuerySource, QueryTarget),
     ) -> Result<TargetValue, TextForgeError> {
         let err = || {
             TextForgeError::new(
                 TextForgeErrorCode::TokenNotFound("Token Not Found in mapping".into()),
                 "TOKEN_TABLE.find()",
-                "query"
+                "query",
             )
         };
 
