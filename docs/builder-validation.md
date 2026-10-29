@@ -47,23 +47,26 @@ entries would change this behavior; nesting within token parameters is retained.
 
 ## Compatibility and authorization
 
-The only changed public method signature is the explicitly approved
-`TextForgeBuilder::build(&mut self) -> Result<String, TextForgeError>`. Existing
-fluent calls, closure types, trait availability, constructors, and auxiliary
-`build()` signatures are retained. Callers must now propagate the build error or
-unwrap it in a test. Rust examples and existing callers have been migrated.
+With explicit user approval, all built-in builder finalizers are now fallible:
 
-The auxiliary builders retain validated instruction projections for their
-existing standalone, infallible `build() -> Vec<Box<dyn InstructionMethods>>`
-methods. These compatibility projections are prepared locally during collection;
-the root builder ignores them and consumes the actual hierarchy. A block stages
-an entire conditional projection before committing either representation, so a
-late child error cannot partially append a group. Some local errors can still be
-reported during collection; the root always performs complete final validation.
+- `TextForgeBuilder::build(&mut self) -> Result<String, TextForgeError>`.
+- `BlockBuilder::build(self) -> Result<Vec<Box<dyn InstructionMethods>>, TextForgeError>`.
+- `ConditionalBuilderEach::build(self) -> Result<Vec<Box<dyn InstructionMethods>>, TextForgeError>`.
 
-Third-party implementations of the public builder traits retain their existing
-default methods. The tree and transactional group behavior described here apply
-to the built-in builders; no new public trait requirement was introduced.
+The auxiliary builders store only their children. The old instruction caches,
+compatibility projections, eager wrapping, and staging vectors have been removed.
+Every finalizer uses the same validation/lowering implementation. Standalone
+auxiliary finalizers bind only the outer instruction, retaining nested wrappers
+and runtime references. Errors are reported at finalization instead of depending
+on an eager compatibility cache.
+
+Successful closures attach one group; failed closures attach none. A malformed
+child makes the complete finalization fail before the processor is modified.
+Third-party implementations of the public builder traits retain fallible default
+methods that use the same validated auxiliary finalizers; the built-in builders
+retain group nodes instead of flattening during collection.
+
+See [API migration](api-migration.md) for the approved parameter-binding changes.
 
 ## Structural rules
 
@@ -78,7 +81,7 @@ to the built-in builders; no new public trait requirement was introduced.
 - References and interpolations depend on the runtime execution context. Static
   validation does not evaluate them, predict conditional branches, prove block
   call graphs acyclic, or replace semantic execution-time checks.
-- `Blk::from_params` validates descendants before changing its state. Failed
+- `Blk::set_params` validates descendants before changing its state. Failed
   parameter binding preserves its previous instruction.
 
 ## Related correctness fixes
@@ -113,7 +116,6 @@ literal shapes, depth limits, Unicode, empty inputs, variable resolution,
 condition re-evaluation, execution order, and text/bytecode round trips. The
 round trip includes a `val` reference inside a block's conditional body.
 
-All feature combinations and formatting are checked before committing. Strict
-Clippy has existing failures outside this change, including public `&Vec`/`&Box`
-signatures and naming conventions. They are reported rather than changing
-additional public contracts or silencing lints across the project.
+The pre-commit checklist runs formatting, strict Clippy for default and
+`test_access`, and tests for default, bytecode, watchers, and `test_access`. The
+previous Clippy failures have been corrected without project-wide lint suppression.

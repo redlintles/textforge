@@ -44,3 +44,22 @@ Useful references:
 - [`Write::write_all`](https://doc.rust-lang.org/std/io/trait.Write.html#method.write_all):
   standard short-write handling used by the writer.
 - [Builder design](builder-validation.md): hierarchy, validation, and lowering.
+
+## Auxiliary finalizers
+
+The auxiliary builders no longer store an eager instruction cache. Their `build()`
+methods now return `Result<Vec<Box<dyn InstructionMethods>>, TextForgeError>`,
+matching the root builder's fallible finalization model. Collection succeeds
+without semantic execution; structural errors are returned when finalizing.
+
+```rust
+use textforge::api::{block_builder::BlockBuilder, TextForgeBuilderMethods};
+let mut block = BlockBuilder::new("cleanup");
+block.trim_both_sides().unwrap();
+let instructions = block.build().unwrap();
+assert_eq!(instructions.len(), 1);
+```
+
+See [`BlockBuilder`](../src/api/block_builder.rs),
+[`ConditionalBuilderEach`](../src/api/conditional_builder.rs), and the shared
+[tree finalization](../src/api/builder/tree.rs).

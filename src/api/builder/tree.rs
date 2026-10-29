@@ -108,3 +108,23 @@ pub(crate) fn validate_and_lower(nodes: &[Node]) -> Result<Vec<TokenWrapper>, Te
     }
     Ok(output)
 }
+
+/// Materialize only the outer instruction; nested wrappers retain runtime refs.
+pub(crate) fn build_group(node: Node) -> Result<Vec<Box<dyn InstructionMethods>>, TextForgeError> {
+    validate_and_lower(&[node])?
+        .into_iter()
+        .map(|wrapper| {
+            let params = wrapper
+                .get_params()
+                .iter()
+                .map(|value| match value {
+                    ValType::Literal(value) => value.clone(),
+                    ValType::VarRef(name) => TextForgeParamTypes::VarRef(name.clone()),
+                })
+                .collect::<Vec<_>>();
+            let mut token = wrapper.get_default_token();
+            token.set_params(&params)?;
+            Ok(token)
+        })
+        .collect()
+}

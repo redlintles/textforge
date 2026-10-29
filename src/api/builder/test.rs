@@ -36,7 +36,7 @@ fn block(child: TokenWrapper) -> TokenWrapper {
 }
 
 #[test]
-fn rejects_blocks_at_every_descendant_depth_without_changing_builder() {
+fn rejects_blocks_at_every_descendant_depth_at_finalization() {
     for depth in 0..4 {
         let mut child = block(leaf());
         for _ in 0..depth {
@@ -44,12 +44,12 @@ fn rejects_blocks_at_every_descendant_depth_without_changing_builder() {
         }
         let mut builder = BlockBuilder::new("outer");
         builder.add_to_beginning("ok").unwrap();
-        let error = builder.push_token(child).unwrap_err();
+        builder.push_token(child).unwrap();
+        let error = builder.build().err().unwrap();
         assert!(matches!(
             error.error_code,
             TextForgeErrorCode::NestedBlocksNotAllowedError(_)
         ));
-        assert_eq!(builder.build().len(), 1);
     }
 }
 
@@ -102,11 +102,12 @@ fn rejects_bad_shapes_and_excess_depth_at_build() {
             .push_token(conditional(conditional(leaf())))
             .is_ok()
     );
-    assert!(
-        block_builder
-            .push_token(conditional(conditional(conditional(leaf()))))
-            .is_err()
-    );
+    assert_eq!(block_builder.build().unwrap().len(), 1);
+    let mut block_builder = BlockBuilder::new("outer");
+    block_builder
+        .push_token(conditional(conditional(conditional(leaf()))))
+        .unwrap();
+    assert!(block_builder.build().is_err());
 }
 
 #[test]
@@ -155,7 +156,11 @@ fn closure_error_does_not_append_partial_children() {
     let mut builder = processor.create_pipeline();
     let result = builder.block_assoc("outer", |b| {
         b.add_to_beginning("discard")?;
-        b.push_token(block(leaf()))
+        Err(crate::utils::errors::TextForgeError::new(
+            TextForgeErrorCode::ValidationError("closure failed".into()),
+            "test",
+            "",
+        ))
     });
     assert!(result.is_err());
     let id = builder.build().unwrap();
@@ -171,6 +176,7 @@ fn conditional_constructor_preserves_runtime_binding() {
     let id = processor.add_transform(
         builder
             .build()
+            .unwrap()
             .into_iter()
             .map(TokenWrapper::from)
             .collect(),
@@ -272,11 +278,14 @@ fn failed_conditional_group_does_not_partially_mutate_block() {
     builder.add_to_beginning("keep").unwrap();
     let error = builder.if_do_contains_each("x", |body| {
         body.add_to_beginning("discard")?;
-        body.push_token(TokenWrapper::new(Box::new(Atb::default()), Some(vec![])))?;
-        Ok(())
+        Err(crate::utils::errors::TextForgeError::new(
+            TextForgeErrorCode::ValidationError("closure failed".into()),
+            "test",
+            "",
+        ))
     });
     assert!(error.is_err());
-    assert_eq!(builder.build().len(), 1);
+    assert_eq!(builder.build().unwrap().len(), 1);
 }
 
 #[test]

@@ -16,7 +16,6 @@ use crate::{
 pub struct ConditionalBuilderEach {
     token: Box<dyn InstructionMethods>,
     params: Vec<TextForgeParamTypes>,
-    conditional_tokens: Vec<Box<dyn InstructionMethods>>,
     children: Vec<Node>,
 }
 
@@ -25,42 +24,35 @@ impl ConditionalBuilderEach {
         ConditionalBuilderEach {
             token,
             params,
-            conditional_tokens: Vec::new(),
             children: Vec::new(),
         }
     }
 
-    pub(crate) fn into_parts(self) -> (Node, Vec<Box<dyn InstructionMethods>>) {
-        (
-            Node::Group {
-                token: self.token,
-                params: self.params,
-                children: self.children,
-            },
-            self.conditional_tokens,
-        )
+    pub(crate) fn into_node(self) -> Node {
+        Node::Group {
+            token: self.token,
+            params: self.params,
+            children: self.children,
+        }
     }
 
-    pub fn build(self) -> Vec<Box<dyn InstructionMethods>> {
-        self.conditional_tokens
+    /// Validate and lower a standalone conditional group.
+    ///
+    /// ```
+    /// use textforge::api::{conditional_builder::ConditionalBuilderEach, TextForgeBuilderMethods};
+    /// use textforge::tokens::instructions::ifdc::Ifdc;
+    /// let mut conditional = ConditionalBuilderEach::new(Box::new(Ifdc::default()), vec!["x".to_string().into()]);
+    /// conditional.trim_both_sides().unwrap();
+    /// assert_eq!(conditional.build().unwrap().len(), 1);
+    /// ```
+    pub fn build(self) -> Result<Vec<Box<dyn InstructionMethods>>, TextForgeError> {
+        super::builder::tree::build_group(self.into_node())
     }
 }
 
-// push_token funciona normalmente para incrementar conditional_tokens
 impl TextForgeBuilderMethods for ConditionalBuilderEach {
     fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), TextForgeError> {
-        let child = t.into();
-        let mut new_token: Box<dyn InstructionMethods> = self.token.clone();
-
-        let mut param_vec = self.params.clone();
-
-        param_vec.push(child.clone().into());
-
-        new_token.set_params(&param_vec)?;
-
-        self.conditional_tokens.push(new_token);
-        self.children.push(Node::Instruction(child));
-
+        self.children.push(Node::Instruction(t.into()));
         Ok(())
     }
 }

@@ -59,7 +59,7 @@ impl TextForgeConditionalMethods for TextForgeBuilder<'_> {
             vec![TextForgeParamTypes::String(value.to_string())],
         );
         f(&mut child)?;
-        self.nodes.push(child.into_parts().0);
+        self.nodes.push(child.into_node());
         Ok(self)
     }
 }

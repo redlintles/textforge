@@ -1902,7 +1902,7 @@ pub trait TextForgeConditionalMethods: TextForgeBuilderMethods {
 
         f(&mut conditional_builder)?;
 
-        let result = conditional_builder.build();
+        let result = conditional_builder.build()?;
 
         for token in result.into_iter() {
             self.push_token(token)?;
@@ -1925,7 +1925,7 @@ pub trait TextForgeBlockMethods: TextForgeBuilderMethods {
 
         f(&mut block_builder)?;
 
-        let result = block_builder.build();
+        let result = block_builder.build()?;
 
         for token in result.into_iter() {
             self.push_token(token)?;

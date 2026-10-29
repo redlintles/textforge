@@ -18,7 +18,6 @@ use crate::{
 /// ```
 pub struct BlockBuilder {
     block_name: &'static str,
-    block_tokens: Vec<Box<dyn InstructionMethods>>,
     children: Vec<Node>,
 }
 
@@ -26,7 +25,6 @@ impl BlockBuilder {
     pub fn new(block_name: &'static str) -> Self {
         BlockBuilder {
             block_name,
-            block_tokens: Vec::new(),
             children: Vec::new(),
         }
     }
@@ -39,23 +37,22 @@ impl BlockBuilder {
         }
     }
 
-    pub fn build(self) -> Vec<Box<dyn InstructionMethods>> {
-        self.block_tokens
+    /// Validate and lower this standalone block, propagating structural errors.
+    ///
+    /// ```
+    /// use textforge::api::{block_builder::BlockBuilder, TextForgeBuilderMethods};
+    /// let mut block = BlockBuilder::new("cleanup");
+    /// block.trim_both_sides().unwrap();
+    /// assert_eq!(block.build().unwrap().len(), 1);
+    /// ```
+    pub fn build(self) -> Result<Vec<Box<dyn InstructionMethods>>, TextForgeError> {
+        super::builder::tree::build_group(self.into_node())
     }
 }
 
 impl TextForgeBuilderMethods for BlockBuilder {
     fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), TextForgeError> {
-        let token = t.into();
-        crate::parser::structure::validate_block_child(&token)?;
-        let param_vec: Vec<TextForgeParamTypes> =
-            vec![self.block_name.to_string().into(), token.clone().into()];
-
-        let mut new_block = Box::new(Blk::default());
-        new_block.set_params(&param_vec)?;
-
-        self.block_tokens.push(new_block);
-        self.children.push(Node::Instruction(token));
+        self.children.push(Node::Instruction(t.into()));
         Ok(())
     }
 }
@@ -70,15 +67,7 @@ impl TextForgeConditionalMethods for BlockBuilder {
             vec![TextForgeParamTypes::String(value.to_string())],
         );
         f(&mut child)?;
-        let (node, legacy) = child.into_parts();
-        // Keep the existing infallible standalone build() contract. Stage all
-        // legacy wrappers locally so a failed group never partially mutates us.
-        let mut staged = BlockBuilder::new(self.block_name);
-        for token in legacy {
-            staged.push_token(token)?;
-        }
-        self.block_tokens.extend(staged.block_tokens);
-        self.children.push(node);
+        self.children.push(child.into_node());
         Ok(self)
     }
 }
