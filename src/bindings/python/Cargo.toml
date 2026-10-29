@@ -8,5 +8,5 @@ name = "textforge"
 crate-type = ["cdylib"]
 
 [dependencies]
-textforge = { path = "../.." }
+textforge = { path = "../../.." }
 pyo3 = { version = "0.30.1", features = ["extension-module"] }
