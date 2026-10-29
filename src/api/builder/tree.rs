@@ -6,7 +6,7 @@ use crate::{
         resolve_var::{TokenWrapper, ValType},
         structure,
     },
-    tokens::{InstructionMethods, instructions::null::Null},
+    tokens::InstructionMethods,
     utils::errors::TextForgeError,
 };
 
@@ -42,20 +42,14 @@ pub(crate) fn validate_and_lower(nodes: &[Node]) -> Result<Vec<TokenWrapper>, Te
                 params,
                 children,
             } => {
-                // Check the group's own signature independently of its children,
-                // including empty groups, without executing or resolving values.
-                let mut header = params
-                    .iter()
-                    .cloned()
-                    .map(ValType::Literal)
-                    .collect::<Vec<_>>();
-                header.push(ValType::Literal(TextForgeParamTypes::Token(
-                    TokenWrapper::new(Box::new(Null::default()), None),
-                )));
-                structure::validate_at(
-                    &TokenWrapper::new(token.clone(), Some(header)),
-                    depth,
-                    inside_block,
+                // A group header exposes an instruction slot, not a fake child.
+                // Every real child is validated independently with inherited context.
+                structure::rules::check(
+                    &structure::rules::InstructionView::group(token.get_string_repr(), params),
+                    structure::rules::ValidationContext {
+                        depth,
+                        inside_block,
+                    },
                 )?;
                 let inside_block = inside_block || token.get_string_repr() == "blk";
                 pending.extend(

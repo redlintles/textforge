@@ -70,6 +70,11 @@ See [API migration](api-migration.md) for the approved parameter-binding changes
 
 ## Structural rules
 
+Policy is registered independently of traversal. See the [validation extension
+guide](validation-rules.md) for the shared context/views, current rule types, and
+a worked example of registering a new rule. Groups expose a typed instruction
+slot rather than a dummy `null` instruction.
+
 - Traits still prohibit ordinary block definitions inside block or conditional
   bodies. Compile-fail doctests verify those boundaries.
 - Raw `push_token` cannot bypass final validation: block declarations are rejected
