@@ -51,7 +51,7 @@ impl InstructionMethods for Rmws {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         Ok(input.split_whitespace().collect::<Vec<_>>().join("").into())
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "rmws", "")?;
         Ok(())
     }

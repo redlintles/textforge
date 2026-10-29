@@ -63,24 +63,24 @@ mod tests {
         assert_eq!(got, expected);
     }
     #[test]
-    fn from_params_accepts_two_params() {
+    fn set_params_accepts_two_params() {
         let mut t = Sslt::default();
         let params = vec![
             TextForgeParamTypes::String("_".to_string()),
             TextForgeParamTypes::Usize(1),
         ];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.index, 1);
         assert_eq!(t.pattern.to_string(), "_".to_string());
     }
 
     #[test]
-    fn from_params_rejects_wrong_len() {
+    fn set_params_rejects_wrong_len() {
         let mut t = Sslt::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,

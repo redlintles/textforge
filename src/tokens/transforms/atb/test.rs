@@ -66,13 +66,13 @@ mod common {
         assert_eq!(t.get_string_repr(), "atb");
     }
     #[test]
-    fn atb_from_params_accepts_single_string_param() {
+    fn atb_set_params_accepts_single_string_param() {
         let mut t = Atb::default();
         let mut ctx = GlobalExecutionContext::new();
 
         let params = vec![TextForgeParamTypes::String("foo".to_string())];
 
-        t.from_params(&params).unwrap();
+        t.set_params(&params).unwrap();
         assert_eq!(t.text, "foo");
 
         assert_eq!(
@@ -84,14 +84,14 @@ mod common {
     }
 
     #[test]
-    fn atb_from_params_rejects_wrong_param_count() {
+    fn atb_set_params_rejects_wrong_param_count() {
         let mut t = Atb::default();
         let params = vec![
             TextForgeParamTypes::String("a".to_string()),
             TextForgeParamTypes::String("b".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -100,9 +100,9 @@ mod common {
     }
 
     #[test]
-    fn atb_to_bytecode_can_be_parsed_into_params_and_feed_from_params() {
+    fn atb_to_bytecode_can_be_parsed_into_params_and_feed_set_params() {
         // Fluxo real:
-        // Atb::to_bytecode -> extrair param -> TextForgeParamTypes::from_bytecode(param bytes) -> Atb::from_params
+        // Atb::to_bytecode -> extrair param -> TextForgeParamTypes::from_bytecode(param bytes) -> Atb::set_params
         //
         // Layout:
         // [u64 instruction_total_size][u32 opcode][u8 param_count]
@@ -133,7 +133,7 @@ mod common {
         let parsed_param = TextForgeParamTypes::from_bytecode(param_slice).unwrap();
 
         let mut rebuilt = Atb::default();
-        rebuilt.from_params(&vec![parsed_param]).unwrap();
+        rebuilt.set_params(&[parsed_param]).unwrap();
 
         assert_eq!(rebuilt.text, "hello");
         assert_eq!(

@@ -77,7 +77,7 @@ impl InstructionMethods for Atb {
         "atb"
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
         use crate::parser::params::TextForgeParamTypesJoin;
 

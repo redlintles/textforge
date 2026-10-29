@@ -68,11 +68,11 @@ fn root_push_cannot_bypass_block_rules() {
 fn failed_block_binding_keeps_previous_state() {
     let mut token = Blk::default();
     token
-        .from_params(&vec!["valid".to_string().into(), leaf().into()])
+        .set_params(&["valid".to_string().into(), leaf().into()])
         .unwrap();
     let before = token.to_textforge_line();
     let error = token
-        .from_params(&vec![
+        .set_params(&[
             "invalid".to_string().into(),
             conditional(block(leaf())).into(),
         ])
@@ -346,7 +346,7 @@ fn context_aware_parameter_export_still_resolves_nested_values() {
     let mut context = GlobalExecutionContext::new();
     let mut variable = Val::default();
     variable
-        .from_params(&vec!["prefix".to_string().into(), "🍌".to_string().into()])
+        .set_params(&["prefix".to_string().into(), "🍌".to_string().into()])
         .unwrap();
     variable.transform("".into(), Some(&mut context)).unwrap();
     let parameter =

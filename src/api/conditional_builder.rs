@@ -56,7 +56,7 @@ impl TextForgeBuilderMethods for ConditionalBuilderEach {
 
         param_vec.push(child.clone().into());
 
-        new_token.from_params(&param_vec)?;
+        new_token.set_params(&param_vec)?;
 
         self.conditional_tokens.push(new_token);
         self.children.push(Node::Instruction(child));

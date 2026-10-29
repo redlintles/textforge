@@ -13,6 +13,7 @@ use crate::tokens::{instructions::*, transforms::*};
 
 #[derive(Clone)]
 pub enum TokenRef {
+    #[cfg(feature = "test_access")]
     Boxed(Box<dyn InstructionMethods>),
     Shared(Arc<dyn InstructionMethods>),
 }
@@ -20,6 +21,7 @@ pub enum TokenRef {
 impl TokenRef {
     fn clone_ref(&self) -> TokenRef {
         match self {
+            #[cfg(feature = "test_access")]
             TokenRef::Boxed(b) => TokenRef::Boxed(b.clone()),
             TokenRef::Shared(a) => TokenRef::Shared(a.clone()),
         }
@@ -27,6 +29,7 @@ impl TokenRef {
 
     pub fn into_box(self) -> Box<dyn InstructionMethods> {
         match self {
+            #[cfg(feature = "test_access")]
             TokenRef::Boxed(b) => b,
             TokenRef::Shared(a) => a.clone_box(),
         }
@@ -41,7 +44,9 @@ pub enum QuerySource {
 
 #[derive(Clone, Copy, Debug)]
 pub enum QueryTarget {
+    #[cfg(feature = "test_access")]
     Identifier,
+    #[cfg(feature = "test_access")]
     Bytecode,
     Token,
     Syntax,
@@ -49,14 +54,18 @@ pub enum QueryTarget {
 
 #[derive(Clone)]
 pub enum TargetValue {
+    #[cfg(feature = "test_access")]
     Identifier(&'static str),
+    #[cfg(feature = "test_access")]
     Bytecode(u32),
     Token(TokenRef),
     Syntax(Arc<[SyntaxDef]>),
 }
 
 pub struct TokenTable {
+    #[cfg(feature = "test_access")]
     id_to_code: HashMap<&'static str, u32>,
+    #[cfg(feature = "test_access")]
     code_to_id: HashMap<u32, &'static str>,
     id_to_token: HashMap<&'static str, TokenRef>,
     code_to_token: HashMap<u32, TokenRef>,
@@ -79,6 +88,7 @@ impl TokenTable {
 
         match (query_source, query_target) {
             // ✅ CORINGA: QuerySource e QueryTarget "iguais" (eco + valida existência)
+            #[cfg(feature = "test_access")]
             (QuerySource::Identifier(id), QueryTarget::Identifier) => {
                 // valida que existe
                 if self.id_to_code.contains_key(id.as_ref()) {
@@ -91,6 +101,7 @@ impl TokenTable {
                     Err(err())
                 }
             }
+            #[cfg(feature = "test_access")]
             (QuerySource::Bytecode(code), QueryTarget::Bytecode) => {
                 // valida que existe
                 if self.code_to_id.contains_key(&code) {
@@ -101,6 +112,7 @@ impl TokenTable {
             }
 
             // --- demais casos normais ---
+            #[cfg(feature = "test_access")]
             (QuerySource::Identifier(id), QueryTarget::Bytecode) => {
                 let code = *self.id_to_code.get(id.as_ref()).ok_or_else(err)?;
                 Ok(TargetValue::Bytecode(code))
@@ -109,6 +121,7 @@ impl TokenTable {
                 let tok = self.id_to_token.get(id.as_ref()).ok_or_else(err)?;
                 Ok(TargetValue::Token(tok.clone_ref()))
             }
+            #[cfg(feature = "test_access")]
             (QuerySource::Bytecode(code), QueryTarget::Identifier) => {
                 let id = *self.code_to_id.get(&code).ok_or_else(err)?;
                 Ok(TargetValue::Identifier(id))
@@ -203,7 +216,9 @@ macro_rules! define_token_table {
             )*
 
             TokenTable {
+                #[cfg(feature = "test_access")]
                 id_to_code,
+                #[cfg(feature = "test_access")]
                 code_to_id,
                 id_to_token,
                 code_to_token,

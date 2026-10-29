@@ -67,7 +67,7 @@ impl InstructionMethods for Jcmc {
     fn get_opcode(&self) -> u32 {
         0x2d
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "jcmc", "")?;
         Ok(())
     }

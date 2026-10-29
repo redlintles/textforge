@@ -64,7 +64,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_accepts_text_then_max_len() {
+    fn set_params_accepts_text_then_max_len() {
         let mut t = Padl::default();
 
         let params = vec![
@@ -72,18 +72,18 @@ mod tests {
             TextForgeParamTypes::Usize(7),
         ];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.text, "xy".to_string());
         assert_eq!(t.max_len, 7);
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Padl::default();
 
         let params = vec![TextForgeParamTypes::String("xy".to_string())];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_types() {
+    fn set_params_rejects_wrong_param_types() {
         let mut t = Padl::default();
 
         // invertido propositalmente
@@ -101,7 +101,7 @@ mod tests {
             TextForgeParamTypes::String("xy".to_string()),
         ];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         // parse_args! retorna InvalidParameters com a msg do callsite
         let expected = Err(crate::utils::errors::TextForgeError::new(
@@ -180,12 +180,12 @@ mod tests {
         }
 
         #[test]
-        fn bytecode_param_order_currently_conflicts_with_from_params_expectation() {
+        fn bytecode_param_order_currently_conflicts_with_set_params_expectation() {
             // Este teste documenta o bug atual:
-            // - from_params espera [String, Usize]
+            // - set_params espera [String, Usize]
             // - to_bytecode emite [Usize, String]
             //
-            // Aqui a gente mostra que, SE alguém tentar alimentar from_params
+            // Aqui a gente mostra que, SE alguém tentar alimentar set_params
             // com params na ordem do bytecode, vai falhar por tipo inválido.
             let mut t = Padl::default();
 
@@ -194,7 +194,7 @@ mod tests {
                 TextForgeParamTypes::String("xy".to_string()),
             ];
 
-            let got = t.from_params(&params_as_emitted_by_to_bytecode_today);
+            let got = t.set_params(&params_as_emitted_by_to_bytecode_today);
 
             let expected = Err(crate::utils::errors::TextForgeError::new(
                 TextForgeErrorCode::InvalidParameters(

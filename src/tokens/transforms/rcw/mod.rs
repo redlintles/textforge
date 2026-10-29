@@ -115,7 +115,7 @@ impl InstructionMethods for Rcw {
     fn get_string_repr(&self) -> &'static str {
         "rcw"
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
 
         check_vec_len(params, 3, "rcw", "")?;

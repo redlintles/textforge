@@ -98,7 +98,7 @@ impl InstructionMethods for Ctr {
     fn to_textforge_line(&self) -> Cow<'static, str> {
         format!("ctr {} {};\n", self.start_index, self.end_index).into()
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
 
         check_vec_len(params, 2, "ctr", "")?;

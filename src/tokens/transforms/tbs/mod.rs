@@ -55,7 +55,7 @@ impl InstructionMethods for Tbs {
     fn get_string_repr(&self) -> &'static str {
         "tbs"
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "tbs", "")?;
         Ok(())
     }

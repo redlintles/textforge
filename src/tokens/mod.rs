@@ -54,7 +54,7 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     /// Converts the token to a string representation without parameters, to be used in the mappings
     fn get_string_repr(&self) -> &'static str;
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError>;
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError>;
 
     fn get_params(&self) -> &Vec<TextForgeParamTypes>;
     /// BytecodeMethods

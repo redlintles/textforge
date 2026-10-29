@@ -27,26 +27,26 @@ mod tests {
     }
 
     #[test]
-    fn from_params_sets_expr_and_target() {
+    fn set_params_sets_expr_and_target() {
         let mut t = Eval::default();
         let params = vec![
             TextForgeParamTypes::String("2 + 2".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ];
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
 
         let stored = t.get_params();
-        assert!(matches!(stored.get(0), Some(TextForgeParamTypes::String(s)) if s == "2 + 2"));
+        assert!(matches!(stored.first(), Some(TextForgeParamTypes::String(s)) if s == "2 + 2"));
         assert!(matches!(stored.get(1), Some(TextForgeParamTypes::String(s)) if s == "result"));
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Eval::default();
         let params = vec![TextForgeParamTypes::String("2 + 2".to_string())];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -54,14 +54,14 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_non_string_expr() {
+    fn set_params_rejects_non_string_expr() {
         let mut t = Eval::default();
         let params = vec![
             TextForgeParamTypes::Usize(1),
             TextForgeParamTypes::String("result".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidParameters(_)
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn to_textforge_line_matches_eval_syntax() {
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("2 + 2".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -207,7 +207,7 @@ mod tests {
     #[test]
     fn transform_fails_without_context() {
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("1 + 1".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -233,7 +233,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("1 + 1".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -259,7 +259,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("1 + 1".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -283,7 +283,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("2 + 3".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -316,7 +316,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("x + 10".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -349,7 +349,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("greeting + \" mundo\"".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -376,7 +376,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("\"hello\"".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -409,7 +409,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("1 + 1".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -434,7 +434,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("2 +".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -460,7 +460,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("nao_existe + 1".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])
@@ -497,7 +497,7 @@ mod tests {
         .unwrap();
 
         let mut t = Eval::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n + 1".to_string()),
             TextForgeParamTypes::String("result".to_string()),
         ])

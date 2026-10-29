@@ -68,7 +68,7 @@ impl InstructionMethods for Iter {
         Ok(result)
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "iter", "param parsing error, invalid vec len")?;
         self.times = parse_args!(params, 0, Usize, "First argument should be of type usize");
         self.inner = parse_args!(

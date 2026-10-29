@@ -3,7 +3,7 @@ use std::{
     borrow::Cow,
     fs::OpenOptions,
     io::{self, Error, Read, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 use textforge::{
     api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
@@ -127,10 +127,7 @@ fn process_by_mode(
 /// Modo 'b' só existe quando o binário é compilado com `--features bytecode`;
 /// sem o feature, escolher 'b' falha em runtime com uma mensagem clara, em
 /// vez de o binário inteiro deixar de compilar sem esse feature ligado.
-fn load_pipeline(
-    mode: &str,
-    file: &PathBuf,
-) -> Result<(String, TextForgeProcessor), TextForgeError> {
+fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor), TextForgeError> {
     match mode {
         "b" => {
             #[cfg(feature = "bytecode")]
@@ -280,7 +277,7 @@ mod textforge_tests {
             assert_eq!(*output, PathBuf::from_str("output.txt").unwrap());
             assert_eq!(*textforge_mode, "b".to_string());
             assert_eq!(*read_mode, ReadMode::Line);
-            assert_eq!(*debug, true);
+            assert!(*debug);
         }
         #[test]
         fn test_all_with_short_params() {
@@ -307,7 +304,7 @@ mod textforge_tests {
             assert_eq!(*output, PathBuf::from_str("output.txt").unwrap());
             assert_eq!(*textforge_mode, "b".to_string());
             assert_eq!(*read_mode, ReadMode::Line);
-            assert_eq!(*debug, true);
+            assert!(*debug);
         }
     }
 }

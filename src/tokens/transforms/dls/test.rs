@@ -104,11 +104,11 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Dls::default();
         let params = vec![TextForgeParamTypes::Usize(1), TextForgeParamTypes::Usize(2)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -117,20 +117,20 @@ mod tests {
     }
 
     #[test]
-    fn from_params_accepts_single_usize_param() {
+    fn set_params_accepts_single_usize_param() {
         let mut t = Dls::default();
         let params = vec![TextForgeParamTypes::Usize(7)];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.index, 7);
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_type() {
+    fn set_params_rejects_wrong_param_type() {
         let mut t = Dls::default();
         let params = vec![TextForgeParamTypes::String("x".to_string())];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::InvalidParameters("Index should be of usize type".into()),

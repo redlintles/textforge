@@ -116,7 +116,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_parses_pattern_and_separator_and_builds_regex() {
+    fn set_params_parses_pattern_and_separator_and_builds_regex() {
         let mut t = Emj::default();
 
         let params = vec![
@@ -125,7 +125,7 @@ mod tests {
         ];
         let mut ctx = GlobalExecutionContext::new();
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.pattern.as_str(), r"\d+");
         assert_eq!(t.separator, "-".to_string());
         assert_eq!(
@@ -137,12 +137,12 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Emj::default();
 
         let params = vec![TextForgeParamTypes::String(r"\d+".to_string())];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_types() {
+    fn set_params_rejects_wrong_param_types() {
         let mut t = Emj::default();
 
         // first param should be String(pattern)
@@ -160,7 +160,7 @@ mod tests {
             TextForgeParamTypes::String(",".to_string()),
         ];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::InvalidParameters("Pattern should be of string type".into()),
@@ -172,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_invalid_regex_payload() {
+    fn set_params_rejects_invalid_regex_payload() {
         let mut t = Emj::default();
 
         let params = vec![
@@ -180,7 +180,7 @@ mod tests {
             TextForgeParamTypes::String(",".to_string()),
         ];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::TextParsingError("Failed to create regex".into()),

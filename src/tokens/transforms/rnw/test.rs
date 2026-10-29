@@ -138,7 +138,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_parses_three_params() {
+    fn set_params_parses_three_params() {
         let mut t = Rnw::default();
 
         let params = vec![
@@ -147,14 +147,14 @@ mod tests {
             TextForgeParamTypes::Usize(2),
         ];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.pattern.as_str(), "a+");
         assert_eq!(t.text_to_replace, "b".to_string());
         assert_eq!(t.index, 2);
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Rnw::default();
 
         let params = vec![
@@ -162,7 +162,7 @@ mod tests {
             TextForgeParamTypes::String("b".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -171,7 +171,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_types() {
+    fn set_params_rejects_wrong_types() {
         let mut t = Rnw::default();
 
         let params = vec![
@@ -180,7 +180,7 @@ mod tests {
             TextForgeParamTypes::Usize(2),
         ];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::InvalidParameters("Pattern should be of string type".into()),
@@ -192,7 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_invalid_regex_payload() {
+    fn set_params_rejects_invalid_regex_payload() {
         let mut t = Rnw::default();
 
         let params = vec![
@@ -201,7 +201,7 @@ mod tests {
             TextForgeParamTypes::Usize(2),
         ];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::TextParsingError("Failed to create regex".into()),

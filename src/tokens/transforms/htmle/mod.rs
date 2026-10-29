@@ -59,7 +59,7 @@ impl InstructionMethods for Htmle {
             Cow::Owned(s) => Ok(Cow::Owned(encode_safe(&s).into_owned())),
         }
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "dlf", "")?;
         Ok(())
     }

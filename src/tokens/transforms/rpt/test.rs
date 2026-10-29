@@ -97,22 +97,22 @@ mod tests {
     }
 
     #[test]
-    fn from_params_parses_single_usize() {
+    fn set_params_parses_single_usize() {
         let mut t = Rpt::default();
 
         let params = vec![TextForgeParamTypes::Usize(5)];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.times, 5);
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Rpt::default();
 
         let params = vec![];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -121,12 +121,12 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_type() {
+    fn set_params_rejects_wrong_type() {
         let mut t = Rpt::default();
 
         let params = vec![TextForgeParamTypes::String("x".to_string())];
 
-        assert!(t.from_params(&params).is_err());
+        assert!(t.set_params(&params).is_err());
     }
 
     // ============================

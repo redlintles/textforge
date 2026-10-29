@@ -34,20 +34,20 @@ mod tests {
     }
 
     #[test]
-    fn from_params_accepts_two_usize() {
+    fn set_params_accepts_two_usize() {
         let mut t = Tucc::default();
         let params = vec![TextForgeParamTypes::Usize(1), TextForgeParamTypes::Usize(4)];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.to_textforge_line().as_ref(), "tucc 1 4;\n");
     }
 
     #[test]
-    fn from_params_rejects_wrong_len() {
+    fn set_params_rejects_wrong_len() {
         let mut t = Tucc::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,

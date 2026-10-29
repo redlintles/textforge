@@ -42,16 +42,16 @@ mod tests {
     }
 
     fn is_text_err(code: &TextForgeErrorCode) -> bool {
-        return matches!(code, TextForgeErrorCode::TextParsingError(_));
+        matches!(code, TextForgeErrorCode::TextParsingError(_))
     }
 
     fn is_bc_err(code: &TextForgeErrorCode) -> bool {
-        return matches!(
+        matches!(
             code,
             TextForgeErrorCode::BytecodeParsingError(_)
                 | TextForgeErrorCode::BytecodeParamParsingError(_)
                 | TextForgeErrorCode::BytecodeParamNotRecognized(_)
-        );
+        )
     }
 
     // -----------------------------

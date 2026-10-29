@@ -128,7 +128,7 @@ impl InstructionMethods for Ctc {
     fn to_textforge_line(&self) -> Cow<'static, str> {
         format!("ctc {} {};\n", self.start_index, self.end_index).into()
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
         use crate::parser::params::TextForgeParamTypesJoin;
 

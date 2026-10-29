@@ -76,7 +76,7 @@ mod tests {
         // Ex.: NBSP (\u{00A0}) e EM SPACE (\u{2003}) podem variar por versão,
         // então uso um que costuma ser reconhecido (EM SPACE).
         let t = Rmws::default();
-        let input = format!("a\u{2003}b\u{2003}c");
+        let input = "a\u{2003}b\u{2003}c".to_string();
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(
@@ -88,17 +88,17 @@ mod tests {
     }
 
     #[test]
-    fn rmws_from_params_ok_empty() {
+    fn rmws_set_params_ok_empty() {
         let mut t = Rmws::default();
         let v: Vec<TextForgeParamTypes> = vec![];
-        assert!(t.from_params(&v).is_ok());
+        assert!(t.set_params(&v).is_ok());
     }
 
     #[test]
-    fn rmws_from_params_err_when_not_empty() {
+    fn rmws_set_params_err_when_not_empty() {
         let mut t = Rmws::default();
         let v: Vec<TextForgeParamTypes> = vec![TextForgeParamTypes::Usize(0)];
-        assert!(t.from_params(&v).is_err());
+        assert!(t.set_params(&v).is_err());
     }
     #[cfg(feature = "bytecode")]
     mod bytecode {

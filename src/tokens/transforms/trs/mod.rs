@@ -60,7 +60,7 @@ impl InstructionMethods for Trs {
     fn get_opcode(&self) -> u32 {
         0x07
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "trs", "")?;
         Ok(())
     }

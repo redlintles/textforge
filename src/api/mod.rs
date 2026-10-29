@@ -1936,7 +1936,7 @@ pub trait TextForgeBlockMethods: TextForgeBuilderMethods {
     fn call_block(&mut self, block_name: &'static str) -> Result<&mut Self, TextForgeError> {
         let mut t: Box<dyn InstructionMethods> = Box::new(cblk::Cblk::default());
 
-        t.from_params(&vec![TextForgeParamTypes::String(block_name.to_string())])?;
+        t.set_params(&[TextForgeParamTypes::String(block_name.to_string())])?;
 
         self.push_token(t)?;
         Ok(self)

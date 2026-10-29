@@ -56,7 +56,7 @@ impl InstructionMethods for Splc {
             .join(" ")
             .into())
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "rmws", "")?;
         Ok(())
     }

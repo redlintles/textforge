@@ -78,7 +78,7 @@ impl InstructionMethods for Rmp {
         }
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 1, "rmp", "param parsing error, invalid vec len")?;
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 

@@ -3,9 +3,11 @@
 // - Texto: retorna Vec<ValType> (Literal / VarRef) via sintaxe {{nome}}
 // - Bytecode: 0x01 String, 0x02 Usize, 0x03 Token, 0x04 VarRef
 // - PARAM_TOKEN: constrói TokenWrapper(params: Vec<ValType>, token: Box<dyn InstructionMethods>)
-//   (não chama from_params aqui; isso fica pro runtime no TokenWrapper)
+//   (não chama set_params aqui; isso fica pro runtime no TokenWrapper)
 
-use crate::{context::execution_context::GlobalExecutionContext, utils::regexes::VAR_REF_RE};
+#[cfg(feature = "bytecode")]
+use crate::context::execution_context::GlobalExecutionContext;
+use crate::utils::regexes::VAR_REF_RE;
 use core::str;
 use std::{
     array::TryFromSliceError,
@@ -104,14 +106,6 @@ impl TryFrom<TextForgeParamTypes> for VarValues {
     }
 }
 
-// Nota: esse dummy_context só existe pra manter o From<TextForgeParamTypes> for String compilável
-// se você realmente precisar converter TokenWrapper -> String sem contexto, troque por get_default_token().to_textforge_line()
-// ou remova completamente esse From.
-fn dummy_context() -> GlobalExecutionContext {
-    // Se seu GlobalExecutionContext não tiver Default, remova o dummy_context e ajuste o From.
-    GlobalExecutionContext::new()
-}
-
 impl TryFrom<TextForgeParamTypes> for usize {
     type Error = TextForgeError;
     fn try_from(value: TextForgeParamTypes) -> Result<Self, TextForgeError> {
@@ -164,6 +158,12 @@ pub trait TextForgeParamTypesJoin {
 
 impl TextForgeParamTypesJoin for Vec<TextForgeParamTypes> {
     fn join(&self, sep: &str) -> String {
+        self.as_slice().join(sep)
+    }
+}
+
+impl TextForgeParamTypesJoin for [TextForgeParamTypes] {
+    fn join(&self, sep: &str) -> String {
         let mut out = String::new();
         for (idx, item) in self.iter().enumerate() {
             if idx > 0 {
@@ -194,16 +194,17 @@ const PARAM_USIZE: u32 = 0x02;
 const PARAM_TOKEN: u32 = 0x03;
 const PARAM_VARREF: u32 = 0x04;
 
-impl TextForgeParamTypes {
-    pub fn to_string(&self) -> String {
+impl std::fmt::Display for TextForgeParamTypes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TextForgeParamTypes::String(payload) => payload.to_string(),
-            TextForgeParamTypes::VarRef(payload) => payload.to_string(),
-            TextForgeParamTypes::Usize(payload) => payload.to_string(),
-            TextForgeParamTypes::Token(payload) => payload.to_textforge_line().into(),
+            Self::String(value) | Self::VarRef(value) => f.write_str(value),
+            Self::Usize(value) => write!(f, "{value}"),
+            Self::Token(value) => f.write_str(&value.to_textforge_line()),
         }
     }
+}
 
+impl TextForgeParamTypes {
     // --------------------------
     // Parsing de texto -> Vec<ValType>
     // --------------------------
@@ -303,13 +304,12 @@ impl TextForgeParamTypes {
                 }
 
                 SyntaxToken::Token => {
-                    let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
-                        AssocMode::AssocPayload
-                    } else if this_is_block_like {
-                        AssocMode::AssocPayload
-                    } else {
-                        AssocMode::Normal
-                    };
+                    let child_assoc_mode =
+                        if assoc_mode == AssocMode::AssocPayload || this_is_block_like {
+                            AssocMode::AssocPayload
+                        } else {
+                            AssocMode::Normal
+                        };
 
                     let next_depth = token_depth + 1;
                     let max_depth = match child_assoc_mode {
@@ -612,7 +612,7 @@ impl TextForgeParamTypes {
                 let this_is_block_like = Self::is_block_like_signature(&expected);
                 let mut params: Vec<ValType> = Vec::with_capacity(param_count);
 
-                for idx in 0..param_count {
+                for expected_type in &expected_effective {
                     // Cada parâmetro do token está no layout novo (começa com u64 total)
                     let size_u64 = Self::read_u64_be(
                         &mut reader,
@@ -650,10 +650,8 @@ impl TextForgeParamTypes {
                     full_param.extend_from_slice(&rest);
 
                     // Decide assoc_mode do filho usando idx efetivo
-                    let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload {
-                        AssocMode::AssocPayload
-                    } else if this_is_block_like
-                        && matches!(expected_effective[idx], SyntaxToken::Token)
+                    let child_assoc_mode = if assoc_mode == AssocMode::AssocPayload
+                        || (this_is_block_like && matches!(expected_type, SyntaxToken::Token))
                     {
                         AssocMode::AssocPayload
                     } else {

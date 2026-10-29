@@ -75,7 +75,7 @@ impl InstructionMethods for End {
         Ok(s.into())
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "End", "param parsing error, invalid vec len")?;
 
         Ok(())

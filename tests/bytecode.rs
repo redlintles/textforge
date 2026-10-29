@@ -39,19 +39,16 @@ pub mod bytecode {
         /// Um exemplar de cada "forma" de instrução: 1 String, 1 Usize, 2 Usize e zero params.
         fn sample_tokens() -> Vec<TokenWrapper> {
             let mut ctc = Ctc::default();
-            ctc.from_params(&vec![
-                TextForgeParamTypes::Usize(0),
-                TextForgeParamTypes::Usize(3),
-            ])
-            .unwrap();
+            ctc.set_params(&[TextForgeParamTypes::Usize(0), TextForgeParamTypes::Usize(3)])
+                .unwrap();
 
-            return vec![
+            vec![
                 TokenWrapper::new(Box::new(Atb::new("Banana")), None), // String
                 TokenWrapper::new(Box::new(Ate::new("Pizza")), None),  // String
                 TokenWrapper::new(Box::new(Rpt::new(5_usize)), None),  // Usize
                 TokenWrapper::new(Box::new(Dlf::default()), None),     // zero params
                 TokenWrapper::new(Box::new(ctc), None),                // 2x Usize
-            ];
+            ]
         }
 
         /// Mesma lista de tokens, mas como instâncias soltas — usadas só pra
@@ -59,19 +56,16 @@ pub mod bytecode {
         /// sem depender de literais de bytes escritos à mão.
         fn sample_instructions() -> Vec<Box<dyn InstructionMethods>> {
             let mut ctc = Ctc::default();
-            ctc.from_params(&vec![
-                TextForgeParamTypes::Usize(0),
-                TextForgeParamTypes::Usize(3),
-            ])
-            .unwrap();
+            ctc.set_params(&[TextForgeParamTypes::Usize(0), TextForgeParamTypes::Usize(3)])
+                .unwrap();
 
-            return vec![
+            vec![
                 Box::new(Atb::new("Banana")),
                 Box::new(Ate::new("Pizza")),
                 Box::new(Rpt::new(5_usize)),
                 Box::new(Dlf::default()),
                 Box::new(ctc),
-            ];
+            ]
         }
 
         #[test]

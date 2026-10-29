@@ -90,19 +90,19 @@ mod tests {
     }
 
     #[test]
-    fn from_params_accepts_empty_param_list() {
+    fn set_params_accepts_empty_param_list() {
         let mut t = Jcmc::default();
         let params: Vec<TextForgeParamTypes> = vec![];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
     }
 
     #[test]
-    fn from_params_rejects_any_params() {
+    fn set_params_rejects_any_params() {
         let mut t = Jcmc::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,

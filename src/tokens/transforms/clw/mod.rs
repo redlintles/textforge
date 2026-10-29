@@ -60,7 +60,7 @@ impl InstructionMethods for Clw {
     fn to_textforge_line(&self) -> Cow<'static, str> {
         "clw;\n".into()
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parser::params::TextForgeParamTypesJoin;
 
         check_vec_len(params, 0, "clw", params.join(""))?;

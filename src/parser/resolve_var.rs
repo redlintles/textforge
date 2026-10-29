@@ -120,9 +120,11 @@ impl TokenWrapper {
             return;
         }
         let context = &mut GlobalExecutionContext::new();
-        if let Ok(parameters) = ValType::resolve_variables(&self.token, &self.params, context) {
+        if let Ok(parameters) =
+            ValType::resolve_variables(self.token.as_ref(), &self.params, context)
+        {
             let mut token = self.token.clone();
-            if token.from_params(&parameters).is_ok() {
+            if token.set_params(&parameters).is_ok() {
                 self.prepared = Some(token);
             }
         }
@@ -164,9 +166,10 @@ impl TokenWrapper {
         if let Some(prepared) = &self.prepared {
             return prepared.transform(input, Some(context));
         }
-        let parsed_params = ValType::resolve_variables(&self.token, &self.params, &mut *context)?;
+        let parsed_params =
+            ValType::resolve_variables(self.token.as_ref(), &self.params, &mut *context)?;
         let mut t = self.token.clone();
-        t.from_params(&parsed_params)?;
+        t.set_params(&parsed_params)?;
         t.transform(input, Some(context))
     }
 
@@ -179,9 +182,9 @@ impl TokenWrapper {
         if let Some(prepared) = &self.prepared {
             return prepared.transform_buffered(input, Some(context));
         }
-        let params = ValType::resolve_variables(&self.token, &self.params, context)?;
+        let params = ValType::resolve_variables(self.token.as_ref(), &self.params, context)?;
         let mut token = self.token.clone();
-        token.from_params(&params)?;
+        token.set_params(&params)?;
         token.transform_buffered(input, Some(context))
     }
 
@@ -189,9 +192,10 @@ impl TokenWrapper {
         &self,
         context: &mut GlobalExecutionContext,
     ) -> Result<String, TextForgeError> {
-        let parsed_params = ValType::resolve_variables(&self.token, &self.params, &mut *context)?;
+        let parsed_params =
+            ValType::resolve_variables(self.token.as_ref(), &self.params, &mut *context)?;
         let mut t = self.token.clone();
-        t.from_params(&parsed_params)?;
+        t.set_params(&parsed_params)?;
 
         Ok(t.to_textforge_line().into())
     }
@@ -230,7 +234,7 @@ impl TokenWrapper {
                 });
             }
             let mut token = wrapper.token.clone();
-            token.from_params(&parameters)?;
+            token.set_params(&parameters)?;
             bound.push(token);
         }
         let token = bound.pop().ok_or_else(|| {
@@ -247,11 +251,12 @@ impl TokenWrapper {
         &self,
         context: &mut GlobalExecutionContext,
     ) -> Result<Vec<u8>, TextForgeError> {
-        let parsed_params = ValType::resolve_variables(&self.token, &self.params, &mut *context)?;
+        let parsed_params =
+            ValType::resolve_variables(self.token.as_ref(), &self.params, &mut *context)?;
         let mut t = self.token.clone();
-        t.from_params(&parsed_params)?;
+        t.set_params(&parsed_params)?;
 
-        Ok(t.to_bytecode()?)
+        t.to_bytecode()
     }
     #[cfg(feature = "bytecode")]
     pub fn to_bytecode_unresolved(&self) -> Result<Vec<u8>, TextForgeError> {
@@ -352,8 +357,8 @@ impl ValType {
         }
     }
     fn resolve_variables(
-        t: &Box<dyn InstructionMethods>,
-        values: &Vec<ValType>,
+        t: &dyn InstructionMethods,
+        values: &[ValType],
         context: &mut GlobalExecutionContext,
     ) -> Result<Vec<TextForgeParamTypes>, TextForgeError> {
         let mut result = Vec::new();

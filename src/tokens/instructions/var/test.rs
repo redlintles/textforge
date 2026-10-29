@@ -20,37 +20,37 @@ mod tests {
     }
 
     #[test]
-    fn from_params_sets_name_and_string_value() {
+    fn set_params_sets_name_and_string_value() {
         let mut t = Var::default();
         let params = vec![
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ];
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
 
         let stored = t.get_params();
-        assert!(matches!(stored.get(0), Some(TextForgeParamTypes::String(s)) if s == "n"));
+        assert!(matches!(stored.first(), Some(TextForgeParamTypes::String(s)) if s == "n"));
         assert!(matches!(stored.get(1), Some(TextForgeParamTypes::String(s)) if s == "5"));
     }
 
     #[test]
-    fn from_params_accepts_varref_as_value() {
+    fn set_params_accepts_varref_as_value() {
         let mut t = Var::default();
         let params = vec![
             TextForgeParamTypes::String("y".to_string()),
             TextForgeParamTypes::VarRef("x".to_string()),
         ];
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Var::default();
         let params = vec![TextForgeParamTypes::String("n".to_string())];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -58,14 +58,14 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_non_string_name() {
+    fn set_params_rejects_non_string_name() {
         let mut t = Var::default();
         let params = vec![
             TextForgeParamTypes::Usize(1),
             TextForgeParamTypes::String("5".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidParameters(_)
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn to_textforge_line_is_reparseable() {
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ])
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn transform_declares_mutable_string_variable() {
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ])
@@ -131,7 +131,7 @@ mod tests {
     #[test]
     fn transform_declares_mutable_usize_variable() {
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::Usize(7),
         ])
@@ -158,7 +158,7 @@ mod tests {
         .unwrap();
 
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("y".to_string()),
             TextForgeParamTypes::VarRef("x".to_string()),
         ])
@@ -179,7 +179,7 @@ mod tests {
     #[test]
     fn transform_fails_without_context() {
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ])
@@ -196,7 +196,7 @@ mod tests {
     fn transform_fails_when_varref_source_is_missing() {
         let mut ctx = GlobalExecutionContext::new();
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("y".to_string()),
             TextForgeParamTypes::VarRef("inexistente".to_string()),
         ])
@@ -225,7 +225,7 @@ mod tests {
         .unwrap();
 
         let mut t = Var::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("new".to_string()),
         ])

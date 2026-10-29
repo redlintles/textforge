@@ -76,7 +76,7 @@ impl InstructionMethods for Tlcw {
             .into())
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
 
         check_vec_len(params, 1, "tlcw", "")?;

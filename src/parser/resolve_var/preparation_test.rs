@@ -27,9 +27,9 @@ impl InstructionMethods for CountingPrefix {
     fn to_textforge_line(&self) -> Cow<'static, str> {
         self.inner.to_textforge_line()
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         self.binds.fetch_add(1, Ordering::SeqCst);
-        self.inner.from_params(params)
+        self.inner.set_params(params)
     }
     fn transform<'a>(
         &self,

@@ -610,6 +610,20 @@ pub trait TextForgeProcessorMethods {
     fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, TextForgeError>;
 }
 
+/// Creates an empty processor using the standard default-construction trait.
+///
+/// ```
+/// use textforge::api::{processor::TextForgeProcessor, TextForgeBuilderMethods};
+/// let mut processor = TextForgeProcessor::default();
+/// let id = processor.create_pipeline().trim_both_sides().unwrap().build().unwrap();
+/// assert!(!id.is_empty());
+/// ```
+impl Default for TextForgeProcessor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TextForgeProcessor {
     /// Creates a new empty processor.
     ///

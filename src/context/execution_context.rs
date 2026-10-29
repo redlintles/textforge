@@ -13,6 +13,7 @@ pub enum VarValues {
     Token(TokenWrapper),
 }
 
+#[cfg(feature = "test_access")]
 pub enum ToClean {
     Block(String),
     Var(String),
@@ -60,6 +61,7 @@ pub trait GlobalContextMethods {
     fn get_mut_var(&mut self, var_id: &str) -> Result<&mut VarEntry, TextForgeError>;
 
     // It would require a more complex implementation. but would help optimizing textforge in the future. This will remove data that will no longer be used from the context.
+    #[cfg(feature = "test_access")]
     fn clean_context(&mut self) {}
     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError>;
     fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>);
@@ -93,8 +95,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
                 tokens.push(token);
             }
             None => {
-                let mut block_vec = Vec::new();
-                block_vec.push(token);
+                let block_vec = vec![token];
 
                 self.blocks.insert(block_id.to_string(), block_vec);
             }

@@ -93,7 +93,7 @@ impl InstructionMethods for Slt {
     fn get_opcode(&self) -> u32 {
         0x11
     }
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
 
         check_vec_len(params, 2, "slt", "")?;

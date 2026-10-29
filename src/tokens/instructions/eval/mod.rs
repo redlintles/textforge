@@ -96,7 +96,7 @@ impl InstructionMethods for Eval {
         Ok(input)
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "eval", "param parsing error, invalid vec len")?;
 
         self.expr = parse_args!(params, 0, String, "Expr should be of type string");

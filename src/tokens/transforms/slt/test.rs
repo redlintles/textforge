@@ -66,24 +66,24 @@ mod tests {
         // start > end deve falhar (quem define isso é seu check_chunk_bound_indexes)
         let t = Slt::new(5, 1);
 
-        assert!(matches!(t, Err(_)));
+        assert!(t.is_err());
     }
 
     #[test]
-    fn from_params_accepts_two_params() {
+    fn set_params_accepts_two_params() {
         let mut t = Slt::default();
         let params = vec![TextForgeParamTypes::Usize(1), TextForgeParamTypes::Usize(3)];
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.start_index, 1);
         assert_eq!(t.end_index, 3);
     }
 
     #[test]
-    fn from_params_rejects_wrong_len() {
+    fn set_params_rejects_wrong_len() {
         let mut t = Slt::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,

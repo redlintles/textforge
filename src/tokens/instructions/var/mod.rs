@@ -48,7 +48,7 @@ impl InstructionMethods for Var {
     }
 
     fn to_textforge_line(&self) -> std::borrow::Cow<'static, str> {
-        format!("var {} = {};\n", self.var_name, self.var_value.to_string()).into()
+        format!("var {} = {};\n", self.var_name, self.var_value).into()
     }
 
     fn transform<'a>(
@@ -79,9 +79,9 @@ impl InstructionMethods for Var {
         Ok(input)
     }
 
-    fn from_params(
+    fn set_params(
         &mut self,
-        params: &Vec<crate::parser::params::TextForgeParamTypes>,
+        params: &[crate::parser::params::TextForgeParamTypes],
     ) -> Result<(), crate::utils::errors::TextForgeError> {
         check_vec_len(params, 2, "var", "param parsing error, invalid vec len")?;
 

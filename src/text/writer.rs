@@ -5,7 +5,7 @@ use crate::{
     utils::{errors::TextForgeError, validations::check_file_path},
 };
 
-pub fn write_to_file(path: &Path, tokens: &Vec<TokenWrapper>) -> Result<(), TextForgeError> {
+pub fn write_to_file(path: &Path, tokens: &[TokenWrapper]) -> Result<(), TextForgeError> {
     check_file_path(path, Some("textforge"))?;
     let mut file = OpenOptions::new()
         .create(true)

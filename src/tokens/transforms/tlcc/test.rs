@@ -52,24 +52,24 @@ mod tests {
     fn transform_errors_on_invalid_bounds() {
         // start > end (depende de como seu validator define)
         let got = Tlcc::new(4, 1);
-        assert!(matches!(got, Err(_)));
+        assert!(got.is_err());
     }
 
     #[test]
-    fn from_params_accepts_two_usizes() {
+    fn set_params_accepts_two_usizes() {
         let mut t = Tlcc::default();
         let params = vec![TextForgeParamTypes::Usize(1), TextForgeParamTypes::Usize(4)];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.to_textforge_line().as_ref(), "tlcc 1 4;\n");
     }
 
     #[test]
-    fn from_params_rejects_wrong_len() {
+    fn set_params_rejects_wrong_len() {
         let mut t = Tlcc::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,

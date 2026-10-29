@@ -67,9 +67,9 @@ impl InstructionMethods for Cblk {
         Ok(result)
     }
 
-    fn from_params(
+    fn set_params(
         &mut self,
-        params: &Vec<crate::parser::params::TextForgeParamTypes>,
+        params: &[crate::parser::params::TextForgeParamTypes],
     ) -> Result<(), crate::utils::errors::TextForgeError> {
         check_vec_len(
             params,

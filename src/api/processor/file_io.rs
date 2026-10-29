@@ -85,10 +85,7 @@ mod tests {
         fn get_params(&self) -> &Vec<TextForgeParamTypes> {
             self.0.get_params()
         }
-        fn from_params(
-            &mut self,
-            _params: &Vec<TextForgeParamTypes>,
-        ) -> Result<(), TextForgeError> {
+        fn set_params(&mut self, _params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
             Ok(())
         }
         fn transform<'a>(

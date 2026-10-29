@@ -479,13 +479,4 @@ mod tests {
             assert!(check_index_against_words(2, "banàna maçã").is_err());
         }
     }
-
-    // aqui fica seu padrão "bytecode_tests" (não há bytecode nessas funcs, mas mantive o esqueleto)
-    mod bytecode_tests {
-        // sem testes: utilitários não geram bytecode
-        #[test]
-        fn placeholder() {
-            assert!(true);
-        }
-    }
 }

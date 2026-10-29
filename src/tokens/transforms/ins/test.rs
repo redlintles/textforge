@@ -105,11 +105,11 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Ins::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
 
         assert!(matches!(
             err.error_code,
@@ -118,26 +118,26 @@ mod tests {
     }
 
     #[test]
-    fn from_params_accepts_usize_and_string() {
+    fn set_params_accepts_usize_and_string() {
         let mut t = Ins::default();
         let params = vec![
             TextForgeParamTypes::Usize(3),
             TextForgeParamTypes::String("laranja".to_string()),
         ];
 
-        assert_eq!(t.from_params(&params), Ok(()));
+        assert_eq!(t.set_params(&params), Ok(()));
         assert_eq!(t.to_textforge_line().as_ref(), "ins 3 laranja;\n");
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_types() {
+    fn set_params_rejects_wrong_param_types() {
         let mut t = Ins::default();
         let params = vec![
             TextForgeParamTypes::String("x".to_string()),
             TextForgeParamTypes::Usize(3),
         ];
 
-        let got = t.from_params(&params);
+        let got = t.set_params(&params);
 
         // primeiro parse_args! falha com "Index should be of usize type"
         let expected = Err(crate::utils::errors::TextForgeError::new(

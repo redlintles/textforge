@@ -25,20 +25,20 @@ mod common {
     }
 
     #[test]
-    fn from_params_sets_block_name() {
+    fn set_params_sets_block_name() {
         let mut t = Cblk::default();
         let params = vec![TextForgeParamTypes::String("greet".to_string())];
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
         assert_eq!(t.to_textforge_line().as_ref(), "cblk greet;\n");
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count_too_few() {
+    fn set_params_rejects_wrong_param_count_too_few() {
         let mut t = Cblk::default();
         let params: Vec<TextForgeParamTypes> = vec![];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -46,14 +46,14 @@ mod common {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count_too_many() {
+    fn set_params_rejects_wrong_param_count_too_many() {
         let mut t = Cblk::default();
         let params = vec![
             TextForgeParamTypes::String("a".to_string()),
             TextForgeParamTypes::String("b".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -61,11 +61,11 @@ mod common {
     }
 
     #[test]
-    fn from_params_rejects_wrong_type_for_block_name() {
+    fn set_params_rejects_wrong_type_for_block_name() {
         let mut t = Cblk::default();
         let params = vec![TextForgeParamTypes::Usize(1)];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidParameters(_)
@@ -73,9 +73,9 @@ mod common {
     }
 
     #[test]
-    fn get_params_reflects_last_from_params_call() {
+    fn get_params_reflects_last_set_params_call() {
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("qux".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("qux".to_string())])
             .unwrap();
 
         let stored = t.get_params();
@@ -101,7 +101,7 @@ mod common {
     fn transform_errors_when_block_not_found() {
         let mut ctx = GlobalExecutionContext::new();
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("missing".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("missing".to_string())])
             .unwrap();
 
         let err = t.transform("x".into(), Some(&mut ctx)).unwrap_err();
@@ -117,7 +117,7 @@ mod common {
         ctx.put_block("empty", vec![]);
 
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("empty".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("empty".to_string())])
             .unwrap();
 
         assert_eq!(
@@ -135,7 +135,7 @@ mod common {
         );
 
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("greet".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("greet".to_string())])
             .unwrap();
 
         assert_eq!(
@@ -156,7 +156,7 @@ mod common {
         );
 
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("greet".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("greet".to_string())])
             .unwrap();
 
         // "hello" -> Atb("A") -> "Ahello" -> Atb("B") -> "BAhello"
@@ -175,7 +175,7 @@ mod common {
         );
 
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("greet".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("greet".to_string())])
             .unwrap();
 
         assert_eq!(
@@ -202,13 +202,13 @@ mod common {
 
         let mut inner_cblk = Cblk::default();
         inner_cblk
-            .from_params(&vec![TextForgeParamTypes::String("inner".to_string())])
+            .set_params(&[TextForgeParamTypes::String("inner".to_string())])
             .unwrap();
         ctx.put_block("outer", vec![TokenWrapper::new(Box::new(inner_cblk), None)]);
 
         let mut outer = Cblk::default();
         outer
-            .from_params(&vec![TextForgeParamTypes::String("outer".to_string())])
+            .set_params(&[TextForgeParamTypes::String("outer".to_string())])
             .unwrap();
 
         assert_eq!(
@@ -220,7 +220,7 @@ mod common {
     #[test]
     fn transform_propagates_error_from_inner_instruction() {
         // Force a resolve_variables failure: Atb expects a String param, we hand it
-        // a Usize via TokenWrapper's raw constructor (bypasses from_params typing).
+        // a Usize via TokenWrapper's raw constructor (bypasses set_params typing).
         let mut ctx = GlobalExecutionContext::new();
         let bad_token = TokenWrapper::new(
             Box::new(Atb::default()),
@@ -229,7 +229,7 @@ mod common {
         ctx.put_block("broken", vec![bad_token]);
 
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("broken".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("broken".to_string())])
             .unwrap();
 
         let err = t.transform("x".into(), Some(&mut ctx)).unwrap_err();
@@ -263,7 +263,7 @@ mod bytecode {
     #[test]
     fn to_bytecode_has_expected_header_and_param_layout() {
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("greet".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("greet".to_string())])
             .unwrap();
 
         let bytes = t.to_bytecode().unwrap();
@@ -298,11 +298,11 @@ mod bytecode {
     }
 
     #[test]
-    fn to_bytecode_can_be_parsed_into_params_and_fed_back_into_from_params() {
+    fn to_bytecode_can_be_parsed_into_params_and_fed_back_into_set_params() {
         // Same technique as the `atb` bytecode test: skip the leading u64
         // param-total header, then feed the rest to `TextForgeParamTypes::from_bytecode`.
         let mut t = Cblk::default();
-        t.from_params(&vec![TextForgeParamTypes::String("greet".to_string())])
+        t.set_params(&[TextForgeParamTypes::String("greet".to_string())])
             .unwrap();
 
         let bytes = t.to_bytecode().unwrap();
@@ -312,7 +312,7 @@ mod bytecode {
         let parsed_param = TextForgeParamTypes::from_bytecode(param_slice).unwrap();
 
         let mut rebuilt = Cblk::default();
-        rebuilt.from_params(&vec![parsed_param]).unwrap();
+        rebuilt.set_params(&[parsed_param]).unwrap();
 
         assert_eq!(rebuilt.to_textforge_line().as_ref(), "cblk greet;\n");
     }
@@ -321,11 +321,11 @@ mod bytecode {
     fn to_bytecode_reflects_block_name_length() {
         let mut short = Cblk::default();
         short
-            .from_params(&vec![TextForgeParamTypes::String("a".to_string())])
+            .set_params(&[TextForgeParamTypes::String("a".to_string())])
             .unwrap();
 
         let mut long = Cblk::default();
-        long.from_params(&vec![TextForgeParamTypes::String(
+        long.set_params(&[TextForgeParamTypes::String(
             "a_much_longer_name".to_string(),
         )])
         .unwrap();

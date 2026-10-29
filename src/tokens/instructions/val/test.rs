@@ -24,37 +24,37 @@ mod tests {
     }
 
     #[test]
-    fn from_params_sets_name_and_string_value() {
+    fn set_params_sets_name_and_string_value() {
         let mut t = Val::default();
         let params = vec![
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ];
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
 
         let stored = t.get_params();
-        assert!(matches!(stored.get(0), Some(TextForgeParamTypes::String(s)) if s == "n"));
+        assert!(matches!(stored.first(), Some(TextForgeParamTypes::String(s)) if s == "n"));
         assert!(matches!(stored.get(1), Some(TextForgeParamTypes::String(s)) if s == "5"));
     }
 
     #[test]
-    fn from_params_accepts_varref_as_value() {
+    fn set_params_accepts_varref_as_value() {
         let mut t = Val::default();
         let params = vec![
             TextForgeParamTypes::String("y".to_string()),
             TextForgeParamTypes::VarRef("x".to_string()),
         ];
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count() {
+    fn set_params_rejects_wrong_param_count() {
         let mut t = Val::default();
         let params = vec![TextForgeParamTypes::String("n".to_string())];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -62,14 +62,14 @@ mod tests {
     }
 
     #[test]
-    fn from_params_rejects_non_string_name() {
+    fn set_params_rejects_non_string_name() {
         let mut t = Val::default();
         let params = vec![
             TextForgeParamTypes::Usize(1),
             TextForgeParamTypes::String("5".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidParameters(_)
@@ -87,7 +87,7 @@ mod tests {
         // SyntaxToken::String. `Val::default()`, porém, põe um `Token` no slot 1
         // (em vez de String), inconsistente com o próprio `val_value` (String(""))
         // e com o que `resolve_variables` exige. Se um `Val::default()` for
-        // envolvido num TokenWrapper sem passar por `from_params` antes
+        // envolvido num TokenWrapper sem passar por `set_params` antes
         // (ex: `TokenWrapper::new(Box::new(Val::default()), None)`), isso quebra
         // em runtime com IncompatibleTypeError. Documenta o formato correto
         // esperado — falha contra a implementação atual.
@@ -109,7 +109,7 @@ mod tests {
         // não adiciona esse sufixo — serializar um pipeline com `val` e tentar reler
         // via read_from_text vai falhar. Documenta o formato esperado; falha hoje.
         let mut t = Val::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ])
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn transform_declares_immutable_string_variable() {
         let mut t = Val::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ])
@@ -158,7 +158,7 @@ mod tests {
         .unwrap();
 
         let mut t = Val::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("y".to_string()),
             TextForgeParamTypes::VarRef("x".to_string()),
         ])
@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn transform_fails_without_context() {
         let mut t = Val::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
             TextForgeParamTypes::String("5".to_string()),
         ])
@@ -193,7 +193,7 @@ mod tests {
     fn transform_fails_when_varref_source_is_missing() {
         let mut ctx = GlobalExecutionContext::new();
         let mut t = Val::default();
-        t.from_params(&vec![
+        t.set_params(&[
             TextForgeParamTypes::String("y".to_string()),
             TextForgeParamTypes::VarRef("inexistente".to_string()),
         ])
@@ -335,7 +335,7 @@ mod opcode_regression {
     fn val_opcode_matches_registry_and_survives_parameter_roundtrip() {
         let mut token = Val::default();
         token
-            .from_params(&vec!["prefix".to_string().into(), "🍌".to_string().into()])
+            .set_params(&["prefix".to_string().into(), "🍌".to_string().into()])
             .unwrap();
         let opcode = match TOKEN_TABLE
             .find((QuerySource::Identifier("val".into()), QueryTarget::Bytecode))

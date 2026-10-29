@@ -19,10 +19,10 @@ mod common {
     // Small helper: builds the exact `Vec<TextForgeParamTypes>` a `blk name assoc <token>;`
     // line resolves to, so tests don't repeat the same boilerplate.
     fn blk_params(name: &str, inner: Box<dyn InstructionMethods>) -> Vec<TextForgeParamTypes> {
-        return vec![
+        vec![
             TextForgeParamTypes::String(name.to_string()),
             TextForgeParamTypes::Token(TokenWrapper::new(inner, None)),
-        ];
+        ]
     }
 
     #[test]
@@ -36,20 +36,20 @@ mod common {
     }
 
     #[test]
-    fn from_params_sets_block_name_and_inner() {
+    fn set_params_sets_block_name_and_inner() {
         let mut t = Blk::default();
         let params = blk_params("greet", Box::new(Atb::new("foo")));
 
-        assert!(t.from_params(&params).is_ok());
+        assert!(t.set_params(&params).is_ok());
         assert_eq!(t.to_textforge_line().as_ref(), "blk greet assoc atb foo;\n");
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count_too_few() {
+    fn set_params_rejects_wrong_param_count_too_few() {
         let mut t = Blk::default();
         let params = vec![TextForgeParamTypes::String("only_one".to_string())];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -57,7 +57,7 @@ mod common {
     }
 
     #[test]
-    fn from_params_rejects_wrong_param_count_too_many() {
+    fn set_params_rejects_wrong_param_count_too_many() {
         let mut t = Blk::default();
         let params = vec![
             TextForgeParamTypes::String("a".to_string()),
@@ -65,7 +65,7 @@ mod common {
             TextForgeParamTypes::String("extra".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidArgumentNumber(_)
@@ -73,14 +73,14 @@ mod common {
     }
 
     #[test]
-    fn from_params_rejects_wrong_type_for_block_name() {
+    fn set_params_rejects_wrong_type_for_block_name() {
         let mut t = Blk::default();
         let params = vec![
             TextForgeParamTypes::Usize(1),
             TextForgeParamTypes::Token(TokenWrapper::default()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidParameters(_)
@@ -88,14 +88,14 @@ mod common {
     }
 
     #[test]
-    fn from_params_rejects_wrong_type_for_inner() {
+    fn set_params_rejects_wrong_type_for_inner() {
         let mut t = Blk::default();
         let params = vec![
             TextForgeParamTypes::String("name".to_string()),
             TextForgeParamTypes::String("not a token".to_string()),
         ];
 
-        let err = t.from_params(&params).unwrap_err();
+        let err = t.set_params(&params).unwrap_err();
         assert!(matches!(
             err.error_code,
             TextForgeErrorCode::InvalidParameters(_)
@@ -103,11 +103,11 @@ mod common {
     }
 
     #[test]
-    fn get_params_reflects_last_from_params_call() {
+    fn get_params_reflects_last_set_params_call() {
         let mut t = Blk::default();
         let params = blk_params("qux", Box::new(Atb::new("baz")));
 
-        t.from_params(&params).unwrap();
+        t.set_params(&params).unwrap();
 
         let stored = t.get_params();
         assert_eq!(stored.len(), 2);
@@ -139,7 +139,7 @@ mod common {
     fn transform_returns_input_unchanged() {
         let mut ctx = GlobalExecutionContext::new();
         let mut t = Blk::default();
-        t.from_params(&blk_params("greet", Box::new(Atb::new("foo"))))
+        t.set_params(&blk_params("greet", Box::new(Atb::new("foo"))))
             .unwrap();
 
         assert_eq!(
@@ -156,7 +156,7 @@ mod common {
     fn transform_creates_block_with_single_instruction() {
         let mut ctx = GlobalExecutionContext::new();
         let mut t = Blk::default();
-        t.from_params(&blk_params("greet", Box::new(Atb::new("foo"))))
+        t.set_params(&blk_params("greet", Box::new(Atb::new("foo"))))
             .unwrap();
 
         t.transform("hello".into(), Some(&mut ctx)).unwrap();
@@ -172,13 +172,13 @@ mod common {
 
         let mut first = Blk::default();
         first
-            .from_params(&blk_params("greet", Box::new(Atb::new("foo"))))
+            .set_params(&blk_params("greet", Box::new(Atb::new("foo"))))
             .unwrap();
         first.transform("x".into(), Some(&mut ctx)).unwrap();
 
         let mut second = Blk::default();
         second
-            .from_params(&blk_params("greet", Box::new(Dlf::default())))
+            .set_params(&blk_params("greet", Box::new(Dlf::default())))
             .unwrap();
         second.transform("x".into(), Some(&mut ctx)).unwrap();
 
@@ -193,12 +193,12 @@ mod common {
         let mut ctx = GlobalExecutionContext::new();
 
         let mut a = Blk::default();
-        a.from_params(&blk_params("a", Box::new(Atb::new("1"))))
+        a.set_params(&blk_params("a", Box::new(Atb::new("1"))))
             .unwrap();
         a.transform("x".into(), Some(&mut ctx)).unwrap();
 
         let mut b = Blk::default();
-        b.from_params(&blk_params("b", Box::new(Atb::new("2"))))
+        b.set_params(&blk_params("b", Box::new(Atb::new("2"))))
             .unwrap();
         b.transform("x".into(), Some(&mut ctx)).unwrap();
 
@@ -218,7 +218,7 @@ mod common {
         let mut ctx = GlobalExecutionContext::new();
 
         let mut t = Blk::default();
-        t.from_params(&blk_params("greet", Box::new(Atb::new("foo"))))
+        t.set_params(&blk_params("greet", Box::new(Atb::new("foo"))))
             .unwrap();
         t.transform("x".into(), Some(&mut ctx)).unwrap();
 
@@ -227,7 +227,7 @@ mod common {
 
         // "greet" no longer exists in the context now.
         let mut t2 = Blk::default();
-        t2.from_params(&blk_params("greet", Box::new(Dlf::default())))
+        t2.set_params(&blk_params("greet", Box::new(Dlf::default())))
             .unwrap();
         t2.transform("x".into(), Some(&mut ctx)).unwrap();
 
@@ -259,7 +259,7 @@ mod bytecode {
             TextForgeParamTypes::String("greet".to_string()),
             TextForgeParamTypes::Token(TokenWrapper::new(Box::new(Atb::new("foo")), None)),
         ];
-        t.from_params(&params).unwrap();
+        t.set_params(&params).unwrap();
 
         let bytes = t.to_bytecode().unwrap();
 
@@ -311,14 +311,14 @@ mod bytecode {
     #[test]
     fn to_bytecode_reflects_block_name_changes() {
         let mut t1 = Blk::default();
-        t1.from_params(&vec![
+        t1.set_params(&[
             TextForgeParamTypes::String("a".to_string()),
             TextForgeParamTypes::Token(TokenWrapper::new(Box::new(Atb::new("x")), None)),
         ])
         .unwrap();
 
         let mut t2 = Blk::default();
-        t2.from_params(&vec![
+        t2.set_params(&[
             TextForgeParamTypes::String("bbbb".to_string()),
             TextForgeParamTypes::Token(TokenWrapper::new(Box::new(Atb::new("x")), None)),
         ])

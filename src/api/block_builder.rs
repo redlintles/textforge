@@ -52,7 +52,7 @@ impl TextForgeBuilderMethods for BlockBuilder {
             vec![self.block_name.to_string().into(), token.clone().into()];
 
         let mut new_block = Box::new(Blk::default());
-        new_block.from_params(&param_vec)?;
+        new_block.set_params(&param_vec)?;
 
         self.block_tokens.push(new_block);
         self.children.push(Node::Instruction(token));

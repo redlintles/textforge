@@ -50,7 +50,7 @@ impl InstructionMethods for Cfw {
         "cfw;\n".into()
     }
 
-    fn from_params(&mut self, params: &Vec<TextForgeParamTypes>) -> Result<(), TextForgeError> {
+    fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parser::params::TextForgeParamTypesJoin;
 
         check_vec_len(params, 0, "cfw", params.join(""))?;

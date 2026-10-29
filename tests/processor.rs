@@ -21,7 +21,7 @@ pub mod processor {
             .create_pipeline()
             .add_to_beginning("Banana")?
             .add_to_end("Laranja")?
-            .repeat(3 as usize)?
+            .repeat(3_usize)?
             .build()
             .unwrap();
         let input = "Carimbo verde de deus";
@@ -41,7 +41,7 @@ pub mod processor {
             .create_pipeline()
             .add_to_beginning("Banana")?
             .add_to_end("Laranja")?
-            .repeat(3 as usize)?
+            .repeat(3_usize)?
             .build()
             .unwrap();
         let input = "Carimbo verde de deus";
@@ -156,7 +156,7 @@ pub mod processor {
         let tokens: Vec<TokenWrapper> = vec![
             TokenWrapper::new(Box::new(Atb::new("Banana")), None),
             TokenWrapper::new(Box::new(Ate::new("Pizza")), None),
-            TokenWrapper::new(Box::new(Rpt::new(5 as usize)), None),
+            TokenWrapper::new(Box::new(Rpt::new(5_usize)), None),
         ];
 
         let mut processor = TextForgeProcessor::new();
@@ -174,7 +174,7 @@ pub mod processor {
         );
         assert_eq!(
             parsed.get_version_num(),
-            4 as usize,
+            4_usize,
             "Unexpected output in test_add_transform: UUID is from different version"
         );
     }
