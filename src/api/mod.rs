@@ -95,7 +95,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).trim_right_side().unwrap().build();
     /// let input = "  banana   ";
     ///
@@ -122,7 +122,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).add_to_end("!").unwrap().build();
     /// let input = "banana";
     ///
@@ -154,7 +154,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("xbanana".to_string()));
     /// ```
-
+    ///
     fn add_to_beginning(&mut self, text: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(atb::Atb::default()), Some(vec![text.into()]));
         self.push_token(tok)?;
@@ -176,13 +176,13 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).delete_first().unwrap().build();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("anana".to_string()));
     /// ```
-
+    ///
     fn delete_first(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(dlf::Dlf::default());
         self.push_token(tok)?;
@@ -204,13 +204,13 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).delete_last().unwrap().build();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("banan".to_string()));
     /// ```
-
+    ///
     fn delete_last(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(dll::Dll::default());
         self.push_token(tok)?;
@@ -233,13 +233,13 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).delete_after(2).unwrap().build();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("ban".to_string()));
     /// ```
-
+    ///
     fn delete_after(&mut self, index: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(dla::Dla::default()), Some(vec![index.into()]));
         self.push_token(tok)?;
@@ -262,13 +262,13 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).delete_before(3).unwrap().build();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("ana".to_string()));
     /// ```
-
+    ///
     fn delete_before(&mut self, index: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(dlb::Dlb::default()), Some(vec![index.into()]));
         self.push_token(tok)?;
@@ -292,13 +292,13 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).delete_chunk(1, 3).unwrap().build();
     /// let input = "banana";
     ///
     /// assert_eq!(processor.process_all(&id, input), Ok("bna".to_string()));
     /// ```
-
+    ///
     fn delete_chunk(
         &mut self,
         start_index: impl Into<ValType>,
@@ -329,7 +329,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).replace_all_with("a", "x").unwrap().build();
     ///
@@ -340,7 +340,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bxnxnx".to_string())
     /// );
     /// ```
-
+    ///
     fn replace_all_with(
         &mut self,
         pattern: impl Into<ValType>,
@@ -381,7 +381,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bxnana".to_string())
     /// );
     /// ```
-
+    ///
     fn replace_first_with(
         &mut self,
         pattern: impl Into<ValType>,
@@ -411,7 +411,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).replace_last_with("a", "x").unwrap().build();
     ///
@@ -422,7 +422,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bananx".to_string())
     /// );
     /// ```
-
+    ///
     fn replace_last_with(
         &mut self,
         pattern: impl Into<ValType>,
@@ -454,7 +454,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).replace_nth_with("a", "x", 1).unwrap().build();
     ///
@@ -465,7 +465,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("banxna".to_string())
     /// );
     /// ```
-
+    ///
     fn replace_nth_with(
         &mut self,
         pattern: impl Into<ValType>,
@@ -497,7 +497,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).replace_count_with("a", "x", 2).unwrap().build();
     ///
@@ -508,7 +508,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bxnxna".to_string())
     /// );
     /// ```
-
+    ///
     fn replace_count_with(
         &mut self,
         pattern: impl Into<ValType>,
@@ -540,7 +540,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).rotate_left(2).unwrap().build();
     ///
     /// let input = "abcd";
@@ -550,7 +550,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("cdab".to_string())
     /// );
     /// ```
-
+    ///
     fn rotate_left(&mut self, times: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(rtl::Rtl::default()), Some(vec![times.into()]));
         self.push_token(tok)?;
@@ -574,7 +574,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).rotate_right(1).unwrap().build();
     ///
     /// let input = "abcd";
@@ -584,7 +584,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("dabc".to_string())
     /// );
     /// ```
-
+    ///
     fn rotate_right(&mut self, times: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(rtr::Rtr::default()), Some(vec![times.into()]));
         self.push_token(tok)?;
@@ -607,7 +607,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).repeat(3).unwrap().build();
     ///
     /// let input = "hi";
@@ -617,7 +617,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("hihihi".to_string())
     /// );
     /// ```
-
+    ///
     fn repeat(&mut self, times: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(rpt::Rpt::default()), Some(vec![times.into()]));
         self.push_token(tok)?;
@@ -640,7 +640,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).select(1, 3).unwrap().build();
     ///
@@ -651,7 +651,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bcd".to_string())
     /// );
     /// ```
-
+    ///
     fn select(
         &mut self,
         start_index: impl Into<ValType>,
@@ -682,7 +682,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_all().unwrap().build();
     ///
     /// let input = "banana";
@@ -692,7 +692,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("BANANA".to_string())
     /// );
     /// ```
-
+    ///
     fn to_uppercase_all(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(tua::Tua::default());
         self.push_token(tok)?;
@@ -715,7 +715,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_all().unwrap().build();
     ///
     /// let input = "BaNaNa";
@@ -725,7 +725,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("banana".to_string())
     /// );
     /// ```
-
+    ///
     fn to_lowercase_all(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(tla::Tla::default());
         self.push_token(tok)?;
@@ -749,7 +749,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).to_uppercase_single(1).unwrap().build();
     ///
@@ -760,7 +760,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bAnana".to_string())
     /// );
     /// ```
-
+    ///
     fn to_uppercase_single(
         &mut self,
         index: impl Into<ValType>,
@@ -787,7 +787,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).to_lowercase_single(0).unwrap().build();
     ///
@@ -798,7 +798,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("banana".to_string())
     /// );
     /// ```
-
+    ///
     fn to_lowercase_single(
         &mut self,
         index: impl Into<ValType>,
@@ -826,7 +826,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_uppercase_chunk(1, 3)
     ///     .unwrap().build();
@@ -839,7 +839,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("aBCDef".to_string())
     /// );
     /// ```
-
+    ///
     fn to_uppercase_chunk(
         &mut self,
         start_index: impl Into<ValType>,
@@ -871,7 +871,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id = TextForgeBuilder::new(&mut processor)
     ///     .to_lowercase_chunk(2, 5)
     ///     .unwrap().build();
@@ -884,7 +884,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("ABcd eF".to_string())
     /// );
     /// ```
-
+    ///
     fn to_lowercase_chunk(
         &mut self,
         start_index: impl Into<ValType>,
@@ -926,7 +926,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("Hello world".to_string())
     /// );
     /// ```
-
+    ///
     fn capitalize_first_word(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(cfw::Cfw::default());
         self.push_token(tok)?;
@@ -949,7 +949,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-
+    ///
     /// let id =
     ///     TextForgeBuilder::new(&mut processor).capitalize_last_word().unwrap().build();
     ///
@@ -960,7 +960,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("hello World".to_string())
     /// );
     /// ```
-
+    ///
     fn capitalize_last_word(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(clw::Clw::default());
         self.push_token(tok)?;
@@ -994,7 +994,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("bb".to_string())
     /// );
     /// ```
-
+    ///
     fn split_select(
         &mut self,
         pattern: impl Into<ValType>,
@@ -1036,7 +1036,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("hello Brave World".to_string())
     /// );
     /// ```
-
+    ///
     fn capitalize_chunk(
         &mut self,
         start_index: impl Into<ValType>,
@@ -1154,7 +1154,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("hello%20world%21".to_string())
     /// );
     /// ```
-
+    ///
     fn to_url_encoded(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(urle::Urle::default());
         self.push_token(tok)?;
@@ -1187,7 +1187,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("hello world!".to_string())
     /// );
     /// ```
-
+    ///
     fn to_url_decoded(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(urld::Urld::default());
         self.push_token(tok)?;
@@ -1248,7 +1248,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("h e l l o".to_string())
     /// );
     /// ```
-
+    ///
     fn split_characters(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(splc::Splc::default());
         self.push_token(tok)?;
@@ -1282,7 +1282,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     Ok("&lt;b&gt;Hello&lt;&#x2F;b&gt;".to_string())
     /// );
     /// ```
-
+    ///
     fn to_html_escaped(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(htmle::Htmle::default());
         self.push_token(tok)?;
@@ -1343,7 +1343,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("\"{banana: '10'}\"".to_string()));
     /// ```
-
+    ///
     fn to_json_escaped(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(jsone::Jsone::default());
         self.push_token(tok)?;
@@ -1497,7 +1497,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banana-laranja-cheia-de-canja".to_string()));
     ///
-
+    ///
     fn join_to_kebab_case(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(jkbc::Jkbc::default());
         self.push_token(tok)?;
@@ -1761,7 +1761,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));
     /// ```
-
+    ///
     fn val(
         &mut self,
         var_name: impl Into<ValType>,
@@ -1804,7 +1804,7 @@ pub trait TextForgeBuilderMethods: Sized {
     ///
     /// assert_eq!(processor.process_all(&id,&input), Ok("banna".to_string()));
     /// ```
-
+    ///
     fn var(
         &mut self,
         var_name: impl Into<ValType>,

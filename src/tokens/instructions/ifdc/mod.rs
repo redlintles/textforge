@@ -23,15 +23,10 @@ use crate::parser::params::TextForgeParamTypes;
 ///
 /// ```rust
 /// use textforge::tokens::{InstructionMethods, instructions::ifdc::Ifdc, transforms::atb::Atb};
-/// use textforge::parser::resolve_var::{TokenWrapper, ValType};
-/// use textforge::parser::params::TextForgeParamTypes;
 ///
 /// let token = Ifdc::new(
 ///     "xy",
-///     TokenWrapper::new(
-///         Box::new(Atb::new("laranja")),
-///         None
-///     )
+///     (Box::new(Atb::new("laranja")) as Box<dyn InstructionMethods>).into()
 /// );
 /// assert_eq!(token.transform("larryxy".into(), None).unwrap().to_string(), "laranjalarryxy"); // Adds laranja to the beginning
 /// assert_eq!(token.transform("banana".into(), None).unwrap().to_string(), "banana"); // Does nothing

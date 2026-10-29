@@ -119,12 +119,12 @@ use crate::utils::errors::{
 ///
 /// ```rust
 /// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
-/// use textforge::parser::resolve_var::TokenWrapper;
+/// use textforge::tokens::InstructionMethods;
 /// use textforge::tokens::transforms::tbs;
 ///
 /// let mut processor = TextForgeProcessor::new();
 ///
-/// let token = TokenWrapper::new(Box::new(tbs::Tbs::default()), None);
+/// let token = (Box::new(tbs::Tbs::default()) as Box<dyn InstructionMethods>).into();
 /// let out = processor.process_single(token, "   banana   ")?;
 /// assert_eq!(out, "banana");
 /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
