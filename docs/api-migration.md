@@ -63,3 +63,11 @@ assert_eq!(instructions.len(), 1);
 See [`BlockBuilder`](../src/api/block_builder.rs),
 [`ConditionalBuilderEach`](../src/api/conditional_builder.rs), and the shared
 [tree finalization](../src/api/builder/tree.rs).
+
+## Additive portable layer
+
+`api::portable` provides owned plans, typed instruction descriptions, independent
+compiled executables, and structured boundary errors for language adapters. This
+addition does not change any existing fluent Rust signature. See the
+[portable API guide](portable-api.md) for lifecycle, transfer semantics, registry
+parameter shapes, limitations, and adapter responsibilities.
