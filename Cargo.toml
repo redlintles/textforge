@@ -48,5 +48,6 @@ path = "src/main.rs"
 
 
 [workspace]
-members = [".", "./src/bindings/python"]
+members = ["."]
+exclude = ["src/bindings/python"]
 resolver = "3"
