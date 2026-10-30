@@ -1,11 +1,11 @@
 ---
 name: atp-project
-description: Work on the ATP Rust text-processing DSL, including token implementations, `.atp` pipelines, bytecode, tests, public API, and planned FFI. Use when the task mentions ATP, its instruction mnemonics, `InstructionMethods`, `AtpBuilder`, or `.atp`/bytecode files; do not use for unrelated Rust projects.
+description: Develop and review TextForge (formerly ATP), including Rust instructions, pipelines, bytecode, public and portable APIs, and language bindings under src/bindings. Use for TextForge/ATP code and binding work; do not use for unrelated Rust or binding projects.
 ---
 
-# ATP project
+# TextForge / ATP project
 
-ATP (`atp`) is a Rust text-processing DSL. Pipelines contain single-purpose tokens and can be used through `.atp` source files or the Rust API. The crate is edition 2024; bytecode support and the CLI are gated behind the `bytecode` feature.
+TextForge (formerly ATP) is a Rust text-processing DSL. The crate is edition 2024. Confirm current names, pipeline extensions, and feature gates in the code; legacy ATP names remain in some documentation.
 
 ## Work from the codebase
 
@@ -23,10 +23,23 @@ ATP (`atp`) is a Rust text-processing DSL. Pipelines contain single-purpose toke
 
 ## Public API and conventions
 
-- The Rust fluent API is defined by `AtpBuilderMethods` in `src/api/mod.rs`, implemented by `AtpBuilder` in `src/api/atp_builder.rs`, and run by `AtpProcessor`.
+- The Rust fluent API is defined by `TextForgeBuilderMethods` and related traits in `src/api/mod.rs`, implemented in `src/api/builder.rs`, `block_builder.rs`, and `conditional_builder.rs`, and run by `TextForgeProcessor` in `src/api/processor.rs`. Language adapters use `src/api/portable` directly.
 - Builder operations return `Result`; examples and tests should unwrap only when success is part of the test precondition.
-- Maintain existing public behavior unless the request explicitly changes it. Use `AtpError` and its error codes for validation failures rather than introducing ad-hoc error strings.
+- Maintain existing public behavior unless the request explicitly changes it. Use `TextForgeError` and its error codes for validation failures rather than introducing ad-hoc error strings.
 - Write new commits, code, and user-facing documentation in English unless the user requests otherwise.
+
+## Language bindings
+
+Before developing or reviewing a binding, read section 17, **bindings**, in the repository-root `AGENTS.md` (resolved from this skill as `../../../AGENTS.md`). It is the authoritative rule set; reload it for future binding tasks rather than relying on this summary. Read `docs/portable-api.md` and `docs/portable-parity.md` for the shared interop contract.
+
+- Each `src/bindings/{language_name}` is an independent crate and Git repository with its own versioning. Inspect its status and use its own worktree and commits; parent Git status does not show binding changes.
+- Route production calls exclusively through the portable layer. Mirror the public processor and builder functionality one-to-one using idiomatic names and types; implement missing shared capabilities in the portable layer, subject to contract approval, without duplicating engine logic.
+- Core changes require reviewing API and binding parity. Keep a method mapping, supported core revision/version, runtime/platform/architecture/feature matrix, and Rust-reference parity tests for results and errors. Missing functionality remains a parity gap even if documented.
+- Use native documentation, tests, type annotations/stubs for dynamic languages, and focused frequent commits. Validate shipped typing metadata, installed wheels/packages, and independent source rebuilds in CI for supported configurations.
+- Preserve structured portable errors and lossless Unicode/path/numeric conversion. Document and test ownership, cleanup, callbacks, re-entrancy, and concurrency guarantees; identify unavailable facilities.
+- Follow KISS, YAGNI, DRY, separation of concerns, and single responsibility pragmatically. Favor explicit, readable code and focused functions over speculative abstractions. Generated methods must remain readable and reproducible with CI freshness checks.
+- Binding updates require explicit human-maintainer approval before changes. A read-only review is not approval to repair findings. Existing session authorization applies to the requested scope; do not ask again for already authorized actions. Publishing, pushes, dependency additions, version bumps, and public-contract changes follow `AGENTS.md` approval rules.
+- For audits, report evidence for every rule, distinguish partial coverage from failures, and mark historical approval or external CI state as unverified when repository evidence cannot establish it. Apply newly introduced rules as current compliance criteria, without claiming they governed earlier development.
 
 ## References
 

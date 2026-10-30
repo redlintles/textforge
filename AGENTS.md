@@ -20,6 +20,7 @@ Guidance for AI agents and contributors working on **TextForge**.
 14. [Pre-Commit Checklist](#14-pre-commit-checklist)
 15. [Human Approval Required](#15-human-approval-required)
 16. [Dependencies](#16-dependencies)
+17. [bindings](#17-bindings)
 
 ---
 
@@ -350,3 +351,36 @@ Ask a human before doing any of the following:
 | `tempfile` | Temporary files in tests. |
 | `random-string` | Random test data. |
 | `rand` | Random test data. |
+
+
+---
+
+## 17. bindings
+
+1. **Independent projects.** Each language binding lives in `src/bindings/{language_name}`. Each directory contains a separate crate, with independent versioning and its own Git repository. Keep binding changes and commits in that repository.
+
+2. **Portable API only.** Bindings must use the intermediate API in `src/api/portable` directly. The binding crate must serve only as an adapter for the target language; do not duplicate the engine, instruction implementations, or domain validation. See [the portable API guide](docs/portable-api.md) and [the processor parity matrix](docs/portable-parity.md).
+
+3. **One-to-one public API parity.** Use the public Rust APIs in `src/api/processor` (`src/api/processor.rs` and its submodules) and `src/api/builder` (`src/api/builder.rs` and its submodules) as the reference surface. Expose a one-to-one functional mirror through the portable API, preserving behavior while adapting signatures, types, and ownership to the target language. If the portable layer lacks a required capability, address that gap there, subject to existing public-contract approval rules, rather than bypassing it in a binding.
+
+4. **Language conventions.** Follow the target language's development conventions, including naming and case styles. For example, Python method names use `snake_case`, while JavaScript method names use `camelCase`. These adaptations must preserve the corresponding Rust API's meaning and behavior.
+
+5. **Core evolution.** Substantial core changes must trigger a review of the corresponding public API, portable API, and bindings. Update them as needed to expose new functionality and preserve parity. Keeping bindings current does not waive the human approval requirement below.
+
+6. **Typing for dynamic languages.** When a dynamically typed target language provides facilities for typing and documenting exposed APIs, use them. Examples include Python type annotations and distributed typing metadata or stubs, and TypeScript declarations for JavaScript bindings.
+
+7. **Human approval.** Updating bindings requires explicit manual approval from a human maintainer before making binding changes.
+
+8. **Native documentation, tests, and commits.** Thoroughly document and test each binding using the target language's native tools and conventions. Make frequent, focused commits for each functionality in the binding's own repository, and run all applicable pre-commit checks before each commit.
+
+9. **Compatibility matrix.** Document the supported core versions or pinned revisions, target-language versions, operating systems, architectures, and enabled Cargo features. Distinguish supported and tested configurations from unverified source-build possibilities. Review this matrix whenever the core snapshot or binding changes.
+
+10. **Errors and lossless conversions.** Preserve portable error codes, stages, messages, and diagnostic context in idiomatic target-language errors. Reject invalid or out-of-range numbers without truncation or silent coercion. Preserve Unicode and native path representations without lossy conversion; document unsupported representations explicitly.
+
+11. **Ownership, callbacks, and concurrency.** Define and document object ownership, resource release, moved/consumed values, callback lifetimes, exception propagation, re-entrancy, and thread-safety. Follow the target runtime's locking requirements. Test supported lifecycle and concurrent-use guarantees, including failure and cleanup paths; mark unavailable facilities explicitly.
+
+12. **Parity tests.** Maintain a method-level mapping between the public Rust API and each binding. Use tests that compare results and errors against the corresponding Rust implementation, including edge cases and enabled optional features. Record missing methods or features as parity gaps; documentation of a gap does not satisfy the one-to-one parity requirement. Keep reference fixtures tied to the supported core revision and detect stale mappings in CI.
+
+13. **Distribution validation.** In CI, build the final distributable packages, install them in clean environments, and run tests against those installed artifacts across the supported compatibility matrix. Verify that typing metadata and required native libraries are included. When source distributions are provided, rebuild and test them outside the checkout. Publishing remains subject to human approval.
+
+14. **Clean, maintainable code.** Apply KISS (Keep It Simple), YAGNI (You Aren't Gonna Need It), DRY (Don't Repeat Yourself), separation of concerns, and single responsibility with human readability and maintenance as the goal. Use descriptive names, small focused functions, explicit control flow, and clear module boundaries. Avoid speculative abstractions, unnecessary indirection, hidden runtime API generation, and duplicated domain logic. Keep generated code readable, identify its source and regeneration command, and verify freshness. Apply these principles pragmatically; do not add abstractions merely to remove trivial repetition. Explain non-obvious interop constraints and tradeoffs in comments.
