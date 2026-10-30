@@ -1,6 +1,6 @@
 [package]
 name = "textforge"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2024"
 description = "A Flexible scalable DSL that allows the creation of pipelines for text processing"
 license-file = "LICENSE"
