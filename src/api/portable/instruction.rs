@@ -163,3 +163,60 @@ impl Drop for InstructionSpec {
         }
     }
 }
+
+/// Export independent descriptions without exposing private wrapper types.
+pub(super) fn describe(root: &TokenWrapper) -> Result<InstructionSpec, TextForgeError> {
+    let mut pending = vec![(root, false)];
+    let mut output = Vec::new();
+    while let Some((token, visited)) = pending.pop() {
+        if !visited {
+            pending.push((token, true));
+            for value in token.get_params() {
+                if let ValType::Literal(TextForgeParamTypes::Token(child)) = value {
+                    pending.push((child, false));
+                }
+            }
+            continue;
+        }
+        let mut arguments = Vec::new();
+        for value in token.get_params() {
+            arguments.push(match value {
+                ValType::VarRef(name) | ValType::Literal(TextForgeParamTypes::VarRef(name)) => {
+                    Argument::Variable(name.clone())
+                }
+                ValType::Literal(TextForgeParamTypes::String(text)) => Argument::Text(text.clone()),
+                ValType::Literal(TextForgeParamTypes::Usize(number)) => {
+                    Argument::Number(u64::try_from(*number).map_err(|error| {
+                        TextForgeError::new(
+                            TextForgeErrorCode::TryIntoFailError(error.to_string().into()),
+                            token.get_string_repr(),
+                            "numeric snapshot",
+                        )
+                    })?)
+                }
+                ValType::Literal(TextForgeParamTypes::Token(_)) => {
+                    Argument::Instruction(Box::new(output.pop().ok_or_else(|| {
+                        TextForgeError::new(
+                            TextForgeErrorCode::ValidationError(
+                                "Missing instruction snapshot".into(),
+                            ),
+                            token.get_string_repr(),
+                            "portable snapshot",
+                        )
+                    })?))
+                }
+            });
+        }
+        output.push(InstructionSpec::new(
+            token.get_string_repr().to_string(),
+            arguments,
+        ));
+    }
+    output.pop().ok_or_else(|| {
+        TextForgeError::new(
+            TextForgeErrorCode::ValidationError("Missing root snapshot".into()),
+            "portable snapshot",
+            "",
+        )
+    })
+}

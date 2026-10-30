@@ -118,10 +118,10 @@ pub enum ExecutionWindows {
 /// ```
 #[derive(Default)]
 pub struct WatcherList {
-    result: Vec<HashMap<&'static str, String>>,
-    watchers: HashMap<&'static str, RegisteredWatcher>,
+    result: Vec<HashMap<Arc<str>, String>>,
+    watchers: HashMap<Arc<str>, RegisteredWatcher>,
     schedule: Vec<ScheduledWatcher>,
-    spare_rows: Vec<HashMap<&'static str, String>>,
+    spare_rows: Vec<HashMap<Arc<str>, String>>,
     counter: u64,
 }
 
@@ -191,9 +191,29 @@ impl WatcherList {
         F: Fn(WatcherContext) -> String + 'static,
     {
         let metric = SharedMetric::identify::<F>();
-        let callback: WatcherCallback = Rc::new(watcher);
+        self.register(
+            Arc::from(watcher_name),
+            Rc::new(move |context| Ok(watcher(context))),
+            metric,
+        );
+    }
+
+    pub(crate) fn set_owned_watcher(
+        &mut self,
+        name: String,
+        callback: impl Fn(WatcherContext) -> Result<String, TextForgeError> + 'static,
+    ) {
+        self.register(Arc::from(name), Rc::new(callback), None);
+    }
+
+    fn register(
+        &mut self,
+        name: Arc<str>,
+        callback: WatcherCallback,
+        metric: Option<SharedMetric>,
+    ) {
         self.watchers.insert(
-            watcher_name,
+            name.clone(),
             RegisteredWatcher {
                 callback: Rc::clone(&callback),
                 metric,
@@ -201,7 +221,7 @@ impl WatcherList {
         );
         if let Ok(index) = self
             .schedule
-            .binary_search_by_key(&watcher_name, |entry| entry.name)
+            .binary_search_by(|entry| entry.name.as_ref().cmp(name.as_ref()))
         {
             self.schedule[index].callback = callback;
             self.schedule[index].metric = metric;
@@ -231,6 +251,14 @@ impl WatcherList {
         watcher_name: &'static str,
         when: ExecutionWindows,
     ) -> Result<(), TextForgeError> {
+        self.schedule_owned_watcher(watcher_name, when)
+    }
+
+    pub(crate) fn schedule_owned_watcher(
+        &mut self,
+        watcher_name: &str,
+        when: ExecutionWindows,
+    ) -> Result<(), TextForgeError> {
         let callback = self.watchers.get(watcher_name).ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::WatcherNotFoundError(
@@ -242,7 +270,7 @@ impl WatcherList {
         })?;
         match self
             .schedule
-            .binary_search_by_key(&watcher_name, |entry| entry.name)
+            .binary_search_by(|entry| entry.name.as_ref().cmp(watcher_name))
         {
             Ok(index) => {
                 self.schedule[index].when = when;
@@ -250,7 +278,7 @@ impl WatcherList {
             Err(index) => self.schedule.insert(
                 index,
                 ScheduledWatcher {
-                    name: watcher_name,
+                    name: Arc::from(watcher_name),
                     when,
                     callback: Rc::clone(&callback.callback),
                     metric: callback.metric,
@@ -318,9 +346,9 @@ impl WatcherList {
                 All => {
                     let value = match entry.metric {
                         Some(metric) => metric.evaluate(&current_statistics, &before_statistics),
-                        None => (entry.callback)(input.clone()),
+                        None => (entry.callback)(input.clone())?,
                     };
-                    row.insert(entry.name, value);
+                    row.insert(entry.name.clone(), value);
                 }
             }
         }
@@ -407,7 +435,7 @@ fn write_error(error: std::io::Error) -> TextForgeError {
 /// list.schedule_watcher("bytes", ExecutionWindows::All)?;
 /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
 /// ```
-type WatcherCallback = Rc<dyn Fn(WatcherContext) -> String>;
+type WatcherCallback = Rc<dyn Fn(WatcherContext) -> Result<String, TextForgeError>>;
 
 /// Registered callbacks retain exact built-in identity across scheduling.
 ///
@@ -433,7 +461,7 @@ struct RegisteredWatcher {
 /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
 /// ```
 struct ScheduledWatcher {
-    name: &'static str,
+    name: Arc<str>,
     when: ExecutionWindows,
     callback: WatcherCallback,
     metric: Option<SharedMetric>,
@@ -454,16 +482,19 @@ struct ScheduledWatcher {
 #[serde(transparent)]
 struct ReportView<'a> {
     #[serde(serialize_with = "serialize_rows")]
-    rows: &'a [HashMap<&'static str, String>],
+    rows: &'a [HashMap<Arc<str>, String>],
 }
 
 fn serialize_rows<S: Serializer>(
-    rows: &[HashMap<&'static str, String>],
+    rows: &[HashMap<Arc<str>, String>],
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     let mut sequence = serializer.serialize_seq(Some(rows.len()))?;
     for row in rows {
-        let ordered: BTreeMap<_, _> = row.iter().collect();
+        let ordered: BTreeMap<_, _> = row
+            .iter()
+            .map(|(name, value)| (name.as_ref(), value))
+            .collect();
         sequence.serialize_element(&ordered)?;
     }
     sequence.end()

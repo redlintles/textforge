@@ -235,7 +235,10 @@ fn reset_reuses_bounded_empty_maps_and_drops_large_values() {
     list.spare_rows.clear();
     let mut oversized = HashMap::new();
     oversized.reserve(MAX_RETAINED_COLUMNS + 1);
-    oversized.insert("huge", "x".repeat(2 * 1024 * 1024));
+    oversized.insert(
+        std::sync::Arc::<str>::from("huge"),
+        "x".repeat(2 * 1024 * 1024),
+    );
     list.result.push(oversized);
     list.reset();
     assert!(list.spare_rows.is_empty());
@@ -401,7 +404,7 @@ fn shared_standard_statistics_match_pure_functions_and_custom_overrides_stay_opa
     assert!(
         list.schedule
             .iter()
-            .find(|entry| entry.name == "words")
+            .find(|entry| entry.name.as_ref() == "words")
             .unwrap()
             .metric
             .is_none()

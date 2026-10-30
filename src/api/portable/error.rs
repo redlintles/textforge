@@ -22,6 +22,10 @@ pub enum ErrorStage {
     Validation,
     /// A validated pipeline failed while processing a particular input.
     Execution,
+    /// Pipeline import/export or report persistence failed.
+    Persistence,
+    /// A user-provided observer returned an error.
+    Callback,
 }
 
 /// Owned, uncolored error data suitable for exceptions or foreign result objects.
@@ -41,7 +45,7 @@ pub enum ErrorStage {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BindingError {
-    /// Conversion, validation, or execution boundary that returned this error.
+    /// Boundary that returned this error, including persistence and callbacks.
     pub stage: ErrorStage,
     /// Existing engine error code, without remapping into language-specific codes.
     pub code: u16,

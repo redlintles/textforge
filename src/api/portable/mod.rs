@@ -3,7 +3,9 @@
 //! This Rust API is not a C ABI. It reuses the existing instruction registry,
 //! construction tree, structural policies, and engine. Adapters convert foreign
 //! values into these concrete types and translate [`BindingError`] into their
-//! language's errors. No `test_access` feature or foreign callbacks are needed.
+//! language's errors. [`PortableProcessor`] exposes the complete processor surface;
+//! optional watchers and streams use runtime-neutral synchronous callback hooks.
+//! No `test_access` feature is required.
 //!
 //! ```
 //! use textforge::api::portable::{Argument, InstructionSpec, PipelinePlan};
@@ -16,8 +18,20 @@
 //! assert_eq!(pipeline.process("é")?, "🍌é");
 //! # Ok::<(), textforge::api::portable::BindingError>(())
 //! ```
+#[cfg(feature = "buffered")]
+mod buffered;
 mod error;
 mod instruction;
+mod path;
+mod processor;
+#[cfg(feature = "buffered")]
+pub use buffered::{BufferOptions, BufferTask, PortableBuffer, StreamReader, StreamWriter};
+#[cfg(feature = "watchers")]
+mod watchers;
+pub use path::FilePath;
+pub use processor::{BatchPool, Features, FileTask, PortableProcessor, features};
+#[cfg(feature = "watchers")]
+pub use watchers::{Observation, Observer, Observers};
 
 pub use error::{BindingError, ErrorStage};
 pub use instruction::{Argument, InstructionSpec};
@@ -125,7 +139,8 @@ impl fmt::Debug for PipelinePlan {
 /// callers can share this immutable executable across threads; each language
 /// adapter still manages its runtime's threading and object-lifetime rules.
 /// Input text is borrowed only for the call; returned text/errors are owned.
-/// No callback, file, watcher, or bytecode interface is exposed in this first API.
+/// This focused object exposes immutable memory execution. Use [`PortableProcessor`]
+/// for registration, files, debug, batches and optional watcher/buffer/bytecode APIs.
 ///
 /// ```
 /// use textforge::api::portable::{Argument, InstructionSpec, PipelinePlan};
