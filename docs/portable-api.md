@@ -167,11 +167,11 @@ whole pipeline execution. There is no serialization into DSL text and no extra
 portable-to-core conversion per instruction during processing. Actual input/output
 copying across a foreign runtime depends on the adapter's ownership strategy.
 
-Initial scope covers in-memory construction, compilation, execution, and errors.
-File APIs, persistence, watchers, foreign callbacks, cancellation, and a C ABI are
-not part of this initial contract. PyO3 or future ABI-specific adapters can depend
-on this API without changing current fluent callers. Future public contracts
-still require explicit approval under [AGENTS.md](../AGENTS.md).
+The initial memory facade is now complemented by `PortableProcessor`, which
+covers the complete current processor surface. See the [processor parity guide](portable-parity.md)
+for registration, inspection, persistence, debug, file batches/pools, observers,
+stream hooks and buffers. The existing Rust API remains unchanged. A C ABI is
+still a separate adapter responsibility, not a representation of these Rust types.
 
 ## Verification and references
 

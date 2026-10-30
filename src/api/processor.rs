@@ -463,17 +463,9 @@ pub trait TextForgeProcessorMethods {
         input: &str,
     ) -> Result<String, TextForgeError>;
 
-    /// Reads `file_path` via a memory-mapped file, runs the registered pipeline
-    /// `pipeline_id` against its contents, and writes the result to `output_path`.
-    ///
-    /// `output_path`'s parent directory is created automatically if it doesn't exist yet
-    /// (mirroring `process_batch`'s behavior for its target paths).
-    ///
-    /// # Safety note
-    /// The input file is memory-mapped (`mmap`), which assumes nothing else truncates or
-    /// writes to it while it's mapped — doing so is UB and can cause a `SIGBUS` or
-    /// inconsistent reads. TextForge holds no exclusive lock over the input file today, so
-    /// this guarantee is the caller's responsibility.
+    /// Reads an owned UTF-8 document from `file_path`, runs `pipeline_id`, and
+    /// writes the result to `output_path`. No memory mapping or unsafe file-backed
+    /// references are used. Output parent directories are created as needed.
     ///
     /// # Parameters
     /// - `pipeline_id`: ID of a transform previously registered via `add_transform` /
@@ -483,7 +475,7 @@ pub trait TextForgeProcessorMethods {
     ///
     /// # Errors
     /// Returns `Err` if:
-    /// - `file_path` fails to open or map
+    /// - `file_path` fails to open or read
     /// - the file's contents are not valid UTF-8
     /// - `pipeline_id` does not match any registered transform, or any token fails during
     ///   execution
@@ -513,7 +505,7 @@ pub trait TextForgeProcessorMethods {
     ///
     /// Internally, for each task:
     /// - checks that `origin` exists and is a file (not a directory)
-    /// - reads `origin` with `std::fs::read_to_string`
+    /// - reads an owned UTF-8 document from `origin`
     /// - runs the registered pipeline via `run_transform(pipeline_id, &input)`
     /// - creates `target`'s parent directory if it doesn't exist yet (`create_dir_all`)
     /// - writes the result to `target` with `std::fs::write`
