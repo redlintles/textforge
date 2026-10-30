@@ -6,6 +6,7 @@ pub use text_buffer::{TextBuffer, TextBufferOptions};
 pub mod block_builder;
 pub mod builder;
 pub mod conditional_builder;
+pub mod portable;
 pub mod processor;
 
 use crate::api::block_builder::BlockBuilder;
