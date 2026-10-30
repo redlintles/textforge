@@ -195,3 +195,16 @@ fn failed_explicit_spill_does_not_destroy_retained_text() {
     assert!(buffer.spill().is_err());
     assert_eq!(buffer.into_string().unwrap(), "é 🦀");
 }
+
+#[test]
+fn reads_at_extreme_eof_offsets_are_consistent_for_memory_and_disk() {
+    for threshold in [0, 1024] {
+        let mut buffer = TextBuffer::from_text("🍌é", options(threshold)).unwrap();
+        let mut bytes = [0; 8];
+        assert_eq!(buffer.read_at(u64::MAX, &mut bytes).unwrap(), 0);
+        assert_eq!(buffer.read_at(buffer.len_bytes(), &mut bytes).unwrap(), 0);
+        assert_eq!(buffer.read_at(0, &mut []).unwrap(), 0);
+        assert_eq!(buffer.read_at(0, &mut bytes).unwrap(), 6);
+        assert_eq!(&bytes[..6], "🍌é".as_bytes());
+    }
+}

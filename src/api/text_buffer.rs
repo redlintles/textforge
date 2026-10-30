@@ -288,10 +288,10 @@ impl TextBuffer {
         offset: u64,
         destination: &mut [u8],
     ) -> Result<usize, TextForgeError> {
+        if offset >= self.len || destination.is_empty() {
+            return Ok(0);
+        }
         if let Some(text) = &self.materialized {
-            if offset >= self.len {
-                return Ok(0);
-            }
             let start = usize::try_from(offset).map_err(|error| invalid_utf8(error.to_string()))?;
             let bytes = text.as_str().as_bytes();
             let count = destination.len().min(bytes.len() - start);
