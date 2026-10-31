@@ -47,3 +47,4 @@ Parameters support the existing variables and interpolation rules.
 | `klm "^b$"` | `keep_lines_matching` | Keep lines whose content matches a regular expression. |
 | `dlm "^b$"` | `delete_lines_matching` | Delete lines whose content matches a regular expression. |
 | `revln` | `reverse_lines` | Reverse line contents while preserving terminators at their original positions. |
+| `uniqln` | `unique_lines` | Keep the first occurrence of each exact line content, in original order. |

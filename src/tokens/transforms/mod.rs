@@ -63,6 +63,7 @@ pub mod tua;
 pub mod tucc;
 pub mod tucs;
 pub mod tucw;
+pub mod uniqln;
 pub mod unorm;
 pub mod urld;
 pub mod urle;

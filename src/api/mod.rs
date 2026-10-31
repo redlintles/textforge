@@ -363,6 +363,23 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// UNIQLN — Keep the first occurrence of each exact line content, in original order.
+    ///
+    /// Keep the first occurrence of each exact line content, in original order. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().unique_lines().unwrap().build().unwrap();
+    /// let input = "a\na\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nb");
+    /// ```
+    fn unique_lines(&mut self) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(uniqln::Uniqln::default()), Some(vec![]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

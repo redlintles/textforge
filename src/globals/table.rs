@@ -540,5 +540,6 @@ define_token_table! {
         ("klm", 0x4d, || TokenRef::Shared(Arc::new(klm::Klm::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("dlm", 0x4e, || TokenRef::Shared(Arc::new(dlm::Dlm::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("revln", 0x4f, || TokenRef::Shared(Arc::new(revln::Revln::default())), []),
+        ("uniqln", 0x50, || TokenRef::Shared(Arc::new(uniqln::Uniqln::default())), []),
     ];
 }

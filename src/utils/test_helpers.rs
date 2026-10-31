@@ -138,6 +138,8 @@ pub fn build_all_tokens_pipeline_safe(
         .delete_lines_matching("^b$")?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .reverse_lines()?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .unique_lines()?
         .build()?;
 
     Ok(id)
