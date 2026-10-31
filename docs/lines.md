@@ -49,3 +49,24 @@ Parameters support the existing variables and interpolation rules.
 | `revln` | `reverse_lines` | Reverse line contents while preserving terminators at their original positions. |
 | `uniqln` | `unique_lines` | Keep the first occurrence of each exact line content, in original order. |
 | `joinln " "` | `join_lines` | Join line contents with a separator, discarding the final terminator. |
+
+## Interpolation and persistence
+
+Regex text still follows the DSL's existing interpolation rules. When a pattern
+contains literal `[[` or `]]` delimiters (for example a POSIX character class),
+escape those delimiter pairs in pipeline parameters. For example:
+
+```text
+klm '^\[[:alpha:\]]+$';
+```
+
+Direct token `transform` calls bypass pipeline interpolation. Valid regex classes
+are compiled before a pattern is considered an unresolved parameter.
+
+Bytecode preserves numeric variable references. Text-file export retains the
+existing engine limitation for unresolved numeric references: export may fail
+when binding them for textual serialization. Literal numeric line indices round
+trip in both formats. Multiline `joinln` separators work as API values and in
+bytecode; the one-instruction-per-physical-line text reader cannot round trip
+literal multiline parameters. These are existing serialization constraints,
+not additional line-specific syntax.

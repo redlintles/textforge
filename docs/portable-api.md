@@ -204,3 +204,18 @@ one text/variable argument. Accepted modes are `nfc`, `nfd`, `nfkc` and `nfkd`.
 The portable contract needs no new type or method: the shared registry and core
 implement validation, execution, nesting and persistence. Python forwards the
 same description. See [normalization semantics](unicode-normalization.md).
+
+## Logical lines (0.2.0)
+
+All sixteen line tokens use the existing `InstructionSpec`/`Argument` registry
+path; there is no second line engine in the portable facade. Numeric arguments
+are one-based line numbers. The fluent Rust method and canonical token mapping
+are listed in [the line guide](lines.md). `tests/lines.rs` checks each fluent
+method against portable descriptions, runtime variables, block and conditional
+bodies, textual parsing and persistence, big-endian bytecode, spilled buffers and
+watchers. Each token also has adjacent unit tests.
+
+Adapters must preserve numeric conversions and portable errors. The Python
+binding provides explicit typed methods matching the Rust names and delegates
+through this portable representation. No line-specific domain validation belongs
+in an adapter.

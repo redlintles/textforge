@@ -55,6 +55,15 @@ fn verify_environments(
             memory_threshold: 1,
             spill_directory: FilePath::from_text(directory.path().to_str().unwrap().into()),
         };
+        let dynamic_id = processor.register(&dynamic).unwrap();
+        let bytecode_path = directory.path().join("dynamic.textforgebc");
+        std::fs::write(&bytecode_path, "").unwrap();
+        let bytecode_path = FilePath::from_text(bytecode_path.to_str().unwrap().into());
+        processor
+            .write_to_bytecode_file(&dynamic_id, &bytecode_path)
+            .unwrap();
+        let restored = processor.read_from_bytecode_file(&bytecode_path).unwrap();
+        assert_eq!(processor.process_all(&restored, input).unwrap(), expected);
         let buffer = PortableBuffer::from_text(input, options).unwrap();
         assert_eq!(
             processor
@@ -1108,4 +1117,161 @@ fn regex_line_filters_compile_character_classes_after_interpolation() {
         processor.process_all(&delete, "abc\r\n123\nXYZ").unwrap(),
         "123\n"
     );
+}
+
+#[test]
+fn line_operations_compose_with_unicode_normalization_and_regex_maps() {
+    use textforge::api::{
+        TextForgeBuilderMethods,
+        processor::{TextForgeProcessor, TextForgeProcessorMethods},
+    };
+    let mut processor = TextForgeProcessor::new();
+    let id = processor
+        .create_pipeline()
+        .normalize_unicode("nfc")
+        .unwrap()
+        .define_replace_map("fruit", "banana", "🍌")
+        .unwrap()
+        .execute_replace_map("fruit")
+        .unwrap()
+        .delete_empty_lines()
+        .unwrap()
+        .unique_lines()
+        .unwrap()
+        .keep_lines_matching("^(é|🍌)$")
+        .unwrap()
+        .join_lines(" | ")
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(
+        processor
+            .process_all(&id, "e\u{301}\r\n\r\né\r\nbanana\r\nskip")
+            .unwrap(),
+        "é | 🍌"
+    );
+}
+
+#[test]
+fn unicode_payloads_keep_crlf_and_join_empty_matches_remove_breaks() {
+    use textforge::api::{
+        TextForgeBuilderMethods,
+        processor::{TextForgeProcessor, TextForgeProcessorMethods},
+    };
+    let mut processor = TextForgeProcessor::new();
+    let id = processor
+        .create_pipeline()
+        .prepend_line("👩🏽‍💻e\u{301}")
+        .unwrap()
+        .insert_line(2, "🍌")
+        .unwrap()
+        .replace_line(3, "é")
+        .unwrap()
+        .append_line("終")
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(
+        processor.process_all(&id, "x\r\n").unwrap(),
+        "👩🏽‍💻e\u{301}\r\n🍌\r\né\r\n終\r\n"
+    );
+    let nln = processor
+        .create_pipeline()
+        .remove_line_breaks()
+        .unwrap()
+        .build()
+        .unwrap();
+    let join = processor
+        .create_pipeline()
+        .join_lines("")
+        .unwrap()
+        .build()
+        .unwrap();
+    for input in [
+        "",
+        "\r\n",
+        "é\r\n🍌\re\u{301}\n\u{b}\u{c}\u{85}\u{2028}\u{2029}",
+    ] {
+        assert_eq!(
+            processor.process_all(&nln, input).unwrap(),
+            processor.process_all(&join, input).unwrap()
+        );
+    }
+    let filtered = processor
+        .create_pipeline()
+        .keep_lines_matching("(?i)^fruit$")
+        .unwrap()
+        .delete_lines_matching("^FRUIT$")
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(
+        processor
+            .process_all(&filtered, "FRUIT\r\nfruit\napple")
+            .unwrap(),
+        "fruit\n"
+    );
+}
+
+#[cfg(feature = "test_access")]
+#[test]
+fn quoted_unicode_payloads_round_trip_in_both_formats() {
+    use textforge::api::portable::{Argument, FilePath, InstructionSpec, PortableProcessor};
+    let payload = "é🍌e\u{301} \"quoted\" 'single' ; // \\ $";
+    let cases = [
+        (
+            "apl",
+            vec![Argument::Text(payload.into())],
+            "x",
+            format!("x\n{payload}"),
+        ),
+        (
+            "pln",
+            vec![Argument::Text(payload.into())],
+            "x",
+            format!("{payload}\nx"),
+        ),
+        (
+            "inl",
+            vec![Argument::Number(1), Argument::Text(payload.into())],
+            "x",
+            format!("{payload}\nx"),
+        ),
+        (
+            "rln",
+            vec![Argument::Number(1), Argument::Text(payload.into())],
+            "x",
+            payload.to_owned(),
+        ),
+        (
+            "joinln",
+            vec![Argument::Text(payload.into())],
+            "a\nb",
+            format!("a{payload}b"),
+        ),
+    ];
+    let directory = tempfile::tempdir().unwrap();
+    let mut processor = PortableProcessor::new();
+    for (name, arguments, input, expected) in cases {
+        let id = processor
+            .add_transform(vec![InstructionSpec::new(name.into(), arguments)])
+            .unwrap();
+        for extension in ["textforge", "textforgebc"] {
+            let path = directory.path().join(format!("{name}.{extension}"));
+            std::fs::write(&path, "").unwrap();
+            let path = FilePath::from_text(path.to_str().unwrap().into());
+            let restored = if extension == "textforge" {
+                processor.write_pipeline_to_file(&id, &path).unwrap();
+                processor.get_pipeline_from_file(&path).unwrap()
+            } else {
+                processor.write_to_bytecode_file(&id, &path).unwrap();
+                processor.read_from_bytecode_file(&path).unwrap()
+            };
+            assert_eq!(
+                processor.process_all(&restored, input).unwrap(),
+                expected,
+                "{name} {extension}"
+            );
+        }
+    }
 }

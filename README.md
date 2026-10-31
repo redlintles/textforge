@@ -347,3 +347,22 @@ Use `unorm nfc;`, `unorm nfd;`, `unorm nfkc;` or `unorm nfkd;` to normalize the
 current text explicitly. Rust builders expose `normalize_unicode(mode)`; the Python
 binding mirrors it. See [Unicode normalization](docs/unicode-normalization.md) for
 examples, compatibility distinctions, Unicode version and document-boundary behavior.
+
+### Logical lines (0.2.0)
+
+The line transforms use **one-based** indices and inclusive intervals. For example:
+
+```rust
+use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+let mut processor = TextForgeProcessor::new();
+let id = processor.create_pipeline()
+    .delete_empty_lines().unwrap()
+    .unique_lines().unwrap()
+    .join_lines(" | ").unwrap()
+    .build().unwrap();
+assert_eq!(processor.process_all(&id, "é\n\né\n🍌").unwrap(), "é | 🍌");
+```
+
+See the [line semantics and complete instruction list](docs/lines.md) and the
+[0.2.0 changelog](changelog.md). Python adapters are released separately as
+`textforgers` 0.1.2.
