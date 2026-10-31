@@ -40,6 +40,24 @@ pub(crate) fn invalid(name: &'static str, message: &str, input: &str) -> TextFor
     )
 }
 
+pub(crate) fn check_line(
+    line: usize,
+    count: usize,
+    name: &'static str,
+    input: &str,
+) -> Result<(), TextForgeError> {
+    if line == 0 || line > count {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::IndexOutOfRange(
+                format!("Line {line} does not exist; expected 1..={count}").into(),
+            ),
+            name,
+            input.to_owned(),
+        ));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

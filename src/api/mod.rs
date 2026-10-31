@@ -102,6 +102,23 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// DLN — Delete one line, including its terminator.
+    ///
+    /// Delete one line, including its terminator. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().delete_line(1).unwrap().build().unwrap();
+    /// let input = "a\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "b");
+    /// ```
+    fn delete_line(&mut self, line: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(dln::Dln::default()), Some(vec![line.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.
