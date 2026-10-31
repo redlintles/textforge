@@ -49,6 +49,7 @@ pub(crate) fn validate_and_lower(nodes: &[Node]) -> Result<Vec<TokenWrapper>, Te
                     structure::rules::ValidationContext {
                         depth,
                         inside_block,
+                        inside_iteration: false,
                     },
                 )?;
                 let inside_block = inside_block || token.get_string_repr() == "blk";

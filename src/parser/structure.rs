@@ -31,6 +31,7 @@ pub(crate) fn validate_at(
             ValidationContext {
                 depth,
                 inside_block,
+                inside_iteration: false,
             },
         )],
         BUILTIN_RULES,

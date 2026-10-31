@@ -175,3 +175,9 @@ need entry points for new capabilities; they should not implement domain logic.
 - [Core processor](../src/api/processor.rs).
 - [Core watcher list](../src/watchers/mod.rs).
 - [Core buffer](../src/api/text_buffer.rs).
+
+Replacement-map fluent methods `define_replace_map` and `execute_replace_map`
+map to `InstructionSpec` mnemonics `rmapd` and `rmape`; all parameters are text
+or variable arguments. Compilation applies the same ancestor-sensitive block
+restriction as native builders. Execution, persistence and file batches delegate
+to the core; adapters never build or execute replacement maps themselves.

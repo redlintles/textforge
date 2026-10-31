@@ -26,6 +26,7 @@ use crate::{
 pub(crate) struct ValidationContext {
     pub depth: usize,
     pub inside_block: bool,
+    pub inside_iteration: bool,
 }
 
 impl ValidationContext {
@@ -33,6 +34,7 @@ impl ValidationContext {
         Self {
             depth: self.depth + 1,
             inside_block: self.inside_block || parent_name == "blk",
+            inside_iteration: self.inside_iteration || parent_name == "iter",
         }
     }
 }
@@ -142,6 +144,15 @@ impl ValidationRule for NestingRule {
             return Err(TextForgeError::new(
                 TextForgeErrorCode::NestedBlocksNotAllowedError(
                     "A block cannot contain another block at any descendant depth".into(),
+                ),
+                instruction.name,
+                format!("depth={}", context.depth),
+            ));
+        }
+        if (context.inside_block || context.inside_iteration) && instruction.name == "rmapd" {
+            return Err(TextForgeError::new(
+                TextForgeErrorCode::ValidationError(
+                    "Replacement maps may only be defined globally or inside conditionals".into(),
                 ),
                 instruction.name,
                 format!("depth={}", context.depth),

@@ -333,3 +333,10 @@ Commit format: `type(scope): description` ([Conventional Commits](https://www.co
 ## License
 
 [GPL-3.0](LICENSE) — forks must remain open source.
+### Non-cascading replacement maps
+
+Use `rmapd animals add 'cat' 'wolf';`, `rmapd animals add 'wolf' 'dog';`, then
+`rmape animals;` to turn `cat wolf` into `wolf dog`. Definitions live in the
+execution context; execution can be reused from blocks. Rust builders expose
+`define_replace_map` and `execute_replace_map`. See [replacement maps](docs/replace-maps.md)
+for overlap rules, capture expansion, scope, bytecode and concurrent batch reuse.

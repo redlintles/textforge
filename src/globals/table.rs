@@ -519,6 +519,11 @@ define_token_table! {
             || TokenRef::Shared(Arc::new(rmp::Rmp::default())),
             [SyntaxDef::req(SyntaxToken::String)],
         ),
+        ("rmapd", 0x3f, || TokenRef::Shared(Arc::new(rmapd::Rmapd::default())), [
+            SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Literal("add")),
+            SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::String),
+        ]),
+        ("rmape", 0x40, || TokenRef::Shared(Arc::new(rmape::Rmape::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("end", 0x3e, || TokenRef::Shared(Arc::new(end::End::default())), []),
     ];
 }

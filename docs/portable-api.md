@@ -188,3 +188,11 @@ conversion atomicity, cleanup, and read-only concurrent Rust execution.
 - [Common structural policies](../src/parser/structure/rules.rs).
 - [Existing processor execution](../src/api/processor.rs).
 - [Instruction registry](../src/globals/table.rs).
+
+## Replacement maps
+
+`rmapd` takes `[Text(name), Text(pattern), Text(replacement)]`; `rmape` takes
+`[Text(name)]`. The literal `add` belongs only to textual DSL syntax. The shared
+registry, scope validation and engine implement these instructions for every
+portable client. See [replacement maps](replace-maps.md) for precedence, capture
+expansion, context isolation and cache limits.

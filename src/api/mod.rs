@@ -21,6 +21,48 @@ pub fn get_var(var_name: &str) -> ValType {
     ValType::VarRef(var_name.to_string())
 }
 pub trait TextForgeBuilderMethods: Sized {
+    /// Define or update a rule; forbidden inside blocks.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().define_replace_map("animals", "cat", "dog").unwrap()
+    ///     .execute_replace_map("animals").unwrap().build().unwrap();
+    /// assert_eq!(processor.process_all(&id, "cat").unwrap(), "dog");
+    /// ```
+    fn define_replace_map(
+        &mut self,
+        name: impl Into<ValType>,
+        pattern: impl Into<ValType>,
+        replacement: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        self.push_token(TokenWrapper::new(
+            Box::new(rmapd::Rmapd::default()),
+            Some(vec![name.into(), pattern.into(), replacement.into()]),
+        ))?;
+        Ok(self)
+    }
+
+    /// Execute a map on the original text, without cascading replacements.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().define_replace_map("animals", "cat", "dog").unwrap()
+    ///     .execute_replace_map("animals").unwrap().build().unwrap();
+    /// assert_eq!(processor.process_all(&id, "cat").unwrap(), "dog");
+    /// ```
+    fn execute_replace_map(
+        &mut self,
+        name: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        self.push_token(TokenWrapper::new(
+            Box::new(rmape::Rmape::default()),
+            Some(vec![name.into()]),
+        ))?;
+        Ok(self)
+    }
+
     fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), TextForgeError>;
 
     /// TBS - Trim Both Sides

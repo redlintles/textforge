@@ -54,6 +54,7 @@ fn additional_policy_receives_real_descendants_and_inherited_context() {
     let context = ValidationContext {
         depth: 0,
         inside_block: false,
+        inside_iteration: false,
     };
     let rules: &[&dyn ValidationRule] = &[&NestingRule, &SignatureRule, &RejectBang];
     walk(vec![(&block_condition("🍌"), context)], rules).unwrap();
@@ -79,6 +80,7 @@ fn group_views_have_real_prefix_and_instruction_slot_without_a_dummy_leaf() {
         ValidationContext {
             depth: 0,
             inside_block: false,
+            inside_iteration: false,
         },
     )
     .unwrap();

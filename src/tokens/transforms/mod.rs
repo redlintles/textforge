@@ -28,6 +28,7 @@ pub mod rcw;
 pub mod rev;
 pub mod rfw;
 pub mod rlw;
+pub mod rmape;
 pub mod rmp;
 pub mod rmws;
 pub mod rnw;

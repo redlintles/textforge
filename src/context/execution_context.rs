@@ -31,6 +31,7 @@ pub struct VarEntry {
 pub struct GlobalExecutionContext {
     variables: HashMap<String, VarEntry>,
     blocks: HashMap<String, Vec<TokenWrapper>>,
+    replace_maps: HashMap<String, Vec<(std::sync::Arc<regex::Regex>, String)>>,
     pub is_halted: bool,
 }
 
@@ -70,10 +71,103 @@ pub trait GlobalContextMethods {
 }
 
 impl GlobalExecutionContext {
+    pub(crate) fn define_replace_rule(
+        &mut self,
+        name: &str,
+        regex: std::sync::Arc<regex::Regex>,
+        replacement: String,
+    ) {
+        let rules = self.replace_maps.entry(name.to_owned()).or_default();
+        if let Some(rule) = rules
+            .iter_mut()
+            .find(|(existing, _)| existing.as_str() == regex.as_str())
+        {
+            rule.1 = replacement;
+        } else {
+            rules.push((regex, replacement));
+        }
+    }
+
+    pub(crate) fn execute_replace_map<'a>(
+        &self,
+        name: &str,
+        input: Cow<'a, str>,
+    ) -> Result<Cow<'a, str>, TextForgeError> {
+        let rules = self.replace_maps.get(name).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::ValidationError("Replacement map not found".into()),
+                "rmape",
+                name.to_owned(),
+            )
+        })?;
+        // All candidates refer to the original input. Re-search from the new
+        // cursor when a competing match overlaps: advancing an independent
+        // captures_iter could skip valid overlapping occurrences of that rule.
+        let mut matches: Vec<_> = rules
+            .iter()
+            .map(|(regex, _)| regex.captures(&input))
+            .collect();
+        let mut output = String::new();
+        let mut cursor = 0;
+        let mut last_end = None;
+        loop {
+            let mut chosen = None;
+            for (index, candidate) in matches.iter_mut().enumerate() {
+                if candidate
+                    .as_ref()
+                    .and_then(|caps| caps.get(0))
+                    .is_some_and(|m| {
+                        m.start() < cursor || (m.is_empty() && last_end == Some(m.start()))
+                    })
+                {
+                    *candidate = rules[index].0.captures_at(&input, cursor);
+                    if candidate
+                        .as_ref()
+                        .and_then(|caps| caps.get(0))
+                        .is_some_and(|m| m.is_empty() && last_end == Some(m.start()))
+                    {
+                        *candidate = input[cursor..].chars().next().and_then(|c| {
+                            rules[index].0.captures_at(&input, cursor + c.len_utf8())
+                        });
+                    }
+                }
+                if let Some(m) = candidate.as_ref().and_then(|caps| caps.get(0))
+                    && chosen.is_none_or(|(_, start)| m.start() < start)
+                {
+                    chosen = Some((index, m.start()));
+                }
+            }
+            let Some((index, _)) = chosen else {
+                break;
+            };
+            if let Some(caps) = matches[index].take()
+                && let Some(m) = caps.get(0)
+            {
+                output.push_str(&input[cursor..m.start()]);
+                caps.expand(&rules[index].1, &mut output);
+                cursor = m.end();
+                last_end = Some(cursor);
+            }
+            let search = if last_end == Some(cursor) && cursor == input.len() {
+                None
+            } else {
+                Some(cursor)
+            };
+            matches[index] = search.and_then(|at| rules[index].0.captures_at(&input, at));
+        }
+        drop(matches);
+        if last_end.is_none() {
+            return Ok(input);
+        }
+        output.push_str(&input[cursor..]);
+        Ok(Cow::Owned(output))
+    }
+
     pub fn new() -> Self {
         GlobalExecutionContext {
             variables: HashMap::new(),
             blocks: HashMap::new(),
+            replace_maps: HashMap::new(),
             is_halted: false,
         }
     }
