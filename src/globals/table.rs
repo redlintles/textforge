@@ -528,5 +528,6 @@ define_token_table! {
         ("end", 0x3e, || TokenRef::Shared(Arc::new(end::End::default())), []),
         ("apl", 0x42, || TokenRef::Shared(Arc::new(apl::Apl::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("dln", 0x43, || TokenRef::Shared(Arc::new(dln::Dln::default())), [SyntaxDef::req(SyntaxToken::Usize)]),
+        ("dlna", 0x44, || TokenRef::Shared(Arc::new(dlna::Dlna::default())), [SyntaxDef::req(SyntaxToken::Usize)]),
     ];
 }

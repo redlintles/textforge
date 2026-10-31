@@ -114,6 +114,8 @@ pub fn build_all_tokens_pipeline_safe(
         .append_line("b")?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .delete_line(1)?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .delete_lines_after(1)?
         .build()?;
 
     Ok(id)
