@@ -41,3 +41,4 @@ Parameters support the existing variables and interpolation rules.
 | `dlni 2, 2` | `delete_lines_interval` | Delete an inclusive interval of lines and retain the rest. |
 | `inl 2, "x"` | `insert_line` | Insert before a line; line count plus one appends a line. |
 | `nln` | `remove_line_breaks` | Remove all recognized line terminators without inserting spaces. |
+| `rln 2, "x"` | `replace_line` | Replace a line content, preserving its terminator. |

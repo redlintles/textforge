@@ -248,6 +248,30 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// RLN — Replace a line content, preserving its terminator.
+    ///
+    /// Replace a line content, preserving its terminator. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().replace_line(2, "x").unwrap().build().unwrap();
+    /// let input = "a\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nx");
+    /// ```
+    fn replace_line(
+        &mut self,
+        line: impl Into<ValType>,
+        text: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(rln::Rln::default()),
+            Some(vec![line.into(), text.into()]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.
