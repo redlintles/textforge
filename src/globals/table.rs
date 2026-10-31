@@ -526,5 +526,6 @@ define_token_table! {
         ("rmape", 0x40, || TokenRef::Shared(Arc::new(rmape::Rmape::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("unorm", 0x41, || TokenRef::Shared(Arc::new(unorm::Unorm::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("end", 0x3e, || TokenRef::Shared(Arc::new(end::End::default())), []),
+        ("apl", 0x42, || TokenRef::Shared(Arc::new(apl::Apl::default())), [SyntaxDef::req(SyntaxToken::String)]),
     ];
 }

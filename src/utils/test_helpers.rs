@@ -110,6 +110,8 @@ pub fn build_all_tokens_pipeline_safe(
         })?
         .call_block("x")?
         .call_block("x")?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .append_line("b")?
         .build()?;
 
     Ok(id)

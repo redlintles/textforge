@@ -85,6 +85,23 @@ pub trait TextForgeBuilderMethods: Sized {
 
     fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), TextForgeError>;
 
+    /// APL — Append one logical line, preserving the final-terminator convention.
+    ///
+    /// Append one logical line, preserving the final-terminator convention. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().append_line("b").unwrap().build().unwrap();
+    /// let input = "a";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nb");
+    /// ```
+    fn append_line(&mut self, text: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(apl::Apl::default()), Some(vec![text.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

@@ -9,3 +9,5 @@ pub mod validations;
 
 #[cfg(feature = "test_access")]
 pub mod test_helpers;
+
+pub(crate) mod lines;
