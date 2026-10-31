@@ -139,6 +139,26 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// DLNB — Delete lines before the given line, retaining that line.
+    ///
+    /// Delete lines before the given line, retaining that line. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().delete_lines_before(2).unwrap().build().unwrap();
+    /// let input = "a\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "b");
+    /// ```
+    fn delete_lines_before(
+        &mut self,
+        line: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(dlnb::Dlnb::default()), Some(vec![line.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

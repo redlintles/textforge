@@ -36,3 +36,4 @@ Parameters support the existing variables and interpolation rules.
 | `apl "b"` | `append_line` | Append one logical line, preserving the final-terminator convention. |
 | `dln 1` | `delete_line` | Delete one line, including its terminator. |
 | `dlna 1` | `delete_lines_after` | Delete lines after the given line, retaining that line and its terminator. |
+| `dlnb 2` | `delete_lines_before` | Delete lines before the given line, retaining that line. |
