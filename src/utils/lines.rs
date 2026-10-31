@@ -58,6 +58,21 @@ pub(crate) fn check_line(
     Ok(())
 }
 
+pub(crate) fn check_range(
+    start: usize,
+    end: usize,
+    count: usize,
+    name: &'static str,
+    input: &str,
+) -> Result<(), TextForgeError> {
+    check_line(start, count, name, input)?;
+    check_line(end, count, name, input)?;
+    if start > end {
+        return Err(invalid(name, "Line range must be ascending", input));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

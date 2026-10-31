@@ -118,6 +118,8 @@ pub fn build_all_tokens_pipeline_safe(
         .delete_lines_after(1)?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .delete_lines_before(2)?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .select_lines(2, 2)?
         .build()?;
 
     Ok(id)

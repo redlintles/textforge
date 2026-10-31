@@ -39,6 +39,7 @@ pub mod rnw;
 pub mod rpt;
 pub mod rtl;
 pub mod rtr;
+pub mod slnc;
 pub mod slt;
 pub mod splc;
 pub mod sslt;
