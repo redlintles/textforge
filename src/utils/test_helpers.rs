@@ -128,6 +128,8 @@ pub fn build_all_tokens_pipeline_safe(
         .remove_line_breaks()?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .replace_line(2, "x")?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .prepend_line("b")?
         .build()?;
 
     Ok(id)

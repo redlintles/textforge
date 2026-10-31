@@ -42,3 +42,4 @@ Parameters support the existing variables and interpolation rules.
 | `inl 2, "x"` | `insert_line` | Insert before a line; line count plus one appends a line. |
 | `nln` | `remove_line_breaks` | Remove all recognized line terminators without inserting spaces. |
 | `rln 2, "x"` | `replace_line` | Replace a line content, preserving its terminator. |
+| `pln "b"` | `prepend_line` | Prepend one logical line. |
