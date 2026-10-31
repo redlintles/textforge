@@ -134,6 +134,8 @@ pub fn build_all_tokens_pipeline_safe(
         .delete_empty_lines()?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .keep_lines_matching("^b$")?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .delete_lines_matching("^b$")?
         .build()?;
 
     Ok(id)

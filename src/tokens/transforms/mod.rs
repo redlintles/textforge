@@ -12,6 +12,7 @@ pub mod dlc;
 pub mod dle;
 pub mod dlf;
 pub mod dll;
+pub mod dlm;
 pub mod dln;
 pub mod dlna;
 pub mod dlnb;

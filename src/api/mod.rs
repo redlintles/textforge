@@ -326,6 +326,26 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// DLM — Delete lines whose content matches a regular expression.
+    ///
+    /// Delete lines whose content matches a regular expression. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().delete_lines_matching("^b$").unwrap().build().unwrap();
+    /// let input = "a\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\n");
+    /// ```
+    fn delete_lines_matching(
+        &mut self,
+        pattern: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(dlm::Dlm::default()), Some(vec![pattern.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

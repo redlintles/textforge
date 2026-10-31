@@ -45,3 +45,4 @@ Parameters support the existing variables and interpolation rules.
 | `pln "b"` | `prepend_line` | Prepend one logical line. |
 | `dle` | `delete_empty_lines` | Delete empty lines; lines containing whitespace are retained. |
 | `klm "^b$"` | `keep_lines_matching` | Keep lines whose content matches a regular expression. |
+| `dlm "^b$"` | `delete_lines_matching` | Delete lines whose content matches a regular expression. |
