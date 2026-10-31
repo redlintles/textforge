@@ -891,3 +891,65 @@ fn dlm_native_portable_text_and_bytecode() {
         assert_eq!(bytes[12], 1);
     }
 }
+
+#[test]
+fn revln_native_portable_text_and_bytecode() {
+    use textforge::api::{
+        TextForgeBuilderMethods,
+        portable::{Argument, InstructionSpec, PipelinePlan},
+        processor::{TextForgeProcessor, TextForgeProcessorMethods},
+    };
+    let input = "a\nb";
+    let mut native = TextForgeProcessor::new();
+    let id = native
+        .create_pipeline()
+        .reverse_lines()
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(native.process_all(&id, input).unwrap(), "b\na");
+    let mut plan = PipelinePlan::new();
+    let arguments: Vec<Argument> = vec![];
+    verify_environments("revln", arguments.clone(), input, "b\na");
+    plan.add(InstructionSpec::new("revln".into(), arguments))
+        .unwrap();
+    assert_eq!(plan.compile().unwrap().process(input).unwrap(), "b\na");
+    use textforge::tokens::{InstructionMethods, transforms::revln::Revln};
+    let token = Revln::new().unwrap();
+    #[cfg(feature = "test_access")]
+    {
+        let line = token.to_textforge_line();
+        assert_eq!(
+            native
+                .process_single(
+                    textforge::text::reader::read_from_text(&line).unwrap(),
+                    input
+                )
+                .unwrap(),
+            "b\na"
+        );
+    }
+    assert_eq!(token.get_string_repr(), "revln");
+    #[cfg(feature = "test_access")]
+    {
+        let dir = tempfile::tempdir().unwrap();
+        for extension in ["textforge", "textforgebc"] {
+            let path = dir.path().join(format!("pipeline.{extension}"));
+            std::fs::write(&path, "").unwrap();
+            let restored = if extension == "textforge" {
+                native.write_pipeline_to_file(&id, &path).unwrap();
+                native.get_pipeline_from_file(&path).unwrap()
+            } else {
+                native.write_to_bytecode_file(&id, &path).unwrap();
+                native.read_from_bytecode_file(&path).unwrap()
+            };
+            assert_eq!(native.process_all(&restored, input).unwrap(), "b\na");
+        }
+    }
+    #[cfg(feature = "bytecode")]
+    {
+        let bytes = token.to_bytecode().unwrap();
+        assert_eq!(&bytes[8..12], &0x4fu32.to_be_bytes());
+        assert_eq!(bytes[12], 0);
+    }
+}

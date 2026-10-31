@@ -37,6 +37,7 @@ pub mod pln;
 pub mod raw;
 pub mod rcw;
 pub mod rev;
+pub mod revln;
 pub mod rfw;
 pub mod rln;
 pub mod rlw;

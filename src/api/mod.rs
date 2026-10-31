@@ -346,6 +346,23 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// REVLN — Reverse line contents while preserving terminators at their original positions.
+    ///
+    /// Reverse line contents while preserving terminators at their original positions. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().reverse_lines().unwrap().build().unwrap();
+    /// let input = "a\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "b\na");
+    /// ```
+    fn reverse_lines(&mut self) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(revln::Revln::default()), Some(vec![]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

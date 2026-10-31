@@ -24,7 +24,7 @@ case-sensitive unless flags specify otherwise; use anchors for full-line matches
 `uniqln` compares exact content (without terminators), preserving the first
 occurrence; normalization is explicit through `unorm`. `revln` reverses contents
 and retains the original sequence of terminators, including the final newline
-convention. No instruction sorts lines.
+convention. A blank line moved to an unterminated EOF receives a terminator so it remains a real line. No instruction sorts lines.
 
 Tokens are available in textual/bytecode parsers, the Rust fluent builder
 (including block and conditional bodies), generic portable `InstructionSpec`,
@@ -46,3 +46,4 @@ Parameters support the existing variables and interpolation rules.
 | `dle` | `delete_empty_lines` | Delete empty lines; lines containing whitespace are retained. |
 | `klm "^b$"` | `keep_lines_matching` | Keep lines whose content matches a regular expression. |
 | `dlm "^b$"` | `delete_lines_matching` | Delete lines whose content matches a regular expression. |
+| `revln` | `reverse_lines` | Reverse line contents while preserving terminators at their original positions. |
