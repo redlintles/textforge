@@ -36,3 +36,12 @@ fn regex_errors_and_content_anchors() {
         "x"
     );
 }
+
+#[test]
+fn valid_posix_character_classes_are_not_unresolved_parameters() {
+    let token = Dlm::new("^[[:alpha:]]+$").unwrap();
+    assert_eq!(
+        token.transform("abc\r\n123\nXYZ".into(), None).unwrap(),
+        "123\n"
+    );
+}

@@ -66,18 +66,21 @@ impl InstructionMethods for Klm {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 1, "klm", "Invalid line instruction arity")?;
         let pattern = crate::parse_args!(params, 0, String, "Expected String");
-        let regex = if pattern.contains("{{") || pattern.contains("[[") {
-            None
-        } else {
-            Some(regex::Regex::new(&pattern).map_err(|e| {
-                TextForgeError::new(
+        // A valid regex may contain interpolation-like text, such as POSIX
+        // character classes. Compile it before treating failed patterns as
+        // unresolved pipeline parameters.
+        let regex = match regex::Regex::new(&pattern) {
+            Ok(regex) => Some(regex),
+            Err(_) if pattern.contains("{{") || pattern.contains("[[") => None,
+            Err(error) => {
+                return Err(TextForgeError::new(
                     crate::utils::errors::TextForgeErrorCode::TextParsingError(
-                        e.to_string().into(),
+                        error.to_string().into(),
                     ),
                     "klm",
                     pattern.clone(),
-                )
-            })?)
+                ));
+            }
         };
         self.pattern = pattern;
         self.regex = regex;

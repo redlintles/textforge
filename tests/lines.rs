@@ -1077,3 +1077,35 @@ fn joinln_native_portable_text_and_bytecode() {
         assert_eq!(bytes[12], 1);
     }
 }
+
+#[test]
+fn regex_line_filters_compile_character_classes_after_interpolation() {
+    use textforge::api::{
+        TextForgeBuilderMethods, get_var,
+        processor::{TextForgeProcessor, TextForgeProcessorMethods},
+    };
+    let mut processor = TextForgeProcessor::new();
+    // Escape the DSL interpolation delimiters, preserving the actual POSIX class.
+    let keep = processor
+        .create_pipeline()
+        .keep_lines_matching(r"^\[[:alpha:\]]+$")
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(
+        processor.process_all(&keep, "abc\r\n123\nXYZ").unwrap(),
+        "abc\r\nXYZ"
+    );
+    let delete = processor
+        .create_pipeline()
+        .var("pattern", r"^\[[:alpha:\]]+$")
+        .unwrap()
+        .delete_lines_matching(get_var("pattern"))
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(
+        processor.process_all(&delete, "abc\r\n123\nXYZ").unwrap(),
+        "123\n"
+    );
+}
