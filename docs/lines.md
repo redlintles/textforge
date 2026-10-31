@@ -48,3 +48,4 @@ Parameters support the existing variables and interpolation rules.
 | `dlm "^b$"` | `delete_lines_matching` | Delete lines whose content matches a regular expression. |
 | `revln` | `reverse_lines` | Reverse line contents while preserving terminators at their original positions. |
 | `uniqln` | `unique_lines` | Keep the first occurrence of each exact line content, in original order. |
+| `joinln " "` | `join_lines` | Join line contents with a separator, discarding the final terminator. |

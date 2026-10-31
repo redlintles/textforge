@@ -25,6 +25,7 @@ pub mod inl;
 pub mod ins;
 pub mod jcmc;
 pub mod jkbc;
+pub mod joinln;
 pub mod jpsc;
 pub mod jsnc;
 pub mod jsone;

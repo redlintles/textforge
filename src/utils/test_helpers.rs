@@ -140,6 +140,8 @@ pub fn build_all_tokens_pipeline_safe(
         .reverse_lines()?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .unique_lines()?
+        .add_to_end("\nLINE\nLINE\nTAIL")?
+        .join_lines(" ")?
         .build()?;
 
     Ok(id)
