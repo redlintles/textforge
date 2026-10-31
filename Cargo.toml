@@ -6,6 +6,7 @@ description = "A Flexible scalable DSL that allows the creation of pipelines for
 license-file = "LICENSE"
 
 [dependencies]
+unicode-normalization = "0.1.26"
 tempfile = { version = "3.27.0", optional = true }
 colored = { version = "3.0.0" }
 regex = "1.11.1"

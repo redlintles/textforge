@@ -196,3 +196,11 @@ conversion atomicity, cleanup, and read-only concurrent Rust execution.
 registry, scope validation and engine implement these instructions for every
 portable client. See [replacement maps](replace-maps.md) for precedence, capture
 expansion, context isolation and cache limits.
+
+## Unicode normalization
+
+Rust `normalize_unicode(mode)` maps to `InstructionSpec` mnemonic `unorm` with
+one text/variable argument. Accepted modes are `nfc`, `nfd`, `nfkc` and `nfkd`.
+The portable contract needs no new type or method: the shared registry and core
+implement validation, execution, nesting and persistence. Python forwards the
+same description. See [normalization semantics](unicode-normalization.md).

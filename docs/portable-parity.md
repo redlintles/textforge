@@ -181,3 +181,11 @@ map to `InstructionSpec` mnemonics `rmapd` and `rmape`; all parameters are text
 or variable arguments. Compilation applies the same ancestor-sensitive block
 restriction as native builders. Execution, persistence and file batches delegate
 to the core; adapters never build or execute replacement maps themselves.
+
+## Unicode normalization
+
+Rust `normalize_unicode(mode)` maps to `InstructionSpec` mnemonic `unorm` with
+one text/variable argument. Accepted modes are `nfc`, `nfd`, `nfkc` and `nfkd`.
+The portable contract needs no new type or method: the shared registry and core
+implement validation, execution, nesting and persistence. Python forwards the
+same description. See [normalization semantics](unicode-normalization.md).

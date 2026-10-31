@@ -340,3 +340,10 @@ Use `rmapd animals add 'cat' 'wolf';`, `rmapd animals add 'wolf' 'dog';`, then
 execution context; execution can be reused from blocks. Rust builders expose
 `define_replace_map` and `execute_replace_map`. See [replacement maps](docs/replace-maps.md)
 for overlap rules, capture expansion, scope, bytecode and concurrent batch reuse.
+
+### Unicode normalization
+
+Use `unorm nfc;`, `unorm nfd;`, `unorm nfkc;` or `unorm nfkd;` to normalize the
+current text explicitly. Rust builders expose `normalize_unicode(mode)`; the Python
+binding mirrors it. See [Unicode normalization](docs/unicode-normalization.md) for
+examples, compatibility distinctions, Unicode version and document-boundary behavior.

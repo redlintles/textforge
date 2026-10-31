@@ -21,6 +21,26 @@ pub fn get_var(var_name: &str) -> ValType {
     ValType::VarRef(var_name.to_string())
 }
 pub trait TextForgeBuilderMethods: Sized {
+    /// UNORM - Unicode normalization
+    ///
+    /// Normalize the complete text to `nfc`, `nfd`, `nfkc` or `nfkd`.
+    /// Mode names are lowercase and may use execution-context variables.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let input = "Ａﬁ²";
+    /// let id = processor.create_pipeline().normalize_unicode("nfkc").unwrap().build().unwrap();
+    /// assert_eq!(processor.process_all(&id, input).unwrap(), "Afi2");
+    /// ```
+    fn normalize_unicode(&mut self, mode: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        self.push_token(TokenWrapper::new(
+            Box::new(unorm::Unorm::default()),
+            Some(vec![mode.into()]),
+        ))?;
+        Ok(self)
+    }
+
     /// Define or update a rule; forbidden inside blocks.
     ///
     /// ```
