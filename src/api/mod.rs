@@ -183,6 +183,30 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// DLNI — Delete an inclusive interval of lines and retain the rest.
+    ///
+    /// Delete an inclusive interval of lines and retain the rest. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().delete_lines_interval(2, 2).unwrap().build().unwrap();
+    /// let input = "a\nb\nc";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nc");
+    /// ```
+    fn delete_lines_interval(
+        &mut self,
+        start_line: impl Into<ValType>,
+        end_line: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(dlni::Dlni::default()),
+            Some(vec![start_line.into(), end_line.into()]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.
