@@ -39,3 +39,4 @@ Parameters support the existing variables and interpolation rules.
 | `dlnb 2` | `delete_lines_before` | Delete lines before the given line, retaining that line. |
 | `slnc 2, 2` | `select_lines` | Select an inclusive line interval and discard the remaining lines. |
 | `dlni 2, 2` | `delete_lines_interval` | Delete an inclusive interval of lines and retain the rest. |
+| `inl 2, "x"` | `insert_line` | Insert before a line; line count plus one appends a line. |

@@ -532,5 +532,6 @@ define_token_table! {
         ("dlnb", 0x45, || TokenRef::Shared(Arc::new(dlnb::Dlnb::default())), [SyntaxDef::req(SyntaxToken::Usize)]),
         ("slnc", 0x46, || TokenRef::Shared(Arc::new(slnc::Slnc::default())), [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)]),
         ("dlni", 0x47, || TokenRef::Shared(Arc::new(dlni::Dlni::default())), [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize)]),
+        ("inl", 0x48, || TokenRef::Shared(Arc::new(inl::Inl::default())), [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::String)]),
     ];
 }

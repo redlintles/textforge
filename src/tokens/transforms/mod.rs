@@ -19,6 +19,7 @@ pub mod dls;
 pub mod emj;
 pub mod htmle;
 pub mod htmlu;
+pub mod inl;
 pub mod ins;
 pub mod jcmc;
 pub mod jkbc;
