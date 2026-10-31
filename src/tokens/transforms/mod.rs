@@ -9,6 +9,7 @@ pub mod cts;
 pub mod dla;
 pub mod dlb;
 pub mod dlc;
+pub mod dle;
 pub mod dlf;
 pub mod dll;
 pub mod dln;

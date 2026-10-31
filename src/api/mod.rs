@@ -289,6 +289,23 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// DLE — Delete empty lines; lines containing whitespace are retained.
+    ///
+    /// Delete empty lines; lines containing whitespace are retained. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().delete_empty_lines().unwrap().build().unwrap();
+    /// let input = "a\n\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nb");
+    /// ```
+    fn delete_empty_lines(&mut self) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(dle::Dle::default()), Some(vec![]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

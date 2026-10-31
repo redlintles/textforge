@@ -536,5 +536,6 @@ define_token_table! {
         ("nln", 0x49, || TokenRef::Shared(Arc::new(nln::Nln::default())), []),
         ("rln", 0x4a, || TokenRef::Shared(Arc::new(rln::Rln::default())), [SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::String)]),
         ("pln", 0x4b, || TokenRef::Shared(Arc::new(pln::Pln::default())), [SyntaxDef::req(SyntaxToken::String)]),
+        ("dle", 0x4c, || TokenRef::Shared(Arc::new(dle::Dle::default())), []),
     ];
 }

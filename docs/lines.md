@@ -43,3 +43,4 @@ Parameters support the existing variables and interpolation rules.
 | `nln` | `remove_line_breaks` | Remove all recognized line terminators without inserting spaces. |
 | `rln 2, "x"` | `replace_line` | Replace a line content, preserving its terminator. |
 | `pln "b"` | `prepend_line` | Prepend one logical line. |
+| `dle` | `delete_empty_lines` | Delete empty lines; lines containing whitespace are retained. |
