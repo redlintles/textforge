@@ -44,3 +44,4 @@ Parameters support the existing variables and interpolation rules.
 | `rln 2, "x"` | `replace_line` | Replace a line content, preserving its terminator. |
 | `pln "b"` | `prepend_line` | Prepend one logical line. |
 | `dle` | `delete_empty_lines` | Delete empty lines; lines containing whitespace are retained. |
+| `klm "^b$"` | `keep_lines_matching` | Keep lines whose content matches a regular expression. |
