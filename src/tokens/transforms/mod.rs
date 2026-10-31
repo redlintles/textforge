@@ -27,6 +27,7 @@ pub mod jpsc;
 pub mod jsnc;
 pub mod jsone;
 pub mod jsonu;
+pub mod nln;
 pub mod padl;
 pub mod padr;
 pub mod raw;

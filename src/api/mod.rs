@@ -231,6 +231,23 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// NLN — Remove all recognized line terminators without inserting spaces.
+    ///
+    /// Remove all recognized line terminators without inserting spaces. Line numbers start at one; see the logical-line guide.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().remove_line_breaks().unwrap().build().unwrap();
+    /// let input = "a\nb";
+    /// assert_eq!(processor.process_all(&id,input).unwrap(), "ab");
+    /// ```
+    fn remove_line_breaks(&mut self) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(nln::Nln::default()), Some(vec![]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// TBS - Trim Both Sides
     ///
     /// Removes whitespace characters from both the left and right sides of the input.

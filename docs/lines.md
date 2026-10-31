@@ -40,3 +40,4 @@ Parameters support the existing variables and interpolation rules.
 | `slnc 2, 2` | `select_lines` | Select an inclusive line interval and discard the remaining lines. |
 | `dlni 2, 2` | `delete_lines_interval` | Delete an inclusive interval of lines and retain the rest. |
 | `inl 2, "x"` | `insert_line` | Insert before a line; line count plus one appends a line. |
+| `nln` | `remove_line_breaks` | Remove all recognized line terminators without inserting spaces. |
