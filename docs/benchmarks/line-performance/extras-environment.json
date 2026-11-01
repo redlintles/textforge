@@ -1,0 +1,11 @@
+{
+  "source_sha256": "6a5093a61062c08457d6358698a7953300eb0356f8408cdbb937b4d2bcc54cae",
+  "binary_sha256": "9a5832e28e3fecfe38f38e6689ef3f3663e3128783dd7caa9beb198cba7ad5e4",
+  "line_descriptor_bytes": 32,
+  "offset_descriptor_bytes": 8,
+  "samples": 5,
+  "cpu_affinity": 0,
+  "note": "same audited production revision, additional prototypes; original kernels unchanged; current RSS from /proc/self/smaps_rollup, peak RSS from GNU time",
+  "final_harness_sha256": "79dcebb333f5a21f61eb24508c3b003dae056678e619bce7a843508c7482c13b",
+  "post_measurement_changes": "rustfmt and diagnostic-only clippy ptr_arg explanation; transformation kernels unchanged"
+}
