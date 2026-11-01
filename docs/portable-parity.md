@@ -78,7 +78,7 @@ Bytecode, watchers and buffered methods use the same Cargo features as the core.
 A future adapter requiring every capability enables the production features:
 
 ```toml
-textforge = { version = "0.1", features = ["bytecode", "watchers", "buffered"] }
+textforge = { version = "2", features = ["bytecode", "watchers", "buffered"] }
 ```
 
 `test_access` is not needed by production adapters. Feature-off builds still

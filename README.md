@@ -23,7 +23,7 @@ On top of that linear pipeline, TextForge also has a small amount of **control f
 - **Conditionals** (`ifdc`) — run a group of instructions only if the input contains a given value.
 - **Variables** (`val`) — store an immutable value in the pipeline's execution context so other instructions can reference it instead of a hardcoded literal.
 
-Pipelines can be written in human-readable `.textforge` files, compiled to an optimized `.textforgebc` binary format, or composed directly in Rust via the `TextForgeBuilder` API. Native bindings (JS/Python) are on the roadmap but not yet available.
+Pipelines can be written in human-readable `.textforge` files, compiled to an optimized `.textforgebc` binary format, or composed directly in Rust via the `TextForgeBuilder` API. Language bindings are maintained in independent projects; see the [Python binding status](docs/python-bindings.md) for its separately pinned core and package versions.
 
 ---
 
@@ -348,7 +348,7 @@ current text explicitly. Rust builders expose `normalize_unicode(mode)`; the Pyt
 binding mirrors it. See [Unicode normalization](docs/unicode-normalization.md) for
 examples, compatibility distinctions, Unicode version and document-boundary behavior.
 
-### Logical lines (0.2.0)
+### Logical lines
 
 The line transforms use **one-based** indices and inclusive intervals. For example:
 
@@ -364,5 +364,35 @@ assert_eq!(processor.process_all(&id, "é\n\né\n🍌").unwrap(), "é | 🍌");
 ```
 
 See the [line semantics and complete instruction list](docs/lines.md) and the
-[0.2.0 changelog](changelog.md). Python adapters are released separately as
+[2.0.0 changelog](changelog.md). Python adapters are released separately as
 `textforgers` 0.1.2.
+
+
+## 2.0.0 release preparation and performance
+
+The 2.0.0 candidate reduces temporary strings and reuses owned buffers while
+preserving instruction results, public signatures and bytecode opcodes. Trims and
+contiguous selections can return borrowed slices; word/character transforms avoid
+per-item strings and intermediate vectors. Unicode contextual case conversion
+and existing whitespace/line semantics are preserved.
+
+See [implementation, compatibility evidence and benchmark methodology](docs/allocation-optimization.md)
+and [raw timing, CPU and peak-memory samples](docs/benchmarks/allocations-v2.json).
+The comparison uses the same large UTF-8 files and repeated workloads on both
+versions, including coverage of all 81 instructions. Results are specific to the
+recorded machine and workloads.
+
+This is a core release candidate, not a publication announcement. The independent
+Python package keeps its previous pinned core snapshot; 2.0.0 Python distribution
+support is not claimed. See the [release checklist](docs/release-2.0.0.md).
+
+
+Measured medians on the recorded Ryzen 5 4600G machine (five runs; three document
+passes per process; in-memory execution):
+
+| Input / workload | Wall seconds, baseline → 2.0.0 | Peak RSS MiB, baseline → 2.0.0 |
+| --- | ---: | ---: |
+| 4 MiB / coverage | 5.36 → 2.59 | 221.2 → 25.5 |
+| 4 MiB / large | 1.93 → 0.20 | 220.9 → 21.3 |
+| 16 MiB / coverage | 23.11 → 11.09 | 867.8 → 99.5 |
+| 16 MiB / large | 8.08 → 0.90 | 867.6 → 85.5 |

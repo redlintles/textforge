@@ -1,6 +1,26 @@
 # Changelog
 
-## 0.2.0 — Unreleased
+## 2.0.0 — Unreleased
+
+### Performance and compatibility
+
+- Preserve borrowed slices for trims and selections, reuse owned storage for
+  localized edits, and remove temporary strings per character/word and regex
+  match. Preserve unchanged input in regex, HTML and control-flow paths.
+- Avoid temporary line-instruction construction and redundant regex-pattern/map
+  name clones. Preserve Unicode contextual casing, line endings, existing error
+  behavior, public APIs and big-endian bytecode opcodes.
+- Add an exact 2,106-case baseline parity corpus covering all 81 instructions,
+  borrowed/owned storage regression tests, and reproducible large-file benchmarks
+  recording wall time, CPU time/utilization and peak resident memory.
+- Prepare the requested 2.0.0 core version. The version jump does not introduce an
+  intentional API or instruction-result break relative to core revision 72fc7fc.
+  Existing index edge cases remain documented; independent language bindings are
+  not repackaged or published as part of this core release.
+
+See [allocation optimization and measurements](docs/allocation-optimization.md)
+and [release validation](docs/release-2.0.0.md).
+
 
 ### Added
 
