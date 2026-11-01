@@ -89,10 +89,10 @@ impl InstructionMethods for Sslt {
                     self.to_textforge_line(),
                     input.to_string(),
                 )
-            })?
-            .to_string();
-
-        Ok(result.into())
+            })?;
+        let start = result.as_ptr() as usize - input.as_ptr() as usize;
+        let end = start + result.len();
+        Ok(crate::utils::allocation::keep(input, start..end))
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {
@@ -105,7 +105,7 @@ impl InstructionMethods for Sslt {
 
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
+        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",

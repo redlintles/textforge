@@ -104,7 +104,7 @@ impl InstructionMethods for Rcw {
                     .pattern
                     .replacen(v.as_ref(), self.count, &self.text_to_replace)
                 {
-                    Cow::Borrowed(result) => Ok(Cow::Owned(result.to_string())),
+                    Cow::Borrowed(_) => Ok(Cow::Owned(v)),
 
                     Cow::Owned(result) => Ok(Cow::Owned(result)),
                 }
@@ -122,7 +122,7 @@ impl InstructionMethods for Rcw {
 
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
+        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",

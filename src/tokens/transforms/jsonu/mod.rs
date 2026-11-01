@@ -53,6 +53,18 @@ impl InstructionMethods for Jsonu {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
+        if !input.contains('\\') {
+            let result = serde_json::from_str::<&str>(&input).map_err(|_| {
+                TextForgeError::new(
+                    TextForgeErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
+                    "serde_json::from_str",
+                    input.to_string(),
+                )
+            })?;
+            let start = result.as_ptr() as usize - input.as_ptr() as usize;
+            let end = start + result.len();
+            return Ok(crate::utils::allocation::keep(input, start..end));
+        }
         let result = serde_json::from_str::<String>(input.as_ref()).map_err(|_| {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to deserialize to JSON".into()),

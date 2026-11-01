@@ -23,25 +23,13 @@ pub fn string_to_usize(chunk: &str) -> Result<usize, TextForgeError> {
 }
 
 pub fn capitalize(input: &str) -> String {
-    let mut chars = input.chars();
-
-    match chars.next() {
-        Some(x) => {
-            let f = x.to_uppercase().to_string();
-            let r: String = chars.collect();
-            format!("{}{}", f, r)
-        }
-        None => input.to_string(),
-    }
+    let mut output = String::with_capacity(input.len());
+    crate::utils::allocation::capitalize_into(&mut output, input);
+    output
 }
 
 pub fn extend_string(input: &str, max_len: usize) -> String {
-    if input.is_empty() || max_len == 0 {
-        return String::new();
-    }
-    let to_repeat = max_len.div_ceil(input.chars().count());
-
-    input.repeat(to_repeat).chars().take(max_len).collect()
+    input.chars().cycle().take(max_len).collect()
 }
 
 pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, TextForgeError> {

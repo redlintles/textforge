@@ -2,7 +2,7 @@ use crate::{
     context::execution_context::GlobalExecutionContext,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, lines::lines, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 use std::borrow::Cow;
 
@@ -60,14 +60,9 @@ impl InstructionMethods for Dle {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut output = String::with_capacity(input.len());
-        for (text, ending) in lines(&input) {
-            if !text.is_empty() {
-                output.push_str(text);
-                output.push_str(ending);
-            }
-        }
-        Ok(output.into())
+        Ok(crate::utils::allocation::filter_lines(input, |text| {
+            !text.is_empty()
+        }))
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {

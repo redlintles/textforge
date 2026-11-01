@@ -8,10 +8,7 @@ use crate::utils::errors::TextForgeError;
 
 use crate::parser::params::TextForgeParamTypes;
 use crate::utils::validations::check_vec_len;
-use crate::{
-    tokens::InstructionMethods, utils::transforms::capitalize,
-    utils::validations::check_chunk_bound_indexes,
-};
+use crate::{tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes};
 
 /// Token `Ctr` — Capitalize Range
 ///
@@ -79,19 +76,17 @@ impl InstructionMethods for Ctr {
         }
         check_chunk_bound_indexes(self.start_index, end, Some(&input))?;
 
-        let result = input
-            .split_whitespace()
-            .enumerate()
-            .map(|(i, c)| {
-                if (self.start_index..=end).contains(&i) {
-                    capitalize(c)
-                } else {
-                    c.to_string()
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(" ");
-
+        let mut result = String::with_capacity(input.len());
+        for (i, word) in input.split_whitespace().enumerate() {
+            if i != 0 {
+                result.push(' ');
+            }
+            if (self.start_index..=end).contains(&i) {
+                crate::utils::allocation::capitalize_into(&mut result, word);
+            } else {
+                result.push_str(word);
+            }
+        }
         Ok(result.into())
     }
 

@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, transforms::capitalize, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -46,15 +46,17 @@ impl InstructionMethods for Clw {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut v: Vec<String> = input
-            .split(' ')
-            .rev()
-            .enumerate()
-            .map(|(i, c)| if i == 0 { capitalize(c) } else { c.to_string() })
-            .collect::<Vec<_>>();
-
-        v.reverse();
-        Ok(v.join(" ").into())
+        let start = input.rfind(' ').map_or(0, |i| i + 1);
+        let mut chars = input[start..].chars();
+        let Some(first) = chars.next() else {
+            return Ok(input);
+        };
+        let replacement: String = first.to_uppercase().collect();
+        Ok(crate::utils::allocation::replace(
+            input,
+            start..start + first.len_utf8(),
+            &replacement,
+        ))
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {

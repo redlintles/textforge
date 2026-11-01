@@ -77,7 +77,7 @@ impl InstructionMethods for Emj {
         check_vec_len(params, 2, "emj", "")?;
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
+        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
                 "emj",
@@ -87,7 +87,7 @@ impl InstructionMethods for Emj {
 
         self.separator = parse_args!(params, 1, String, "separator should be of type String");
         self.params = vec![
-            self.pattern.to_string().clone().into(),
+            self.pattern.to_string().into(),
             self.separator.clone().into(),
         ];
         Ok(())
@@ -131,12 +131,13 @@ impl InstructionMethods for Emj {
         input: Cow<'a, str>,
         _: Option<&mut crate::context::execution_context::GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut result: Vec<String> = vec![];
-
-        for m in self.pattern.find_iter(input.as_ref()) {
-            result.push(m.as_str().to_string());
+        let mut output = String::new();
+        for (i, m) in self.pattern.find_iter(&input).enumerate() {
+            if i != 0 {
+                output.push_str(&self.separator);
+            }
+            output.push_str(m.as_str());
         }
-
-        Ok(result.join(&self.separator).into())
+        Ok(output.into())
     }
 }

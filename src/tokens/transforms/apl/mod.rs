@@ -2,11 +2,7 @@ use crate::{
     context::execution_context::GlobalExecutionContext,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{
-        errors::TextForgeError,
-        lines::{invalid, lines},
-        validations::check_vec_len,
-    },
+    utils::{errors::TextForgeError, lines::invalid, validations::check_vec_len},
 };
 use std::borrow::Cow;
 
@@ -77,20 +73,9 @@ impl InstructionMethods for Apl {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let ending = lines(&input)
-            .find_map(|(_, e)| (!e.is_empty()).then_some(e))
-            .unwrap_or("\n");
-        let last = lines(&input).last();
-        let mut output = input.to_string();
-        if last.is_some_and(|(_, e)| e.is_empty()) {
-            output.push_str(ending);
-        }
-        output.push_str(&self.text);
-        if last.is_some_and(|(_, e)| !e.is_empty()) || self.text.is_empty() {
-            output.push_str(ending);
-        }
-        Ok(output.into())
+        Ok(crate::utils::allocation::append_line(input, &self.text))
     }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x42

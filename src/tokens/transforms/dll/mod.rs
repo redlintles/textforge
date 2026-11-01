@@ -47,13 +47,8 @@ impl InstructionMethods for Dll {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut s = String::from(input.as_ref());
-
-        if let Some((x, _)) = s.char_indices().next_back() {
-            s.drain(x..);
-            return Ok(s.into());
-        }
-        Ok(input)
+        let end = input.char_indices().next_back().map_or(0, |(i, _)| i);
+        Ok(crate::utils::allocation::keep(input, 0..end))
     }
 
     fn get_string_repr(&self) -> &'static str {

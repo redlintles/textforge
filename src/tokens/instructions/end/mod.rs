@@ -59,7 +59,6 @@ impl InstructionMethods for End {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let s = input.into_owned();
         context
             .ok_or_else(|| {
                 TextForgeError::new(
@@ -67,12 +66,12 @@ impl InstructionMethods for End {
                         "Context required for end instruction".into(),
                     ),
                     "end",
-                    s.clone(),
+                    input.to_string(),
                 )
             })?
             .halt();
 
-        Ok(s.into())
+        Ok(input)
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {

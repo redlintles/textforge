@@ -90,23 +90,11 @@ impl InstructionMethods for Inl {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let count = lines(&input).count();
         check_line(self.line, count.saturating_add(1), "inl", &input)?;
-        if self.line == count.saturating_add(1) {
-            return super::apl::Apl::new(&self.text)?.transform(input, None);
-        }
-        let ending = lines(&input)
-            .find_map(|(_, e)| (!e.is_empty()).then_some(e))
-            .unwrap_or("\n");
-        let offset: usize = lines(&input)
-            .take(self.line - 1)
-            .map(|(t, e)| t.len() + e.len())
-            .sum();
-        let mut output = String::with_capacity(input.len() + self.text.len() + ending.len());
-        output.push_str(&input[..offset]);
-        output.push_str(&self.text);
-        output.push_str(ending);
-        output.push_str(&input[offset..]);
-        Ok(output.into())
+        Ok(crate::utils::allocation::insert_line(
+            input, self.line, &self.text,
+        ))
     }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x48

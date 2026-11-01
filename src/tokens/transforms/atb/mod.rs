@@ -68,9 +68,7 @@ impl InstructionMethods for Atb {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut s = self.text.clone();
-        s.push_str(&input);
-        Ok(s.into())
+        Ok(crate::utils::allocation::replace(input, 0..0, &self.text))
     }
 
     fn get_string_repr(&self) -> &'static str {

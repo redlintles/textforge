@@ -57,13 +57,11 @@ impl InstructionMethods for Dlb {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut s = String::from(input.as_ref());
-
         check_index_against_input(self.index, input.as_ref())?;
 
-        if let Some(byte_index) = s.char_indices().nth(self.index).map(|(i, _)| i) {
-            s.drain(0..byte_index);
-            return Ok(s.into());
+        if let Some(byte_index) = input.char_indices().nth(self.index).map(|(i, _)| i) {
+            let end = input.len();
+            return Ok(crate::utils::allocation::keep(input, byte_index..end));
         }
 
         Err(TextForgeError::new(

@@ -46,6 +46,9 @@ impl InstructionMethods for Rev {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
+        if input.chars().nth(1).is_none() {
+            return Ok(input);
+        }
         Ok(input.chars().rev().collect())
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {

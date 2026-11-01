@@ -73,8 +73,9 @@ impl InstructionMethods for Pln {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        super::inl::Inl::new(1, &self.text)?.transform(input, None)
+        Ok(crate::utils::allocation::insert_line(input, 1, &self.text))
     }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x4b

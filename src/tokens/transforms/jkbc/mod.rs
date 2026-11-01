@@ -57,12 +57,19 @@ impl InstructionMethods for Jkbc {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        Ok(input
-            .split_whitespace()
-            .collect::<Vec<_>>()
-            .join("-")
-            .to_lowercase()
-            .into())
+        let mut result = String::with_capacity(input.len());
+        for (i, word) in input.split_whitespace().enumerate() {
+            if i != 0 {
+                result.push('-');
+            }
+            result.push_str(word);
+        }
+        if result.is_ascii() {
+            result.make_ascii_lowercase();
+        } else {
+            result = result.to_lowercase();
+        }
+        Ok(result.into())
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {

@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, transforms::capitalize, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -51,10 +51,10 @@ impl InstructionMethods for Jpsc {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let v = input.split_whitespace().collect::<Vec<_>>();
-
-        let result = v.iter().map(|w| capitalize(w)).collect::<Vec<_>>().join("");
-
+        let mut result = String::with_capacity(input.len());
+        for word in input.split_whitespace() {
+            crate::utils::allocation::capitalize_into(&mut result, word);
+        }
         Ok(result.into())
     }
 

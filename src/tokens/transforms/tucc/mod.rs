@@ -75,17 +75,14 @@ impl InstructionMethods for Tucc {
         if end > total {
             end = input.len();
         }
-        let result: String = input
-            .chars()
-            .enumerate()
-            .map(|(i, c)| {
-                if i >= self.start_index && i <= end {
-                    c.to_uppercase().to_string()
-                } else {
-                    c.to_string()
-                }
-            })
-            .collect();
+        let mut result = String::with_capacity(input.len());
+        for (i, c) in input.chars().enumerate() {
+            if i >= self.start_index && i <= end {
+                result.extend(c.to_uppercase());
+            } else {
+                result.push(c);
+            }
+        }
         Ok(result.into())
     }
 

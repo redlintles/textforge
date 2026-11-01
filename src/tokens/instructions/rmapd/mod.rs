@@ -99,16 +99,25 @@ impl InstructionMethods for Rmapd {
                 "",
             )
         })?;
-        let name = parse_args!(&self.params, 0, String, "Map name must be text");
+        let name = match &self.params[0] {
+            TextForgeParamTypes::String(name) => name.as_str(),
+            _ => {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::InvalidParameters("Map name must be text".into()),
+                    "",
+                    "",
+                ));
+            }
+        };
         let replacement = parse_args!(&self.params, 2, String, "Replacement must be text");
         let regex = self.compiled.as_ref().ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::InvalidParameters("Unbound replacement rule".into()),
                 "rmapd",
-                name.clone(),
+                name.to_owned(),
             )
         })?;
-        context.define_replace_rule(&name, regex.clone(), replacement);
+        context.define_replace_rule(name, regex.clone(), replacement);
         Ok(input)
     }
     #[cfg(feature = "bytecode")]

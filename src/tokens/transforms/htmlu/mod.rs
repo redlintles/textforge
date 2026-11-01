@@ -55,7 +55,10 @@ impl InstructionMethods for Htmlu {
         match input {
             Cow::Borrowed(s) => Ok(decode_html_entities(s)),
 
-            Cow::Owned(s) => Ok(Cow::Owned(decode_html_entities(&s).into_owned())),
+            Cow::Owned(s) => match decode_html_entities(&s) {
+                Cow::Borrowed(_) => Ok(Cow::Owned(s)),
+                Cow::Owned(result) => Ok(Cow::Owned(result)),
+            },
         }
     }
 

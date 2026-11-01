@@ -6,10 +6,7 @@ use std::borrow::Cow;
 use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::errors::TextForgeError;
 use crate::utils::validations::check_vec_len;
-use crate::{
-    tokens::InstructionMethods, utils::transforms::capitalize,
-    utils::validations::check_chunk_bound_indexes,
-};
+use crate::{tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes};
 
 use crate::parser::params::TextForgeParamTypes;
 /// Token `Ctc` — Capitalize Chunk
@@ -91,38 +88,23 @@ impl InstructionMethods for Ctc {
                 .unwrap()
         };
 
-        // Extract slice safely (end_index é inclusivo)
-        let slice = &input[start_byte..end_byte];
-
-        // Capitaliza cada palavra dentro do slice preservando o espaçamento
-        // original (múltiplos espaços, tabs, espaço nas pontas etc.) — ao
-        // contrário de split_whitespace()+join(" "), que normaliza tudo para
-        // um único espaço e descarta espaços nas extremidades, perdendo
-        // informação sempre que o limite do chunk cai perto de um separador.
-        let mut capitalized_chunk = String::with_capacity(slice.len());
-        let mut word = String::new();
-
-        for ch in slice.chars() {
+        let mut result = String::with_capacity(input.len());
+        result.push_str(&input[..start_byte]);
+        let mut first = true;
+        for ch in input[start_byte..end_byte].chars() {
             if ch.is_whitespace() {
-                if !word.is_empty() {
-                    capitalized_chunk.push_str(&capitalize(&word));
-                    word.clear();
-                }
-                capitalized_chunk.push(ch);
+                result.push(ch);
+                first = true;
             } else {
-                word.push(ch);
+                if first {
+                    result.extend(ch.to_uppercase());
+                } else {
+                    result.push(ch);
+                }
+                first = false;
             }
         }
-        if !word.is_empty() {
-            capitalized_chunk.push_str(&capitalize(&word));
-        }
-
-        // Rebuild final string
-        let prefix = &input[..start_byte];
-        let suffix = &input[end_byte..];
-
-        let result = format!("{}{}{}", prefix, capitalized_chunk, suffix);
-
+        result.push_str(&input[end_byte..]);
         Ok(result.into())
     }
     fn to_textforge_line(&self) -> Cow<'static, str> {

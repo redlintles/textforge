@@ -39,6 +39,14 @@ impl InstructionMethods for Tua {
         if input.is_empty() {
             return Ok(input);
         }
+        if input.is_ascii() {
+            if !input.bytes().any(|c| c.is_ascii_lowercase()) {
+                return Ok(input);
+            }
+            let mut output = input.into_owned();
+            output.make_ascii_uppercase();
+            return Ok(output.into());
+        }
         Ok(input.to_uppercase().into())
     }
     #[cfg(feature = "bytecode")]

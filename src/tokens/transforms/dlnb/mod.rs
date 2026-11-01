@@ -86,7 +86,8 @@ impl InstructionMethods for Dlnb {
             .take(self.line - 1)
             .map(|(t, e)| t.len() + e.len())
             .sum();
-        Ok(input[offset..].to_owned().into())
+        let end = input.len();
+        Ok(crate::utils::allocation::keep(input, offset..end))
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {

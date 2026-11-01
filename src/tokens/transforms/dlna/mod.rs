@@ -86,7 +86,7 @@ impl InstructionMethods for Dlna {
             .take(self.line)
             .map(|(t, e)| t.len() + e.len())
             .sum();
-        Ok(input[..length].to_owned().into())
+        Ok(crate::utils::allocation::keep(input, 0..length))
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {

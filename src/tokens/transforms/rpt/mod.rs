@@ -82,17 +82,30 @@ impl InstructionMethods for Rpt {
                 format!("input_bytes={}, times={}", input.len(), self.times),
             )
         })?;
-        let mut output = String::new();
-        output.try_reserve_exact(output_len).map_err(|error| {
-            TextForgeError::new(
-                TextForgeErrorCode::ValidationError("Cannot allocate repeated output".into()),
-                "rpt",
-                error.to_string(),
-            )
-        })?;
+        let reserve = |output: &mut String, additional| {
+            output.try_reserve_exact(additional).map_err(|error| {
+                TextForgeError::new(
+                    TextForgeErrorCode::ValidationError("Cannot allocate repeated output".into()),
+                    "rpt",
+                    error.to_string(),
+                )
+            })
+        };
+        let mut output = match input {
+            Cow::Owned(mut output) => {
+                let additional = output_len - output.len();
+                reserve(&mut output, additional)?;
+                output
+            }
+            Cow::Borrowed(text) => {
+                let mut output = String::new();
+                reserve(&mut output, output_len)?;
+                output.push_str(text);
+                output
+            }
+        };
         // Fill the reserved allocation by doubling complete copies. Every prefix
         // below ends on an input boundary, including for multibyte Unicode.
-        output.push_str(&input);
         while output.len() <= output_len / 2 {
             output.extend_from_within(..);
         }

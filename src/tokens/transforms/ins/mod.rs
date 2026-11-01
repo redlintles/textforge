@@ -83,11 +83,11 @@ impl InstructionMethods for Ins {
             .map(|(i, _)| i)
             .unwrap_or(input.len());
 
-        let (before, after) = input.split_at(byte_index);
-
-        let result = format!("{}{}{}", before, self.text_to_insert, after);
-
-        Ok(result.into())
+        Ok(crate::utils::allocation::replace(
+            input,
+            byte_index..byte_index,
+            &self.text_to_insert,
+        ))
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;

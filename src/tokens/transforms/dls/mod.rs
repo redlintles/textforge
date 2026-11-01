@@ -65,11 +65,20 @@ impl InstructionMethods for Dls {
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_input(self.index, &input)?;
-        Ok(input
-            .chars()
-            .enumerate()
-            .filter_map(|(i, c)| if self.index == i { None } else { Some(c) })
-            .collect())
+        let (start, ch) = input.char_indices().nth(self.index).ok_or_else(|| {
+            TextForgeError::new(
+                crate::utils::errors::TextForgeErrorCode::IndexOutOfRange(
+                    "Invalid character index".into(),
+                ),
+                "dls",
+                input.to_string(),
+            )
+        })?;
+        Ok(crate::utils::allocation::replace(
+            input,
+            start..start + ch.len_utf8(),
+            "",
+        ))
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {

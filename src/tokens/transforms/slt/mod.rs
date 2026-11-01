@@ -82,8 +82,10 @@ impl InstructionMethods for Slt {
             .map(|(i, _)| i)
             .unwrap_or(input.len());
 
-        let result = input[start_byte..end_byte_exclusive].to_string();
-        Ok(result.into())
+        Ok(crate::utils::allocation::keep(
+            input,
+            start_byte..end_byte_exclusive,
+        ))
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {

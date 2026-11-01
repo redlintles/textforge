@@ -46,20 +46,9 @@ impl InstructionMethods for Dlf {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        // Se a string é vazia, não há o que deletar.
-        if input.is_empty() {
-            return Ok(String::new().into());
-        }
-
-        // Encontra o byte-index do início do 2º caractere (se existir).
-        // Se não existir, a string tem 1 char só => resultado é vazio.
-        let cut = input
-            .char_indices()
-            .nth(1)
-            .map(|(byte_idx, _)| byte_idx)
-            .unwrap_or(input.len());
-
-        Ok(input[cut..].to_owned().into())
+        let cut = input.chars().next().map_or(0, char::len_utf8);
+        let end = input.len();
+        Ok(crate::utils::allocation::keep(input, cut..end))
     }
 
     fn get_string_repr(&self) -> &'static str {

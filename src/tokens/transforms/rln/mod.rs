@@ -89,23 +89,30 @@ impl InstructionMethods for Rln {
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_line(self.line, lines(&input).count(), "rln", &input)?;
-        let ending = lines(&input)
-            .find_map(|(_, e)| (!e.is_empty()).then_some(e))
-            .unwrap_or("\n");
-        let mut output = String::with_capacity(input.len() + self.text.len());
-        for (i, (text, e)) in lines(&input).enumerate() {
-            if i + 1 == self.line {
-                output.push_str(&self.text);
-                if self.text.is_empty() && e.is_empty() {
-                    output.push_str(ending);
-                }
-            } else {
-                output.push_str(text);
-            }
-            output.push_str(e);
+        let start: usize = lines(&input)
+            .take(self.line - 1)
+            .map(|(t, e)| t.len() + e.len())
+            .sum();
+        let (text, ending) = lines(&input).nth(self.line - 1).unwrap_or(("", ""));
+        let end = start + text.len();
+        if self.text.is_empty() && ending.is_empty() {
+            let ending = lines(&input)
+                .find_map(|(_, e)| (!e.is_empty()).then_some(e))
+                .unwrap_or("\n");
+            let replacement = ending.to_owned();
+            return Ok(crate::utils::allocation::replace(
+                input,
+                start..end,
+                &replacement,
+            ));
         }
-        Ok(output.into())
+        Ok(crate::utils::allocation::replace(
+            input,
+            start..end,
+            &self.text,
+        ))
     }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x4a

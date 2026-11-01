@@ -59,10 +59,8 @@ impl InstructionMethods for Dla {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_input(self.index, &input)?;
 
-        let mut s = String::from(input.as_ref());
-        if let Some(byte_index) = s.char_indices().nth(self.index + 1).map(|(i, _)| i) {
-            s.drain(byte_index..);
-            return Ok(s.into());
+        if let Some(byte_index) = input.char_indices().nth(self.index + 1).map(|(i, _)| i) {
+            return Ok(crate::utils::allocation::keep(input, 0..byte_index));
         }
 
         Err(TextForgeError::new(

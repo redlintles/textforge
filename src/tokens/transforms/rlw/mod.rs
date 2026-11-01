@@ -84,17 +84,14 @@ impl InstructionMethods for Rlw {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let caps: Vec<_> = self.pattern.find_iter(input.as_ref()).collect();
-
-        if let Some(m) = caps.last() {
+        if let Some(m) = self.pattern.find_iter(input.as_ref()).last() {
             let (start, end) = (m.start(), m.end());
 
-            let mut result =
-                String::with_capacity(input.len() - (end - start) + self.text_to_replace.len());
-            result.push_str(&input[..start]);
-            result.push_str(&self.text_to_replace);
-            result.push_str(&input[end..]);
-            return Ok(result.into());
+            return Ok(crate::utils::allocation::replace(
+                input,
+                start..end,
+                &self.text_to_replace,
+            ));
         }
         Ok(input)
     }
@@ -109,7 +106,7 @@ impl InstructionMethods for Rlw {
 
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
+        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",

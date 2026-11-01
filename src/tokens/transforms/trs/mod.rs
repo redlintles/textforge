@@ -47,10 +47,10 @@ impl InstructionMethods for Trs {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        if input.is_empty() {
-            return Ok(input);
-        }
-        Ok(String::from(input.trim_end()).into())
+        let trimmed = input.trim_end();
+        let start = trimmed.as_ptr() as usize - input.as_ptr() as usize;
+        let end = start + trimmed.len();
+        Ok(crate::utils::allocation::keep(input, start..end))
     }
 
     fn get_string_repr(&self) -> &'static str {

@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, transforms::capitalize, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -51,15 +51,14 @@ impl InstructionMethods for Jcmc {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let v = input.split_whitespace().collect::<Vec<_>>();
-
-        let result = v
-            .iter()
-            .enumerate()
-            .map(|(i, w)| if i >= 1 { capitalize(w) } else { w.to_string() })
-            .collect::<Vec<_>>()
-            .join("");
-
+        let mut result = String::with_capacity(input.len());
+        for (i, word) in input.split_whitespace().enumerate() {
+            if i == 0 {
+                result.push_str(word);
+            } else {
+                crate::utils::allocation::capitalize_into(&mut result, word);
+            }
+        }
         Ok(result.into())
     }
 

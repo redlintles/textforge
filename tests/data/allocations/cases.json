@@ -1,0 +1,498 @@
+[
+  {
+    "name": "apl",
+    "lines": [
+      "apl tail;"
+    ]
+  },
+  {
+    "name": "atb",
+    "lines": [
+      "atb \"prefix \";"
+    ]
+  },
+  {
+    "name": "ate",
+    "lines": [
+      "ate \" suffix\";"
+    ]
+  },
+  {
+    "name": "cfw",
+    "lines": [
+      "cfw;"
+    ]
+  },
+  {
+    "name": "clw",
+    "lines": [
+      "clw;"
+    ]
+  },
+  {
+    "name": "ctc",
+    "lines": [
+      "ctc 1 8;"
+    ]
+  },
+  {
+    "name": "ctr",
+    "lines": [
+      "ctr 0 2;"
+    ]
+  },
+  {
+    "name": "cts",
+    "lines": [
+      "cts 1;"
+    ]
+  },
+  {
+    "name": "dla",
+    "lines": [
+      "dla 30;"
+    ]
+  },
+  {
+    "name": "dlb",
+    "lines": [
+      "dlb 2;"
+    ]
+  },
+  {
+    "name": "dlc",
+    "lines": [
+      "dlc 1 3;"
+    ]
+  },
+  {
+    "name": "dle",
+    "lines": [
+      "dle;"
+    ]
+  },
+  {
+    "name": "dlf",
+    "lines": [
+      "dlf;"
+    ]
+  },
+  {
+    "name": "dll",
+    "lines": [
+      "dll;"
+    ]
+  },
+  {
+    "name": "dlm",
+    "lines": [
+      "dlm banana;"
+    ]
+  },
+  {
+    "name": "dln",
+    "lines": [
+      "dln 2;"
+    ]
+  },
+  {
+    "name": "dlna",
+    "lines": [
+      "dlna 2;"
+    ]
+  },
+  {
+    "name": "dlnb",
+    "lines": [
+      "dlnb 2;"
+    ]
+  },
+  {
+    "name": "dlni",
+    "lines": [
+      "dlni 1 2;"
+    ]
+  },
+  {
+    "name": "dls",
+    "lines": [
+      "dls 1;"
+    ]
+  },
+  {
+    "name": "emj",
+    "lines": [
+      "emj \"[a-zA-Z]+\" \" \";"
+    ]
+  },
+  {
+    "name": "htmle",
+    "lines": [
+      "htmle;"
+    ]
+  },
+  {
+    "name": "htmlu",
+    "lines": [
+      "htmlu;"
+    ]
+  },
+  {
+    "name": "inl",
+    "lines": [
+      "inl 2 middle;"
+    ]
+  },
+  {
+    "name": "ins",
+    "lines": [
+      "ins 1 \"xy\";"
+    ]
+  },
+  {
+    "name": "jcmc",
+    "lines": [
+      "jcmc;"
+    ]
+  },
+  {
+    "name": "jkbc",
+    "lines": [
+      "jkbc;"
+    ]
+  },
+  {
+    "name": "joinln",
+    "lines": [
+      "joinln \" \";"
+    ]
+  },
+  {
+    "name": "jpsc",
+    "lines": [
+      "jpsc;"
+    ]
+  },
+  {
+    "name": "jsnc",
+    "lines": [
+      "jsnc;"
+    ]
+  },
+  {
+    "name": "jsone",
+    "lines": [
+      "jsone;"
+    ]
+  },
+  {
+    "name": "jsonu",
+    "lines": [
+      "jsone;",
+      "jsonu;"
+    ]
+  },
+  {
+    "name": "klm",
+    "lines": [
+      "klm banana;"
+    ]
+  },
+  {
+    "name": "nln",
+    "lines": [
+      "nln;"
+    ]
+  },
+  {
+    "name": "padl",
+    "lines": [
+      "padl xy 128;"
+    ]
+  },
+  {
+    "name": "padr",
+    "lines": [
+      "padr xy 128;"
+    ]
+  },
+  {
+    "name": "pln",
+    "lines": [
+      "pln head;"
+    ]
+  },
+  {
+    "name": "raw",
+    "lines": [
+      "raw banana pear;"
+    ]
+  },
+  {
+    "name": "rcw",
+    "lines": [
+      "rcw banana pear 2;"
+    ]
+  },
+  {
+    "name": "rev",
+    "lines": [
+      "rev;"
+    ]
+  },
+  {
+    "name": "revln",
+    "lines": [
+      "revln;"
+    ]
+  },
+  {
+    "name": "rfw",
+    "lines": [
+      "rfw banana pear;"
+    ]
+  },
+  {
+    "name": "rln",
+    "lines": [
+      "rln 2 middle;"
+    ]
+  },
+  {
+    "name": "rlw",
+    "lines": [
+      "rlw banana pear;"
+    ]
+  },
+  {
+    "name": "rmape",
+    "lines": [
+      "rmapd m add banana pear;",
+      "rmape m;"
+    ]
+  },
+  {
+    "name": "rmp",
+    "lines": [
+      "rmp banana;"
+    ]
+  },
+  {
+    "name": "rmws",
+    "lines": [
+      "rmws;"
+    ]
+  },
+  {
+    "name": "rnw",
+    "lines": [
+      "rnw banana pear 1;"
+    ]
+  },
+  {
+    "name": "rpt",
+    "lines": [
+      "rpt 2;"
+    ]
+  },
+  {
+    "name": "rtl",
+    "lines": [
+      "rtl 2;"
+    ]
+  },
+  {
+    "name": "rtr",
+    "lines": [
+      "rtr 2;"
+    ]
+  },
+  {
+    "name": "slnc",
+    "lines": [
+      "slnc 1 2;"
+    ]
+  },
+  {
+    "name": "slt",
+    "lines": [
+      "slt 0 40;"
+    ]
+  },
+  {
+    "name": "splc",
+    "lines": [
+      "splc;"
+    ]
+  },
+  {
+    "name": "sslt",
+    "lines": [
+      "sslt \" \" 1;"
+    ]
+  },
+  {
+    "name": "tbs",
+    "lines": [
+      "tbs;"
+    ]
+  },
+  {
+    "name": "tla",
+    "lines": [
+      "tla;"
+    ]
+  },
+  {
+    "name": "tlcc",
+    "lines": [
+      "tlcc 1 8;"
+    ]
+  },
+  {
+    "name": "tlcs",
+    "lines": [
+      "tlcs 1;"
+    ]
+  },
+  {
+    "name": "tlcw",
+    "lines": [
+      "tlcw 1;"
+    ]
+  },
+  {
+    "name": "tls",
+    "lines": [
+      "tls;"
+    ]
+  },
+  {
+    "name": "trs",
+    "lines": [
+      "trs;"
+    ]
+  },
+  {
+    "name": "tua",
+    "lines": [
+      "tua;"
+    ]
+  },
+  {
+    "name": "tucc",
+    "lines": [
+      "tucc 1 8;"
+    ]
+  },
+  {
+    "name": "tucs",
+    "lines": [
+      "tucs 1;"
+    ]
+  },
+  {
+    "name": "tucw",
+    "lines": [
+      "tucw 1;"
+    ]
+  },
+  {
+    "name": "uniqln",
+    "lines": [
+      "uniqln;"
+    ]
+  },
+  {
+    "name": "unorm",
+    "lines": [
+      "unorm nfc;"
+    ]
+  },
+  {
+    "name": "urld",
+    "lines": [
+      "urld;"
+    ]
+  },
+  {
+    "name": "urle",
+    "lines": [
+      "urle;"
+    ]
+  },
+  {
+    "name": "blk",
+    "lines": [
+      "blk b assoc ate \"!\";",
+      "cblk b;"
+    ]
+  },
+  {
+    "name": "cblk",
+    "lines": [
+      "blk b assoc ate \"!\";",
+      "cblk b;"
+    ]
+  },
+  {
+    "name": "end",
+    "lines": [
+      "end;"
+    ]
+  },
+  {
+    "name": "eval",
+    "lines": [
+      "eval \"2 + 3\" in result;",
+      "ate \"{{result}}\";"
+    ]
+  },
+  {
+    "name": "ifdc",
+    "lines": [
+      "ifdc banana do ate \"!\";"
+    ]
+  },
+  {
+    "name": "iter",
+    "lines": [
+      "iter 2 times ate \"!\";"
+    ]
+  },
+  {
+    "name": "mutv",
+    "lines": [
+      "var x = before;",
+      "mutv x = after;",
+      "ate \"{{x}}\";"
+    ]
+  },
+  {
+    "name": "null",
+    "lines": [
+      "null;"
+    ]
+  },
+  {
+    "name": "rmapd",
+    "lines": [
+      "rmapd m add banana pear;",
+      "rmape m;"
+    ]
+  },
+  {
+    "name": "val",
+    "lines": [
+      "val x = value;",
+      "ate \"{{x}}\";"
+    ]
+  },
+  {
+    "name": "var",
+    "lines": [
+      "var x = value;",
+      "ate \"{{x}}\";"
+    ]
+  }
+]

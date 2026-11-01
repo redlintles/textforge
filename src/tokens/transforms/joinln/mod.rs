@@ -70,6 +70,9 @@ impl InstructionMethods for Joinln {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
+        if !input.chars().any(crate::utils::lines::is_break) {
+            return Ok(input);
+        }
         let mut output = String::with_capacity(input.len());
         for (i, (text, _)) in lines(&input).enumerate() {
             if i != 0 {

@@ -66,18 +66,14 @@ impl InstructionMethods for Tlcs {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_input(self.index, input.as_ref())?;
 
-        let result: String = input
-            .chars()
-            .enumerate()
-            .map(|(i, c)| {
-                if i == self.index {
-                    c.to_lowercase().to_string()
-                } else {
-                    c.to_string()
-                }
-            })
-            .collect();
-
+        let mut result = String::with_capacity(input.len());
+        for (i, c) in input.chars().enumerate() {
+            if i == self.index {
+                result.extend(c.to_lowercase());
+            } else {
+                result.push(c);
+            }
+        }
         Ok(result.into())
     }
 

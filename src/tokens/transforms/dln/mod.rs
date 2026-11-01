@@ -83,14 +83,20 @@ impl InstructionMethods for Dln {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let count = lines(&input).count();
         check_line(self.line, count, "dln", &input)?;
-        let mut output = String::with_capacity(input.len());
-        for (i, (text, ending)) in lines(&input).enumerate() {
-            if i + 1 != self.line {
-                output.push_str(text);
-                output.push_str(ending);
-            }
-        }
-        Ok(output.into())
+        let start: usize = lines(&input)
+            .take(self.line - 1)
+            .map(|(t, e)| t.len() + e.len())
+            .sum();
+        let length: usize = lines(&input)
+            .skip(self.line - 1)
+            .take(1)
+            .map(|(t, e)| t.len() + e.len())
+            .sum();
+        Ok(crate::utils::allocation::replace(
+            input,
+            start..start + length,
+            "",
+        ))
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {

@@ -61,15 +61,26 @@ impl InstructionMethods for Uniqln {
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let mut seen = std::collections::HashSet::new();
-        let mut output = String::with_capacity(input.len());
+        // Keep borrowed keys while scanning; the output borrows only from input.
+        let mut output: Option<String> = None;
+        let mut offset = 0;
         for (text, ending) in lines(&input) {
             if seen.insert(text) {
-                output.push_str(text);
-                output.push_str(ending);
+                if let Some(output) = output.as_mut() {
+                    output.push_str(text);
+                    output.push_str(ending);
+                }
+            } else if output.is_none() {
+                let mut result = String::with_capacity(input.len());
+                result.push_str(&input[..offset]);
+                output = Some(result);
             }
+            offset += text.len() + ending.len();
         }
-        Ok(output.into())
+        drop(seen);
+        Ok(output.map_or(input, Cow::Owned))
     }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x50

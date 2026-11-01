@@ -145,3 +145,11 @@ mod tests {
         }
     }
 }
+
+#[test]
+fn optimized_conversion_preserves_contextual_greek_sigma() {
+    use super::Jkbc;
+    use crate::tokens::InstructionMethods;
+    let token = Jkbc::default();
+    assert_eq!(token.transform("ΟΣ ΑΣ".into(), None).unwrap(), "ος-ας");
+}

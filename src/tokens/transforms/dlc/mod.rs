@@ -100,10 +100,11 @@ impl InstructionMethods for Dlc {
             .map(|(i, _)| i)
             .unwrap_or_else(|| input.len()); // se end é o último char, after começa no fim
 
-        let before = &input[..start_index.min(input.len())];
-        let after = &input[end_index.min(input.len())..];
-
-        Ok(format!("{}{}", before, after).into())
+        Ok(crate::utils::allocation::replace(
+            input,
+            start_index..end_index,
+            "",
+        ))
     }
 
     fn get_string_repr(&self) -> &'static str {

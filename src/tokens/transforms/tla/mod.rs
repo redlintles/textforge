@@ -52,6 +52,14 @@ impl InstructionMethods for Tla {
         if input.is_empty() {
             return Ok(input);
         }
+        if input.is_ascii() {
+            if !input.bytes().any(|c| c.is_ascii_uppercase()) {
+                return Ok(input);
+            }
+            let mut output = input.into_owned();
+            output.make_ascii_lowercase();
+            return Ok(output.into());
+        }
         Ok(input.to_lowercase().into())
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {

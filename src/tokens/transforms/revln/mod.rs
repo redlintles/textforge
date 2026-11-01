@@ -60,6 +60,9 @@ impl InstructionMethods for Revln {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
+        if lines(&input).nth(1).is_none() {
+            return Ok(input);
+        }
         let parts: Vec<_> = lines(&input).collect();
         let mut output = String::with_capacity(input.len());
         for ((text, _), (_, ending)) in parts.iter().rev().zip(parts.iter()) {

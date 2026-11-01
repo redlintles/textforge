@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, transforms::capitalize, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -43,7 +43,15 @@ impl InstructionMethods for Cfw {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        Ok(capitalize(&input).into())
+        let Some(first) = input.chars().next() else {
+            return Ok(input);
+        };
+        let replacement: String = first.to_uppercase().collect();
+        Ok(crate::utils::allocation::replace(
+            input,
+            0..first.len_utf8(),
+            &replacement,
+        ))
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {

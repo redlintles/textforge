@@ -66,8 +66,17 @@ impl InstructionMethods for Rmape {
                 "",
             )
         })?;
-        let name = parse_args!(&self.params, 0, String, "Map name must be text");
-        context.execute_replace_map(&name, input)
+        let name = match &self.params[0] {
+            TextForgeParamTypes::String(name) => name.as_str(),
+            _ => {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::InvalidParameters("Map name must be text".into()),
+                    "",
+                    "",
+                ));
+            }
+        };
+        context.execute_replace_map(name, input)
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {

@@ -68,7 +68,9 @@ impl InstructionMethods for Ate {
         mut input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        input.to_mut().push_str(&self.text);
+        if !self.text.is_empty() {
+            input.to_mut().push_str(&self.text);
+        }
         Ok(input)
     }
 

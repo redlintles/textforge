@@ -2,7 +2,7 @@ use crate::{
     context::execution_context::GlobalExecutionContext,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, lines::lines, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 use std::borrow::Cow;
 
@@ -60,12 +60,14 @@ impl InstructionMethods for Nln {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut output = String::with_capacity(input.len());
-        for (text, _) in lines(&input) {
-            output.push_str(text);
+        if !input.chars().any(crate::utils::lines::is_break) {
+            return Ok(input);
         }
+        let mut output = input.into_owned();
+        output.retain(|c| !crate::utils::lines::is_break(c));
         Ok(output.into())
     }
+
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x49

@@ -65,16 +65,14 @@ impl InstructionMethods for Tucs {
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_input(self.index, input.as_ref())?;
-        let result: String = input
-            .char_indices()
-            .map(|(i, c)| {
-                if i == self.index {
-                    c.to_uppercase().to_string()
-                } else {
-                    c.to_string()
-                }
-            })
-            .collect();
+        let mut result = String::with_capacity(input.len());
+        for (i, c) in input.char_indices() {
+            if i == self.index {
+                result.extend(c.to_uppercase());
+            } else {
+                result.push(c);
+            }
+        }
         Ok(result.into())
     }
 

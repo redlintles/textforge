@@ -1,9 +1,12 @@
 [package]
 name = "textforge"
-version = "0.2.0"
+version = "2.0.0"
 edition = "2024"
 description = "A Flexible scalable DSL that allows the creation of pipelines for text processing"
 license-file = "LICENSE"
+repository = "https://github.com/redlintles/textforge"
+documentation = "https://docs.rs/textforge"
+readme = "README.md"
 
 [dependencies]
 unicode-normalization = "0.1.26"
@@ -52,3 +55,7 @@ path = "src/main.rs"
 members = ["."]
 exclude = ["src/bindings/python"]
 resolver = "3"
+
+[[example]]
+name = "allocation_benchmark"
+required-features = ["test_access"]

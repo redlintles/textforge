@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, transforms::extend_string, validations::check_vec_len},
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -69,10 +69,14 @@ impl InstructionMethods for Padr {
             return Ok(input);
         }
         let ml = self.max_len - character_count;
-        let s = extend_string(&self.text, ml);
-
-        Ok(format!("{}{}", input, s).into())
+        if self.text.is_empty() {
+            return Ok(input);
+        }
+        let mut output = input.into_owned();
+        output.extend(self.text.chars().cycle().take(ml));
+        Ok(output.into())
     }
+
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
 

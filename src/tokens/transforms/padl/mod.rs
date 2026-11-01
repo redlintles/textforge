@@ -72,10 +72,15 @@ impl InstructionMethods for Padl {
             return Ok(input);
         }
         let ml = self.max_len - character_count;
-        let s = extend_string(&self.text, ml);
-
-        Ok(format!("{}{}", s, input).into())
+        if self.text.is_empty() {
+            return Ok(input);
+        }
+        let mut output = extend_string(&self.text, ml);
+        output.reserve(input.len());
+        output.push_str(&input);
+        Ok(output.into())
     }
+
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "padl", "")?;
 

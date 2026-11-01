@@ -52,19 +52,22 @@ impl InstructionMethods for Rtl {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        if input.is_empty() {
+        let len = input.chars().count();
+        if len == 0 {
             return Ok(input);
         }
-
-        let chars: Vec<char> = input.chars().collect();
-        let len = chars.len();
         let times = self.times % len;
-
-        Ok(chars[times..]
-            .iter()
-            .chain(&chars[..times])
-            .collect::<String>()
-            .into())
+        if times == 0 {
+            return Ok(input);
+        }
+        let split = input
+            .char_indices()
+            .nth(times)
+            .map_or(input.len(), |(i, _)| i);
+        let mut output = String::with_capacity(input.len());
+        output.push_str(&input[split..]);
+        output.push_str(&input[..split]);
+        Ok(output.into())
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {

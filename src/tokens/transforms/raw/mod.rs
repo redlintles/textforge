@@ -105,7 +105,7 @@ impl InstructionMethods for Raw {
 
         let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
 
-        self.pattern = Regex::new(&pattern_payload.clone()).map_err(|_| {
+        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
                 "sslt",

@@ -11,3 +11,5 @@ pub mod validations;
 pub mod test_helpers;
 
 pub(crate) mod lines;
+
+pub(crate) mod allocation;

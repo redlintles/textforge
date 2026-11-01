@@ -49,13 +49,16 @@ impl InstructionMethods for Splc {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        Ok(input
-            .chars()
-            .map(|c| c.to_string())
-            .collect::<Vec<_>>()
-            .join(" ")
-            .into())
+        let mut output = String::with_capacity(input.len());
+        for (i, ch) in input.chars().enumerate() {
+            if i != 0 {
+                output.push(' ');
+            }
+            output.push(ch);
+        }
+        Ok(output.into())
     }
+
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "rmws", "")?;
         Ok(())

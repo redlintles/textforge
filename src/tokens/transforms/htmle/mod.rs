@@ -56,7 +56,10 @@ impl InstructionMethods for Htmle {
         match input {
             Cow::Borrowed(s) => Ok(encode_safe(s)),
 
-            Cow::Owned(s) => Ok(Cow::Owned(encode_safe(&s).into_owned())),
+            Cow::Owned(s) => match encode_safe(&s) {
+                Cow::Borrowed(_) => Ok(Cow::Owned(s)),
+                Cow::Owned(result) => Ok(Cow::Owned(result)),
+            },
         }
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {

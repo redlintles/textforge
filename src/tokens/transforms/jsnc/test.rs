@@ -143,3 +143,11 @@ mod tests {
         }
     }
 }
+
+#[test]
+fn optimized_conversion_preserves_contextual_greek_sigma() {
+    use super::Jsnc;
+    use crate::tokens::InstructionMethods;
+    let token = Jsnc::default();
+    assert_eq!(token.transform("ΟΣ ΑΣ".into(), None).unwrap(), "ος_ας");
+}

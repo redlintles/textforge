@@ -49,8 +49,14 @@ impl InstructionMethods for Rmws {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        Ok(input.split_whitespace().collect::<Vec<_>>().join("").into())
+        if !input.chars().any(char::is_whitespace) {
+            return Ok(input);
+        }
+        let mut output = input.into_owned();
+        output.retain(|c| !c.is_whitespace());
+        Ok(output.into())
     }
+
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "rmws", "")?;
         Ok(())

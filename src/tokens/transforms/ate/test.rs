@@ -165,3 +165,20 @@ mod tests {
         }
     }
 }
+
+#[test]
+fn allocation_regression_preserves_storage() {
+    use super::Ate;
+    use crate::tokens::InstructionMethods;
+    use std::borrow::Cow;
+    let token = Ate::new("");
+    let result = token.transform(Cow::Borrowed("é🍌"), None).unwrap();
+    assert_eq!(result, "é🍌");
+    assert!(matches!(result, Cow::Borrowed(_)));
+    let mut input = String::with_capacity(128);
+    input.push_str("é🍌");
+    let pointer = input.as_ptr();
+    let result = token.transform(Cow::Owned(input), None).unwrap();
+    assert_eq!(result, "é🍌");
+    assert_eq!(result.as_ptr(), pointer);
+}
