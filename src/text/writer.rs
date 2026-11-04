@@ -6,6 +6,10 @@ use crate::{
 };
 
 pub fn write_to_file(path: &Path, tokens: &[TokenWrapper]) -> Result<(), TextForgeError> {
+    let lines = tokens
+        .iter()
+        .map(TokenWrapper::to_text_line_unresolved)
+        .collect::<Result<Vec<_>, _>>()?;
     check_file_path(path, Some("textforge"))?;
     let mut file = OpenOptions::new()
         .create(true)
@@ -24,9 +28,7 @@ pub fn write_to_file(path: &Path, tokens: &[TokenWrapper]) -> Result<(), TextFor
 
     let mut success = true;
 
-    for token in tokens.iter() {
-        let line = token.to_text_line_unresolved()?;
-
+    for line in lines {
         match file.write_all(line.as_bytes()) {
             Ok(_) => (),
             Err(_) => {

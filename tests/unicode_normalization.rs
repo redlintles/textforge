@@ -58,7 +58,7 @@ fn variables_conditionals_blocks_and_order_with_replacement_maps() {
             Ok(())
         })
         .unwrap()
-        .define_replace_map("m", "é", "E")
+        .add_replace_rule("m", "é", "E")
         .unwrap()
         .execute_replace_map("m")
         .unwrap()

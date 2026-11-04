@@ -94,9 +94,9 @@ mod tests {
         use crate::parser::params::TextForgeParamTypes;
 
         #[test]
-        fn get_opcode_is_0x0c() {
+        fn get_opcode_is_0x0b() {
             let t = Rfw::default();
-            assert_eq!(t.get_opcode(), 0x0c);
+            assert_eq!(t.get_opcode(), 0x0b);
         }
 
         #[test]
@@ -182,7 +182,7 @@ mod tests {
 
             let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
             i += 4;
-            assert_eq!(opcode, 0x0c);
+            assert_eq!(opcode, 0x0b);
 
             let param_count = bc[i] as usize;
             i += 1;

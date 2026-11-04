@@ -843,22 +843,28 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             if context.is_halted {
                 break;
             }
+            let bound = token
+                .bind_for_debug(&mut context)
+                .inspect_err(|error| self.errors.add_error(error.clone()))?;
+            let line = bound.to_textforge_line();
             let red_result = result.red();
-            let temp = apply_transform(token, result, &mut self.errors, &mut context)?;
+            let temp = bound
+                .transform(result, Some(&mut context))
+                .inspect_err(|error| self.errors.add_error(error.clone()))?;
 
             if token.get_string_repr() == "blk" {
-                // Gambiarra feia, futuramente pensar em forma melhor de consultar os parâmetros de um token
-                let line = token.to_textforge_line();
-                let mut it = line.split_whitespace();
-
-                it.next();
-                let v = it.next().ok_or_else(|| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
-                        "process_all_with_debug",
-                        "",
-                    )
-                })?;
+                let v = match bound.get_params().first() {
+                    Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
+                    _ => {
+                        return Err(TextForgeError::new(
+                            TextForgeErrorCode::InvalidParameters(
+                                "Invalid block debug metadata".into(),
+                            ),
+                            "process_all_with_debug",
+                            "block name",
+                        ));
+                    }
+                };
 
                 log.push_str(
                     &format!(
@@ -866,7 +872,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                         counter.to_string().blue(),
                         (counter + 1).to_string().blue(),
                         "Block Declaration: ".to_string().green(),
-                        token.to_textforge_line().yellow(),
+                        line.yellow(),
                         v.to_string().green(),
                         context.get_formatted_block_items(v)?
                     )
@@ -878,7 +884,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                     "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
                     counter.to_string().blue(),
                     (counter + 1).to_string().blue(),
-                    token.to_textforge_line().yellow(),
+                    line.yellow(),
                     red_result,
                     temp.green()
                 ));

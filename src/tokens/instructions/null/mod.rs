@@ -35,7 +35,7 @@ impl InstructionMethods for Null {
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
-        0x36
+        0x38
     }
     fn get_string_repr(&self) -> &'static str {
         "null"

@@ -158,6 +158,18 @@ impl TokenWrapper {
             }
         }
     }
+    /// Bind once for debug execution and metadata, so logging cannot consult a
+    /// token template whose default parameters differ from the executed values.
+    pub(crate) fn bind_for_debug(
+        &self,
+        context: &mut GlobalExecutionContext,
+    ) -> Result<Box<dyn InstructionMethods>, TextForgeError> {
+        let params = ValType::resolve_variables(self.token.as_ref(), &self.params, context)?;
+        let mut token = self.token.clone();
+        token.set_params(&params)?;
+        Ok(token)
+    }
+
     pub fn apply_token<'a>(
         &self,
         input: Cow<'a, str>,
@@ -202,10 +214,11 @@ impl TokenWrapper {
 
     pub fn to_text_line_unresolved(&self) -> Result<String, TextForgeError> {
         crate::parser::structure::validate(self)?;
-        // Post-order traversal binds children before their parent. Calling the
-        // template's serializer directly would lose the wrapper's parameters.
+        // Serialize owned descriptions using the same registry as the parser.
+        // Individual token Display methods are intended for diagnostics and do
+        // not consistently quote empty text, whitespace, quotes or backslashes.
         let mut pending = vec![(self, false)];
-        let mut bound: Vec<Box<dyn InstructionMethods>> = Vec::new();
+        let mut output = Vec::<String>::new();
         while let Some((wrapper, visited)) = pending.pop() {
             if !visited {
                 pending.push((wrapper, true));
@@ -216,35 +229,84 @@ impl TokenWrapper {
                 }
                 continue;
             }
-            let mut parameters = Vec::with_capacity(wrapper.params.len());
-            for parameter in &wrapper.params {
-                parameters.push(match parameter {
+            let syntax = match TOKEN_TABLE.find((
+                QuerySource::Identifier(wrapper.get_string_repr().into()),
+                QueryTarget::Syntax,
+            ))? {
+                TargetValue::Syntax(syntax) => syntax,
+                _ => {
+                    return Err(TextForgeError::new(
+                        TextForgeErrorCode::SerializationError("Missing instruction syntax".into()),
+                        "to_text_line_unresolved",
+                        wrapper.get_string_repr(),
+                    ));
+                }
+            };
+            let mut parameters = wrapper.params.iter();
+            let mut fields = vec![wrapper.get_string_repr().to_owned()];
+            for part in syntax.iter() {
+                if let SyntaxToken::Literal(literal) = part.token {
+                    fields.push(literal.to_owned());
+                    continue;
+                }
+                let parameter = parameters.next().ok_or_else(|| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::SerializationError(
+                            "Missing instruction parameter".into(),
+                        ),
+                        "to_text_line_unresolved",
+                        wrapper.get_string_repr(),
+                    )
+                })?;
+                let value = match parameter {
                     ValType::Literal(TextForgeParamTypes::Token(_)) => {
-                        let child = bound.pop().ok_or_else(|| {
+                        output.pop().ok_or_else(|| {
                             TextForgeError::new(
-                                TextForgeErrorCode::ValidationError("Missing bound child".into()),
+                                TextForgeErrorCode::SerializationError(
+                                    "Missing nested instruction".into(),
+                                ),
                                 "to_text_line_unresolved",
-                                "",
+                                wrapper.get_string_repr(),
                             )
-                        })?;
-                        TextForgeParamTypes::Token(child.into())
+                        })?
                     }
-                    ValType::Literal(value) => value.clone(),
-                    ValType::VarRef(name) => TextForgeParamTypes::String(format!("{{{{{name}}}}}")),
-                });
+                    ValType::Literal(TextForgeParamTypes::Usize(value)) => value.to_string(),
+                    ValType::VarRef(name) | ValType::Literal(TextForgeParamTypes::VarRef(name)) => {
+                        let reference = format!("{{{{{name}}}}}");
+                        if !VAR_REF_RE.is_match(&reference) {
+                            return Err(TextForgeError::new(
+                                TextForgeErrorCode::SerializationError(
+                                    "Variable name is not representable in text syntax; use bytecode export".into(),
+                                ),
+                                "to_text_line_unresolved", name.clone(),
+                            ));
+                        }
+                        shell_words::quote(&reference).into_owned()
+                    }
+                    ValType::Literal(TextForgeParamTypes::String(value)) => {
+                        if value.contains(['\n', '\r']) {
+                            return Err(TextForgeError::new(
+                                TextForgeErrorCode::SerializationError(
+                                    "Text pipeline parameters cannot contain line breaks; use bytecode export for multiline values".into(),
+                                ),
+                                "to_text_line_unresolved", wrapper.get_string_repr(),
+                            ));
+                        }
+                        shell_words::quote(value).into_owned()
+                    }
+                };
+                fields.push(value);
             }
-            let mut token = wrapper.token.clone();
-            token.set_params(&parameters)?;
-            bound.push(token);
+            output.push(fields.join(" "));
         }
-        let token = bound.pop().ok_or_else(|| {
+        let text = output.pop().ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::ValidationError("Missing bound root".into()),
+                TextForgeErrorCode::SerializationError("Missing root instruction".into()),
                 "to_text_line_unresolved",
                 "",
             )
         })?;
-        Ok(token.to_textforge_line().into())
+        Ok(format!("{text};\n"))
     }
     #[cfg(feature = "bytecode")]
     pub fn to_bytecode_resolved(

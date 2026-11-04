@@ -84,6 +84,40 @@ impl PipelinePlan {
         Ok(())
     }
 
+    /// Append a complete map definition atomically, preserving rule order.
+    /// Foreign closures are evaluated by adapters; only owned arguments cross here.
+    ///
+    /// ```
+    /// use textforge::api::portable::{Argument, PipelinePlan, InstructionSpec};
+    /// let mut plan = PipelinePlan::new();
+    /// plan.define_replace_map(Argument::Text("m".into()), vec![
+    ///     (Argument::Text("cat".into()), Argument::Text("dog".into())),
+    /// ])?;
+    /// plan.add(InstructionSpec::new("rmape".into(),vec![Argument::Text("m".into())]))?;
+    /// assert_eq!(plan.compile()?.process("cat")?,"dog");
+    /// # Ok::<(), textforge::api::portable::BindingError>(())
+    /// ```
+    pub fn define_replace_map(
+        &mut self,
+        name: Argument,
+        rules: Vec<(Argument, Argument)>,
+    ) -> Result<(), BindingError> {
+        super::replace_map_builder::validate_rule_count(rules.len())
+            .map_err(|error| BindingError::from_core(ErrorStage::Validation, error))?;
+        let mut converted = Vec::with_capacity(rules.len());
+        for (pattern, replacement) in rules {
+            let spec =
+                InstructionSpec::new("rmapd".into(), vec![name.clone(), pattern, replacement]);
+            converted.push(
+                instruction::convert(&spec)
+                    .map_err(|error| BindingError::from_core(ErrorStage::Conversion, error))?,
+            );
+        }
+        self.nodes
+            .extend(converted.into_iter().map(Node::Instruction));
+        Ok(())
+    }
+
     /// Move a complete block body into this plan using a dynamically owned name.
     /// Block-ancestor restrictions are checked by the shared rules at compile time.
     pub fn block(&mut self, name: String, mut body: PipelinePlan) {

@@ -8,6 +8,8 @@ pub mod builder;
 pub mod conditional_builder;
 pub mod portable;
 pub mod processor;
+pub mod replace_map_builder;
+pub use replace_map_builder::ReplaceMapBuilder;
 
 use crate::api::block_builder::BlockBuilder;
 use crate::api::conditional_builder::ConditionalBuilderEach;
@@ -41,16 +43,45 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// Define a named replacement map with an ordered, scoped rule builder.
+    /// The callback must finish with `end()`; failed configuration appends no rules.
+    ///
+    /// ```
+    /// use textforge::api::{TextForgeBuilderMethods, processor::{TextForgeProcessor, TextForgeProcessorMethods}};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().define_replace_map("animals", |map| {
+    ///     map.add_replace("cat", "wolf")?.add_replace("wolf", "dog")?.end()
+    /// })?.execute_replace_map("animals")?.build()?;
+    /// assert_eq!(processor.process_all(&id, "cat wolf")?, "wolf dog");
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn define_replace_map<F>(
+        &mut self,
+        name: impl Into<ValType>,
+        configure: F,
+    ) -> Result<&mut Self, TextForgeError>
+    where
+        F: FnOnce(&mut ReplaceMapBuilder) -> Result<(), TextForgeError>,
+    {
+        let mut map = ReplaceMapBuilder::new(name);
+        configure(&mut map)?;
+        let rules = map.finish()?;
+        for rule in rules {
+            self.push_token(rule)?;
+        }
+        Ok(self)
+    }
+
     /// Define or update a rule; forbidden inside blocks.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().define_replace_map("animals", "cat", "dog").unwrap()
+    /// let id = processor.create_pipeline().add_replace_rule("animals", "cat", "dog").unwrap()
     ///     .execute_replace_map("animals").unwrap().build().unwrap();
     /// assert_eq!(processor.process_all(&id, "cat").unwrap(), "dog");
     /// ```
-    fn define_replace_map(
+    fn add_replace_rule(
         &mut self,
         name: impl Into<ValType>,
         pattern: impl Into<ValType>,
@@ -68,7 +99,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().define_replace_map("animals", "cat", "dog").unwrap()
+    /// let id = processor.create_pipeline().add_replace_rule("animals", "cat", "dog").unwrap()
     ///     .execute_replace_map("animals").unwrap().build().unwrap();
     /// assert_eq!(processor.process_all(&id, "cat").unwrap(), "dog");
     /// ```

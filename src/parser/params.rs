@@ -236,6 +236,24 @@ impl TextForgeParamTypes {
         let this_is_block_like = Self::is_block_like_signature(&expected);
 
         for p in expected.iter() {
+            // Context references occupy every parameter kind in the portable
+            // API. Recognize them before parsing numeric or nested token data,
+            // just as the existing String branch does.
+            if !matches!(p.token, SyntaxToken::Literal(_))
+                && let Some(value) = chunks.get(i)
+                && let Some(captures) = VAR_REF_RE.captures(value)
+            {
+                let name = captures.get(1).ok_or_else(|| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::TextParsingError("Missing variable name".into()),
+                        "TextForgeParamTypes::parse_with_cursor",
+                        value.clone(),
+                    )
+                })?;
+                out.push(ValType::VarRef(name.as_str().to_owned()));
+                i += 1;
+                continue;
+            }
             match p.token {
                 SyntaxToken::Literal(expected_literal) => {
                     let literal = chunks.get(i).ok_or_else(|| {
@@ -267,24 +285,7 @@ impl TextForgeParamTypes {
                         )
                     })?;
 
-                    if let Some(caps) = VAR_REF_RE.captures(s) {
-                        let name = caps
-                            .get(1)
-                            .map(|m| m.as_str().trim().to_string())
-                            .unwrap_or_default();
-
-                        if name.is_empty() {
-                            return Err(TextForgeError::new(
-                                TextForgeErrorCode::TextParsingError("Empty var name".into()),
-                                "TextForgeParamTypes::parse_with_cursor",
-                                format!("index={}", i),
-                            ));
-                        }
-
-                        out.push(ValType::VarRef(name));
-                    } else {
-                        out.push(ValType::Literal(TextForgeParamTypes::String(s.clone())));
-                    }
+                    out.push(ValType::Literal(TextForgeParamTypes::String(s.clone())));
 
                     i += 1;
                 }

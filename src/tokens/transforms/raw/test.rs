@@ -157,9 +157,9 @@ mod tests {
         use super::*;
 
         #[test]
-        fn get_opcode_is_0b() {
+        fn get_opcode_matches_registry() {
             let t = Raw::default();
-            assert_eq!(t.get_opcode(), 0x0b);
+            assert_eq!(t.get_opcode(), 0x0c);
         }
 
         #[test]
@@ -177,7 +177,7 @@ mod tests {
 
             let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
             i += 4;
-            assert_eq!(opcode, 0x0b);
+            assert_eq!(opcode, 0x0c);
 
             let param_count = bc[i] as usize;
             i += 1;

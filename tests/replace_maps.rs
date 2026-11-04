@@ -9,7 +9,7 @@ fn run(rules: &[(&str, &str)], input: &str) -> String {
     let mut builder = processor.create_pipeline();
     for (pattern, replacement) in rules {
         builder
-            .define_replace_map("m", *pattern, *replacement)
+            .add_replace_rule("m", *pattern, *replacement)
             .unwrap();
     }
     let id = builder.execute_replace_map("m").unwrap().build().unwrap();
@@ -42,7 +42,7 @@ fn context_isolation_conditionals_and_block_execution() {
     let id = processor
         .create_pipeline()
         .if_do_contains_each("cat", |b| {
-            b.define_replace_map("m", "cat", "wolf")?;
+            b.add_replace_rule("m", "cat", "wolf")?;
             Ok(())
         })
         .unwrap()
@@ -63,7 +63,7 @@ fn context_isolation_conditionals_and_block_execution() {
             .create_pipeline()
             .block_assoc("bad", |b| {
                 b.if_do_contains_each("x", |c| {
-                    c.define_replace_map("m", "a", "b")?;
+                    c.add_replace_rule("m", "a", "b")?;
                     Ok(())
                 })?;
                 Ok(())
@@ -79,7 +79,7 @@ fn interpolation_portable_and_concurrent_reuse() {
         .create_pipeline()
         .var("pattern", "cat")
         .unwrap()
-        .define_replace_map("m", "{{pattern}}", "wolf")
+        .add_replace_rule("m", "{{pattern}}", "wolf")
         .unwrap()
         .execute_replace_map("m")
         .unwrap()

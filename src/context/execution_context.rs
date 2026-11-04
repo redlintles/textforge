@@ -215,7 +215,13 @@ impl GlobalContextMethods for GlobalExecutionContext {
     fn get_formatted_block_items(&mut self, block_id: &str) -> Result<String, TextForgeError> {
         use colored::Colorize;
 
-        let block_items = self.take_block(block_id)?;
+        let block_items = self.blocks.get(block_id).ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::BlockNotFound("Block not found".into()),
+                "context.get_formatted_block_items",
+                block_id.to_owned(),
+            )
+        })?;
         let mut result = String::new();
 
         let len = block_items.len();
@@ -244,8 +250,6 @@ impl GlobalContextMethods for GlobalExecutionContext {
                 token.to_textforge_line().yellow()
             ));
         }
-
-        self.put_block(block_id, block_items);
 
         Ok(result)
     }

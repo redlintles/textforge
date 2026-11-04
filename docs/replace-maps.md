@@ -39,8 +39,9 @@ use textforge::api::{TextForgeBuilderMethods,
     processor::{TextForgeProcessor, TextForgeProcessorMethods}};
 let mut processor = TextForgeProcessor::new();
 let id = processor.create_pipeline()
-    .define_replace_map("animals", "cat", "wolf").unwrap()
-    .define_replace_map("animals", "wolf", "dog").unwrap()
+    .define_replace_map("animals", |map| {
+        map.add_replace("cat", "wolf")?.add_replace("wolf", "dog")?.end()
+    }).unwrap()
     .execute_replace_map("animals").unwrap().build().unwrap();
 assert_eq!(processor.process_all(&id, "cat wolf").unwrap(), "wolf dog");
 ```
@@ -49,9 +50,21 @@ Portable clients use `InstructionSpec::new("rmapd", [name, regex, replacement])`
 and `InstructionSpec::new("rmape", [name])`, with owned strings and argument
 vectors. The syntax literal `add` is omitted. Both instructions support text and
 big-endian bytecode persistence (opcodes `0x3f` and `0x40`). Existing opcodes and
-protocol layout are unchanged. The Python methods are `define_replace_map` and
-`execute_replace_map` with the same parameters; `Pipeline.add` also accepts the
-mnemonics directly. Errors retain portable codes and stages.
+protocol layout are unchanged. The Python methods use `define_replace_map(name, configure)` with a scoped
+`add_replace(pattern, replacement).end()` builder. Node uses
+`defineReplaceMap(name, map => map.addReplace(pattern, replacement).end())`.
+Both keep the earlier three-argument convenience form for compatibility.
+Rust single-rule calls use `add_replace_rule(name, pattern, replacement)`;
+`define_replace_map` now takes the closure. The scope must be closed with `end()`;
+this ends configuration, not pipeline execution. Empty maps are rejected.
+Callbacks run once during construction and are never retained or invoked during
+processing. Their errors append no map instructions.
+
+Portable adapters may pass a completed owned definition to
+`PipelinePlan::define_replace_map(name, rules)`, which checks nonempty definitions
+and converts all rules before appending. The low-level instruction descriptions
+remain supported. Existing wire formats and replacement semantics are unchanged;
+`Pipeline.add` also accepts the mnemonics directly. Errors retain portable codes and stages.
 
 ## Reuse, concurrency and cost
 

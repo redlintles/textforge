@@ -8,7 +8,7 @@ fn register(processor: &mut TextForgeProcessor) -> String {
     let mut builder = processor.create_pipeline();
     for i in 0..16 {
         builder
-            .define_replace_map("m", format!(r"\bword{i}\b"), format!("value{i}"))
+            .add_replace_rule("m", format!(r"\bword{i}\b"), format!("value{i}"))
             .unwrap();
     }
     builder.execute_replace_map("m").unwrap().build().unwrap()

@@ -285,16 +285,22 @@ impl TextForgeProcessor {
             if context.is_halted {
                 break;
             }
-            if token.get_string_repr() == "blk" {
-                input = token.apply_buffered(input, &mut context)?;
-                let line = token.to_textforge_line();
-                let name = line.split_whitespace().nth(1).ok_or_else(|| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
-                        "process_all_with_debug",
-                        "",
-                    )
-                })?;
+            let bound = token.bind_for_debug(&mut context)?;
+            let line = bound.to_textforge_line();
+            if bound.get_string_repr() == "blk" {
+                let name = match bound.get_params().first() {
+                    Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
+                    _ => {
+                        return Err({
+                            TextForgeError::new(
+                                TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
+                                "process_all_with_debug",
+                                "",
+                            )
+                        });
+                    }
+                };
+                input = bound.transform_buffered(input, Some(&mut context))?;
                 write!(log, "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
                     counter.to_string().blue(), (counter + 1).to_string().blue(),
                     "Block Declaration: ".green(), line.yellow(), name.green(),
@@ -305,11 +311,11 @@ impl TextForgeProcessor {
                     "Step: [{}] => [{}]\nInstruction: {}\nBefore: ",
                     counter.to_string().blue(),
                     (counter + 1).to_string().blue(),
-                    token.to_textforge_line().yellow()
+                    line.yellow()
                 )
                 .map_err(adapter_io)?;
                 write_document(&mut input, log, "\x1b[31m")?;
-                input = token.apply_buffered(input, &mut context)?;
+                input = bound.transform_buffered(input, Some(&mut context))?;
                 log.write_all(b"\nAfter: ").map_err(adapter_io)?;
                 write_document(&mut input, log, "\x1b[32m")?;
                 log.write_all(b"\n\n").map_err(adapter_io)?;

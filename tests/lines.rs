@@ -1130,7 +1130,7 @@ fn line_operations_compose_with_unicode_normalization_and_regex_maps() {
         .create_pipeline()
         .normalize_unicode("nfc")
         .unwrap()
-        .define_replace_map("fruit", "banana", "🍌")
+        .add_replace_rule("fruit", "banana", "🍌")
         .unwrap()
         .execute_replace_map("fruit")
         .unwrap()

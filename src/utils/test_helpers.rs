@@ -8,7 +8,7 @@ pub fn build_all_tokens_pipeline_safe(
     let id = processor
         .create_pipeline()
         .normalize_unicode("nfc")?
-        .define_replace_map("safe", "NEVER_MATCH_SENTINEL", "replacement")?
+        .add_replace_rule("safe", "NEVER_MATCH_SENTINEL", "replacement")?
         .execute_replace_map("safe")?
         // ========== FASE 0: base previsível e grande ==========
         // Garante B repetido e bastante comprimento desde o início.

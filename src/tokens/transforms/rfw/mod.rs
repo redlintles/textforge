@@ -127,7 +127,7 @@ impl InstructionMethods for Rfw {
     }
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
-        0x0c
+        0x0b
     }
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Result<Vec<u8>, TextForgeError> {

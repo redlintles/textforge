@@ -219,3 +219,17 @@ Adapters must preserve numeric conversions and portable errors. The Python
 binding provides explicit typed methods matching the Rust names and delegates
 through this portable representation. No line-specific domain validation belongs
 in an adapter.
+
+## Scoped replacement-map construction
+
+The public Rust builder now accepts `define_replace_map(name, |map| ...)`;
+`ReplaceMapBuilder::add_replace` collects each regex/replacement pair and `end()`
+finishes configuration without emitting the DSL `end` instruction. For one rule,
+use `add_replace_rule(name, pattern, replacement)`.
+
+Adapters evaluate language callbacks locally and retain only immutable owned
+rule descriptions. `PipelinePlan::define_replace_map(name: Argument,
+rules: Vec<(Argument, Argument)>)` validates a nonempty definition and converts
+all instructions before appending, leaving the plan unchanged on failure. It
+lowers to the same `rmapd` instructions; scope restrictions and execution continue
+to use the existing engine.
