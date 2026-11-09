@@ -1,6 +1,30 @@
 # Changelog
 
-## 2.0.0 — Unreleased
+## Unreleased
+
+### Added
+
+- `ReplaceMapBuilder`: a scoped fluent builder for replacement maps
+  (`define_replace_map(...)`, then `add_replace(...)` for each rule, then `end()`).
+  See [replacement maps](docs/replace-maps.md) and [portable API](docs/portable-api.md).
+
+### Fixed
+
+- Block binding during debug execution (`process_all_with_debug` and related
+  debug paths).
+
+### Changed
+
+- The Node.js binding (`src/bindings/node`) is an independent repository, excluded
+  from the Cargo workspace and ignored by Git, like the Python binding. See
+  [Node.js binding repository](docs/node-bindings.md).
+- `AGENTS.md` now requires `AGENTS.md`, `README.md` and the changelog to be
+  updated with every substantial change (section 18). Stale facts were corrected:
+  core version, file extensions, Cargo features, dependencies and repository layout.
+- The release notes document is now `docs/release-0.2.0.md`. Its old name used
+  the abandoned `2.0.0` version.
+
+## 0.2.0
 
 ### Performance and compatibility
 
@@ -13,13 +37,13 @@
 - Add an exact 2,106-case baseline parity corpus covering all 81 instructions,
   borrowed/owned storage regression tests, and reproducible large-file benchmarks
   recording wall time, CPU time/utilization and peak resident memory.
-- Prepare the requested 2.0.0 core version. The version jump does not introduce an
+- Prepare the requested 0.2.0 core version. The version jump does not introduce an
   intentional API or instruction-result break relative to core revision 72fc7fc.
   Existing index edge cases remain documented; independent language bindings are
   not repackaged or published as part of this core release.
 
 See [allocation optimization and measurements](docs/allocation-optimization.md)
-and [release validation](docs/release-2.0.0.md).
+and [release validation](docs/release-0.2.0.md).
 
 
 ### Added
@@ -62,4 +86,3 @@ See [logical line operations](docs/lines.md),
 [Unicode normalization](docs/unicode-normalization.md), and
 [regex replacement maps](docs/replace-maps.md).
 
-This entry prepares the release; it does not indicate publication to a registry.

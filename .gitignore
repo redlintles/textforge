@@ -24,3 +24,6 @@ log.txt
 
 # Independent nested Python binding repository
 /src/bindings/python/
+
+# Independent nested Node.js binding repository
+/src/bindings/node/

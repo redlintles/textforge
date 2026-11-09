@@ -1,8 +1,8 @@
-# TextForge 2.0.0 core release candidate
+# TextForge 0.2.0 core release
 
-The requested core package version is **2.0.0**. This release preserves the
+The core package version is **0.2.0**, published to crates.io from revision `c2ed4b8`. This release preserves the
 public Rust/portable contracts, instruction outputs and bytecode protocol of
-revision `72fc7fc`; the major version number is not an announcement of intentional
+revision `72fc7fc`; the version bump is not an announcement of intentional
 breaking changes. See [changelog](../changelog.md) and
 [optimization evidence](allocation-optimization.md).
 
@@ -54,4 +54,4 @@ not certify foreign-language wheels, watcher overhead or buffered spill scaling.
 This preparation does not publish to crates.io, push Git refs or create a release
 tag. Publication and remote release operations require a separate maintainer
 action. The core `.crate` archive can be built with `cargo package --offline`;
-the expected artifact is `target/package/textforge-2.0.0.crate`.
+the expected artifact is `target/package/textforge-0.2.0.crate`.

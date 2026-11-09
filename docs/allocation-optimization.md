@@ -1,4 +1,4 @@
-# Allocation optimization in TextForge 2.0.0
+# Allocation optimization in TextForge 0.2.0
 
 This release keeps the existing instruction, fluent Rust, portable API and
 big-endian bytecode contracts. It changes how transforms store intermediate text.
@@ -63,7 +63,7 @@ Unicode/index behavior. Behavioral fixes need a separate compatibility decision.
 Core/portable signatures and adapters were reviewed for impact; no adapter code
 changes are needed for these internal optimizations. The independent Python
 binding remains pinned to its previous core snapshot. These measurements and
-checks establish core support only, not a tested Python 2.0.0 distribution.
+checks establish core support only, not a tested Python 0.2.0 distribution.
 
 ## Benchmark method
 
@@ -144,13 +144,13 @@ Machine: AMD Ryzen 5 4600G with Radeon Graphics; Linux; logical CPU 0. rustc 1.9
 | Input / workload | Version | Wall seconds | CPU seconds | One-core CPU % | Peak RSS MiB |
 | --- | --- | ---: | ---: | ---: | ---: |
 | 4 MiB / coverage | 72fc7fc | 5.36 | 5.36 | 99.8 | 221.2 |
-| 4 MiB / coverage | 2.0.0 | 2.59 | 2.58 | 99.6 | 25.5 |
+| 4 MiB / coverage | 0.2.0 | 2.59 | 2.58 | 99.6 | 25.5 |
 | 4 MiB / large | 72fc7fc | 1.93 | 1.92 | 100.0 | 220.9 |
-| 4 MiB / large | 2.0.0 | 0.20 | 0.19 | 100.0 | 21.3 |
+| 4 MiB / large | 0.2.0 | 0.20 | 0.19 | 100.0 | 21.3 |
 | 16 MiB / coverage | 72fc7fc | 23.11 | 23.09 | 100.0 | 867.8 |
-| 16 MiB / coverage | 2.0.0 | 11.09 | 11.08 | 99.9 | 99.5 |
+| 16 MiB / coverage | 0.2.0 | 11.09 | 11.08 | 99.9 | 99.5 |
 | 16 MiB / large | 72fc7fc | 8.08 | 8.07 | 99.9 | 867.6 |
-| 16 MiB / large | 2.0.0 | 0.90 | 0.89 | 98.9 | 85.5 |
+| 16 MiB / large | 0.2.0 | 0.90 | 0.89 | 98.9 | 85.5 |
 
 - 4 MiB / coverage: **2.07×** wall-time speedup, **88.5%** lower peak RSS. Wall ranges: baseline 5.32–5.38s; candidate 2.57–2.61s.
 - 4 MiB / large: **9.65×** wall-time speedup, **90.4%** lower peak RSS. Wall ranges: baseline 1.91–1.95s; candidate 0.19–0.20s.

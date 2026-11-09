@@ -23,7 +23,7 @@ On top of that linear pipeline, TextForge also has a small amount of **control f
 - **Conditionals** (`ifdc`) — run a group of instructions only if the input contains a given value.
 - **Variables** (`val`) — store an immutable value in the pipeline's execution context so other instructions can reference it instead of a hardcoded literal.
 
-Pipelines can be written in human-readable `.textforge` files, compiled to an optimized `.textforgebc` binary format, or composed directly in Rust via the `TextForgeBuilder` API. Language bindings are maintained in independent projects; see the [Python binding status](docs/python-bindings.md) for its separately pinned core and package versions.
+Pipelines can be written in human-readable `.textforge` files, compiled to an optimized `.textforgebc` binary format, or composed directly in Rust via the `TextForgeBuilder` API. Language bindings are maintained in independent projects with their own versions and pinned core snapshots: [Python](docs/python-bindings.md) (`textforgers`) and [Node.js](docs/node-bindings.md) (`textforge-node`).
 
 ---
 
@@ -44,6 +44,8 @@ Pipelines can be written in human-readable `.textforge` files, compiled to an op
 |--------|-----------|----------|
 | Text pipeline | `.textforge` | Human-readable, editable, versionable |
 | Binary pipeline | `.textforgebc` | Optimized for performance and distribution (`bytecode` feature) |
+
+The core also accepts `.tft` and `.tfb` as aliases for the text and binary formats.
 
 ### `.textforge` Syntax
 
@@ -83,11 +85,11 @@ cblk block_1;
 
 ### As a Rust library
 
-TextForge isn't on crates.io yet — add it as a git dependency:
+Add it from crates.io:
 
 ```toml
 [dependencies]
-textforge = { git = "https://github.com/redlintles/textforge" }
+textforge = "0.2.0"
 ```
 
 Use the builder API through a `TextForgeProcessor`:
@@ -114,10 +116,10 @@ assert_eq!(result, "HELLO RUST");
 ### From a `.textforge` file (CLI)
 
 ```bash
-atp run pipeline.textforge --input "  hello world  "
+txf --file pipeline.textforge --input input.txt --output output.txt
 ```
 
-> **Note:** The CLI is currently under development and not yet available. (The binary is still named `atp` internally; a couple of empty binary stubs for a future shell/game also exist but do nothing yet.)
+Without `--output`, the result is printed to stdout. `.textforgebc` pipelines need the `bytecode` feature. The CLI is still being completed. The `atp-shell` and `atp-game` binaries are empty placeholders for now.
 
 ---
 
@@ -227,18 +229,17 @@ atp run pipeline.textforge --input "  hello world  "
 | `ifdc` | Run a group of instructions only if the input contains a value | `<value>` |
 | `val` | Declare an immutable variable in the execution context | `<name> <value>` |
 
-> 🚧 An `emj` instruction (extract all regex matches, join them with a separator) has been implemented but is not yet registered in the instruction table — it isn't usable from `.textforge` files or the builder API yet.
-
 ---
 
 ## Feature Flags
 
 | Flag | Description |
 |------|-------------|
-| `default` | Core library, no CLI, no bytecode |
-| `bytecode` | Enables the `.textforgebc` binary protocol and the CLI binary |
+| `default` | Core library and `txf` CLI, without bytecode |
+| `bytecode` | Enables the `.textforgebc` binary protocol (library and CLI) |
 | `watchers` | Enables pipeline observability probes and JSON execution reports |
-| `test_access` | Enables test helpers (`rand`, `random-string`, `tempfile`) and pulls in `bytecode`/`watchers` |
+| `buffered` | Enables buffered, spool-backed processing (`process_*_buffered`); pulls in `tempfile` |
+| `test_access` | Enables test helpers (`rand`, `random-string`, `tempfile`) and pulls in `bytecode`/`watchers`/`buffered` |
 
 ---
 
@@ -256,6 +257,7 @@ TextForge is designed so that adding a new instruction never modifies the core. 
 - Create `src/tokens/transforms/<mnemonic>/test.rs` — unit tests
 - Register the mnemonic in `src/globals/table.rs`
 - Add the builder method in `src/api/mod.rs` (`TextForgeBuilderMethods`)
+- Add it to `build_all_tokens_pipeline_safe` in `src/utils/test_helpers.rs`
 
 See [`instruction-design.md`](.agents/skills/atp-project/references/instruction-design.md) for the full guide with code templates.
 
@@ -265,17 +267,19 @@ See [`instruction-design.md`](.agents/skills/atp-project/references/instruction-
 
 ```
 src/
-├── main.rs                    — CLI entrypoint (requires bytecode feature)
+├── main.rs                    — `txf` CLI entrypoint
 ├── bin/                        — additional binaries (shell/game scaffolding, not yet implemented)
-├── api/                        — Public API surface (builder, processor, block/conditional builders)
+├── api/                        — Public API surface (builder, processor, block/conditional/replace-map builders)
+│   └── portable/              — Language-neutral API used by bindings
+├── bindings/                  — Independent Python and Node.js repositories (not tracked here)
 ├── bytecode/                  — Binary .textforgebc protocol (feature-gated)
 ├── context/
 │   ├── execution_context.rs   — Runtime execution state (variables, blocks)
 │   └── static_context.rs      — Static/compile-time context
 ├── globals/
-│   ├── table.rs               — Instruction registry
-│   └── var.rs                 — Variable/param resolution
+│   └── table.rs               — Instruction registry
 ├── macros/                    — Internal Rust macros
+├── parser/                    — Parameter parsing and variable resolution
 ├── text/
 │   ├── reader.rs              — .textforge file parsing
 │   └── writer.rs              — Output writing
@@ -285,9 +289,11 @@ src/
 ├── watchers/                  — Pipeline observability (feature-gated)
 └── utils/                     — Shared utilities
 
-tests/                          — Integration tests (processor, bytecode, params, benchmark)
-pipelines/text/                 — Example pipelines
-data/                           — Sample input files for batch-processing examples
+tests/                          — Integration tests and benchmarks
+pipelines/                      — Example and benchmark pipelines
+data/                           — Sample input files
+docs/                           — Design notes, validation records and benchmark reports
+examples/, scripts/             — Benchmark/probe programs and reproducible benchmark scripts
 ```
 
 ---
@@ -295,34 +301,34 @@ data/                           — Sample input files for batch-processing exam
 ## Roadmap
 
 **Done**
-- [x] Core library with 47+ instructions
+- [x] Core library with 81 instructions
 - [x] `.textforge` text format
 - [x] `.textforgebc` binary protocol
 - [x] `TextForgeBuilder`/`TextForgeProcessor` Rust API
 - [x] Control flow: blocks (`blk`/`cblk`), conditionals (`ifdc`), variables (`val`)
 - [x] Batch processing over multiple files, in parallel (`rayon`)
 - [x] Optional pipeline observability (`watchers` feature, JSON reports)
+- [x] Buffered processing (`buffered` feature)
+- [x] Published to crates.io
+- [x] Python bindings (PyO3, `textforgers`)
 
 **In progress**
 - [ ] Complete CLI
-- [ ] `emj` instruction registration (implemented, not yet wired in)
 - [ ] Error accumulation / diagnostics API (`ErrorManager` is an internal sink for now)
 - [ ] Pipeline chaining (`pipeline1.textforge | pipeline2.textforge`)
-- [ ] REPL and `textforge-game` (binary scaffolding exists; no behavior yet)
+- [ ] REPL and educational game (`atp-shell` / `atp-game` placeholders exist; no behavior yet)
+- [ ] Node.js bindings (N-API, `textforge-node`; implemented, not yet released)
 
 **Planned**
 - [ ] C FFI (`cdylib`)
-- [ ] JavaScript bindings (WASM / NAPI)
-- [ ] Python bindings (PyO3)
 - [ ] Public pipeline repository
 - [ ] Project website
-- [ ] Publish to crates.io
 
 ---
 
 ## Contributing
 
-Contributions are welcome. This repo currently doesn't have a root-level `CONTRIBUTING.md` — the instruction design pattern lives in [`.agents/skills/atp-project/`](.agents/skills/atp-project/) instead. *(If you'd rather have a standalone `CONTRIBUTING.md` again, let me know and I'll draft one from that content.)*
+Contributions are welcome. This repo currently doesn't have a root-level `CONTRIBUTING.md` — the instruction design pattern lives in [`.agents/skills/atp-project/`](.agents/skills/atp-project/) instead.
 
 All commits, code, and documentation should be in **English**.
 
@@ -364,13 +370,13 @@ assert_eq!(processor.process_all(&id, "é\n\né\n🍌").unwrap(), "é | 🍌");
 ```
 
 See the [line semantics and complete instruction list](docs/lines.md) and the
-[2.0.0 changelog](changelog.md). Python adapters are released separately as
-`textforgers` 0.1.2.
+[0.2.0 changelog](changelog.md). Bindings are versioned separately: Python
+`textforgers` 0.1.3 (in preparation) and Node.js `textforge-node` 0.1.0 (unreleased).
 
 
-## 2.0.0 release preparation and performance
+## 0.2.0 release and performance
 
-The 2.0.0 candidate reduces temporary strings and reuses owned buffers while
+The 0.2.0 release reduces temporary strings and reuses owned buffers while
 preserving instruction results, public signatures and bytecode opcodes. Trims and
 contiguous selections can return borrowed slices; word/character transforms avoid
 per-item strings and intermediate vectors. Unicode contextual case conversion
@@ -382,15 +388,14 @@ The comparison uses the same large UTF-8 files and repeated workloads on both
 versions, including coverage of all 81 instructions. Results are specific to the
 recorded machine and workloads.
 
-This is a core release candidate, not a publication announcement. The independent
-Python package keeps its previous pinned core snapshot; 2.0.0 Python distribution
-support is not claimed. See the [release checklist](docs/release-2.0.0.md).
+Bindings are validated in their own repositories against their pinned core
+snapshots. See the [release checklist](docs/release-0.2.0.md).
 
 
 Measured medians on the recorded Ryzen 5 4600G machine (five runs; three document
 passes per process; in-memory execution):
 
-| Input / workload | Wall seconds, baseline → 2.0.0 | Peak RSS MiB, baseline → 2.0.0 |
+| Input / workload | Wall seconds, baseline → 0.2.0 | Peak RSS MiB, baseline → 0.2.0 |
 | --- | ---: | ---: |
 | 4 MiB / coverage | 5.36 → 2.59 | 221.2 → 25.5 |
 | 4 MiB / large | 1.93 → 0.20 | 220.9 → 21.3 |

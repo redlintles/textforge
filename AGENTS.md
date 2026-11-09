@@ -21,6 +21,7 @@ Guidance for AI agents and contributors working on **TextForge**.
 15. [Human Approval Required](#15-human-approval-required)
 16. [Dependencies](#16-dependencies)
 17. [bindings](#17-bindings)
+18. [Keeping Documentation Current](#18-keeping-documentation-current)
 
 ---
 
@@ -37,7 +38,7 @@ Key design facts:
 
 - **Linear DSL.** No recursion, no AST. Each instruction is a single line. High-level implementations (e.g. the Rust builder) can give the *illusion* of recursion/nesting.
 - **Trait-object architecture.** Instructions are implemented as trait objects to keep maintenance simple and to avoid giant `match` statements and enums.
-- **Published on crates.io**, current version: `0.1.7`.
+- **Published on crates.io**, current core version: `0.2.0`.
 - **Legacy name.** The project was formerly called **ATP** ("Advanced Text Processor"). Some doctests and internals still reference `atp` / `Atp*`. This is a leftover from the rename, not a separate component.
 
 ---
@@ -59,7 +60,7 @@ Key design facts:
 
 ## 3. How It Works
 
-1. **Pipeline** is written (`.tft` file, `.tfb` file, or Rust builder).
+1. **Pipeline** is written (`.textforge` text file, `.textforgebc` bytecode file, or Rust builder). The core also accepts the aliases `.tft` (text) and `.tfb` (bytecode).
 2. **Input text** is provided (any file).
 3. The pipeline **executes sequentially** over the text.
 4. The **transformed text** is written to a new file.
@@ -71,7 +72,10 @@ Key design facts:
 | Path | Responsibility |
 |---|---|
 | `src/api` | Sole public entry point when the project is used as a crate. |
-| `src/bin` | Project binaries: the CLI today; planned: a REPL shell and an educational CLI game that teaches TextForge. |
+| `src/api/portable` | Language-neutral intermediate API consumed by bindings (see [section 17](#17-bindings)). |
+| `src/bindings/{language}` | Independent binding repositories (`python`, `node`), excluded from the Cargo workspace and ignored by this repository's Git. |
+| `src/main.rs` | The `txf` CLI entry point. |
+| `src/bin` | Placeholder binaries (`atp-shell`, `atp-game`) for a planned REPL shell and an educational CLI game; no behavior yet. |
 | `src/bytecode` | Bytecode compilation. Only present under the `bytecode` feature. |
 | `src/context` | The execution context object. A `static_context` with predefined functionality is planned. |
 | `src/globals` | The lookup map the engine uses to decide which instruction to call for a given token. **Must be updated whenever an instruction is added.** |
@@ -86,7 +90,10 @@ Key design facts:
 | `src/utils` | Shared utility definitions. |
 | `tests/` | Integration tests and benchmarks. |
 | `data/` | Sample files for testing the DSL in different contexts. |
-| `pipelines/` | Pipeline files. *(Description incomplete in the original notes — document precisely when confirmed.)* |
+| `pipelines/` | Example and benchmark pipeline files used by tests, examples and benchmark scripts. |
+| `docs/` | Design notes, validation records and benchmark reports. |
+| `examples/` | Cargo examples, mostly benchmark and probe programs. |
+| `scripts/` | Reproducible benchmark and validation scripts. |
 
 ---
 
@@ -98,7 +105,7 @@ TextForge can be used in three ways.
 
 - `TextForgeBuilder` offers a concise builder for creating pipelines (and can give the illusion of recursion/nesting).
 - The builder is almost never invoked directly for execution. Use **`TextForgeProcessor`** instead.
-- Planned: bindings for other languages via FFI.
+- Language bindings exist for Python (`textforgers`, PyO3) and Node.js (`textforge-node`, N-API). Both are built on `api::portable`; see [section 17](#17-bindings).
 
 **`TextForgeProcessor` processing methods:**
 
@@ -109,17 +116,20 @@ TextForge can be used in three ways.
 | `process_single_with_debug` | Like `process_single`, and prints processing info to the console. |
 | `process_all_with_debug` | Like `process_all`, and prints info for every step. |
 | `process_all_with_watchers` | Like `process_all`, with watchers enabled. |
+| `process_file` | Reads an input file, runs a pipeline and writes the result to an output file. |
 | `process_batch` | Processes multiple pipelines from different files in parallel. |
+| `process_batch_in_pool` | Like `process_batch`, on a caller-supplied thread pool. |
+| `process_*_buffered` | Buffered variants (`process_all_buffered`, `process_single_buffered`, `process_file_buffered`, `process_batch_buffered`). Requires the `buffered` feature. |
 
-`TextForgeProcessor` also exposes `process_bytecode` for running compiled pipelines.
+With the `bytecode` feature, `TextForgeProcessor` also exposes `write_to_bytecode_file` and `read_from_bytecode_file` to persist and load compiled pipelines.
 
 ### 5.2 As a textual DSL
 
-Hand-written `.tft` files, shareable and processed through the CLI utility **`txf`**.
+Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**.
 
 ### 5.3 As a bytecode generator
 
-`.tfb` files describe and share pipelines in an optimized form. Bytecode is always **big-endian** (`be_bytes`). See [Bytecode Format](#8-bytecode-format).
+`.textforgebc` files describe and share pipelines in an optimized form. Bytecode is always **big-endian** (`be_bytes`). See [Bytecode Format](#8-bytecode-format).
 
 ---
 
@@ -243,7 +253,8 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 |---|---|
 | `watchers` | Enables the reporting mechanism. |
 | `bytecode` | Enables bytecode compilation code. |
-| `test_access` | Enables **all** features (bytecode + watchers + test helpers). **Use only in tests.** |
+| `buffered` | Enables buffered (spool-backed) processing; pulls in `tempfile`. |
+| `test_access` | Enables **all** features (bytecode + watchers + buffered + test helpers). **Use only in tests.** |
 
 ---
 
@@ -293,9 +304,10 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 
 ### Workflow
 
-13. **Each agent works in its own git worktree** to avoid interfering with other agents' work.
+13. **Each agent works in its own git worktree** to avoid interfering with other agents' work. Give each worktree its own `CARGO_TARGET_DIR` so parallel builds do not contend for the same `target/` directory.
 14. Run the [pre-commit checklist](#14-pre-commit-checklist) before every commit.
 15. Request human approval where required ([section 15](#15-human-approval-required)).
+16. Keep `AGENTS.md`, `README.md` and the changelog current ([section 18](#18-keeping-documentation-current)).
 
 ---
 
@@ -310,8 +322,11 @@ cargo clippy --all-targets --features test_access -- -D warnings
 cargo test                              # includes doctests
 cargo test --features bytecode
 cargo test --features watchers
-cargo test --features test_access       # enables bytecode + watchers + test helpers
+cargo test --features buffered
+cargo test --features test_access       # enables bytecode + watchers + buffered + test helpers
 ```
+
+Then review the documentation as described in [section 18](#18-keeping-documentation-current).
 
 ---
 
@@ -343,12 +358,14 @@ Ask a human before doing any of the following:
 | `clap` | CLI construction. |
 | `rayon` | Parallelism in `process_batch`. |
 | `evalexpr` | Resolving math expressions in `[[ ... ]]` interpolation. |
+| `unicode-normalization` | The `unorm` transform (NFC, NFD, NFKC, NFKD). |
+| `tempfile` | Optional; spool files for the `buffered` feature. |
 
 ### Testing
 
 | Crate | Usage |
 |---|---|
-| `tempfile` | Temporary files in tests. |
+| `tempfile` | Temporary files in tests (via `test_access`). |
 | `random-string` | Random test data. |
 | `rand` | Random test data. |
 
@@ -384,3 +401,18 @@ Ask a human before doing any of the following:
 13. **Distribution validation.** In CI, build the final distributable packages, install them in clean environments, and run tests against those installed artifacts across the supported compatibility matrix. Verify that typing metadata and required native libraries are included. When source distributions are provided, rebuild and test them outside the checkout. Publishing remains subject to human approval.
 
 14. **Clean, maintainable code.** Apply KISS (Keep It Simple), YAGNI (You Aren't Gonna Need It), DRY (Don't Repeat Yourself), separation of concerns, and single responsibility with human readability and maintenance as the goal. Use descriptive names, small focused functions, explicit control flow, and clear module boundaries. Avoid speculative abstractions, unnecessary indirection, hidden runtime API generation, and duplicated domain logic. Keep generated code readable, identify its source and regeneration command, and verify freshness. Apply these principles pragmatically; do not add abstractions merely to remove trivial repetition. Explain non-obvious interop constraints and tradeoffs in comments.
+
+15. **Binding documentation.** Each binding keeps its own `README.md` and `Changelog.md` current under the rule in [section 18](#18-keeping-documentation-current). When a binding's status, version or supported core revision changes, also update the binding summary in this repository (`README.md` and `docs/{language}-bindings.md`).
+
+---
+
+## 18. Keeping Documentation Current
+
+`AGENTS.md`, `README.md` and the changelog must always describe the **current** state of the project, not a past or planned one. Stale documentation is a bug.
+
+1. **Same change set.** Any substantial change to the core or to a binding updates `AGENTS.md` (core only), `README.md` and the changelog of the affected repository in the same commit or pull request. Substantial changes include new or removed instructions, public API changes, new Cargo features, new dependencies, version bumps, renamed files or extensions, new binaries or commands, layout changes, and changes to rules or workflow.
+2. **Facts must match the code.** Versions, file extensions, feature lists, dependency lists, commands, paths and instruction counts must be checked against `Cargo.toml`, the source and the file system, not copied from older documentation. When two documents disagree, fix both against the code.
+3. **Unreleased changes.** Changes not yet published go under an `Unreleased` heading at the top of the changelog. Do not describe a version as published until it has been published, and do not leave a published version described as "planned" or "candidate".
+4. **No dangling references.** When a document, section or file is renamed, update every link and reference to it (`grep -rn` the old name before committing).
+5. **Remove resolved notes.** Delete roadmap items, warnings and "not yet" notes once they no longer apply, and remove leftover drafting or assistant remarks.
+6. **Tool-specific files follow.** `CLAUDE.md` and other agent-specific files must agree with this document; section references in them must point to the right section.
