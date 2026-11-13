@@ -1,0 +1,8 @@
+{
+  "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "cpu": "AMD Ryzen 5 4600G",
+  "cpu_count": 12,
+  "kernel": "Linux 7.0.8 (Docker rust:1-bookworm)",
+  "baseline": "feat/0.3.0 at a75f804",
+  "profile": "release, default features"
+}

@@ -1,0 +1,19 @@
+{
+  "current": {
+    "small_runs": 0.039507,
+    "expression_iter": 0.225079,
+    "variable_iter": 0.030354,
+    "null_100mb": 0.056101,
+    "raw_100mb": 0.182338,
+    "lines_100mb": 0.087039,
+    "len_chars_100mb": 0.061744,
+    "lines_twice_100mb": 0.091914
+  },
+  "baseline": {
+    "small_runs": 0.036281,
+    "expression_iter": 0.224803,
+    "variable_iter": 0.030283,
+    "null_100mb": 0.055143,
+    "raw_100mb": 0.182682
+  }
+}
