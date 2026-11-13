@@ -1,0 +1,251 @@
+{
+  "metadata": {
+    "platform": "Linux-7.0.8-x86_64-with-glibc2.36",
+    "cpu": 0,
+    "cpu_model": "AMD Ryzen 5 4600G with Radeon Graphics",
+    "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+    "rounds": 3,
+    "samples_per_process": 3,
+    "binaries_sha256": {
+      "baseline": "7cf3339cb56b902dc49ad5eb5549c64c880899ac3cd74a1a7b93066ee34b4b9c",
+      "candidate": "28d6fd84eef9715884e5526f91ba49bdf7a5e057b190060cb305c8df467fed3f"
+    },
+    "note": "Fresh processes, alternating order, one warm-up per binary and case."
+  },
+  "summary": [
+    {
+      "case": "parse_text_5k",
+      "baseline_s": 0.145309,
+      "candidate_s": 0.151188,
+      "speedup": 0.9611146387279415,
+      "runs": {
+        "baseline": [
+          0.145309,
+          0.142553,
+          0.148629
+        ],
+        "candidate": [
+          0.148588,
+          0.151188,
+          0.151718
+        ]
+      }
+    },
+    {
+      "case": "load_bytecode_5k",
+      "baseline_s": 0.308613,
+      "candidate_s": 0.149721,
+      "speedup": 2.0612539323141044,
+      "runs": {
+        "baseline": [
+          0.306416,
+          0.308613,
+          0.309689
+        ],
+        "candidate": [
+          0.149721,
+          0.15085,
+          0.148304
+        ]
+      }
+    },
+    {
+      "case": "small_runs",
+      "baseline_s": 0.043803,
+      "candidate_s": 0.037474,
+      "speedup": 1.1688904306986176,
+      "runs": {
+        "baseline": [
+          0.043803,
+          0.044631,
+          0.043564
+        ],
+        "candidate": [
+          0.038162,
+          0.036123,
+          0.037474
+        ]
+      }
+    },
+    {
+      "case": "long_literal_pipeline",
+      "baseline_s": 0.029737,
+      "candidate_s": 0.030079,
+      "speedup": 0.9886299411549585,
+      "runs": {
+        "baseline": [
+          0.029861,
+          0.029737,
+          0.029685
+        ],
+        "candidate": [
+          0.030294,
+          0.030079,
+          0.030078
+        ]
+      }
+    },
+    {
+      "case": "variable_params",
+      "baseline_s": 0.15272,
+      "candidate_s": 0.074476,
+      "speedup": 2.0505934797787204,
+      "runs": {
+        "baseline": [
+          0.148143,
+          0.15272,
+          0.153053
+        ],
+        "candidate": [
+          0.073999,
+          0.074476,
+          0.07501
+        ]
+      }
+    },
+    {
+      "case": "template_params",
+      "baseline_s": 0.378645,
+      "candidate_s": 0.055009,
+      "speedup": 6.883328182661019,
+      "runs": {
+        "baseline": [
+          0.378645,
+          0.382616,
+          0.36843
+        ],
+        "candidate": [
+          0.055091,
+          0.054043,
+          0.055009
+        ]
+      }
+    },
+    {
+      "case": "expression_params",
+      "baseline_s": 1.069648,
+      "candidate_s": 0.013991,
+      "speedup": 76.45257665642198,
+      "runs": {
+        "baseline": [
+          1.069648,
+          1.07523,
+          1.0365
+        ],
+        "candidate": [
+          0.013991,
+          0.014124,
+          0.013625
+        ]
+      }
+    },
+    {
+      "case": "iter_expression",
+      "baseline_s": 1.122103,
+      "candidate_s": 0.289216,
+      "speedup": 3.879809554104891,
+      "runs": {
+        "baseline": [
+          1.122103,
+          1.083104,
+          1.129388
+        ],
+        "candidate": [
+          0.289216,
+          0.287296,
+          0.289651
+        ]
+      }
+    },
+    {
+      "case": "iter_literal",
+      "baseline_s": 0.017611,
+      "candidate_s": 0.019461,
+      "speedup": 0.9049380812907868,
+      "runs": {
+        "baseline": [
+          0.017611,
+          0.017251,
+          0.019305
+        ],
+        "candidate": [
+          0.019581,
+          0.016968,
+          0.019461
+        ]
+      }
+    },
+    {
+      "case": "blocks",
+      "baseline_s": 0.230465,
+      "candidate_s": 0.037956,
+      "speedup": 6.071899040994837,
+      "runs": {
+        "baseline": [
+          0.230465,
+          0.229503,
+          0.230797
+        ],
+        "candidate": [
+          0.037599,
+          0.037956,
+          0.038872
+        ]
+      }
+    },
+    {
+      "case": "variables_churn",
+      "baseline_s": 0.304826,
+      "candidate_s": 0.056556,
+      "speedup": 5.389808331565174,
+      "runs": {
+        "baseline": [
+          0.304826,
+          0.298421,
+          0.307369
+        ],
+        "candidate": [
+          0.056548,
+          0.057371,
+          0.056556
+        ]
+      }
+    },
+    {
+      "case": "raw_100mb",
+      "baseline_s": 0.193307,
+      "candidate_s": 0.18406,
+      "speedup": 1.050239052482886,
+      "runs": {
+        "baseline": [
+          0.194057,
+          0.190461,
+          0.193307
+        ],
+        "candidate": [
+          0.18406,
+          0.182991,
+          0.185302
+        ]
+      }
+    },
+    {
+      "case": "batch_64x1mb",
+      "baseline_s": 0.346713,
+      "candidate_s": 0.349805,
+      "speedup": 0.9911607895827675,
+      "runs": {
+        "baseline": [
+          0.346713,
+          0.352962,
+          0.343263
+        ],
+        "candidate": [
+          0.35296,
+          0.345869,
+          0.349805
+        ]
+      }
+    }
+  ]
+}

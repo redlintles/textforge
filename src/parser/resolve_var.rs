@@ -215,7 +215,17 @@ impl TokenWrapper {
                 }
             }
         }
-        let compiled = CompiledParams::new(self.token.as_ref(), &self.params);
+        // Plain literals need no compilation (the common case at load time).
+        let dynamic = self.params.iter().any(|parameter| match parameter {
+            ValType::Literal(TextForgeParamTypes::String(text)) => ["{{", "}}", "[[", "]]"]
+                .iter()
+                .any(|marker| text.contains(marker)),
+            ValType::Literal(_) => false,
+            ValType::VarRef(_) => true,
+        });
+        let compiled = dynamic
+            .then(|| CompiledParams::new(self.token.as_ref(), &self.params))
+            .flatten();
         self.bind_constant(compiled.as_ref());
         if self.prepared.is_none() {
             // Only text and number parameters can be compared between runs.
