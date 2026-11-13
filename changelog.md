@@ -48,6 +48,7 @@
 
 ### Changed
 
+- Debug traces list at most 20 steps per container (`… +K steps`).
 - Nested instructions (inside `iter`, `onln`/`onck`/`onlni`, conditionals and
   block payloads) with literal parameters are bound once per registered
   pipeline instead of on every execution; a nested regex is no longer

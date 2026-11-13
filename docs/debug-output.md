@@ -33,6 +33,10 @@ instructions inside it, a nested trace follows the step:
   `[[ ]]` already resolved, e.g. `ate 0` for `ate '[[__COUNTER__]]'`) and the
   character count before → after. Nested containers open their own indented
   block instead of a step line.
+- At most 20 nested steps are listed per container, followed by
+  `… +K steps`. Steps and containers past the limit are executed normally but
+  are neither rendered nor measured, so debugging a large loop costs about as
+  much as running it.
 - For `on*`, the header shows the size of the section; step counts describe the
   section, and the closing line describes the whole document.
 - `rmape` lists each replacement with its rule (index, regex), the original and

@@ -135,7 +135,7 @@ impl GlobalExecutionContext {
         name: &str,
         input: Cow<'a, str>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        if self.trace.is_none() {
+        if !self.trace.as_ref().is_some_and(DebugTrace::will_show) {
             return self.replace_with_map(name, input, None);
         }
         let mut log = ReplacementLog::default();

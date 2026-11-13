@@ -236,17 +236,21 @@ impl TokenWrapper {
             return self.apply_token(input, context);
         };
         let mark = trace.mark();
+        if !trace.will_show() {
+            // Past the container's step limit: count it, measure nothing.
+            let output = self.apply_token(input, context)?;
+            if let Some(trace) = context.trace_mut() {
+                trace.step(mark, None);
+            }
+            return Ok(output);
+        }
         let before = input.chars().count();
         // Bind once so the reported line shows the values actually executed.
         let bound = self.bind_for_debug(context)?;
         let output = bound.transform(input, Some(context))?;
         if let Some(trace) = context.trace_mut() {
-            trace.step(
-                mark,
-                &bound.to_textforge_line(),
-                before,
-                output.chars().count(),
-            );
+            let line = bound.to_textforge_line();
+            trace.step(mark, Some((&line, before, output.chars().count())));
         }
         Ok(output)
     }

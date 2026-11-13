@@ -46,29 +46,65 @@ pub(crate) struct Replacement {
     pub end: usize,
 }
 
-/// Rendered nested trace lines plus the step counters of open containers.
+/// Maximum nested steps listed per container; the rest are summarized as
+/// `… +K steps` and are neither rendered nor measured.
+pub(crate) const MAX_LISTED_STEPS: usize = 20;
+
+/// One open container.
+struct Frame {
+    /// Nested steps finished so far.
+    steps: usize,
+    /// Nothing inside this container is rendered (it is past a parent's limit).
+    hidden: bool,
+}
+
+/// Rendered nested trace lines plus the open containers.
 #[derive(Default)]
 pub(crate) struct DebugTrace {
     lines: Vec<String>,
-    counters: Vec<usize>,
+    frames: Vec<Frame>,
 }
 
 impl DebugTrace {
     fn indent(&self) -> String {
-        "  ".repeat(self.counters.len())
+        "  ".repeat(self.frames.len())
     }
 
-    /// Open a container: `▶ {header}`. Steps reported until [`Self::leave`]
-    /// are numbered from 1 and indented one level deeper.
-    pub(crate) fn enter(&mut self, header: &str) {
-        let line = format!("{}{} {}", self.indent(), "▶".cyan(), header.yellow());
-        self.lines.push(line);
-        self.counters.push(0);
+    /// Whether the next nested step (or container) at the current position
+    /// will be rendered. Callers skip measuring documents when it will not.
+    pub(crate) fn will_show(&self) -> bool {
+        self.frames
+            .last()
+            .is_none_or(|frame| !frame.hidden && frame.steps < MAX_LISTED_STEPS)
     }
 
-    /// Close the innermost container: `◀ {name}  {summary}`.
-    pub(crate) fn leave(&mut self, name: &str, before: Size, after: Size, extra: &str) {
-        self.counters.pop();
+    /// Open a container. `Some(header)` renders `▶ {header}`; `None` opens a
+    /// hidden container (callers pass `None` when [`Self::will_show`] is false).
+    pub(crate) fn enter(&mut self, header: Option<&str>) {
+        if let Some(header) = header {
+            let line = format!("{}{} {}", self.indent(), "▶".cyan(), header.yellow());
+            self.lines.push(line);
+        }
+        self.frames.push(Frame {
+            steps: 0,
+            hidden: header.is_none(),
+        });
+    }
+
+    /// Close the innermost container: `◀ {name}  {summary}` when it is visible,
+    /// preceded by `… +K steps` when it ran more steps than were listed.
+    pub(crate) fn leave(&mut self, name: &str, sizes: Option<(Size, Size)>, extra: &str) {
+        let Some(frame) = self.frames.pop() else {
+            return;
+        };
+        let Some((before, after)) = sizes.filter(|_| !frame.hidden) else {
+            return;
+        };
+        if frame.steps > MAX_LISTED_STEPS {
+            let rest = frame.steps - MAX_LISTED_STEPS;
+            let line = format!("{}  │ … +{rest} {}", self.indent(), plural(rest, "step"));
+            self.lines.push(line);
+        }
         let line = format!(
             "{}{} {}  {}{}",
             self.indent(),
@@ -86,17 +122,22 @@ impl DebugTrace {
         self.lines.len()
     }
 
-    /// One numbered step of the innermost container. When the step was itself
-    /// a container (it rendered lines after `mark`), only the counter advances.
-    pub(crate) fn step(&mut self, mark: usize, instruction: &str, before: usize, after: usize) {
-        let Some(counter) = self.counters.last_mut() else {
+    /// Count one nested step of the innermost container. `shown` carries the
+    /// instruction and character counts when [`Self::will_show`] was true
+    /// before the step. A step that was itself a container (it rendered lines
+    /// after `mark`) only advances the counter.
+    pub(crate) fn step(&mut self, mark: usize, shown: Option<(&str, usize, usize)>) {
+        let Some(frame) = self.frames.last_mut() else {
             return;
         };
-        *counter += 1;
+        frame.steps += 1;
+        let number = frame.steps;
+        let Some((instruction, before, after)) = shown else {
+            return;
+        };
         if self.lines.len() != mark {
             return;
         }
-        let number = *counter;
         let line = format!(
             "{}│ {number}. {}  {before} → {after} chars",
             self.indent(),
@@ -107,6 +148,7 @@ impl DebugTrace {
 
     /// Describe one replacement-map execution: header, at most
     /// [`MAX_LISTED_REPLACEMENTS`] entries, a count of the rest, and the summary.
+    /// Callers only call it when [`Self::will_show`] is true.
     pub(crate) fn replace_map(
         &mut self,
         name: &str,
@@ -116,10 +158,10 @@ impl DebugTrace {
         before: Size,
         after: Size,
     ) {
-        self.enter(&format!(
+        self.enter(Some(&format!(
             "rmape {name}  ({rules} {})",
             plural(rules, "rule")
-        ));
+        )));
         let indent = self.indent();
         for item in replacements.iter().take(MAX_LISTED_REPLACEMENTS) {
             self.lines.push(format!(
@@ -140,7 +182,7 @@ impl DebugTrace {
             ));
         }
         let extra = format!(" · {total} {}", plural(total, "replacement"));
-        self.leave(name, before, after, &extra);
+        self.leave(name, Some((before, after)), &extra);
     }
 
     /// Rendered lines since the last call, leaving open containers untouched.
@@ -162,11 +204,13 @@ pub(crate) fn within<'a>(
     let Some(trace) = context.trace_mut() else {
         return run(input, context);
     };
-    trace.enter(&header(&input));
-    let before = Size::of(&input);
+    // Past a parent's step limit the container is hidden: no header, no sizes.
+    let header = trace.will_show().then(|| header(&input));
+    let before = header.as_ref().map(|_| Size::of(&input));
+    trace.enter(header.as_deref());
     let output = run(input, context)?;
     if let Some(trace) = context.trace_mut() {
-        trace.leave(name, before, Size::of(&output), "");
+        trace.leave(name, before.map(|before| (before, Size::of(&output))), "");
     }
     Ok(output)
 }
@@ -254,21 +298,17 @@ mod test {
     fn nested_containers_indent_and_number_their_steps() {
         let mut trace = DebugTrace::default();
         let before = Size { chars: 5, lines: 1 };
-        trace.enter("cblk b  (2 instructions)");
+        trace.enter(Some("cblk b  (2 instructions)"));
         let mark = trace.mark();
-        trace.step(mark, "tbs;\n", 5, 3);
+        trace.step(mark, Some(("tbs;\n", 5, 3)));
         let mark = trace.mark();
-        trace.enter("iter 2 times");
+        trace.enter(Some("iter 2 times"));
         let inner = trace.mark();
-        trace.step(inner, "ate x;\n", 3, 4);
-        trace.leave(
-            "iter",
-            Size { chars: 3, lines: 1 },
-            Size { chars: 4, lines: 1 },
-            "",
-        );
-        trace.step(mark, "iter 2 times", 3, 4);
-        trace.leave("b", before, Size { chars: 4, lines: 1 }, "");
+        trace.step(inner, Some(("ate x;\n", 3, 4)));
+        let one = |chars| Size { chars, lines: 1 };
+        trace.leave("iter", Some((one(3), one(4))), "");
+        trace.step(mark, Some(("iter 2 times", 3, 4)));
+        trace.leave("b", Some((before, one(4))), "");
         assert_eq!(
             plain(trace.take_lines()),
             vec![

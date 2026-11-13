@@ -249,3 +249,20 @@ fn debug_never_changes_results() {
         }
     }
 }
+
+#[test]
+fn debug_lists_at_most_twenty_steps_per_container() {
+    // Before, every step was kept: `iter 100000 times` held 100,000 lines in
+    // memory for one top-level step.
+    let (output, log) = plain_debug_log("iter 100000 times ate x;\n", "");
+    assert_eq!(output.len(), 100_000);
+    assert_eq!(log.matches(". ate x").count(), 20);
+    assert!(log.contains("  │ 20. ate x  19 → 20 chars\n  │ … +99980 steps\n◀ iter  0 → 100000 chars (+100000) · 0 → 1 line\n"));
+
+    // Hidden containers are neither rendered nor measured.
+    let source = "blk b assoc iter 25 times onln 1 apply ate x;\ncblk b;\n";
+    let (output, log) = plain_debug_log(source, "a\nb");
+    assert_eq!(output, format!("a{}\nb", "x".repeat(25)));
+    assert_eq!(log.matches("▶ onln").count(), 20);
+    assert!(log.contains("    │ … +5 steps\n  ◀ iter"));
+}
