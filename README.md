@@ -310,6 +310,7 @@ examples/, scripts/             — Benchmark/probe programs and reproducible be
 - [x] `.textforgebc` binary protocol
 - [x] `TextForgeBuilder`/`TextForgeProcessor` Rust API
 - [x] Control flow: blocks (`blk`/`cblk`), conditionals (`ifdc`), variables (`val`)
+- [x] Section instructions (`onln`, `onck`, `onlni`), expressions in numeric parameters and a nested debug trace (unreleased)
 - [x] Batch processing over multiple files, in parallel (`rayon`)
 - [x] Optional pipeline observability (`watchers` feature, JSON reports)
 - [x] Buffered processing (`buffered` feature)

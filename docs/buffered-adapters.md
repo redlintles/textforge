@@ -17,7 +17,9 @@ python3 scripts/benchmark_buffered_comparison.py
   independently after errors. It does not use the experimental sequential
   `process_batch_buffered` scheduler.
 - `process_all_with_debug`: records the same complete before/after and block
-  information into a spool, printing only after successful pipeline execution.
+  information, plus the nested trace of `cblk`, `iter`, `on*` and `rmape`
+  ([debug output](debug-output.md)), into a spool, printing only after
+  successful pipeline execution.
   It does not keep a complete log in a `String`. Forced-color snapshots still
   materialize one document at a time to preserve nested ANSI reset handling.
 

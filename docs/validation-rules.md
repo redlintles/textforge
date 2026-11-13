@@ -8,7 +8,7 @@ maintainers extend policy without exposing engine state or changing public trait
 
 | Component | Responsibility | Source |
 | --- | --- | --- |
-| `ValidationContext` | Inherited depth and whether any ancestor is a block | `src/parser/structure/rules.rs` |
+| `ValidationContext` | Inherited depth, whether any ancestor is a block, and whether any ancestor is `iter` or a section instruction (`onln`/`onck`/`onlni`) | `src/parser/structure/rules.rs` |
 | `Parameter` | Borrowed scalar, runtime reference, or instruction slot | `src/parser/structure/rules.rs` |
 | `InstructionView` | Name and effective parameters of one real instruction/group | `src/parser/structure/rules.rs` |
 | `ValidationRule` | Side-effect-free policy contract | `src/parser/structure/rules.rs` |

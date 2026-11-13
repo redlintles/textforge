@@ -77,7 +77,7 @@ Key design facts:
 | `src/main.rs` | The `txf` CLI entry point. |
 | `src/bin` | Placeholder binaries (`atp-shell`, `atp-game`) for a planned REPL shell and an educational CLI game; no behavior yet. |
 | `src/bytecode` | Bytecode compilation. Only present under the `bytecode` feature. |
-| `src/context` | The execution context object. A `static_context` with predefined functionality is planned. |
+| `src/context` | The execution context object and the debug trace (`debug_trace.rs`, nested steps shown by debug runs). A `static_context` with predefined functionality is planned. |
 | `src/globals` | The lookup map the engine uses to decide which instruction to call for a given token. **Must be updated whenever an instruction is added.** |
 | `src/macros` | Project macros. |
 | `src/parser` | Types used for parsing the DSL, and for resolving/converting parameters and variables. |
@@ -216,6 +216,7 @@ Enabled by the `bytecode` feature. Compiling to bytecode makes pipeline files fa
 **Rules**
 
 - All conversion and reading uses **big-endian only**.
+- Nested instruction parameters follow the text parser's depth limits: the reader rejects what the text parser rejects and loads what it accepts (one nested level at the root, three inside a `blk` payload, no block inside a block).
 - A file is recognized as TextForge bytecode only if the magic number equals the byte sequence `38, 235, 245, 8, 244, 137, 1, 179`.
 
 ---

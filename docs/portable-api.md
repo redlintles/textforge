@@ -87,7 +87,10 @@ native index width, rather than truncating them.
 Parameter shapes follow the registry. For example, DSL `val`/`var` values use
 strings, whereas the fluent Rust helpers accept numbers and normalize them to
 strings. A numeric variable declaration can use `Text("3")`; `Number(3)` is not
-silently converted into a string by the generic portable API. Language-specific
+silently converted into a string by the generic portable API. Conversely, a
+numeric parameter may be `Text` when it is an expression or template
+(`Text("[[__COUNTER__ + 1]]")`, `Text("{{a}}{{b}}")`): it is resolved to a number
+at execution time, and other text in a numeric position is rejected. Language-specific
 convenience methods can normalize input or build these concrete descriptions.
 
 `Argument::Instruction(Box<InstructionSpec>)` expresses one nested instruction,

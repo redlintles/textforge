@@ -15,7 +15,7 @@ within the same `rmape`. Calling `rmape` again operates on the current text.
 `rmapd NAME add REGEX REPLACEMENT;` creates a map on its first executed definition.
 An identical regex string updates its replacement without changing its priority;
 different regex strings append rules in definition order. Definitions execute
-conditionally inside `ifdc`. They are allowed only globally or inside conditionals, and forbidden below `iter`
+conditionally inside `ifdc`. They are allowed only globally or inside conditionals, and forbidden below `iter` and the section instructions `onln`/`onck`/`onlni`
 or anywhere below `blk`, including
 inside a conditional in a block. `rmape NAME;` is permitted inside blocks,
 conditionals and iterations. An undefined map produces `ValidationError` at

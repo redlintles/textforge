@@ -62,7 +62,9 @@ escape those delimiter pairs in pipeline parameters. For example:
 klm '^\[[:alpha:\]]+$';
 ```
 
-Direct token `transform` calls bypass pipeline interpolation. Valid regex classes
+Line numbers can be expressions or templates, resolved at execution time:
+`onln '[[__COUNTER__ + 1]]' apply tbs;` or `dln '{{first}}';`. The result must be a
+non-negative integer. Direct token `transform` calls bypass pipeline interpolation. Valid regex classes
 are compiled before a pattern is considered an unresolved parameter.
 
 Bytecode preserves numeric variable references. Text-file export retains the

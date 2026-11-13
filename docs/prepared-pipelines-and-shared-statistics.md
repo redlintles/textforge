@@ -13,17 +13,23 @@ instructions keep per-execution binding unless their author explicitly opts in
 and guarantees reusable immutable state.
 
 Preparation runs at registration for text files, builders and bytecode-loaded
-pipelines. Only simple literal strings/numbers qualify. Any variable reference,
-interpolation delimiter (including escaped or malformed markers), or nested-token
-parameter keeps its runtime path. Instruction groups and context-dependent
-bindings are not recursively frozen. Validation failures are deferred to normal
+pipelines. Simple literal strings/numbers and nested-instruction parameters
+qualify. Any variable reference or interpolation delimiter (including escaped
+or malformed markers) keeps its runtime path. Nested instructions are prepared
+first, down to the parsers' deepest nesting level, so `iter`, `onln`/`onck`/
+`onlni` (which opt in), conditionals and block payloads reuse their children's
+bindings; a nested child with dynamic parameters is still resolved against the
+live context on every execution. Validation failures are deferred to normal
 execution, preserving failures after halt and unused invalid instructions.
 
-The public token template and parameter serialization stay unchanged. Cloning a
-wrapper discards the private prepared binding because get_transform_vec exports
-clones whose public token field can subsequently change. Only the private
-registered instance keeps the cache. Tests count bindings across repeated runs,
-change variables/expressions, mutate exported templates and check deferred errors.
+The public token template and parameter serialization stay unchanged. Internal
+clones (parameter resolution clones nested wrappers on every execution) share
+the prepared binding through an `Arc`. `get_transform_vec`, whose clones expose
+a public token field that can subsequently change, returns copies with every
+cached binding removed, including nested ones. Tests count bindings across
+repeated runs and nested levels, change variables/expressions, mutate exported
+templates and check deferred errors. See item 4 of the
+[0.3.0 audit](audits/0.3.0-on-debug-audit.md).
 Prepared instructions retain additional bound metadata; the benchmark includes
 registration and measures the RAM cost rather than assuming it is free.
 
