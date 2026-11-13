@@ -198,5 +198,21 @@ mod tests {
                 _ => panic!("Expected Usize param #2"),
             }
         }
+
+        #[test]
+        fn start_counts_words_not_characters() {
+            // Previously reported "Start index must be smaller than end index".
+            use crate::tokens::{InstructionMethods, transforms::ctr::Ctr};
+            let error = Ctr::new(2, 3)
+                .unwrap()
+                .transform("aa bb".into(), None)
+                .unwrap_err();
+            assert!(matches!(
+                error.error_code,
+                crate::utils::errors::TextForgeErrorCode::IndexOutOfRange(_)
+            ));
+            let token = Ctr::new(1, 9).unwrap();
+            assert_eq!(token.transform("aa bb".into(), None).unwrap(), "aa Bb");
+        }
     }
 }

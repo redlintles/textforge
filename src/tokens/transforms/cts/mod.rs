@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::validations::{check_index_against_input, check_vec_len},
+    utils::validations::{check_index_against_words, check_vec_len},
 };
 
 use crate::utils::errors::TextForgeError;
@@ -61,7 +61,7 @@ impl InstructionMethods for Cts {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        check_index_against_input(self.index, &input)?;
+        check_index_against_words(self.index, &input)?;
         let mut result = String::with_capacity(input.len());
         for (i, word) in input.split_whitespace().enumerate() {
             if i != 0 {

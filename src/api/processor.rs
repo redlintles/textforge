@@ -175,7 +175,7 @@ use crate::utils::errors::{
 ///     .to_uppercase_single(3)?
 ///     .to_lowercase_single(2)?
 ///     .capitalize_first_word()?
-///     .capitalize_single_word(1)?
+///     .capitalize_single_word(0)?
 ///     .capitalize_last_word()?
 ///     .capitalize_range(0, 3)?
 ///     .split_select("B", 1)?

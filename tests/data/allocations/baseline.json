@@ -2062,7 +2062,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "ok": "X"
     },
     "owned": false
   },
@@ -2075,7 +2075,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "ok": "X"
     },
     "owned": true
   },
@@ -2088,7 +2088,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "ok": "É"
     },
     "owned": false
   },
@@ -2101,7 +2101,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "ok": "É"
     },
     "owned": true
   },
@@ -2114,7 +2114,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "ok": "🍌"
     },
     "owned": false
   },
@@ -2127,7 +2127,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "ok": "🍌"
     },
     "owned": true
   },
@@ -2374,7 +2374,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
     },
     "owned": false
   },
@@ -2387,7 +2387,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
     },
     "owned": true
   },
@@ -2400,7 +2400,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
     },
     "owned": false
   },
@@ -2413,7 +2413,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
     },
     "owned": true
   },
@@ -2426,7 +2426,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
     },
     "owned": false
   },
@@ -2439,7 +2439,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
     },
     "owned": true
   },
@@ -2452,7 +2452,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -2465,7 +2465,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -2478,7 +2478,7 @@
     },
     "input": "é",
     "outcome": {
-      "ok": "é"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -2491,7 +2491,7 @@
     },
     "input": "é",
     "outcome": {
-      "ok": "é"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -2556,7 +2556,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "ok": "already_normal"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -2569,7 +2569,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "ok": "already_normal"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -2582,7 +2582,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "ok": "\"plain\""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -2595,7 +2595,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "ok": "\"plain\""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -2634,7 +2634,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -2647,7 +2647,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -2660,7 +2660,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -2673,7 +2673,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },

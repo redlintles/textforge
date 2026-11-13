@@ -8,7 +8,10 @@ use crate::utils::errors::TextForgeError;
 
 use crate::parser::params::TextForgeParamTypes;
 use crate::utils::validations::check_vec_len;
-use crate::{tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes};
+use crate::{
+    tokens::InstructionMethods,
+    utils::validations::{check_chunk_bound_indexes, check_index_against_words},
+};
 
 /// Token `Ctr` — Capitalize Range
 ///
@@ -74,7 +77,9 @@ impl InstructionMethods for Ctr {
         if end > total {
             end = total;
         }
-        check_chunk_bound_indexes(self.start_index, end, Some(&input))?;
+        // Indices count words, not characters.
+        check_index_against_words(self.start_index, &input)?;
+        check_chunk_bound_indexes(self.start_index, end, None)?;
 
         let mut result = String::with_capacity(input.len());
         for (i, word) in input.split_whitespace().enumerate() {

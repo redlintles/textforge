@@ -175,5 +175,21 @@ mod tests {
                 _ => panic!("Expected Usize param"),
             }
         }
+
+        #[test]
+        fn index_counts_words_not_characters() {
+            // Previously `cts 3` on "ab cd" (2 words, 5 characters) returned the
+            // text unchanged instead of an error.
+            use crate::tokens::{InstructionMethods, transforms::cts::Cts};
+            let error = Cts::new(3).transform("ab cd".into(), None).unwrap_err();
+            assert!(matches!(
+                error.error_code,
+                crate::utils::errors::TextForgeErrorCode::IndexOutOfRange(_)
+            ));
+            assert_eq!(
+                Cts::new(1).transform("ab cd".into(), None).unwrap(),
+                "ab Cd"
+            );
+        }
     }
 }
