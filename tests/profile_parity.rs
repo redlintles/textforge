@@ -19,6 +19,7 @@ fn profiles() -> Vec<ExecutionProfile> {
         ExecutionProfile::fast(),
         ExecutionProfile {
             spool_threshold: ExecutionProfile::MIN_SPOOL_THRESHOLD as usize,
+            ..ExecutionProfile::balanced()
         },
     ]
 }

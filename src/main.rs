@@ -25,8 +25,18 @@ enum ReadMode {
 }
 
 /// Flags choosing the execution profile, shared by runs and `config show`.
-fn profile_args() -> [Arg; 4] {
+fn profile_args() -> [Arg; 6] {
     [
+        Arg::new("max_generated_bytes")
+            .long("max-generated-bytes")
+            .value_name("SIZE|unlimited")
+            .global(true)
+            .help("Largest text rpt/padl/padr may produce (default 2GiB)"),
+        Arg::new("max_iterations")
+            .long("max-iterations")
+            .value_name("N|unlimited")
+            .global(true)
+            .help("Largest iter count (default 10000000)"),
         Arg::new("profile")
             .long("profile")
             .value_name("PRESET")
@@ -57,6 +67,8 @@ fn profile_options(matches: &clap::ArgMatches) -> ProfileOptions {
     ProfileOptions {
         profile: matches.get_one::<String>("profile").cloned(),
         spool_threshold: matches.get_one::<String>("spool_threshold").cloned(),
+        max_generated_bytes: matches.get_one::<String>("max_generated_bytes").cloned(),
+        max_iterations: matches.get_one::<String>("max_iterations").cloned(),
         config: matches.get_one::<PathBuf>("config").cloned(),
         no_rc: matches.get_flag("no_rc"),
     }

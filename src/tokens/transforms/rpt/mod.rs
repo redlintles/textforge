@@ -52,8 +52,14 @@ impl InstructionMethods for Rpt {
     fn transform_buffered(
         &self,
         input: crate::api::TextBuffer,
-        _context: Option<&mut GlobalExecutionContext>,
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        // Checked first: a spooled repetition would otherwise fill the disk.
+        let limits = context.map(|context| context.limits()).unwrap_or_default();
+        limits.check_generated(
+            u128::from(input.len_bytes()).checked_mul(self.times as u128),
+            "rpt",
+        )?;
         input.repeat(self.times)
     }
 
@@ -67,11 +73,13 @@ impl InstructionMethods for Rpt {
     fn transform<'a>(
         &self,
         input: Cow<'a, str>,
-        _: Option<&mut GlobalExecutionContext>,
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         if input.is_empty() || self.times == 0 {
             return Ok(Cow::Borrowed(""));
         }
+        let limits = context.map(|context| context.limits()).unwrap_or_default();
+        limits.check_generated((input.len() as u128).checked_mul(self.times as u128), "rpt")?;
         if self.times == 1 {
             return Ok(input);
         }

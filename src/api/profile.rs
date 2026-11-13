@@ -34,6 +34,112 @@ const GIB: u64 = 1024 * MIB;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ExecutionProfile {
     pub spool_threshold: usize,
+    /// Safety limits for instructions that multiply work (see [`Limits`]).
+    pub limits: Limits,
+}
+
+/// Limits on instructions whose cost grows with a parameter, so a typo such
+/// as `rpt 99999999999;` fails quickly instead of exhausting memory, disk or
+/// CPU. Within the limits results are never affected; past them the
+/// instruction fails with a `ValidationError` naming the limit. `None` means
+/// unlimited. The defaults are generous and the same in every preset; raise or
+/// remove them in `.txfrc` (`overrides`) or with the `txf` flags.
+///
+/// ```
+/// use textforge::api::{ExecutionProfile, Limits, TextForgeBuilderMethods};
+/// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+///
+/// let mut profile = ExecutionProfile::balanced();
+/// profile.limits.max_generated_bytes = Some(8);
+/// let mut processor = TextForgeProcessor::new().with_profile(profile);
+/// let id = processor.create_pipeline().repeat(3)?.build()?;
+/// assert_eq!(processor.process_all(&id, "ab")?, "ababab");
+/// assert!(processor.process_all(&id, "abc").is_err()); // 9 bytes > 8
+///
+/// processor.set_profile(ExecutionProfile { limits: Limits::unlimited(), ..profile });
+/// assert_eq!(processor.process_all(&id, "abc")?, "abcabcabc");
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Limits {
+    /// Maximum size, in bytes, of the text `rpt`, `padl` and `padr` produce.
+    /// Default: 2 GiB.
+    pub max_generated_bytes: Option<u64>,
+    /// Maximum `iter` count. Default: 10,000,000.
+    pub max_iterations: Option<u64>,
+}
+
+impl Default for Limits {
+    fn default() -> Self {
+        Limits {
+            max_generated_bytes: Some(2 * GIB),
+            max_iterations: Some(10_000_000),
+        }
+    }
+}
+
+impl Limits {
+    /// No limits at all.
+    pub fn unlimited() -> Self {
+        Limits {
+            max_generated_bytes: None,
+            max_iterations: None,
+        }
+    }
+
+    /// Fail unless `bytes` (`None` when it overflows) fits `max_generated_bytes`.
+    pub(crate) fn check_generated(
+        &self,
+        bytes: Option<u128>,
+        instruction: &'static str,
+    ) -> Result<(), TextForgeError> {
+        let Some(limit) = self.max_generated_bytes else {
+            return Ok(());
+        };
+        match bytes {
+            Some(bytes) if bytes <= u128::from(limit) => Ok(()),
+            _ => Err(exceeded(
+                instruction,
+                "max_generated_bytes",
+                bytes.map_or_else(|| "more than u128".to_owned(), |b| format!("{b} bytes")),
+                limit,
+            )),
+        }
+    }
+
+    /// Fail unless `count` fits `max_iterations`.
+    pub(crate) fn check_iterations(
+        &self,
+        count: usize,
+        instruction: &'static str,
+    ) -> Result<(), TextForgeError> {
+        match self.max_iterations {
+            Some(limit) if count as u128 > u128::from(limit) => Err(exceeded(
+                instruction,
+                "max_iterations",
+                format!("{count} iterations"),
+                limit,
+            )),
+            _ => Ok(()),
+        }
+    }
+}
+
+fn exceeded(
+    instruction: &'static str,
+    limit_name: &str,
+    needed: String,
+    limit: u64,
+) -> TextForgeError {
+    TextForgeError::new(
+        TextForgeErrorCode::ValidationError(
+            format!("{instruction} exceeds the {limit_name} limit").into(),
+        ),
+        instruction,
+        format!(
+            "needs {needed}, limit {limit}; raise or remove it with overrides.{limit_name} in .txfrc (\"unlimited\"), the txf flag, or ExecutionProfile::limits"
+        ),
+    )
 }
 
 impl Default for ExecutionProfile {
@@ -52,6 +158,7 @@ impl ExecutionProfile {
     pub fn balanced() -> Self {
         ExecutionProfile {
             spool_threshold: MIB as usize,
+            limits: Limits::default(),
         }
     }
 
@@ -59,6 +166,7 @@ impl ExecutionProfile {
     pub fn low_memory() -> Self {
         ExecutionProfile {
             spool_threshold: (64 * KIB) as usize,
+            limits: Limits::default(),
         }
     }
 
@@ -66,6 +174,7 @@ impl ExecutionProfile {
     pub fn fast() -> Self {
         ExecutionProfile {
             spool_threshold: (256 * MIB) as usize,
+            limits: Limits::default(),
         }
     }
 
@@ -114,17 +223,29 @@ pub struct RcFile {
     overrides: Overrides,
 }
 
+/// Limit overrides in a `.txfrc`: `None` when a limit is not set there,
+/// `Some(None)` when it is set to `"unlimited"`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct LimitOverrides {
+    pub max_generated_bytes: Option<Option<u64>>,
+    pub max_iterations: Option<Option<u64>>,
+}
+
 /// Keys accepted at the top of a `.txfrc` (kept in sync with
 /// `docs/txfrc.schema.json` by a test).
 pub const RC_KEYS: &[&str] = &["version", "profile", "overrides"];
 /// Keys accepted in `overrides`.
-pub const RC_OVERRIDE_KEYS: &[&str] = &["spool_threshold"];
+pub const RC_OVERRIDE_KEYS: &[&str] = &["spool_threshold", "max_generated_bytes", "max_iterations"];
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Overrides {
     #[serde(default)]
     spool_threshold: Option<Size>,
+    #[serde(default)]
+    max_generated_bytes: Option<Size>,
+    #[serde(default)]
+    max_iterations: Option<Size>,
 }
 
 /// A size in bytes, as a number or as text with a binary unit (`"512MiB"`).
@@ -143,9 +264,23 @@ fn invalid(message: &str, detail: impl Into<String>) -> TextForgeError {
     )
 }
 
-/// Parse a size: bytes, or a number followed by `B`, `KiB`, `MiB` or `GiB`
-/// (case-insensitive, optional space). Checked against the accepted range.
+/// Parse a size for `spool_threshold`: bytes, or a number followed by `B`,
+/// `KiB`, `MiB` or `GiB` (case-insensitive, optional space). Checked against
+/// the accepted range.
 pub fn parse_size(text: &str) -> Result<usize, TextForgeError> {
+    checked_threshold(parse_bytes(text)?)
+}
+
+/// Parse a limit: `"unlimited"`, a number, or (for byte limits) a size with a
+/// binary unit. Returns `None` for unlimited.
+pub fn parse_limit(text: &str) -> Result<Option<u64>, TextForgeError> {
+    if text.trim().eq_ignore_ascii_case("unlimited") {
+        return Ok(None);
+    }
+    parse_bytes(text).map(Some)
+}
+
+fn parse_bytes(text: &str) -> Result<u64, TextForgeError> {
     let text = text.trim();
     let split = text
         .find(|c: char| !c.is_ascii_digit())
@@ -158,12 +293,11 @@ pub fn parse_size(text: &str) -> Result<usize, TextForgeError> {
         "gib" => GIB,
         _ => return Err(invalid("Unknown size unit; use B, KiB, MiB or GiB", text)),
     };
-    let bytes = number
+    number
         .parse::<u64>()
         .ok()
         .and_then(|number| number.checked_mul(multiplier))
-        .ok_or_else(|| invalid("Invalid size", text))?;
-    checked_threshold(bytes)
+        .ok_or_else(|| invalid("Invalid size", text))
 }
 
 fn checked_threshold(bytes: u64) -> Result<usize, TextForgeError> {
@@ -201,6 +335,7 @@ impl RcFile {
             ExecutionProfile::preset(name)?;
         }
         rc.spool_threshold()?;
+        rc.limits()?;
         Ok(rc)
     }
 
@@ -233,6 +368,21 @@ impl RcFile {
         }
     }
 
+    /// The limit overrides in the file.
+    pub fn limits(&self) -> Result<LimitOverrides, TextForgeError> {
+        let read = |size: &Option<Size>| -> Result<Option<Option<u64>>, TextForgeError> {
+            match size {
+                None => Ok(None),
+                Some(Size::Bytes(value)) => Ok(Some(Some(*value))),
+                Some(Size::Text(text)) => parse_limit(text).map(Some),
+            }
+        };
+        Ok(LimitOverrides {
+            max_generated_bytes: read(&self.overrides.max_generated_bytes)?,
+            max_iterations: read(&self.overrides.max_iterations)?,
+        })
+    }
+
     /// The profile this file describes: its preset (or `balanced`) with its
     /// overrides applied.
     pub fn profile(&self) -> Result<ExecutionProfile, TextForgeError> {
@@ -242,6 +392,13 @@ impl RcFile {
         };
         if let Some(threshold) = self.spool_threshold()? {
             profile.spool_threshold = threshold;
+        }
+        let overrides = self.limits()?;
+        if let Some(limit) = overrides.max_generated_bytes {
+            profile.limits.max_generated_bytes = limit;
+        }
+        if let Some(limit) = overrides.max_iterations {
+            profile.limits.max_iterations = limit;
         }
         Ok(profile)
     }
@@ -296,6 +453,45 @@ mod tests {
                 "{wrong}"
             );
         }
+    }
+
+    #[test]
+    fn limits_accept_numbers_sizes_and_unlimited() {
+        let rc = RcFile::parse(
+            r#"{"version": 1, "overrides": {"max_generated_bytes": "64GiB", "max_iterations": 5}}"#,
+        )
+        .unwrap();
+        let profile = rc.profile().unwrap();
+        assert_eq!(profile.limits.max_generated_bytes, Some(64 * GIB));
+        assert_eq!(profile.limits.max_iterations, Some(5));
+        let rc =
+            RcFile::parse(r#"{"version": 1, "overrides": {"max_generated_bytes": "Unlimited"}}"#)
+                .unwrap();
+        assert_eq!(rc.profile().unwrap().limits.max_generated_bytes, None);
+        assert_eq!(
+            rc.profile().unwrap().limits.max_iterations,
+            Some(10_000_000)
+        );
+        assert!(
+            RcFile::parse(r#"{"version": 1, "overrides": {"max_iterations": "lots"}}"#).is_err()
+        );
+    }
+
+    #[test]
+    fn limits_report_what_was_needed_and_how_to_raise_it() {
+        let limits = Limits {
+            max_generated_bytes: Some(10),
+            max_iterations: Some(3),
+        };
+        assert!(limits.check_generated(Some(10), "rpt").is_ok());
+        let error = limits.check_generated(Some(11), "rpt").unwrap_err();
+        assert!(error.input.contains("11 bytes") && error.input.contains("max_generated_bytes"));
+        assert!(limits.check_generated(None, "rpt").is_err());
+        assert!(limits.check_iterations(3, "iter").is_ok());
+        assert!(limits.check_iterations(4, "iter").is_err());
+        let unlimited = Limits::unlimited();
+        assert!(unlimited.check_generated(None, "rpt").is_ok());
+        assert!(unlimited.check_iterations(usize::MAX, "iter").is_ok());
     }
 
     #[test]
@@ -356,7 +552,8 @@ mod tests {
         assert_eq!(presets.len(), 3);
         // Every documented key is accepted, together.
         RcFile::parse(
-            r#"{"version": 1, "profile": "low-memory", "overrides": {"spool_threshold": "1MiB"}}"#,
+            r#"{"version": 1, "profile": "low-memory", "overrides": {"spool_threshold": "1MiB",
+                "max_generated_bytes": "16GiB", "max_iterations": "unlimited"}}"#,
         )
         .unwrap();
     }

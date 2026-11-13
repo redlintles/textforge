@@ -68,8 +68,9 @@ impl InstructionMethods for Padl {
     fn transform<'a>(
         &self,
         input: Cow<'a, str>,
-        _: Option<&mut GlobalExecutionContext>,
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
+        let limits = context.map(|context| context.limits()).unwrap_or_default();
         let character_count = input.chars().count();
 
         if character_count >= self.max_len {
@@ -79,7 +80,7 @@ impl InstructionMethods for Padl {
         if self.text.is_empty() {
             return Ok(input);
         }
-        let mut output = reserve_padding(&self.text, ml, input.len(), "padl")?;
+        let mut output = reserve_padding(&self.text, ml, input.len(), "padl", &limits)?;
         push_padding(&mut output, &self.text, ml);
         output.push_str(&input);
         Ok(output.into())

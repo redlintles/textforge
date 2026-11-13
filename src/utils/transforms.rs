@@ -41,6 +41,7 @@ pub(crate) fn reserve_padding(
     chars: usize,
     extra: usize,
     instruction: &'static str,
+    limits: &crate::api::Limits,
 ) -> Result<String, TextForgeError> {
     let error = |detail: String| {
         TextForgeError::new(
@@ -61,6 +62,7 @@ pub(crate) fn reserve_padding(
         .and_then(|bytes| bytes.checked_add(rest))
         .and_then(|bytes| bytes.checked_add(extra))
         .ok_or_else(|| error(format!("padding of {chars} characters overflows")))?;
+    limits.check_generated(Some(bytes as u128), instruction)?;
     let mut output = String::new();
     output
         .try_reserve_exact(bytes)

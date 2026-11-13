@@ -107,6 +107,7 @@ impl InstructionMethods for Iter {
 
         // A nested iteration hides the enclosing counter and restores it on
         // exit, so every level observes its own iteration index.
+        context.limits().check_iterations(self.times, "iter")?;
         let enclosing = context.take_var(COUNTER);
         context.add_var(
             COUNTER,

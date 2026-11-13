@@ -79,6 +79,8 @@ pub struct GlobalExecutionContext {
     trace: Option<DebugTrace>,
     /// Read-only facts about the run, shared with concurrent tasks.
     static_ctx: Arc<StaticContext>,
+    /// Limits for instructions that multiply work (from the profile).
+    limits: crate::api::Limits,
 }
 
 impl Default for GlobalExecutionContext {
@@ -254,6 +256,7 @@ impl GlobalExecutionContext {
             is_halted: false,
             trace: None,
             static_ctx: StaticContext::shared_default(),
+            limits: crate::api::Limits::default(),
         }
     }
 
@@ -263,6 +266,16 @@ impl GlobalExecutionContext {
             static_ctx,
             ..Self::new()
         }
+    }
+
+    /// Limits for instructions that multiply work (`rpt`, `padl`, `padr`,
+    /// `iter`); the processor sets them from its `ExecutionProfile`.
+    pub fn limits(&self) -> crate::api::Limits {
+        self.limits
+    }
+
+    pub(crate) fn set_limits(&mut self, limits: crate::api::Limits) {
+        self.limits = limits;
     }
 
     /// The shared static context, for a joined pipeline (`ppjn`) to run with.

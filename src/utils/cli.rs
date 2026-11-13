@@ -208,6 +208,10 @@ pub struct ProfileOptions {
     pub profile: Option<String>,
     /// `--spool-threshold`
     pub spool_threshold: Option<String>,
+    /// `--max-generated-bytes` (a size or `unlimited`)
+    pub max_generated_bytes: Option<String>,
+    /// `--max-iterations` (a number or `unlimited`)
+    pub max_iterations: Option<String>,
     /// `--config`
     pub config: Option<std::path::PathBuf>,
     /// `--no-rc`
@@ -221,6 +225,8 @@ pub struct ResolvedProfile {
     pub preset: String,
     pub preset_source: ProfileSource,
     pub spool_threshold_source: ProfileSource,
+    pub max_generated_bytes_source: ProfileSource,
+    pub max_iterations_source: ProfileSource,
 }
 
 /// Resolve the `txf` profile. For each value, the strongest source wins:
@@ -263,23 +269,63 @@ pub fn resolve_profile(
         profile.spool_threshold = parse_size(text)?;
         spool_threshold_source = ProfileSource::Flag;
     }
+
+    // Limits: flag > file > default (the same in every preset).
+    let file_source = || ProfileSource::File(file.clone().unwrap_or_default());
+    let from_file = match &rc {
+        Some(rc) => rc.limits()?,
+        None => Default::default(),
+    };
+    let limit = |flag: &Option<String>,
+                 from_file: Option<Option<u64>>,
+                 target: &mut Option<u64>|
+     -> Result<ProfileSource, TextForgeError> {
+        if let Some(text) = flag {
+            *target = crate::api::profile::parse_limit(text)?;
+            Ok(ProfileSource::Flag)
+        } else if let Some(value) = from_file {
+            *target = value;
+            Ok(file_source())
+        } else {
+            Ok(ProfileSource::Default)
+        }
+    };
+    let max_generated_bytes_source = limit(
+        &options.max_generated_bytes,
+        from_file.max_generated_bytes,
+        &mut profile.limits.max_generated_bytes,
+    )?;
+    let max_iterations_source = limit(
+        &options.max_iterations,
+        from_file.max_iterations,
+        &mut profile.limits.max_iterations,
+    )?;
     Ok(ResolvedProfile {
         profile,
         preset,
         preset_source,
         spool_threshold_source,
+        max_generated_bytes_source,
+        max_iterations_source,
     })
 }
 
 impl ResolvedProfile {
     /// The text `txf config show` prints.
     pub fn describe(&self) -> String {
+        let show = |limit: Option<u64>, unit: &str| {
+            limit.map_or_else(|| "unlimited".to_owned(), |value| format!("{value}{unit}"))
+        };
         let mut text = format!(
-            "profile: {} ({})\nspool_threshold: {} bytes ({})\n",
+            "profile: {} ({})\nspool_threshold: {} bytes ({})\nmax_generated_bytes: {} ({})\nmax_iterations: {} ({})\n",
             self.preset,
             self.preset_source,
             self.profile.spool_threshold,
-            self.spool_threshold_source
+            self.spool_threshold_source,
+            show(self.profile.limits.max_generated_bytes, " bytes"),
+            self.max_generated_bytes_source,
+            show(self.profile.limits.max_iterations, ""),
+            self.max_iterations_source
         );
         if !cfg!(feature = "buffered") {
             text.push_str(
@@ -372,6 +418,48 @@ mod profile_tests {
         assert_eq!(resolved.profile.spool_threshold, 2 * 1024 * 1024);
         assert_eq!(resolved.spool_threshold_source, ProfileSource::Flag);
         assert!(resolved.describe().contains("(command-line flag)"));
+    }
+
+    #[test]
+    fn limits_come_from_flags_then_the_file_then_the_defaults() {
+        let directory = Directory::new("limits");
+        let local = directory.rc(
+            ".txfrc",
+            r#"{"version": 1, "overrides": {"max_generated_bytes": "unlimited", "max_iterations": 7}}"#,
+        );
+        let resolved = resolve_profile(&ProfileOptions::default(), &directory.0).unwrap();
+        assert_eq!(resolved.profile.limits.max_generated_bytes, None);
+        assert_eq!(resolved.profile.limits.max_iterations, Some(7));
+        assert_eq!(resolved.max_iterations_source, ProfileSource::File(local));
+        assert!(
+            resolved
+                .describe()
+                .contains("max_generated_bytes: unlimited")
+        );
+
+        let options = ProfileOptions {
+            max_generated_bytes: Some("16GiB".into()),
+            max_iterations: Some("unlimited".into()),
+            ..Default::default()
+        };
+        let resolved = resolve_profile(&options, &directory.0).unwrap();
+        assert_eq!(resolved.profile.limits.max_generated_bytes, Some(16 << 30));
+        assert_eq!(resolved.profile.limits.max_iterations, None);
+        assert_eq!(resolved.max_generated_bytes_source, ProfileSource::Flag);
+
+        let options = ProfileOptions {
+            no_rc: true,
+            ..Default::default()
+        };
+        let resolved = resolve_profile(&options, &directory.0).unwrap();
+        assert_eq!(resolved.profile.limits, crate::api::Limits::default());
+        assert_eq!(resolved.max_iterations_source, ProfileSource::Default);
+        let options = ProfileOptions {
+            max_iterations: Some("many".into()),
+            no_rc: true,
+            ..Default::default()
+        };
+        assert!(resolve_profile(&options, &directory.0).is_err());
     }
 
     #[test]

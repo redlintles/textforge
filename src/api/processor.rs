@@ -700,16 +700,16 @@ impl TextForgeProcessor {
         transforms: &'p HashMap<String, RegisteredPipeline>,
         id: &str,
         input_file: Option<&Path>,
+        limits: crate::api::Limits,
     ) -> Result<(&'p [TokenWrapper], GlobalExecutionContext), TextForgeError> {
         let pipeline = transforms.get(id).ok_or_else(token_array_not_found(id))?;
         let statics = match input_file {
             None => Arc::clone(&pipeline.statics),
             Some(path) => Arc::new(pipeline.statics.with_input_file(path)),
         };
-        Ok((
-            &pipeline.tokens,
-            GlobalExecutionContext::with_static(statics),
-        ))
+        let mut context = GlobalExecutionContext::with_static(statics);
+        context.set_limits(limits);
+        Ok((&pipeline.tokens, context))
     }
 
     /// Name a pipeline loaded from `path` after the file name without extension.
@@ -904,6 +904,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         input: &str,
     ) -> Result<String, TextForgeError> {
         let mut context = GlobalExecutionContext::new();
+        context.set_limits(self.profile.limits);
         match token.apply_token(Cow::from(input), &mut context) {
             Ok(x) => Ok(x.to_string()),
             Err(e) => {
@@ -931,6 +932,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         input: &str,
     ) -> Result<String, TextForgeError> {
         let mut ctx = GlobalExecutionContext::new();
+        ctx.set_limits(self.profile.limits);
         ctx.enable_trace();
         let output = match token.apply_token(Cow::from(input), &mut ctx) {
             Ok(x) => x,
@@ -1088,13 +1090,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         watcher_list: &mut WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
-        let (tokens, mut context) = match Self::pipeline_run(&self.transforms, id, None) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
+        let (tokens, mut context) =
+            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+                Ok(x) => x,
+                Err(e) => {
+                    self.errors.add_error(e.clone());
+                    return Err(e);
+                }
+            };
         let mut local_errors = ErrorManager::default();
 
         // Estado do pipeline como Arc<str>, não String: reusar `current_arc` de
@@ -1206,7 +1209,8 @@ impl TextForgeProcessor {
         input: Cow<'a, str>,
         input_file: Option<&Path>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let (tokens, mut context) = Self::pipeline_run(&self.transforms, id, input_file)?;
+        let (tokens, mut context) =
+            Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
 
         // ErrorManager local, descartável — não é o self.errors compartilhado
         let mut local_errors = ErrorManager::default();
@@ -1229,13 +1233,14 @@ impl TextForgeProcessor {
     fn debug_log(&mut self, id: &str, input: &str) -> Result<(String, String), TextForgeError> {
         let dashes = 10;
 
-        let (tokens, mut context) = match Self::pipeline_run(&self.transforms, id, None) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
+        let (tokens, mut context) =
+            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+                Ok(x) => x,
+                Err(e) => {
+                    self.errors.add_error(e.clone());
+                    return Err(e);
+                }
+            };
 
         let mut log = String::new();
         log.push_str("PROCESSING STEP BY STEP:\n");

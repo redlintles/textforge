@@ -9,7 +9,7 @@ pub mod conditional_builder;
 pub mod portable;
 pub mod processor;
 pub mod profile;
-pub use profile::{ExecutionProfile, RcFile};
+pub use profile::{ExecutionProfile, Limits, RcFile};
 pub mod replace_map_builder;
 pub use replace_map_builder::ReplaceMapBuilder;
 

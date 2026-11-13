@@ -95,7 +95,11 @@ impl Ppjn {
 /// while the joined pipeline runs.
 fn joined_context(outer: &mut Option<&mut GlobalExecutionContext>) -> GlobalExecutionContext {
     let mut inner = match outer {
-        Some(outer) => GlobalExecutionContext::with_static(outer.shared_static()),
+        Some(outer) => {
+            let mut inner = GlobalExecutionContext::with_static(outer.shared_static());
+            inner.set_limits(outer.limits());
+            inner
+        }
         None => GlobalExecutionContext::new(),
     };
     if let Some(trace) = outer.as_mut().and_then(|outer| outer.take_trace()) {

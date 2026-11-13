@@ -2,13 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/redlintles/textforge/docs/txfrc.schema.json",
   "title": "TextForge .txfrc",
-  "description": "Engine resources for the txf CLI. Changes memory and speed, never results. Kept in sync with src/api/profile.rs by a test.",
+  "description": "Engine resources and safety limits for the txf CLI. Never changes the text a pipeline produces; a run past a limit fails instead. Kept in sync with src/api/profile.rs by a test.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version"],
+  "required": [
+    "version"
+  ],
   "properties": {
-    "version": { "const": 1 },
-    "profile": { "enum": ["balanced", "low-memory", "fast"] },
+    "version": {
+      "const": 1
+    },
+    "profile": {
+      "enum": [
+        "balanced",
+        "low-memory",
+        "fast"
+      ]
+    },
     "overrides": {
       "type": "object",
       "additionalProperties": false,
@@ -16,8 +26,41 @@
         "spool_threshold": {
           "description": "Bytes, or text with a binary unit: \"512MiB\". 4 KiB to 64 GiB.",
           "oneOf": [
-            { "type": "integer", "minimum": 4096, "maximum": 68719476736 },
-            { "type": "string", "pattern": "^\\s*[0-9]+\\s*([Bb]|[KkMmGg][Ii][Bb])?\\s*$" }
+            {
+              "type": "integer",
+              "minimum": 4096,
+              "maximum": 68719476736
+            },
+            {
+              "type": "string",
+              "pattern": "^\\s*[0-9]+\\s*([Bb]|[KkMmGg][Ii][Bb])?\\s*$"
+            }
+          ]
+        },
+        "max_generated_bytes": {
+          "description": "Bytes, a size with a binary unit (\"16GiB\"), or \"unlimited\". Default 2 GiB.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "string",
+              "pattern": "^\\s*([0-9]+\\s*([Bb]|[KkMmGg][Ii][Bb])?|[Uu][Nn][Ll][Ii][Mm][Ii][Tt][Ee][Dd])\\s*$"
+            }
+          ]
+        },
+        "max_iterations": {
+          "description": "Largest iter count, or \"unlimited\". Default 10000000.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "string",
+              "pattern": "^\\s*([0-9]+|[Uu][Nn][Ll][Ii][Mm][Ii][Tt][Ee][Dd])\\s*$"
+            }
           ]
         }
       }

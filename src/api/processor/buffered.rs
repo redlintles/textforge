@@ -57,7 +57,8 @@ impl TextForgeProcessor {
         input: TextBuffer,
         input_file: Option<&Path>,
     ) -> Result<TextBuffer, TextForgeError> {
-        let (tokens, mut context) = Self::pipeline_run(&self.transforms, id, input_file)?;
+        let (tokens, mut context) =
+            Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
         run_tokens(tokens, input, &mut context, |_, token, input, context| {
             token.apply_buffered(input, context)
         })
@@ -94,8 +95,11 @@ impl TextForgeProcessor {
         instruction: &str,
         input: TextBuffer,
     ) -> Result<TextBuffer, TextForgeError> {
-        let result = crate::text::reader::read_from_text(instruction)
-            .and_then(|token| token.apply_buffered(input, &mut GlobalExecutionContext::new()));
+        let result = crate::text::reader::read_from_text(instruction).and_then(|token| {
+            let mut context = GlobalExecutionContext::new();
+            context.set_limits(self.profile.limits);
+            token.apply_buffered(input, &mut context)
+        });
         result.inspect_err(|error| self.errors.add_error(error.clone()))
     }
 
@@ -280,7 +284,8 @@ impl TextForgeProcessor {
         input: TextBuffer,
         log: &mut impl Write,
     ) -> Result<TextBuffer, TextForgeError> {
-        let (tokens, mut context) = Self::pipeline_run(&self.transforms, id, None)?;
+        let (tokens, mut context) =
+            Self::pipeline_run(&self.transforms, id, None, self.profile.limits)?;
         context.enable_trace();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
@@ -360,13 +365,14 @@ impl TextForgeProcessor {
     ) -> Result<String, TextForgeError> {
         use crate::watchers::WatcherContext;
         use std::sync::Arc;
-        let (tokens, mut context) = match Self::pipeline_run(&self.transforms, id, None) {
-            Ok(tokens) => tokens,
-            Err(error) => {
-                self.errors.add_error(error.clone());
-                return Err(error);
-            }
-        };
+        let (tokens, mut context) =
+            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+                Ok(tokens) => tokens,
+                Err(error) => {
+                    self.errors.add_error(error.clone());
+                    return Err(error);
+                }
+            };
         let current: Arc<str> = Arc::from(input);
         let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
         let current = run_tokens(
