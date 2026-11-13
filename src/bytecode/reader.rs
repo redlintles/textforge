@@ -307,8 +307,38 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         )
     })?;
 
+    read_file(file, path, IN_MEMORY_LIMIT)
+}
+
+/// Pipelines are small: decoding from memory avoids the length and position
+/// system calls each bounds check makes on a file. Files over `limit` bytes are
+/// still streamed, so memory stays bounded.
+fn read_file(
+    file: std::fs::File,
+    path: &Path,
+    limit: u64,
+) -> Result<Vec<TokenWrapper>, TextForgeError> {
+    let length = file
+        .metadata()
+        .map(|metadata| metadata.len())
+        .unwrap_or(u64::MAX);
+    if length <= limit {
+        let mut bytes = Vec::with_capacity(length as usize);
+        let mut file = file;
+        file.read_to_end(&mut bytes).map_err(|_| {
+            TextForgeError::new(
+                TextForgeErrorCode::FileOpeningError("Failed reading File".into()),
+                "bytecode reader",
+                format!("{:?}", path),
+            )
+        })?;
+        return read_bytecode_from_bytes(&bytes);
+    }
     read_pipeline(&mut BufReader::new(file))
 }
+
+/// Largest bytecode file decoded from memory instead of streamed.
+const IN_MEMORY_LIMIT: u64 = 64 * 1024 * 1024;
 
 /// Read a complete bytecode pipeline held in memory (a file `ppjn` joins).
 pub(crate) fn read_bytecode_from_bytes(bytes: &[u8]) -> Result<Vec<TokenWrapper>, TextForgeError> {
@@ -774,6 +804,29 @@ mod tests {
         bytes.extend_from_slice(&0x38u32.to_be_bytes());
         bytes.push(0);
         assert_eq!(parse(&bytes).unwrap().len(), 2);
+    }
+
+    #[test]
+    fn streamed_and_in_memory_files_decode_alike() {
+        let mut bytes = header(2);
+        for line in ["atb '!';", "rfw a 'b c';"] {
+            let token = crate::text::reader::read_from_text(line).unwrap();
+            bytes.extend(token.to_bytecode_unresolved().unwrap());
+        }
+        let path =
+            std::env::temp_dir().join(format!("tf-stream-{}.textforgebc", std::process::id()));
+        std::fs::write(&path, &bytes).unwrap();
+        let lines = |limit| {
+            let file = std::fs::File::open(&path).unwrap();
+            read_file(file, &path, limit)
+                .unwrap()
+                .iter()
+                .map(|token| token.to_text_line_unresolved().unwrap())
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(lines(0), lines(u64::MAX));
+        assert_eq!(lines(0).len(), 2);
+        std::fs::remove_file(&path).unwrap();
     }
 
     #[test]
