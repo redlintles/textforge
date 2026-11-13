@@ -322,12 +322,13 @@ examples/, scripts/             — Benchmark/probe programs and reproducible be
 ## Roadmap
 
 **Done**
-- [x] Core library with 84 instructions
+- [x] Core library with 88 instructions
 - [x] `.textforge` text format
 - [x] `.textforgebc` binary protocol
 - [x] `TextForgeBuilder`/`TextForgeProcessor` Rust API
 - [x] Control flow: blocks (`blk`/`cblk`), conditionals (`ifdc`), variables (`val`)
 - [x] Section instructions (`onln`, `onck`, `onlni`), expressions in numeric parameters and a nested debug trace (unreleased)
+- [x] Static context and built-in variables, file instructions (`wtf`, `apf`, `inf`), pipeline join (`ppjn`) and execution profiles with `.txfrc` (unreleased)
 - [x] Batch processing over multiple files, in parallel (`rayon`)
 - [x] Optional pipeline observability (`watchers` feature, JSON reports)
 - [x] Buffered processing (`buffered` feature)

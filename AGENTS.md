@@ -80,7 +80,7 @@ Key design facts:
 | `src/context` | The execution context, the read-only static context (`static_context.rs`: pipeline name, core version, input file, global-function registry), built-in variables and the single variable lookup (`builtins.rs`), and the debug trace (`debug_trace.rs`). See `docs/execution-context.md`. |
 | `src/globals` | The lookup map the engine uses to decide which instruction to call for a given token. **Must be updated whenever an instruction is added.** |
 | `src/macros` | Project macros. |
-| `src/parser` | Types used for parsing the DSL, and for resolving/converting parameters and variables. |
+| `src/parser` | Types used for parsing the DSL, and for resolving/converting parameters and variables; `joins.rs` loads the pipelines `ppjn` joins. |
 | `src/text` | Default way to use the DSL; handles the textual form. |
 | `src/tokens/instructions` | Logical instructions that do not modify text directly. |
 | `src/tokens/transforms` | Instructions that modify text. |
@@ -257,6 +257,7 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 | `TextForgeParamTypes` | Types accepted as parameters by instructions. |
 | `ValType` | Simple enum for values that may be variables: either a literal value or a reference to a variable stored in the context. |
 | `GlobalExecutionContext` | Manages the execution context of each pipeline. |
+| `ExecutionProfile` | Engine resources (`spool_threshold`), presets `balanced`/`low-memory`/`fast`; never changes results (`src/api/profile.rs`). |
 | `StaticContext` | Read-only facts about a run (pipeline name, core version, input file, `GlobalFunctions`), built by the processor and shared through an `Arc`. |
 | `to_bytecode!` | Macro converting a token to its bytecode. |
 | `parse_args!` | Macro converting a `TextForgeParamTypes` into its specific type so it can be stored in the instruction object during execution. |
