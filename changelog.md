@@ -4,6 +4,13 @@
 
 ### Added
 
+- Section instructions `onln` (one line, base 1), `onck` (character chunk,
+  base 0) and `onlni` (line interval as one block, base 1):
+  `onln {n} apply {instruction};`. The nested instruction receives only the
+  section, so its indices are relative to it. Opcodes 0x52–0x54; builder methods
+  `on_line`, `on_chunk` and `on_line_interval`; available through the portable
+  `InstructionSpec`. See [section instructions](docs/on-instructions.md) and the
+  [benchmark](docs/benchmarks/on-instructions/README.md).
 - `ReplaceMapBuilder`: a scoped fluent builder for replacement maps
   (`define_replace_map(...)`, then `add_replace(...)` for each rule, then `end()`).
   See [replacement maps](docs/replace-maps.md) and [portable API](docs/portable-api.md).
@@ -19,6 +26,8 @@
   variable and the outer loop failed with `VariableNotFound`.
 - `iter` without an execution context returns `RequiredContextError` instead of
   panicking, and `iter` bytecode now includes its two parameters.
+- `ctc`, `ins` and `slt` no longer overflow (panicking in debug builds) on
+  empty input; they return the error release builds already returned.
 - `end` now halts pipelines run with watchers (`process_all_with_watchers`).
   Watcher runs previously kept executing the instructions after `end`.
 

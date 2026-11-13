@@ -22,6 +22,7 @@ On top of that linear pipeline, TextForge also has a small amount of **control f
 - **Blocks** (`blk` / `cblk`) — group a set of instructions under a name and invoke them together, as many times as you want.
 - **Conditionals** (`ifdc`) — run a group of instructions only if the input contains a given value.
 - **Variables** (`val`) — store an immutable value in the pipeline's execution context so other instructions can reference it instead of a hardcoded literal.
+- **Sections** (`onln`, `onck`, `onlni`) — apply one instruction to a single line, a character chunk or a line interval; indices inside are relative to the section. See [section instructions](docs/on-instructions.md).
 
 Pipelines can be written in human-readable `.textforge` files, compiled to an optimized `.textforgebc` binary format, or composed directly in Rust via the `TextForgeBuilder` API. Language bindings are maintained in independent projects with their own versions and pinned core snapshots: [Python](docs/python-bindings.md) (`textforgers`) and [Node.js](docs/node-bindings.md) (`textforge-node`).
 
@@ -228,6 +229,9 @@ Without `--output`, the result is printed to stdout. `.textforgebc` pipelines ne
 | `cblk` | Run every instruction previously added to a named block, in order | `<block_name>` |
 | `ifdc` | Run a group of instructions only if the input contains a value | `<value>` |
 | `val` | Declare an immutable variable in the execution context | `<name> <value>` |
+| `onln` | Apply one instruction to line `n` (base 1) | `<n> apply <instruction>` |
+| `onck` | Apply one instruction to characters `start..=end` (base 0) | `<start> <end> apply <instruction>` |
+| `onlni` | Apply one instruction to lines `start..=end` (base 1) as one block | `<start> <end> apply <instruction>` |
 
 ---
 
@@ -285,7 +289,7 @@ src/
 │   └── writer.rs              — Output writing
 ├── tokens/
 │   ├── transforms/            — One subdirectory per transform instruction
-│   └── instructions/          — Control-flow tokens (blk, cblk, ifdc, val)
+│   └── instructions/          — Control-flow tokens (blk, cblk, ifdc, iter, on*, val, …)
 ├── watchers/                  — Pipeline observability (feature-gated)
 └── utils/                     — Shared utilities
 
@@ -301,7 +305,7 @@ examples/, scripts/             — Benchmark/probe programs and reproducible be
 ## Roadmap
 
 **Done**
-- [x] Core library with 81 instructions
+- [x] Core library with 84 instructions
 - [x] `.textforge` text format
 - [x] `.textforgebc` binary protocol
 - [x] `TextForgeBuilder`/`TextForgeProcessor` Rust API

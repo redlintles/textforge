@@ -121,6 +121,8 @@ TextForge can be used in three ways.
 | `process_batch_in_pool` | Like `process_batch`, on a caller-supplied thread pool. |
 | `process_*_buffered` | Buffered variants (`process_all_buffered`, `process_single_buffered`, `process_file_buffered`, `process_batch_buffered`). Requires the `buffered` feature. |
 
+All processing modes (plain, debug, watchers and the buffered variants) run the same loop, `run_tokens` in `src/utils/apply.rs`; a mode only supplies the per-step behavior. Halting (`end`) and ordering rules live there.
+
 With the `bytecode` feature, `TextForgeProcessor` also exposes `write_to_bytecode_file` and `read_from_bytecode_file` to persist and load compiled pipelines.
 
 ### 5.2 As a textual DSL
@@ -143,7 +145,9 @@ The textual form resembles assembly, and the comparison is fair in terms of the 
 - Every instruction ends with `;`.
 - Instructions run sequentially.
 - Structure: `{name} {params};`
-- Parameters can have different types. Some are pure **literals** that do not affect behavior and are **dropped during parsing** (e.g. `assoc`, `do`).
+- Parameters can have different types. Some are pure **literals** that do not affect behavior and are **dropped during parsing** (e.g. `assoc`, `do`, `times`, `apply`).
+- Some instructions take one **nested instruction** as a parameter (`blk`, `ifdc`, `iter`, `onln`, `onck`, `onlni`). The root allows one nested level; a `blk` payload allows three (`MAX_DEPTH_NORMAL`/`MAX_DEPTH_ASSOC_PAYLOAD` in `src/parser/params.rs`).
+- **Section instructions** (`onln`, `onck`, `onlni`) give the nested instruction only part of the text, so its indices are relative to that part. Lines are base 1, characters base 0. See `docs/on-instructions.md`.
 
 **Naming convention**
 

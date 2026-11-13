@@ -49,6 +49,8 @@ Parameters support the existing variables and interpolation rules.
 | `revln` | `reverse_lines` | Reverse line contents while preserving terminators at their original positions. |
 | `uniqln` | `unique_lines` | Keep the first occurrence of each exact line content, in original order. |
 | `joinln " "` | `join_lines` | Join line contents with a separator, discarding the final terminator. |
+| `onln 2 apply tbs` | `on_line` | Apply one instruction to one line, without its terminator. See [section instructions](on-instructions.md). |
+| `onlni 2 4 apply uniqln` | `on_line_interval` | Apply one instruction to an inclusive line interval as one block, keeping the last terminator outside. |
 
 ## Interpolation and persistence
 
