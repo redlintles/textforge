@@ -11,6 +11,7 @@ use super::TextForgeProcessor;
 use crate::api::{TextBuffer, TextBufferOptions};
 use crate::context::execution_context::GlobalContextMethods;
 use crate::context::execution_context::GlobalExecutionContext;
+use crate::utils::apply::run_tokens;
 use crate::utils::errors::TextForgeErrorCode;
 use crate::utils::errors::{TextForgeError, token_array_not_found};
 use colored::Colorize;
@@ -50,19 +51,15 @@ impl BufferedTask {
 }
 
 impl TextForgeProcessor {
-    fn run_buffered(&self, id: &str, mut input: TextBuffer) -> Result<TextBuffer, TextForgeError> {
+    fn run_buffered(&self, id: &str, input: TextBuffer) -> Result<TextBuffer, TextForgeError> {
         let tokens = self
             .transforms
             .get(id)
             .ok_or_else(token_array_not_found(id))?;
         let mut context = GlobalExecutionContext::new();
-        for token in tokens {
-            if context.is_halted {
-                break;
-            }
-            input = token.apply_buffered(input, &mut context)?;
-        }
-        Ok(input)
+        run_tokens(tokens, input, &mut context, |_, token, input, context| {
+            token.apply_buffered(input, context)
+        })
     }
 
     /// Execute one complete logical document with one execution context.
@@ -271,7 +268,7 @@ impl TextForgeProcessor {
     fn run_buffered_debug(
         &self,
         id: &str,
-        mut input: TextBuffer,
+        input: TextBuffer,
         log: &mut impl Write,
     ) -> Result<TextBuffer, TextForgeError> {
         let tokens = self
@@ -281,50 +278,52 @@ impl TextForgeProcessor {
         let mut context = GlobalExecutionContext::new();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
-        for (counter, token) in tokens.iter().enumerate() {
-            if context.is_halted {
-                break;
-            }
-            let bound = token.bind_for_debug(&mut context)?;
-            let line = bound.to_textforge_line();
-            if bound.get_string_repr() == "blk" {
-                let name = match bound.get_params().first() {
-                    Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
-                    _ => {
-                        return Err({
-                            TextForgeError::new(
-                                TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
-                                "process_all_with_debug",
-                                "",
-                            )
-                        });
-                    }
-                };
-                input = bound.transform_buffered(input, Some(&mut context))?;
-                write!(log, "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
+        run_tokens(
+            tokens,
+            input,
+            &mut context,
+            |counter, token, mut input, context| {
+                let bound = token.bind_for_debug(context)?;
+                let line = bound.to_textforge_line();
+                if bound.get_string_repr() == "blk" {
+                    let name = match bound.get_params().first() {
+                        Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
+                        _ => {
+                            return Err({
+                                TextForgeError::new(
+                                    TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
+                                    "process_all_with_debug",
+                                    "",
+                                )
+                            });
+                        }
+                    };
+                    input = bound.transform_buffered(input, Some(context))?;
+                    write!(log, "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
                     counter.to_string().blue(), (counter + 1).to_string().blue(),
                     "Block Declaration: ".green(), line.yellow(), name.green(),
                     context.get_formatted_block_items(name)?).map_err(adapter_io)?;
-            } else {
-                write!(
-                    log,
-                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: ",
-                    counter.to_string().blue(),
-                    (counter + 1).to_string().blue(),
-                    line.yellow()
-                )
-                .map_err(adapter_io)?;
-                write_document(&mut input, log, "\x1b[31m")?;
-                input = bound.transform_buffered(input, Some(&mut context))?;
-                log.write_all(b"\nAfter: ").map_err(adapter_io)?;
-                write_document(&mut input, log, "\x1b[32m")?;
-                log.write_all(b"\n\n").map_err(adapter_io)?;
-            }
-            if counter + 1 < tokens.len() {
-                log.write_all(b"----------\n\n").map_err(adapter_io)?;
-            }
-        }
-        Ok(input)
+                } else {
+                    write!(
+                        log,
+                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: ",
+                        counter.to_string().blue(),
+                        (counter + 1).to_string().blue(),
+                        line.yellow()
+                    )
+                    .map_err(adapter_io)?;
+                    write_document(&mut input, log, "\x1b[31m")?;
+                    input = bound.transform_buffered(input, Some(context))?;
+                    log.write_all(b"\nAfter: ").map_err(adapter_io)?;
+                    write_document(&mut input, log, "\x1b[32m")?;
+                    log.write_all(b"\n\n").map_err(adapter_io)?;
+                }
+                if counter + 1 < tokens.len() {
+                    log.write_all(b"----------\n\n").map_err(adapter_io)?;
+                }
+                Ok(input)
+            },
+        )
     }
 }
 
@@ -355,27 +354,33 @@ impl TextForgeProcessor {
             }
         };
         let mut context = GlobalExecutionContext::new();
-        let mut current: Arc<str> = Arc::from(input);
+        let current: Arc<str> = Arc::from(input);
         let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
-        for token in tokens {
-            let before = Arc::clone(&current);
-            let document = TextBuffer::from_shared(Arc::clone(&current), adapter_options());
-            let output = token.apply_buffered(document, &mut context)?;
-            current = output.into_shared(&before)?;
-            if let Some((previous_before, previous_current, instruction)) = pending.take() {
-                watchers.run_watchers(WatcherContext::new(
-                    previous_current,
-                    previous_before,
-                    Some(Arc::clone(&current)),
-                    instruction,
-                ))?;
-            }
-            pending = Some((
-                before,
-                Arc::clone(&current),
-                token.to_textforge_line().to_string(),
-            ));
-        }
+        let current = run_tokens(
+            tokens,
+            current,
+            &mut context,
+            |_, token, current, context| {
+                let before = Arc::clone(&current);
+                let document = TextBuffer::from_shared(Arc::clone(&current), adapter_options());
+                let output = token.apply_buffered(document, context)?;
+                let current = output.into_shared(&before)?;
+                if let Some((previous_before, previous_current, instruction)) = pending.take() {
+                    watchers.run_watchers(WatcherContext::new(
+                        previous_current,
+                        previous_before,
+                        Some(Arc::clone(&current)),
+                        instruction,
+                    ))?;
+                }
+                pending = Some((
+                    before,
+                    Arc::clone(&current),
+                    token.to_textforge_line().to_string(),
+                ));
+                Ok(current)
+            },
+        )?;
         if let Some((before, current, instruction)) = pending {
             watchers.run_watchers(WatcherContext::new(
                 current,

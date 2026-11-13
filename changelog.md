@@ -12,9 +12,21 @@
 
 - Block binding during debug execution (`process_all_with_debug` and related
   debug paths).
+- `iter`: iteration `i` now sees `__COUNTER__ == i`. The body previously saw
+  `0, 0, 1, …, times-2` because the counter was updated after each iteration.
+- `iter` nested inside `iter`: the inner loop hides the outer counter and
+  restores it when it ends. Previously the inner loop deleted the shared
+  variable and the outer loop failed with `VariableNotFound`.
+- `iter` without an execution context returns `RequiredContextError` instead of
+  panicking, and `iter` bytecode now includes its two parameters.
+- `end` now halts pipelines run with watchers (`process_all_with_watchers`).
+  Watcher runs previously kept executing the instructions after `end`.
 
 ### Changed
 
+- Every processing mode (plain, debug, watchers and their buffered variants)
+  now runs the same internal execution loop, so halting and ordering rules
+  cannot drift between modes. Public signatures are unchanged.
 - The Node.js binding (`src/bindings/node`) is an independent repository, excluded
   from the Cargo workspace and ignored by Git, like the Python binding. See
   [Node.js binding repository](docs/node-bindings.md).

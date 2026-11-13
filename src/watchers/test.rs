@@ -412,3 +412,25 @@ fn shared_standard_statistics_match_pure_functions_and_custom_overrides_stay_opa
     list.run_watchers(ctx("", "abc", None, "null")).unwrap();
     assert_eq!(list.result[0]["words"], "custom");
 }
+
+#[test]
+fn end_halts_pipelines_running_with_watchers() {
+    // Before the shared execution loop, watcher runs ignored `end` and kept
+    // executing the remaining instructions ("<AB" instead of "<A").
+    use crate::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+    use crate::text::reader::read_from_text;
+    let mut processor = TextForgeProcessor::new();
+    let id = processor.add_transform(
+        ["atb A;", "end;", "ate B;"]
+            .iter()
+            .map(|line| read_from_text(line).unwrap())
+            .collect(),
+    );
+    let report = NamedTempFile::new().unwrap();
+    let mut watchers = WatcherList::default();
+    let output = processor
+        .process_all_with_watchers(&id, "<", &mut watchers, report.path())
+        .unwrap();
+    assert_eq!(output, "A<");
+    assert_eq!(output, processor.process_all(&id, "<").unwrap());
+}

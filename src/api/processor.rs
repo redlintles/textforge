@@ -31,7 +31,7 @@ use crate::context::execution_context::GlobalExecutionContext;
 use crate::parser::resolve_var::TokenWrapper;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
-use crate::utils::apply::apply_transform;
+use crate::utils::apply::{apply_transform, run_tokens};
 use crate::utils::errors::{
     ErrorManager, TextForgeError, TextForgeErrorCode, token_array_not_found,
 };
@@ -758,8 +758,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         id: &str,
         input: Cow<'a, str>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut result = input;
-
         let tokens = self
             .transforms
             .get(id)
@@ -769,14 +767,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         // ErrorManager local, descartável — não é o self.errors compartilhado
         let mut local_errors = ErrorManager::default();
 
-        for token in tokens.iter() {
-            if context.is_halted {
-                break;
-            }
-            result = apply_transform(token, result, &mut local_errors, &mut context)?;
-        }
-
-        Ok(result)
+        run_tokens(
+            tokens,
+            input,
+            &mut context,
+            |_, token, document, context| {
+                apply_transform(token, document, &mut local_errors, context)
+            },
+        )
     }
 
     #[cfg(feature = "buffered")]
@@ -817,7 +815,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
     #[cfg(not(feature = "buffered"))]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
-        let mut result = Cow::from(input);
         let dashes = 10;
 
         let tokens = match self
@@ -838,65 +835,67 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         log.push_str("\n\n");
 
         let mut context = GlobalExecutionContext::new();
+        let errors = &mut self.errors;
 
-        for (counter, token) in (0_i64..).zip(tokens.iter()) {
-            if context.is_halted {
-                break;
-            }
-            let bound = token
-                .bind_for_debug(&mut context)
-                .inspect_err(|error| self.errors.add_error(error.clone()))?;
-            let line = bound.to_textforge_line();
-            let red_result = result.red();
-            let temp = bound
-                .transform(result, Some(&mut context))
-                .inspect_err(|error| self.errors.add_error(error.clone()))?;
+        let result = run_tokens(
+            tokens,
+            Cow::from(input),
+            &mut context,
+            |index, token, result, context| {
+                let counter = index as i64;
+                let bound = token
+                    .bind_for_debug(context)
+                    .inspect_err(|error| errors.add_error(error.clone()))?;
+                let line = bound.to_textforge_line();
+                let red_result = result.red();
+                let temp = bound
+                    .transform(result, Some(context))
+                    .inspect_err(|error| errors.add_error(error.clone()))?;
 
-            if token.get_string_repr() == "blk" {
-                let v = match bound.get_params().first() {
-                    Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
-                    _ => {
-                        return Err(TextForgeError::new(
-                            TextForgeErrorCode::InvalidParameters(
-                                "Invalid block debug metadata".into(),
-                            ),
-                            "process_all_with_debug",
-                            "block name",
-                        ));
-                    }
-                };
+                if token.get_string_repr() == "blk" {
+                    let v = match bound.get_params().first() {
+                        Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
+                        _ => {
+                            return Err(TextForgeError::new(
+                                TextForgeErrorCode::InvalidParameters(
+                                    "Invalid block debug metadata".into(),
+                                ),
+                                "process_all_with_debug",
+                                "block name",
+                            ));
+                        }
+                    };
 
-                log.push_str(
-                    &format!(
-                        "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
+                    log.push_str(
+                        &format!(
+                            "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
+                            counter.to_string().blue(),
+                            (counter + 1).to_string().blue(),
+                            "Block Declaration: ".to_string().green(),
+                            line.yellow(),
+                            v.to_string().green(),
+                            context.get_formatted_block_items(v)?
+                        )
+                    );
+                } else {
+                    log.push_str(&format!(
+                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
                         counter.to_string().blue(),
                         (counter + 1).to_string().blue(),
-                        "Block Declaration: ".to_string().green(),
                         line.yellow(),
-                        v.to_string().green(),
-                        context.get_formatted_block_items(v)?
-                    )
-                );
-            } else {
-                // Note: format! aloca, mas agora você faz 1 print no final.
+                        red_result,
+                        temp.green()
+                    ));
+                }
 
-                log.push_str(&format!(
-                    "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
-                    counter.to_string().blue(),
-                    (counter + 1).to_string().blue(),
-                    line.yellow(),
-                    red_result,
-                    temp.green()
-                ));
-            }
+                if index + 1 < tokens.len() {
+                    log.push_str(&"-".repeat(dashes));
+                    log.push_str("\n\n");
+                }
 
-            if (counter as usize) + 1 < tokens.len() {
-                log.push_str(&"-".repeat(dashes));
-                log.push_str("\n\n");
-            }
-
-            result = temp;
-        }
+                Ok(temp)
+            },
+        )?;
 
         print!("{log}"); // 1 única saída
         Ok(result.to_string())
@@ -1079,44 +1078,50 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         // uma iteração como `before` da próxima é um Arc::clone (refcount bump),
         // não uma cópia de texto. apply_transform ainda recebe &str normalmente
         // (Arc<str> faz Deref<Target = str>, então &current_arc já serve).
-        let mut current_arc: Arc<str> = Arc::from(input);
+        let current_arc: Arc<str> = Arc::from(input);
 
         // Guarda (before, current, instruction) do passo anterior até sabermos
         // o "after" dele — que só existe depois de rodar o passo seguinte.
         let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
 
-        for token in tokens.iter() {
-            let before_arc = Arc::clone(&current_arc); // O(1)
+        let current_arc = run_tokens(
+            tokens,
+            current_arc,
+            &mut context,
+            |_, token, current_arc, context| {
+                let before_arc = Arc::clone(&current_arc); // O(1)
 
-            let after = apply_transform(
-                token,
-                Cow::Borrowed(current_arc.as_ref()),
-                &mut local_errors,
-                &mut context,
-            )?;
+                let after = apply_transform(
+                    token,
+                    Cow::Borrowed(current_arc.as_ref()),
+                    &mut local_errors,
+                    context,
+                )?;
 
-            // Única cópia de texto inteiro por passo: a saída do transform
-            // (String nova, alocada pelo apply_transform em si — isso é
-            // inerante ao trabalho da instrução) também precisa existir como
-            // Arc<str> pra virar "current" deste passo / "before" do próximo.
-            current_arc = Arc::from(after.as_ref());
+                // Única cópia de texto inteiro por passo: a saída do transform
+                // (String nova, alocada pelo apply_transform em si — isso é
+                // inerante ao trabalho da instrução) também precisa existir como
+                // Arc<str> pra virar "current" deste passo / "before" do próximo.
+                let current_arc: Arc<str> = Arc::from(after.as_ref());
 
-            if let Some((prev_before, prev_current, prev_instruction)) = pending.take() {
-                let watcher_ctx = WatcherContext::new(
-                    prev_current,
-                    prev_before,
-                    Some(Arc::clone(&current_arc)), // O(1)
-                    prev_instruction,
-                );
-                watcher_list.run_watchers(watcher_ctx)?;
-            }
+                if let Some((prev_before, prev_current, prev_instruction)) = pending.take() {
+                    let watcher_ctx = WatcherContext::new(
+                        prev_current,
+                        prev_before,
+                        Some(Arc::clone(&current_arc)), // O(1)
+                        prev_instruction,
+                    );
+                    watcher_list.run_watchers(watcher_ctx)?;
+                }
 
-            pending = Some((
-                before_arc,
-                Arc::clone(&current_arc), // O(1)
-                token.to_textforge_line().to_string(),
-            ));
-        }
+                pending = Some((
+                    before_arc,
+                    Arc::clone(&current_arc), // O(1)
+                    token.to_textforge_line().to_string(),
+                ));
+                Ok(current_arc)
+            },
+        )?;
 
         // Última instrução: não existe próximo passo — after = None, explícito.
         if let Some((before, current, instruction)) = pending.take() {

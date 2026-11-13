@@ -185,6 +185,17 @@ impl TokenWrapper {
         t.transform(input, Some(context))
     }
 
+    /// Apply a token nested inside another instruction (`iter`, `cblk`, `on*`).
+    /// Same result as [`Self::apply_token`]; it is the single place where nested
+    /// steps are observed by debug tracing.
+    pub(crate) fn apply_nested<'a>(
+        &self,
+        input: Cow<'a, str>,
+        context: &mut GlobalExecutionContext,
+    ) -> Result<Cow<'a, str>, TextForgeError> {
+        self.apply_token(input, context)
+    }
+
     #[cfg(feature = "buffered")]
     pub(crate) fn apply_buffered(
         &self,

@@ -7,18 +7,56 @@ use crate::{
     parse_args,
     parser::{params::TextForgeParamTypes, resolve_var::TokenWrapper},
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, validations::check_vec_len},
+    utils::{
+        errors::{TextForgeError, TextForgeErrorCode},
+        validations::check_vec_len,
+    },
 };
 
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Iter - Does nothing
+/// Iter - Iterate
+///
+/// Applies `inner` `times` times. During iteration `i` (starting at zero) the
+/// body can read the index as `__COUNTER__` inside `[[ ]]` expressions. Nested
+/// iterations hide the enclosing counter and restore it when they finish.
+///
+/// ```rust
+/// use textforge::api::portable::{Argument, InstructionSpec, PipelinePlan};
+/// let mut plan = PipelinePlan::new();
+/// plan.add(InstructionSpec::new("iter".into(), vec![
+///     Argument::Number(3),
+///     Argument::Instruction(Box::new(InstructionSpec::new("ate".into(), vec![
+///         Argument::Text("[[__COUNTER__]]".into()),
+///     ]))),
+/// ])).unwrap();
+/// assert_eq!(plan.compile().unwrap().process("n").unwrap(), "n012");
+/// ```
 #[derive(Clone, Default)]
 pub struct Iter {
     times: usize,
     inner: TokenWrapper,
     params: Vec<TextForgeParamTypes>,
+}
+
+/// Name of the iteration index variable visible to the body.
+const COUNTER: &str = "__COUNTER__";
+
+impl Iter {
+    /// Run the body `times` times; iteration `i` observes `__COUNTER__ == i`.
+    fn run<'a>(
+        &self,
+        input: Cow<'a, str>,
+        context: &mut GlobalExecutionContext,
+    ) -> Result<Cow<'a, str>, TextForgeError> {
+        let mut result = input;
+        for i in 0..self.times {
+            context.get_mut_var(COUNTER)?.value = VarValues::Usize(i);
+            result = self.inner.apply_nested(result, context)?;
+        }
+        Ok(result)
+    }
 }
 
 impl InstructionMethods for Iter {
@@ -46,26 +84,32 @@ impl InstructionMethods for Iter {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let context = context.unwrap();
+        let context = context.ok_or_else(|| {
+            TextForgeError::new(
+                TextForgeErrorCode::RequiredContextError(
+                    "Context required for iter instruction".into(),
+                ),
+                "iter",
+                "",
+            )
+        })?;
 
-        let mut result = input;
-
+        // A nested iteration hides the enclosing counter and restores it on
+        // exit, so every level observes its own iteration index.
+        let enclosing = context.take_var(COUNTER);
         context.add_var(
-            "__COUNTER__",
+            COUNTER,
             VarEntry {
                 mutable: true,
                 value: VarValues::Usize(0),
             },
         )?;
-        for i in 0..self.times {
-            result = self.inner.apply_token(result, context)?;
-            let var_mut = context.get_mut_var("__COUNTER__")?;
-            var_mut.value = VarValues::Usize(i);
+        let result = self.run(input, context);
+        context.rm_var(COUNTER)?;
+        if let Some(entry) = enclosing {
+            context.add_var(COUNTER, entry)?;
         }
-
-        context.rm_var("__COUNTER__")?;
-
-        Ok(result)
+        result
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
@@ -84,7 +128,13 @@ impl InstructionMethods for Iter {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Result<Vec<u8>, TextForgeError> {
         use crate::to_bytecode;
-        let result = to_bytecode!(self.get_opcode(), []);
+        let result = to_bytecode!(
+            self.get_opcode(),
+            [
+                TextForgeParamTypes::Usize(self.times),
+                TextForgeParamTypes::Token(self.inner.clone()),
+            ]
+        );
         Ok(result)
     }
 }

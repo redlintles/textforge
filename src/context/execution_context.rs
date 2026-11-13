@@ -163,6 +163,12 @@ impl GlobalExecutionContext {
         Ok(Cow::Owned(output))
     }
 
+    /// Remove a variable and return its entry, if it was defined.
+    /// Used by instructions that temporarily shadow a variable.
+    pub(crate) fn take_var(&mut self, id: &str) -> Option<VarEntry> {
+        self.variables.remove(id)
+    }
+
     pub fn new() -> Self {
         GlobalExecutionContext {
             variables: HashMap::new(),
