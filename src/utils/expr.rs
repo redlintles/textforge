@@ -1,11 +1,15 @@
 use std::{borrow::Cow, collections::HashMap};
 
-use evalexpr::{ContextWithMutableVariables, DefaultNumericTypes, HashMapContext, Value};
+use evalexpr::{
+    Context, ContextWithMutableVariables, DefaultNumericTypes, EvalexprResult, HashMapContext,
+    Value,
+};
 
 use crate::{
     context::{
         builtins::{CurrentText, VarReader},
         execution_context::{GlobalExecutionContext, VarEntry, VarValues},
+        static_context::GlobalFunctions,
     },
     parser::params::TextForgeParamTypes,
     utils::{
@@ -48,13 +52,8 @@ fn set_eval_value(
     name: &str,
     value: &VarValues,
 ) -> Result<(), TextForgeError> {
-    let value = match value {
-        VarValues::Usize(n) => Value::from_int(*n as i64),
-        VarValues::String(s) => match s.parse::<i64>() {
-            Ok(i) => Value::from_int(i),
-            Err(_) => Value::from(s.clone()),
-        },
-        VarValues::Token(_) => return Ok(()),
+    let Some(value) = to_eval_value(value) else {
+        return Ok(());
     };
     ctx.set_value(name.to_owned(), value).map_err(|e| {
         TextForgeError::new(
@@ -63,6 +62,59 @@ fn set_eval_value(
             Cow::from(name.to_owned()),
         )
     })
+}
+
+/// A variable as an evalexpr value: integers when the text parses as one,
+/// `None` for token variables.
+fn to_eval_value(value: &VarValues) -> Option<Value> {
+    Some(match value {
+        VarValues::Usize(n) => Value::from_int(*n as i64),
+        VarValues::String(s) => match s.parse::<i64>() {
+            Ok(i) => Value::from_int(i),
+            Err(_) => Value::from(s.clone()),
+        },
+        VarValues::Token(_) => return None,
+    })
+}
+
+/// The variables one expression reads, looked up by a short linear scan
+/// instead of a hashed map: expressions read a handful of names.
+struct ReadContext<'f> {
+    values: Vec<(&'f str, Value)>,
+    functions: &'f GlobalFunctions,
+}
+
+impl Context for ReadContext<'_> {
+    type NumericTypes = DefaultNumericTypes;
+
+    fn get_value(&self, identifier: &str) -> Option<&Value> {
+        self.values
+            .iter()
+            .find(|(name, _)| *name == identifier)
+            .map(|(_, value)| value)
+    }
+
+    fn call_function(&self, identifier: &str, argument: &Value) -> EvalexprResult<Value> {
+        self.functions
+            .call(identifier, argument)
+            .unwrap_or_else(|| {
+                Err(evalexpr::EvalexprError::FunctionIdentifierNotFound(
+                    identifier.to_string(),
+                ))
+            })
+    }
+
+    fn are_builtin_functions_disabled(&self) -> bool {
+        false
+    }
+
+    fn set_builtin_functions_disabled(&mut self, disabled: bool) -> EvalexprResult<()> {
+        if disabled {
+            Err(evalexpr::EvalexprError::BuiltinFunctionsCannotBeDisabled)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 /// Whether a parameter in a numeric position is an interpolated expression
@@ -219,18 +271,23 @@ pub(crate) fn evaluate_tree(
             Cow::from(expression.to_string()),
         )
     };
-    let mut eval_ctx = HashMapContext::new();
+    let mut eval_ctx = ReadContext {
+        values: Vec::new(),
+        functions: reader.context().static_context().functions(),
+    };
     for name in tree.iter_read_variable_identifiers() {
+        if eval_ctx.get_value(name).is_some() {
+            continue;
+        }
         match reader.value(name) {
-            Ok(value) => set_eval_value(&mut eval_ctx, name, &value)?,
+            Ok(value) => {
+                if let Some(value) = to_eval_value(&value) {
+                    eval_ctx.values.push((name, value));
+                }
+            }
             Err(error) if matches!(error.error_code, TextForgeErrorCode::VariableNotFound(_)) => {}
             Err(error) => return Err(error),
         }
     }
-    reader
-        .context()
-        .static_context()
-        .functions()
-        .install(&mut eval_ctx);
     tree.eval_with_context(&eval_ctx).map_err(invalid)
 }

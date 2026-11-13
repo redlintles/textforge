@@ -36,9 +36,17 @@ impl GlobalFunctions {
         true
     }
 
-    /// Add the registered functions to an expression context. Nothing to add
-    /// yet; this is the single point where functions will enter evaluation.
-    pub(crate) fn install(&self, _context: &mut evalexpr::HashMapContext) {}
+    /// Call the registered function `identifier`, or `None` when there is no
+    /// such function (evalexpr then tries its own built-ins). Nothing is
+    /// registered yet; this is the single point where functions will enter
+    /// evaluation.
+    pub(crate) fn call(
+        &self,
+        _identifier: &str,
+        _argument: &evalexpr::Value,
+    ) -> Option<evalexpr::EvalexprResult<evalexpr::Value>> {
+        None
+    }
 }
 
 /// Immutable facts about a pipeline run, readable by the DSL through built-in
