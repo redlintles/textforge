@@ -62,15 +62,12 @@ impl InstructionMethods for Dlc {
         let len = input.chars().count();
 
         // opcional: se string vazia, deletar "tudo" vira vazio
-        if len == 0 {
-            return Ok("".into());
-        }
-
         let mut end = self.end_index;
 
-        // ✅ clamp correto (inclusive range)
+        // ✅ clamp correto (inclusive range). Empty input wraps here and the
+        // check below reports a missing start index, as in `slt` and `ctc`.
         if end >= len {
-            end = len - 1;
+            end = len.wrapping_sub(1);
         }
 
         check_chunk_bound_indexes(self.start_index, end, Some(input.as_ref()))?;

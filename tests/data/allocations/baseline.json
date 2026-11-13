@@ -1724,7 +1724,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
     },
     "owned": false
   },
@@ -1737,7 +1737,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
     },
     "owned": true
   },
@@ -1750,7 +1750,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
     },
     "owned": false
   },
@@ -1763,7 +1763,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
     },
     "owned": true
   },
@@ -1776,7 +1776,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -1789,7 +1789,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -3388,7 +3388,7 @@
     },
     "input": "",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
     },
     "owned": false
   },
@@ -3401,7 +3401,7 @@
     },
     "input": "",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
     },
     "owned": true
   },
@@ -3414,7 +3414,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
     },
     "owned": false
   },
@@ -3427,7 +3427,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
     },
     "owned": true
   },
@@ -3440,7 +3440,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
     },
     "owned": false
   },
@@ -3453,7 +3453,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
     },
     "owned": true
   },
@@ -3466,7 +3466,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -3479,7 +3479,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -19430,7 +19430,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"e\\u{301}\" }"
+      "ok": "é"
     },
     "owned": false
   },
@@ -19443,7 +19443,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"e\\u{301}\" }"
+      "ok": "é"
     },
     "owned": true
   },
@@ -19534,7 +19534,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\\"plain\\\"\" }"
+      "ok": "\"plain\""
     },
     "owned": false
   },
@@ -19547,7 +19547,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\\"plain\\\"\" }"
+      "ok": "\"plain\""
     },
     "owned": true
   },
@@ -19586,7 +19586,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\u{2003} \\t\" }"
+      "ok": "  \t"
     },
     "owned": false
   },
@@ -19599,7 +19599,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\u{2003} \\t\" }"
+      "ok": "  \t"
     },
     "owned": true
   },
@@ -19612,7 +19612,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\r\\n\\r\\n\" }"
+      "ok": "\r\n\r\n"
     },
     "owned": false
   },
@@ -19625,7 +19625,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\r\\n\\r\\n\" }"
+      "ok": "\r\n\r\n"
     },
     "owned": true
   },
@@ -21458,7 +21458,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"e\\u{301}\" }"
+      "ok": "é"
     },
     "owned": false
   },
@@ -21471,7 +21471,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"e\\u{301}\" }"
+      "ok": "é"
     },
     "owned": true
   },
@@ -21562,7 +21562,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\\"plain\\\"\" }"
+      "ok": "\"PLAIN\""
     },
     "owned": false
   },
@@ -21575,7 +21575,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\\"plain\\\"\" }"
+      "ok": "\"PLAIN\""
     },
     "owned": true
   },
@@ -21614,7 +21614,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\u{2003} \\t\" }"
+      "ok": "  \t"
     },
     "owned": false
   },
@@ -21627,7 +21627,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\u{2003} \\t\" }"
+      "ok": "  \t"
     },
     "owned": true
   },
@@ -21640,7 +21640,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\r\\n\\r\\n\" }"
+      "ok": "\r\n\r\n"
     },
     "owned": false
   },
@@ -21653,7 +21653,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"End index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\\r\\n\\r\\n\" }"
+      "ok": "\r\n\r\n"
     },
     "owned": true
   },

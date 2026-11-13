@@ -65,16 +65,15 @@ impl InstructionMethods for Tucc {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input.as_ref()))?;
-
         // Since the user will probably not know the length of the string in the middle of the processing
-        // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
+        // Better simply adjust end_index to the last character if its bigger. instead of throwing an "hard to debug" error
         let mut end = self.end_index;
         let total = input.chars().count();
-
-        if end > total {
-            end = input.len();
+        if end >= total {
+            // Wraps on empty input; the check below reports it.
+            end = total.wrapping_sub(1);
         }
+        check_chunk_bound_indexes(self.start_index, end, Some(input.as_ref()))?;
         let mut result = String::with_capacity(input.len());
         for (i, c) in input.chars().enumerate() {
             if i >= self.start_index && i <= end {

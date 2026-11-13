@@ -80,6 +80,22 @@ pub fn check_chunk_bound_indexes(
     end_index: usize,
     check_against: Option<&str>,
 ) -> Result<(), TextForgeError> {
+    let total_chars = check_against.map(|text| text.chars().count());
+
+    // start precisa existir: checado antes da ordem, porque um `end` além do
+    // texto é cortado no último caractere e ficaria "antes" de um `start` inexistente
+    if let (Some(text), Some(total)) = (check_against, total_chars)
+        && start_index >= total
+    {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::IndexOutOfRange(
+                "Start index does not exist in current string!".into(),
+            ),
+            Cow::Borrowed("check_chunk_bound_indexes"),
+            text.to_string(),
+        ));
+    }
+
     // regra estrutural (independente do texto); intervalo inclusivo
     if start_index > end_index {
         let fmt_err = format!("check_chunk_bound_indexes {} {};", start_index, end_index);
@@ -92,30 +108,17 @@ pub fn check_chunk_bound_indexes(
         ));
     }
 
-    if let Some(text) = check_against {
-        let total_chars = text.chars().count();
-
-        // start precisa existir
-        if !(0..total_chars).contains(&start_index) {
-            return Err(TextForgeError::new(
-                TextForgeErrorCode::IndexOutOfRange(
-                    "Start index does not exist in current string!".into(),
-                ),
-                Cow::Borrowed("check_chunk_bound_indexes"),
-                text.to_string(),
-            ));
-        }
-
-        // end também precisa existir
-        if !(0..total_chars).contains(&end_index) {
-            return Err(TextForgeError::new(
-                TextForgeErrorCode::IndexOutOfRange(
-                    "End index does not exist in current string!".into(),
-                ),
-                Cow::Borrowed("check_chunk_bound_indexes"),
-                text.to_string(),
-            ));
-        }
+    // end também precisa existir
+    if let (Some(text), Some(total)) = (check_against, total_chars)
+        && end_index >= total
+    {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::IndexOutOfRange(
+                "End index does not exist in current string!".into(),
+            ),
+            Cow::Borrowed("check_chunk_bound_indexes"),
+            text.to_string(),
+        ));
     }
 
     Ok(())

@@ -53,3 +53,27 @@ fn a_reversed_range_is_still_an_error() {
         );
     }
 }
+
+#[test]
+fn an_end_past_the_text_is_clamped_by_every_character_range() {
+    for (line, input, expected) in [
+        ("tucc 1 99;", "aéb", "aÉB"),
+        ("tlcc 1 3;", "AÉB", "Aéb"),
+        ("slt 1 99;", "aéb", "éb"),
+        ("ctc 0 99;", "ab cd", "Ab Cd"),
+        ("dlc 1 99;", "aéb", "a"),
+    ] {
+        assert_eq!(run(line, input).as_deref(), Ok(expected), "{line}");
+    }
+}
+
+#[test]
+fn character_ranges_on_empty_text_are_errors() {
+    // `dlc` used to return "" for any indices.
+    for line in ["dlc 0 3;", "slt 0 3;", "ctc 0 3;", "tucc 0 3;", "tlcc 0 3;"] {
+        assert!(
+            matches!(run(line, ""), Err(TextForgeErrorCode::IndexOutOfRange(_))),
+            "{line}"
+        );
+    }
+}

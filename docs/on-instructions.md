@@ -57,10 +57,7 @@ All errors are `TextForgeError`; nothing panics.
 | all | an error from the nested instruction | — |
 
 `start == end` selects one character (`onck 0 0 apply tua;`), as in every
-inclusive range. Difference from `dlc`, deliberate:
-
-- An empty document is an error. `dlc` returns empty text because deleting from
-  nothing is a no-op; `onck` has no section to give to the nested instruction.
+inclusive range, and an empty document is an error, as in `dlc`.
 
 As in `dlc`, an `end` past the last character is clamped to it.
 

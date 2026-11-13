@@ -66,16 +66,15 @@ impl InstructionMethods for Tlcc {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        check_chunk_bound_indexes(self.start_index, self.end_index, Some(input.as_ref()))?;
-
+        // An end past the last character is clamped to it, as in `tucc`, `slt`, `ctc` and `dlc`.
         let total_chars = input.chars().count();
-        let last_char_index = total_chars.saturating_sub(1);
-
-        let end = if self.end_index > last_char_index {
-            last_char_index
+        let end = if self.end_index >= total_chars {
+            // Wraps on empty input; the check below reports it.
+            total_chars.wrapping_sub(1)
         } else {
             self.end_index
         };
+        check_chunk_bound_indexes(self.start_index, end, Some(input.as_ref()))?;
 
         let mut result = String::with_capacity(input.len());
         for (i, c) in input.chars().enumerate() {
