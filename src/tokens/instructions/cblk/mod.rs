@@ -9,6 +9,7 @@ use crate::{
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
     utils::{
+        apply::run_tokens,
         errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
         validations::check_vec_len,
     },
@@ -72,11 +73,11 @@ impl InstructionMethods for Cblk {
             },
             &self.block_name,
             input,
-            |mut result, context| {
-                for token in tokens.iter() {
-                    result = token.apply_nested(result, context)?;
-                }
-                Ok(result)
+            |result, context| {
+                // Same halting rule as the root: nothing runs after `end`.
+                run_tokens(&tokens, result, context, |_, token, result, context| {
+                    token.apply_nested(result, context)
+                })
             },
         )?;
 

@@ -37,6 +37,9 @@
   panicking, and `iter` bytecode now includes its two parameters.
 - `ctc`, `ins` and `slt` no longer overflow (panicking in debug builds) on
   empty input; they return the error release builds already returned.
+- `end` inside a block or an iteration now stops the rest of that block or
+  loop. Previously `cblk` and `iter` kept running the instructions after `end`
+  (e.g. `ate x; end; ate y` in a block produced `xy`).
 - `end` now halts pipelines run with watchers (`process_all_with_watchers`).
   Watcher runs previously kept executing the instructions after `end`.
 

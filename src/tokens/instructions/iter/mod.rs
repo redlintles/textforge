@@ -22,6 +22,7 @@ pub mod test;
 /// Applies `inner` `times` times. During iteration `i` (starting at zero) the
 /// body can read the index as `__COUNTER__` inside `[[ ]]` expressions. Nested
 /// iterations hide the enclosing counter and restore it when they finish.
+/// `end` in the body stops the remaining iterations.
 ///
 /// ```rust
 /// use textforge::api::portable::{Argument, InstructionSpec, PipelinePlan};
@@ -53,6 +54,10 @@ impl Iter {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let mut result = input;
         for i in 0..self.times {
+            // `end` in the body stops the remaining iterations too.
+            if context.is_halted {
+                break;
+            }
             context.get_mut_var(COUNTER)?.value = VarValues::Usize(i);
             result = self.inner.apply_nested(result, context)?;
         }

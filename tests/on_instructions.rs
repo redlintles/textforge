@@ -490,3 +490,35 @@ fn replacement_maps_cannot_be_defined_inside_on_instructions() {
     .unwrap();
     assert!(plan.compile().is_err());
 }
+
+#[test]
+fn end_stops_the_rest_of_blocks_and_iterations() {
+    // Before the fix the block kept running after `end` ("xy") and the
+    // remaining iterations and block instructions ran ("y").
+    let mut processor = TextForgeProcessor::new();
+    let id = processor.add_transform(
+        [
+            "blk b assoc ate x;",
+            "blk b assoc end;",
+            "blk b assoc ate y;",
+            "cblk b;",
+            "ate z;",
+        ]
+        .iter()
+        .map(|line| read_from_text(line).unwrap())
+        .collect(),
+    );
+    assert_eq!(processor.process_all(&id, "").unwrap(), "x");
+    let id = processor.add_transform(
+        [
+            "blk b assoc iter 3 times ate x;",
+            "blk b assoc iter 3 times end;",
+            "blk b assoc ate y;",
+            "cblk b;",
+        ]
+        .iter()
+        .map(|line| read_from_text(line).unwrap())
+        .collect(),
+    );
+    assert_eq!(processor.process_all(&id, "").unwrap(), "xxx");
+}
