@@ -204,3 +204,13 @@ Adapters must preserve numeric conversions and portable errors. The Python
 binding provides explicit typed methods matching the Rust names and delegates
 through this portable representation. No line-specific domain validation belongs
 in an adapter.
+
+## Section instructions (unreleased)
+
+Rust `on_line(n, inner)`, `on_chunk(start, end, inner)` and
+`on_line_interval(start, end, inner)` map to `InstructionSpec` mnemonics `onln`,
+`onck` and `onlni`. Numeric arguments are `Number` or `Variable`; the nested
+instruction is `Argument::Instruction`, the same mechanism `iter` and `ifdc`
+use. No new portable type or method is needed. `tests/on_instructions.rs`
+checks portable plans against the fluent builder. Bindings are not updated yet;
+that requires maintainer approval. See [section instructions](on-instructions.md).
