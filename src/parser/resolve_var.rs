@@ -12,6 +12,7 @@ use crate::{
         errors::{TextForgeError, TextForgeErrorCode},
         expr::{interpolate_with, is_numeric_template},
         regexes::VAR_REF_RE,
+        template::Template,
     },
 };
 
@@ -54,6 +55,45 @@ pub struct TokenWrapper {
     params: Vec<ValType>,
     pub token: Box<dyn InstructionMethods>,
     prepared: Option<Arc<dyn InstructionMethods>>,
+    compiled: Option<Arc<CompiledParams>>,
+}
+
+/// What parameter binding needs that does not change between runs: the
+/// expected parameter kinds and each string parameter's compiled template.
+/// Built with the prepared binding, for instructions that cannot be bound once.
+#[derive(Debug)]
+struct CompiledParams {
+    expected: Vec<SyntaxToken>,
+    /// One entry per parameter; `Some` for a string holding delimiters.
+    templates: Vec<Option<Template>>,
+}
+
+impl CompiledParams {
+    /// `None` when the parameters do not fit the instruction's syntax, so
+    /// binding keeps reporting that error the usual way.
+    fn new(token: &dyn InstructionMethods, params: &[ValType]) -> Option<Self> {
+        let expected = match TOKEN_TABLE.find((
+            QuerySource::Identifier(token.get_string_repr().into()),
+            QueryTarget::Syntax,
+        )) {
+            Ok(TargetValue::Syntax(syntax)) => get_effective_param_types(&syntax),
+            _ => return None,
+        };
+        if expected.len() != params.len() {
+            return None;
+        }
+        let templates = params
+            .iter()
+            .map(|parameter| match parameter {
+                ValType::Literal(TextForgeParamTypes::String(text)) => Template::parse(text),
+                _ => None,
+            })
+            .collect();
+        Some(CompiledParams {
+            expected,
+            templates,
+        })
+    }
 }
 
 /// Deepest nested level `prepare_constant` descends to; matches the parsers'
@@ -70,6 +110,7 @@ impl Clone for TokenWrapper {
             params: self.params.clone(),
             token: self.token.clone(),
             prepared: self.prepared.clone(),
+            compiled: self.compiled.clone(),
         }
     }
 }
@@ -80,6 +121,7 @@ impl Default for TokenWrapper {
             params: Vec::new(),
             token: Box::new(Null::default()),
             prepared: None,
+            compiled: None,
         }
     }
 }
@@ -103,6 +145,7 @@ impl From<Box<dyn InstructionMethods>> for TokenWrapper {
             params: token_params,
             token: value,
             prepared: None,
+            compiled: None,
         }
     }
 }
@@ -130,16 +173,39 @@ impl TokenWrapper {
                 }
             }
         }
+        let compiled = CompiledParams::new(self.token.as_ref(), &self.params);
+        self.bind_constant(compiled.as_ref());
+        if self.prepared.is_none() {
+            self.compiled = compiled.map(Arc::new);
+        }
+    }
+
+    /// Bind once when every parameter is constant: numbers, nested
+    /// instructions, joined pipelines and text whose templates read nothing
+    /// that changes between runs (constant `[[ ]]` expressions included).
+    fn bind_constant(&mut self, compiled: Option<&CompiledParams>) {
+        let constant_text = |index: usize, text: &str| match compiled {
+            Some(compiled) => compiled.templates[index]
+                .as_ref()
+                .is_none_or(Template::is_constant),
+            None => !["{{", "}}", "[[", "]]"]
+                .iter()
+                .any(|marker| text.contains(marker)),
+        };
         if !self.token.supports_preparation()
-            || !self.params.iter().all(|parameter| match parameter {
-                ValType::Literal(TextForgeParamTypes::Usize(_))
-                | ValType::Literal(TextForgeParamTypes::Token(_))
-                | ValType::Literal(TextForgeParamTypes::Pipeline(_)) => true,
-                ValType::Literal(TextForgeParamTypes::String(text)) => !["{{", "}}", "[[", "]]"]
-                    .iter()
-                    .any(|marker| text.contains(marker)),
-                _ => false,
-            })
+            || !self
+                .params
+                .iter()
+                .enumerate()
+                .all(|(index, parameter)| match parameter {
+                    ValType::Literal(TextForgeParamTypes::Usize(_))
+                    | ValType::Literal(TextForgeParamTypes::Token(_))
+                    | ValType::Literal(TextForgeParamTypes::Pipeline(_)) => true,
+                    ValType::Literal(TextForgeParamTypes::String(text)) => {
+                        constant_text(index, text)
+                    }
+                    _ => false,
+                })
         {
             return;
         }
@@ -147,6 +213,7 @@ impl TokenWrapper {
         if let Ok(parameters) = ValType::resolve_variables(
             self.token.as_ref(),
             &self.params,
+            compiled,
             context,
             CurrentText::Unavailable,
         ) {
@@ -167,6 +234,7 @@ impl TokenWrapper {
 
     fn strip_preparation(&mut self, depth: usize) {
         self.prepared = None;
+        self.compiled = None;
         if depth < MAX_PREPARED_DEPTH {
             for parameter in &mut self.params {
                 if let ValType::Literal(TextForgeParamTypes::Token(child)) = parameter {
@@ -192,6 +260,7 @@ impl TokenWrapper {
                 params: param_vec,
                 token,
                 prepared: None,
+                compiled: None,
             },
             None => {
                 let token_params = token
@@ -204,6 +273,7 @@ impl TokenWrapper {
                     params: token_params,
                     token,
                     prepared: None,
+                    compiled: None,
                 }
             }
         }
@@ -216,7 +286,13 @@ impl TokenWrapper {
         context: &GlobalExecutionContext,
         text: CurrentText,
     ) -> Result<Box<dyn InstructionMethods>, TextForgeError> {
-        let params = ValType::resolve_variables(self.token.as_ref(), &self.params, context, text)?;
+        let params = ValType::resolve_variables(
+            self.token.as_ref(),
+            &self.params,
+            self.compiled.as_deref(),
+            context,
+            text,
+        )?;
         let mut token = self.token.clone();
         token.set_params(&params)?;
         Ok(token)
@@ -233,6 +309,7 @@ impl TokenWrapper {
         let parsed_params = ValType::resolve_variables(
             self.token.as_ref(),
             &self.params,
+            self.compiled.as_deref(),
             context,
             CurrentText::Str(&input),
         )?;
@@ -284,6 +361,7 @@ impl TokenWrapper {
         let params = ValType::resolve_variables(
             self.token.as_ref(),
             &self.params,
+            self.compiled.as_deref(),
             context,
             CurrentText::Buffer(std::cell::RefCell::new(&mut input)),
         )?;
@@ -299,6 +377,7 @@ impl TokenWrapper {
         let parsed_params = ValType::resolve_variables(
             self.token.as_ref(),
             &self.params,
+            self.compiled.as_deref(),
             context,
             CurrentText::Unavailable,
         )?;
@@ -426,6 +505,7 @@ impl TokenWrapper {
         let parsed_params = ValType::resolve_variables(
             self.token.as_ref(),
             &self.params,
+            self.compiled.as_deref(),
             context,
             CurrentText::Unavailable,
         )?;
@@ -538,23 +618,27 @@ impl ValType {
     fn resolve_variables(
         t: &dyn InstructionMethods,
         values: &[ValType],
+        compiled: Option<&CompiledParams>,
         context: &GlobalExecutionContext,
         text: CurrentText,
     ) -> Result<Vec<TextForgeParamTypes>, TextForgeError> {
-        let mut result = Vec::new();
         let reader = VarReader::new(context, text);
-
-        let query_result = TOKEN_TABLE.find((
-            QuerySource::Identifier(t.get_string_repr().into()),
-            QueryTarget::Syntax,
-        ))?;
-
-        let expected_params = get_effective_param_types(
-            &(match query_result {
-                TargetValue::Syntax(x) => x,
-                _ => unreachable!("Unreachable Code"),
-            }),
-        );
+        let looked_up;
+        let expected_params: &[SyntaxToken] = match compiled {
+            Some(compiled) => &compiled.expected,
+            None => {
+                looked_up = Self::expected_params(t)?;
+                &looked_up
+            }
+        };
+        let mut result = Vec::with_capacity(values.len());
+        // A string parameter: its compiled template, or interpolation.
+        let render =
+            |index: usize, text: &str| match compiled.and_then(|c| c.templates[index].as_ref()) {
+                Some(template) => template.render(&reader),
+                None if compiled.is_some() => Ok(text.to_owned()),
+                None => interpolate_with(text, &reader),
+            };
 
         if values.len() != expected_params.len() {
             return Err(TextForgeError::new(
@@ -568,7 +652,31 @@ impl ValType {
                 ),
             ));
         }
+        Self::bind(values, expected_params, &reader, render, &mut result)?;
+        Ok(result)
+    }
 
+    fn expected_params(t: &dyn InstructionMethods) -> Result<Vec<SyntaxToken>, TextForgeError> {
+        let query_result = TOKEN_TABLE.find((
+            QuerySource::Identifier(t.get_string_repr().into()),
+            QueryTarget::Syntax,
+        ))?;
+
+        Ok(get_effective_param_types(
+            &(match query_result {
+                TargetValue::Syntax(x) => x,
+                _ => unreachable!("Unreachable Code"),
+            }),
+        ))
+    }
+
+    fn bind(
+        values: &[ValType],
+        expected_params: &[SyntaxToken],
+        reader: &VarReader,
+        render: impl Fn(usize, &str) -> Result<String, TextForgeError>,
+        result: &mut Vec<TextForgeParamTypes>,
+    ) -> Result<(), TextForgeError> {
         for (i, value) in values.iter().enumerate() {
             match value {
                 ValType::Literal(literal) => match (literal, expected_params[i]) {
@@ -578,7 +686,7 @@ impl ValType {
                     // interpolate() devolve a string inalterada pelo
                     // fast-path) quanto strings com N marcadores misturados.
                     (TextForgeParamTypes::String(s), SyntaxToken::String) => {
-                        result.push(TextForgeParamTypes::String(interpolate_with(s, &reader)?));
+                        result.push(TextForgeParamTypes::String(render(i, s)?));
                     }
 
                     // A numeric parameter written as an expression
@@ -586,7 +694,7 @@ impl ValType {
                     (TextForgeParamTypes::String(s), SyntaxToken::Usize)
                         if is_numeric_template(s) =>
                     {
-                        let text = interpolate_with(s, &reader)?;
+                        let text = render(i, s)?;
                         result.push(Self::coerce_param(
                             TextForgeParamTypes::String(text),
                             SyntaxToken::Usize,
@@ -620,8 +728,7 @@ impl ValType {
                 }
             }
         }
-
-        Ok(result)
+        Ok(())
     }
 }
 

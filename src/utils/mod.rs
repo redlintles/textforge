@@ -14,3 +14,4 @@ pub(crate) mod lines;
 
 pub(crate) mod allocation;
 pub(crate) mod sections;
+pub(crate) mod template;

@@ -202,6 +202,23 @@ pub(crate) fn evaluate_with(
         )
     };
     let tree = evalexpr::build_operator_tree::<DefaultNumericTypes>(expression).map_err(invalid)?;
+    evaluate_tree(&tree, expression, reader, stage)
+}
+
+/// Evaluate an already built operator tree; errors carry `expression`.
+pub(crate) fn evaluate_tree(
+    tree: &evalexpr::Node<DefaultNumericTypes>,
+    expression: &str,
+    reader: &VarReader,
+    stage: &'static str,
+) -> Result<Value, TextForgeError> {
+    let invalid = |e: evalexpr::EvalexprError| {
+        TextForgeError::new(
+            TextForgeErrorCode::InvalidExprError(Cow::from(e.to_string())),
+            Cow::from(stage),
+            Cow::from(expression.to_string()),
+        )
+    };
     let mut eval_ctx = HashMapContext::new();
     for name in tree.iter_read_variable_identifiers() {
         match reader.value(name) {
