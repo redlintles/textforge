@@ -372,8 +372,6 @@ Ask a human before doing any of the following:
 | Crate | Usage |
 |---|---|
 | `tempfile` | Temporary files in tests (via `test_access`). |
-| `random-string` | Random test data. |
-| `rand` | Random test data. |
 
 
 ---

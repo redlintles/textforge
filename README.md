@@ -243,7 +243,7 @@ Without `--output`, the result is printed to stdout. `.textforgebc` pipelines ne
 | `bytecode` | Enables the `.textforgebc` binary protocol (library and CLI) |
 | `watchers` | Enables pipeline observability probes and JSON execution reports |
 | `buffered` | Enables buffered, spool-backed processing (`process_*_buffered`); pulls in `tempfile` |
-| `test_access` | Enables test helpers (`rand`, `random-string`, `tempfile`) and pulls in `bytecode`/`watchers`/`buffered` |
+| `test_access` | Enables test helpers (`tempfile`) and pulls in `bytecode`/`watchers`/`buffered` |
 
 ---
 

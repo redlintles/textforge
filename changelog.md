@@ -48,6 +48,10 @@
 
 ### Changed
 
+- Dependencies: removed the unused optional test dependencies `rand` and
+  `random-string` (and with them the unmaintained `instant`,
+  RUSTSEC-2024-0384); updated `uuid` to 1.29.2 and `html-escape` to 0.3.1; ran
+  `cargo update`, which moves `rustix` to 1.1.6 (fixes RUSTSEC-2026-0486).
 - Internal audit of this work: `docs/audits/0.3.0-on-debug-audit.md`.
 - Debug traces list at most 20 steps per container (`… +K steps`).
 - Nested instructions (inside `iter`, `onln`/`onck`/`onlni`, conditionals and
