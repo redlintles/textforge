@@ -95,7 +95,13 @@ impl InstructionMethods for Eval {
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Result<Vec<u8>, TextForgeError> {
         use crate::to_bytecode;
-        let result = to_bytecode!(self.get_opcode(), []);
+        let result = to_bytecode!(
+            self.get_opcode(),
+            [
+                TextForgeParamTypes::String(self.expr.clone()),
+                TextForgeParamTypes::String(self.target.clone()),
+            ]
+        );
         Ok(result)
     }
 }
