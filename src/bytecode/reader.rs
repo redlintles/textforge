@@ -12,6 +12,7 @@ use crate::{
     },
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
+        expr::is_numeric_template,
         validations::check_file_path,
     },
 };
@@ -40,6 +41,8 @@ fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: 
         // Tipos diretos
         (SyntaxToken::String, SyntaxToken::String, PARAM_STRING) => true,
         (SyntaxToken::Usize, SyntaxToken::Usize, PARAM_USIZE) => true,
+        // Numeric expression stored as text; its payload is checked after decoding.
+        (SyntaxToken::Usize, SyntaxToken::String, PARAM_STRING) => true,
         (SyntaxToken::Token, SyntaxToken::Token, PARAM_TOKEN) => true,
 
         // VarRef: pode aparecer onde o schema espera String/Usize/Token
@@ -500,6 +503,15 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
             }
 
             let vt = decode_param_record_to_valtype(&param_record)?;
+            if matches!(expected[expected_i].token, SyntaxToken::Usize)
+                && matches!(&vt, ValType::Literal(TextForgeParamTypes::String(text)) if !is_numeric_template(text))
+            {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::BytecodeParsingError("Param type mismatch".into()),
+                    "read_bytecode_from_file",
+                    format!("opcode=0x{opcode:x} param={param_i} got=String expected=Usize"),
+                ));
+            }
             params.push(vt);
             expected_i += 1;
         }

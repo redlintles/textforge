@@ -81,15 +81,22 @@ As in `dlc`, an `end` past the last character is clamped to it.
 
 ## Applying to each line
 
-Combining `iter` and `onln` reaches lines one by one, using `__COUNTER__`
-(iteration `i` sees `__COUNTER__ == i`). Two current limits apply:
+Combining `iter` and `onln` reaches lines one by one: iteration `i` sees
+`__COUNTER__ == i`, and numeric parameters accept `[[ ]]` expressions, so the
+line number is `[[__COUNTER__ + 1]]`. Because of the depth limit above, the
+combination runs from a block:
 
-- The combination needs a block, because of the depth limit above.
-- Numeric parameters accept literals and `{{name}}` references, but not `[[ ]]`
-  expressions, and `{{ }}` does not accept names starting with `_`. A line number
-  derived from `__COUNTER__` (`[[__COUNTER__ + 1]]`) therefore cannot be written
-  yet; `__COUNTER__` is usable inside text parameters, e.g.
-  `blk each assoc iter 3 times onln 2 apply ate '[[__COUNTER__]]';`.
+```text
+blk each assoc iter 3 times onln '[[__COUNTER__ + 1]]' apply tbs;
+cblk each;
+```
+
+Quote expressions that contain spaces, as with any parameter.
+
+Known limit: bytecode files cannot load block payloads three levels deep
+(`blk … assoc iter … onln … apply …`), although text files can. This predates the
+section instructions and affects any three-level payload (e.g.
+`blk b assoc iter 2 times ifdc x do ate y;`).
 
 If the nested instruction adds or removes lines, the following line numbers
 shift. Use `onlni` when the line count changes.

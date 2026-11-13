@@ -7,7 +7,7 @@
 
 #[cfg(feature = "bytecode")]
 use crate::context::execution_context::GlobalExecutionContext;
-use crate::utils::regexes::VAR_REF_RE;
+use crate::utils::{expr::is_numeric_template, regexes::VAR_REF_RE};
 use core::str;
 use std::{
     array::TryFromSliceError,
@@ -298,9 +298,14 @@ impl TextForgeParamTypes {
                             format!("index={}", i),
                         )
                     })?;
-                    out.push(ValType::Literal(TextForgeParamTypes::Usize(
-                        string_to_usize(s)?,
-                    )));
+                    if is_numeric_template(s) {
+                        // Resolved to a number at execution time.
+                        out.push(ValType::Literal(TextForgeParamTypes::String(s.clone())));
+                    } else {
+                        out.push(ValType::Literal(TextForgeParamTypes::Usize(
+                            string_to_usize(s)?,
+                        )));
+                    }
                     i += 1;
                 }
 

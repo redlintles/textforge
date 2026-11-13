@@ -180,6 +180,8 @@ Input `xfruitx` → output `banana fruit`.
 | `[[ 2 + 3 ]]` | Math expression interpolation | Resolved by `evalexpr`. Variables from the execution context can be referenced inside expressions. |
 | `{{name}}` | Variable interpolation | Currently **only parameter substitution** is supported. Replaced at execution time by the value of the named variable. |
 
+Variable names start with a letter or `_` and continue with letters, digits or `_` (`__COUNTER__`, `line_no`). A numeric parameter may also be written as an expression or template (`[[__COUNTER__ + 1]]`, `'{{a}}{{b}}'`): it is kept as text when parsed and must interpolate to a non-negative integer at execution time (`IncompatibleTypeError` otherwise). Plain text in a numeric position is still rejected while parsing.
+
 ---
 
 ## 8. Bytecode Format

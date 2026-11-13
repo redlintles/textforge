@@ -7,7 +7,7 @@ use crate::{
     tokens::{InstructionMethods, instructions::null::Null},
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
-        expr::interpolate,
+        expr::{interpolate, is_numeric_template},
         regexes::VAR_REF_RE,
     },
 };
@@ -487,6 +487,19 @@ impl ValType {
                     // fast-path) quanto strings com N marcadores misturados.
                     (TextForgeParamTypes::String(s), SyntaxToken::String) => {
                         result.push(TextForgeParamTypes::String(interpolate(s, context)?));
+                    }
+
+                    // A numeric parameter written as an expression
+                    // (`[[__COUNTER__ + 1]]`): interpolate, then parse.
+                    (TextForgeParamTypes::String(s), SyntaxToken::Usize)
+                        if is_numeric_template(s) =>
+                    {
+                        let text = interpolate(s, context)?;
+                        result.push(Self::coerce_param(
+                            TextForgeParamTypes::String(text),
+                            SyntaxToken::Usize,
+                            s,
+                        )?);
                     }
 
                     (TextForgeParamTypes::Usize(_), SyntaxToken::Usize)

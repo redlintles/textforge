@@ -60,6 +60,14 @@ pub fn build_eval_context(
     Ok(ctx)
 }
 
+/// Whether a parameter in a numeric position is an interpolated expression
+/// (`[[__COUNTER__ + 1]]`, `{{a}}{{b}}`) rather than a literal number. Such
+/// parameters are kept as text when parsed and become a number only after
+/// interpolation at execution time.
+pub(crate) fn is_numeric_template(text: &str) -> bool {
+    text.contains("[[") || text.contains("{{")
+}
+
 /// Converts an evalexpr result back into a plain string, without the
 /// formatting evalexpr's own `Display` impl adds (e.g. wrapping strings in
 /// literal quotes, since that impl is meant to print back valid expression

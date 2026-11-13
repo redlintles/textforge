@@ -6,7 +6,10 @@ use crate::{
         params::{MAX_DEPTH_ASSOC_PAYLOAD, MAX_DEPTH_NORMAL, TextForgeParamTypes},
         resolve_var::{TokenWrapper, ValType},
     },
-    utils::errors::{TextForgeError, TextForgeErrorCode},
+    utils::{
+        errors::{TextForgeError, TextForgeErrorCode},
+        expr::is_numeric_template,
+    },
 };
 
 /// An inherited position in the construction hierarchy, never engine state.
@@ -231,6 +234,10 @@ impl ValidationRule for SignatureRule {
                         SyntaxToken::Usize
                     ) | (Parameter::Instruction, SyntaxToken::Token)
                         | (Parameter::Reference, _)
+                ) || matches!(
+                    (parameter, expected),
+                    (Parameter::Literal(TextForgeParamTypes::String(text)), SyntaxToken::Usize)
+                        if is_numeric_template(text)
                 );
                 if !compatible {
                     return Err(TextForgeError::new(

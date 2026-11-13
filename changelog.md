@@ -4,6 +4,10 @@
 
 ### Added
 
+- Numeric parameters accept `[[ ]]` expressions and `{{ }}` templates, resolved
+  at execution time: `onln '[[__COUNTER__ + 1]]' apply tbs;`. Text, bytecode,
+  the builder and portable plans keep the expression. A result that is not a
+  non-negative integer is an `IncompatibleTypeError`.
 - Nested debug trace: `process_all_with_debug` and `process_single_with_debug`
   now show what happens inside `cblk`, `iter`, `onln`/`onck`/`onlni` and `rmape`
   (steps, net effect in characters and lines, and up to 20 replacements per
@@ -38,6 +42,9 @@
 
 ### Changed
 
+- Variable references accept `_` in names, including as the first character:
+  `{{__COUNTER__}}` and `{{line_no}}` now interpolate. Previously such markers
+  did not match, their delimiters were dropped and the bare name was printed.
 - Every processing mode (plain, debug, watchers and their buffered variants)
   now runs the same internal execution loop, so halting and ordering rules
   cannot drift between modes. Public signatures are unchanged.
