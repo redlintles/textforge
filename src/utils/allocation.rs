@@ -37,6 +37,41 @@ pub(crate) fn replace<'a>(
     }
 }
 
+/// Rewrite words `0..=last` (words as `split_whitespace` defines them) and
+/// keep everything else, separators included, byte for byte. `rewrite(index,
+/// word)` returns the new text for a word, or `None` to keep it. Words after
+/// `last` are not visited, and an unchanged text is returned without copying.
+pub(crate) fn rewrite_words<'a>(
+    input: Cow<'a, str>,
+    last: usize,
+    mut rewrite: impl FnMut(usize, &str) -> Option<String>,
+) -> Cow<'a, str> {
+    let base = input.as_ptr() as usize;
+    let mut output: Option<String> = None;
+    let mut copied = 0;
+    for (index, word) in input.split_whitespace().enumerate() {
+        if index > last {
+            break;
+        }
+        let Some(new) = rewrite(index, word).filter(|new| new != word) else {
+            continue;
+        };
+        // `word` is a subslice of `input`: its offset is a pointer difference.
+        let start = word.as_ptr() as usize - base;
+        let output = output.get_or_insert_with(|| String::with_capacity(input.len()));
+        output.push_str(&input[copied..start]);
+        output.push_str(&new);
+        copied = start + word.len();
+    }
+    match output {
+        None => input,
+        Some(mut output) => {
+            output.push_str(&input[copied..]);
+            Cow::Owned(output)
+        }
+    }
+}
+
 /// Append a word with only its first Unicode scalar uppercased.
 pub(crate) fn capitalize_into(output: &mut String, word: &str) {
     let mut chars = word.chars();
@@ -167,5 +202,43 @@ mod tests {
         let mut output = String::new();
         capitalize_into(&mut output, "ßé🍌e\u{301}");
         assert_eq!(output, "SSé🍌e\u{301}");
+    }
+}
+
+#[cfg(test)]
+mod rewrite_words_tests {
+    use super::*;
+
+    fn upper_at(input: &str, at: usize) -> Cow<'_, str> {
+        rewrite_words(Cow::Borrowed(input), at, |i, word| {
+            (i == at).then(|| word.to_uppercase())
+        })
+    }
+
+    #[test]
+    fn only_the_chosen_words_change_and_separators_stay() {
+        assert_eq!(
+            upper_at("  um\tdois\r\n\ntrês  ", 2),
+            "  um\tdois\r\n\nTRÊS  "
+        );
+        assert_eq!(upper_at("a\u{2028}b\u{85}c", 1), "a\u{2028}B\u{85}c");
+        assert_eq!(upper_at("é👩🏽‍💻 x", 0), "É👩🏽‍💻 x");
+    }
+
+    #[test]
+    fn unchanged_text_is_not_copied() {
+        for (input, at) in [("", 0), ("   ", 0), ("A b", 0), ("a b", 5)] {
+            assert!(matches!(upper_at(input, at), Cow::Borrowed(text) if text == input));
+        }
+    }
+
+    #[test]
+    fn words_after_the_last_index_are_not_visited() {
+        let mut visited = Vec::new();
+        let _ = rewrite_words(Cow::Borrowed("a b c d"), 1, |i, _| {
+            visited.push(i);
+            None
+        });
+        assert_eq!(visited, [0, 1]);
     }
 }

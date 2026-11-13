@@ -214,5 +214,18 @@ mod tests {
             let token = Ctr::new(1, 9).unwrap();
             assert_eq!(token.transform("aa bb".into(), None).unwrap(), "aa Bb");
         }
+
+        #[test]
+        fn line_breaks_and_spacing_are_preserved() {
+            // Previously the text was rebuilt with single spaces, joining lines.
+            use crate::tokens::{InstructionMethods, transforms::ctr::Ctr};
+            let token = Ctr::new(1, 3).unwrap();
+            assert_eq!(
+                token
+                    .transform("linha um\nlinha  dois\r\n".into(), None)
+                    .unwrap(),
+                "linha Um\nLinha  Dois\r\n"
+            );
+        }
     }
 }

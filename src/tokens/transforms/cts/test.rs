@@ -66,8 +66,8 @@ mod tests {
     }
 
     #[test]
-    fn transform_collapses_whitespace_due_to_split_whitespace() {
-        // split_whitespace normaliza espaços/tabs/newlines
+    fn transform_keeps_the_original_separators() {
+        // Previously the text was rebuilt with single spaces ("foo Bar").
         let t = Cts::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -75,7 +75,7 @@ mod tests {
             t.transform("foo   bar".into(), Some(&mut ctx))
                 .unwrap()
                 .to_string(),
-            "foo Bar"
+            "foo   Bar"
         );
     }
 
@@ -189,6 +189,19 @@ mod tests {
             assert_eq!(
                 Cts::new(1).transform("ab cd".into(), None).unwrap(),
                 "ab Cd"
+            );
+        }
+
+        #[test]
+        fn line_breaks_and_spacing_are_preserved() {
+            // Previously the text was rebuilt with single spaces, joining lines.
+            use crate::tokens::{InstructionMethods, transforms::cts::Cts};
+            let token = Cts::new(1);
+            assert_eq!(
+                token
+                    .transform("linha um\nlinha  dois\r\n".into(), None)
+                    .unwrap(),
+                "linha Um\nlinha  dois\r\n"
             );
         }
     }

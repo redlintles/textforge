@@ -2166,7 +2166,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "SS ΟΣ İ banana banana tail end"
+      "ok": "SS ΟΣ İ banana\r\n\r\nbanana tail end"
     },
     "owned": false
   },
@@ -2179,7 +2179,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "SS ΟΣ İ banana banana tail end"
+      "ok": "SS ΟΣ İ banana\r\n\r\nbanana tail end"
     },
     "owned": true
   },
@@ -2192,7 +2192,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "Banana Pear Apple banana tail"
+      "ok": "  Banana  Pear\tApple\r\n\r\nbanana\r\ntail"
     },
     "owned": false
   },
@@ -2205,7 +2205,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "Banana Pear Apple banana tail"
+      "ok": "  Banana  Pear\tApple\r\n\r\nbanana\r\ntail"
     },
     "owned": true
   },
@@ -2270,7 +2270,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "Banana Banana Banana second third"
+      "ok": "Banana Banana Banana\nsecond\nthird\n"
     },
     "owned": false
   },
@@ -2283,7 +2283,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "Banana Banana Banana second third"
+      "ok": "Banana Banana Banana\nsecond\nthird\n"
     },
     "owned": true
   },
@@ -2348,7 +2348,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "A B C d e"
+      "ok": "A\u000bB\fCd e"
     },
     "owned": false
   },
@@ -2361,7 +2361,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "A B C d e"
+      "ok": "A\u000bB\fCd e"
     },
     "owned": true
   },
@@ -2504,7 +2504,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ΟΣ İ banana banana tail end"
+      "ok": "ß ΟΣ İ banana\r\n\r\nbanana tail end"
     },
     "owned": false
   },
@@ -2517,7 +2517,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ΟΣ İ banana banana tail end"
+      "ok": "ß ΟΣ İ banana\r\n\r\nbanana tail end"
     },
     "owned": true
   },
@@ -2530,7 +2530,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "banana Pear apple banana tail"
+      "ok": "  banana  Pear\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": false
   },
@@ -2543,7 +2543,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "banana Pear apple banana tail"
+      "ok": "  banana  Pear\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": true
   },
@@ -2608,7 +2608,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana Banana banana second third"
+      "ok": "banana Banana banana\nsecond\nthird\n"
     },
     "owned": false
   },
@@ -2621,7 +2621,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana Banana banana second third"
+      "ok": "banana Banana banana\nsecond\nthird\n"
     },
     "owned": true
   },
@@ -2686,7 +2686,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "a B c d e"
+      "ok": "a\u000bB\fcd e"
     },
     "owned": false
   },
@@ -2699,7 +2699,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "a B c d e"
+      "ok": "a\u000bB\fcd e"
     },
     "owned": true
   },
@@ -20132,7 +20132,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ος İ banana banana tail end"
+      "ok": "ß ος İ banana\r\n\r\nbanana tail end"
     },
     "owned": false
   },
@@ -20145,7 +20145,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ος İ banana banana tail end"
+      "ok": "ß ος İ banana\r\n\r\nbanana tail end"
     },
     "owned": true
   },
@@ -20158,7 +20158,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "banana pear apple banana tail"
+      "ok": "  banana  pear\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": false
   },
@@ -20171,7 +20171,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "banana pear apple banana tail"
+      "ok": "  banana  pear\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": true
   },
@@ -20236,7 +20236,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana banana banana second third"
+      "ok": "banana banana banana\nsecond\nthird\n"
     },
     "owned": false
   },
@@ -20249,7 +20249,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana banana banana second third"
+      "ok": "banana banana banana\nsecond\nthird\n"
     },
     "owned": true
   },
@@ -20314,7 +20314,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "a b c d e"
+      "ok": "a\u000bb\fcd e"
     },
     "owned": false
   },
@@ -20327,7 +20327,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "a b c d e"
+      "ok": "a\u000bb\fcd e"
     },
     "owned": true
   },
@@ -22160,7 +22160,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ΟΣ İ banana banana tail end"
+      "ok": "ß ΟΣ İ banana\r\n\r\nbanana tail end"
     },
     "owned": false
   },
@@ -22173,7 +22173,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ΟΣ İ banana banana tail end"
+      "ok": "ß ΟΣ İ banana\r\n\r\nbanana tail end"
     },
     "owned": true
   },
@@ -22186,7 +22186,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "banana PEAR apple banana tail"
+      "ok": "  banana  PEAR\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": false
   },
@@ -22199,7 +22199,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "banana PEAR apple banana tail"
+      "ok": "  banana  PEAR\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": true
   },
@@ -22264,7 +22264,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana BANANA banana second third"
+      "ok": "banana BANANA banana\nsecond\nthird\n"
     },
     "owned": false
   },
@@ -22277,7 +22277,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana BANANA banana second third"
+      "ok": "banana BANANA banana\nsecond\nthird\n"
     },
     "owned": true
   },
@@ -22342,7 +22342,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "a B c d e"
+      "ok": "a\u000bB\fcd e"
     },
     "owned": false
   },
@@ -22355,7 +22355,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "a B c d e"
+      "ok": "a\u000bB\fcd e"
     },
     "owned": true
   },

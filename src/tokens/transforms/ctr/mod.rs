@@ -81,18 +81,18 @@ impl InstructionMethods for Ctr {
         check_index_against_words(self.start_index, &input)?;
         check_chunk_bound_indexes(self.start_index, end, None)?;
 
-        let mut result = String::with_capacity(input.len());
-        for (i, word) in input.split_whitespace().enumerate() {
-            if i != 0 {
-                result.push(' ');
-            }
-            if (self.start_index..=end).contains(&i) {
-                crate::utils::allocation::capitalize_into(&mut result, word);
-            } else {
-                result.push_str(word);
-            }
-        }
-        Ok(result.into())
+        // Only the words change; separators (line breaks included) are kept.
+        Ok(crate::utils::allocation::rewrite_words(
+            input,
+            end,
+            |i, word| {
+                ((self.start_index..=end).contains(&i)).then(|| {
+                    let mut capitalized = String::with_capacity(word.len());
+                    crate::utils::allocation::capitalize_into(&mut capitalized, word);
+                    capitalized
+                })
+            },
+        ))
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {

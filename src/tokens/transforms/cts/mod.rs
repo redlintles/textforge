@@ -62,18 +62,18 @@ impl InstructionMethods for Cts {
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_words(self.index, &input)?;
-        let mut result = String::with_capacity(input.len());
-        for (i, word) in input.split_whitespace().enumerate() {
-            if i != 0 {
-                result.push(' ');
-            }
-            if i == self.index {
-                crate::utils::allocation::capitalize_into(&mut result, word);
-            } else {
-                result.push_str(word);
-            }
-        }
-        Ok(result.into())
+        // Only the words change; separators (line breaks included) are kept.
+        Ok(crate::utils::allocation::rewrite_words(
+            input,
+            self.index,
+            |i, word| {
+                (i == self.index).then(|| {
+                    let mut capitalized = String::with_capacity(word.len());
+                    crate::utils::allocation::capitalize_into(&mut capitalized, word);
+                    capitalized
+                })
+            },
+        ))
     }
 
     fn to_textforge_line(&self) -> Cow<'static, str> {

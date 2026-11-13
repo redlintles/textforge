@@ -98,6 +98,19 @@ mod tests {
             assert_eq!(param_count, 1);
         }
     }
+
+    #[test]
+    fn line_breaks_and_spacing_are_preserved() {
+        // Previously the text was rebuilt with single spaces, joining lines.
+        use crate::tokens::{InstructionMethods, transforms::tlcw::Tlcw};
+        let token = Tlcw::new(1);
+        assert_eq!(
+            token
+                .transform("linha UM\nlinha  dois\r\n".into(), None)
+                .unwrap(),
+            "linha um\nlinha  dois\r\n"
+        );
+    }
 }
 
 #[test]
