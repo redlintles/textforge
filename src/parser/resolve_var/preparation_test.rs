@@ -281,3 +281,67 @@ fn prepared_context_instructions_still_act_on_every_run() {
         );
     }
 }
+
+#[test]
+fn dynamic_bindings_are_reused_only_while_the_parameters_repeat() {
+    for opt_in in [true, false] {
+        let binds = Arc::new(AtomicUsize::new(0));
+        let token = CountingPrefix {
+            inner: Atb::default(),
+            binds: Arc::clone(&binds),
+            opt_in,
+        };
+        let mut wrapper = TokenWrapper::new(
+            Box::new(token),
+            Some(vec![ValType::Literal("<{{name}}>".to_string().into())]),
+        );
+        wrapper.prepare_constant();
+        assert!(wrapper.prepared.is_none());
+        assert_eq!(wrapper.memo.is_some(), opt_in);
+        let mut context = GlobalExecutionContext::new();
+        let names = ["a", "a", "b", "a", "a"];
+        for name in names {
+            context
+                .add_var(
+                    "name",
+                    VarEntry {
+                        value: VarValues::String(name.into()),
+                        mutable: true,
+                    },
+                )
+                .unwrap();
+            // Clones made during execution share the memo.
+            let clone = wrapper.clone();
+            assert_eq!(
+                clone.apply_token(Cow::Borrowed("x"), &mut context).unwrap(),
+                format!("<{name}>x")
+            );
+        }
+        assert_eq!(binds.load(Ordering::SeqCst), if opt_in { 3 } else { 5 });
+        assert!(wrapper.without_preparation().memo.is_none());
+    }
+}
+
+#[test]
+fn memoized_bindings_still_report_parameter_errors_every_time() {
+    let mut processor = TextForgeProcessor::new();
+    let tokens = ["var p = '[';", "raw {{p}} X;"]
+        .iter()
+        .map(|line| crate::text::reader::read_from_text(line).unwrap())
+        .collect();
+    let id = processor.add_transform(tokens);
+    for _ in 0..2 {
+        assert!(processor.run_transform(&id, Cow::Borrowed("abc")).is_err());
+    }
+    let tokens = ["var p = 'b';", "raw '{{p}}' X;"]
+        .iter()
+        .map(|line| crate::text::reader::read_from_text(line).unwrap())
+        .collect();
+    let id = processor.add_transform(tokens);
+    for _ in 0..2 {
+        assert_eq!(
+            processor.run_transform(&id, Cow::Borrowed("abc")).unwrap(),
+            "aXc"
+        );
+    }
+}

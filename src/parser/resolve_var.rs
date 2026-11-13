@@ -56,6 +56,45 @@ pub struct TokenWrapper {
     pub token: Box<dyn InstructionMethods>,
     prepared: Option<Arc<dyn InstructionMethods>>,
     compiled: Option<Arc<CompiledParams>>,
+    memo: Option<Arc<BindingMemo>>,
+}
+
+/// The last binding of an instruction whose parameters are dynamic, kept for
+/// instructions with immutable bound state: when the next run resolves the
+/// same text and numbers (a variable set once, a counter cycling through a few
+/// values), the bound instruction (a compiled regex, say) is reused instead of
+/// being rebuilt. Concurrent runs that find it busy simply bind afresh.
+#[derive(Default)]
+struct BindingMemo {
+    last: std::sync::Mutex<Option<Binding>>,
+}
+
+/// Resolved parameters and the instruction bound with them.
+type Binding = (Vec<TextForgeParamTypes>, Arc<dyn InstructionMethods>);
+
+impl std::fmt::Debug for BindingMemo {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("BindingMemo")
+    }
+}
+
+/// Parameters a memo can compare: text and numbers only.
+fn memo_key_matches(stored: &[TextForgeParamTypes], params: &[TextForgeParamTypes]) -> bool {
+    stored.len() == params.len()
+        && stored.iter().zip(params).all(|pair| match pair {
+            (TextForgeParamTypes::String(a), TextForgeParamTypes::String(b)) => a == b,
+            (TextForgeParamTypes::Usize(a), TextForgeParamTypes::Usize(b)) => a == b,
+            _ => false,
+        })
+}
+
+fn memoizable(params: &[TextForgeParamTypes]) -> bool {
+    params.iter().all(|parameter| {
+        matches!(
+            parameter,
+            TextForgeParamTypes::String(_) | TextForgeParamTypes::Usize(_)
+        )
+    })
 }
 
 /// What parameter binding needs that does not change between runs: the
@@ -111,6 +150,7 @@ impl Clone for TokenWrapper {
             token: self.token.clone(),
             prepared: self.prepared.clone(),
             compiled: self.compiled.clone(),
+            memo: self.memo.clone(),
         }
     }
 }
@@ -122,6 +162,7 @@ impl Default for TokenWrapper {
             token: Box::new(Null::default()),
             prepared: None,
             compiled: None,
+            memo: None,
         }
     }
 }
@@ -146,6 +187,7 @@ impl From<Box<dyn InstructionMethods>> for TokenWrapper {
             token: value,
             prepared: None,
             compiled: None,
+            memo: None,
         }
     }
 }
@@ -176,6 +218,16 @@ impl TokenWrapper {
         let compiled = CompiledParams::new(self.token.as_ref(), &self.params);
         self.bind_constant(compiled.as_ref());
         if self.prepared.is_none() {
+            // Only text and number parameters can be compared between runs.
+            let comparable = compiled.as_ref().is_some_and(|compiled| {
+                compiled
+                    .expected
+                    .iter()
+                    .all(|kind| matches!(kind, SyntaxToken::String | SyntaxToken::Usize))
+            });
+            if comparable && self.token.supports_preparation() {
+                self.memo = Some(Arc::default());
+            }
             self.compiled = compiled.map(Arc::new);
         }
     }
@@ -235,6 +287,7 @@ impl TokenWrapper {
     fn strip_preparation(&mut self, depth: usize) {
         self.prepared = None;
         self.compiled = None;
+        self.memo = None;
         if depth < MAX_PREPARED_DEPTH {
             for parameter in &mut self.params {
                 if let ValType::Literal(TextForgeParamTypes::Token(child)) = parameter {
@@ -261,6 +314,7 @@ impl TokenWrapper {
                 token,
                 prepared: None,
                 compiled: None,
+                memo: None,
             },
             None => {
                 let token_params = token
@@ -274,6 +328,7 @@ impl TokenWrapper {
                     token,
                     prepared: None,
                     compiled: None,
+                    memo: None,
                 }
             }
         }
@@ -313,9 +368,40 @@ impl TokenWrapper {
             context,
             CurrentText::Str(&input),
         )?;
+        if let Some(memo) = &self.memo {
+            return self
+                .bind_memoized(memo, parsed_params)?
+                .transform(input, Some(context));
+        }
         let mut t = self.token.clone();
         t.set_params(&parsed_params)?;
         t.transform(input, Some(context))
+    }
+
+    /// Bind `params`, reusing the memo's last binding when they are the same.
+    fn bind_memoized(
+        &self,
+        memo: &BindingMemo,
+        params: Vec<TextForgeParamTypes>,
+    ) -> Result<Arc<dyn InstructionMethods>, TextForgeError> {
+        if !memoizable(&params) {
+            let mut token = self.token.clone();
+            token.set_params(&params)?;
+            return Ok(Arc::from(token));
+        }
+        if let Ok(last) = memo.last.try_lock()
+            && let Some((stored, token)) = last.as_ref()
+            && memo_key_matches(stored, &params)
+        {
+            return Ok(Arc::clone(token));
+        }
+        let mut token = self.token.clone();
+        token.set_params(&params)?;
+        let token: Arc<dyn InstructionMethods> = Arc::from(token);
+        if let Ok(mut last) = memo.last.try_lock() {
+            *last = Some((params, Arc::clone(&token)));
+        }
+        Ok(token)
     }
 
     /// Apply a token nested inside another instruction (`iter`, `cblk`, `on*`).
@@ -365,6 +451,11 @@ impl TokenWrapper {
             context,
             CurrentText::Buffer(std::cell::RefCell::new(&mut input)),
         )?;
+        if let Some(memo) = &self.memo {
+            return self
+                .bind_memoized(memo, params)?
+                .transform_buffered(input, Some(context));
+        }
         let mut token = self.token.clone();
         token.set_params(&params)?;
         token.transform_buffered(input, Some(context))
