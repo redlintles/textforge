@@ -48,6 +48,9 @@
 
 ### Changed
 
+- `[[ ]]` expressions and `eval` build their evaluation context from the
+  variables the expression reads instead of copying every variable (with a
+  1 MB variable present, 2000 evaluations: 89 ms → 4.8 ms).
 - Variable references accept `_` in names, including as the first character:
   `{{__COUNTER__}}` and `{{line_no}}` now interpolate. Previously such markers
   did not match, their delimiters were dropped and the bare name was printed.

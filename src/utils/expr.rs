@@ -1,6 +1,6 @@
 use std::{borrow::Cow, collections::HashMap};
 
-use evalexpr::{ContextWithMutableVariables, HashMapContext, Value};
+use evalexpr::{ContextWithMutableVariables, DefaultNumericTypes, HashMapContext, Value};
 
 use crate::{
     context::execution_context::{
@@ -34,9 +34,16 @@ use crate::{
 pub fn build_eval_context(
     vars: &HashMap<String, VarEntry>,
 ) -> Result<HashMapContext, TextForgeError> {
+    build_eval_context_from(vars.iter().map(|(name, entry)| (name.clone(), entry)))
+}
+
+/// [`build_eval_context`] over any subset of the variable table.
+fn build_eval_context_from<'a>(
+    vars: impl Iterator<Item = (String, &'a VarEntry)>,
+) -> Result<HashMapContext, TextForgeError> {
     let mut ctx = HashMapContext::new();
 
-    for (name, entry) in vars.iter() {
+    for (name, entry) in vars {
         let value = match &entry.value {
             VarValues::Usize(n) => Value::from_int(*n as i64),
             VarValues::String(s) => match s.parse::<i64>() {
@@ -151,15 +158,34 @@ pub fn interpolate(
 /// Display do evalexpr adiciona em Value::String. Usado pela instruction
 /// `eval` e pela interpolação `[[expr]]` em strings do pipeline.
 pub fn expr(expression: &str, context: &GlobalExecutionContext) -> Result<String, TextForgeError> {
-    let eval_ctx = build_eval_context(context.get_all_vars())?;
+    let result = evaluate(expression, context, "api::expr")?;
+    Ok(value_to_plain_string(&result))
+}
 
-    let result = evalexpr::eval_with_context(expression, &eval_ctx).map_err(|e| {
+/// Compile and evaluate `expression` against the variables it reads.
+///
+/// Same steps and errors as `evalexpr::eval_with_context` (compile, then
+/// evaluate), but the evaluation context holds only the variables the
+/// expression reads, so its cost no longer grows with every variable stored in
+/// the pipeline (see `docs/audits/0.3.0-on-debug-audit.md`, item 3).
+pub(crate) fn evaluate(
+    expression: &str,
+    context: &GlobalExecutionContext,
+    stage: &'static str,
+) -> Result<Value, TextForgeError> {
+    let invalid = |e: evalexpr::EvalexprError| {
         TextForgeError::new(
             TextForgeErrorCode::InvalidExprError(Cow::from(e.to_string())),
-            Cow::from("api::expr"),
+            Cow::from(stage),
             Cow::from(expression.to_string()),
         )
-    })?;
-
-    Ok(value_to_plain_string(&result))
+    };
+    let tree = evalexpr::build_operator_tree::<DefaultNumericTypes>(expression).map_err(invalid)?;
+    let all = context.get_all_vars();
+    let read = tree
+        .iter_read_variable_identifiers()
+        .filter_map(|name| all.get_key_value(name))
+        .map(|(name, entry)| (name.clone(), entry));
+    let eval_ctx = build_eval_context_from(read)?;
+    tree.eval_with_context(&eval_ctx).map_err(invalid)
 }

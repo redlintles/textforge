@@ -13,8 +13,9 @@ mod tests {
     use crate::parser::params::TextForgeParamTypes;
     use crate::parser::resolve_var::TokenWrapper;
     use crate::tokens::InstructionMethods;
-    use crate::tokens::instructions::eval::{Eval, build_eval_context, value_to_plain_string};
-    use crate::utils::errors::TextForgeErrorCode; // ajuste pro path real (parser::params, no seu caso)
+    use crate::tokens::instructions::eval::{Eval, value_to_plain_string};
+    use crate::utils::errors::TextForgeErrorCode;
+    use crate::utils::expr::build_eval_context; // ajuste pro path real (parser::params, no seu caso)
 
     // ============================
     // Contrato básico da instrução

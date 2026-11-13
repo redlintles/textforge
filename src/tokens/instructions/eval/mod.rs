@@ -1,7 +1,5 @@
 use std::borrow::Cow;
 
-use evalexpr::eval_with_context;
-
 use crate::{
     context::execution_context::{
         GlobalContextMethods, GlobalExecutionContext, VarEntry, VarValues,
@@ -10,11 +8,8 @@ use crate::{
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
     utils::{
-        errors::{
-            TextForgeError,
-            TextForgeErrorCode::{InvalidExprError, RequiredContextError},
-        },
-        expr::{build_eval_context, value_to_plain_string},
+        errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
+        expr::{evaluate, value_to_plain_string},
         validations::check_vec_len,
     },
 };
@@ -59,18 +54,7 @@ impl InstructionMethods for Eval {
             )
         })?;
 
-        // Immutable borrow — dropped as soon as eval_ctx is built, since
-        // HashMapContext owns its own converted values rather than
-        // referencing context's HashMap.
-        let eval_ctx = build_eval_context(context.get_all_vars())?;
-
-        let result = eval_with_context(&self.expr, &eval_ctx).map_err(|e| {
-            TextForgeError::new(
-                InvalidExprError(Cow::from(e.to_string())),
-                Cow::from("eval.transform"),
-                Cow::from(self.expr.to_string()),
-            )
-        })?;
+        let result = evaluate(&self.expr, context, "eval.transform")?;
 
         match context.get_mut_var(&self.target) {
             Ok(var_mut) => {
