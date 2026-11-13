@@ -188,6 +188,8 @@ Input `xfruitx` → output `banana fruit`.
 
 Variable names start with a letter or `_` and continue with letters, digits or `_` (`__COUNTER__`, `line_no`). A numeric parameter may also be written as an expression or template (`[[__COUNTER__ + 1]]`, `'{{a}}{{b}}'`): it is kept as text when parsed and must interpolate to a non-negative integer at execution time (`IncompatibleTypeError` otherwise). Plain text in a numeric position is still rejected while parsing.
 
+**Binding in registered pipelines.** When a pipeline is registered, instructions that opt into `InstructionMethods::supports_preparation` (every built-in does; custom instructions default to no) and whose parameters are constant are bound once. Dynamic parameters are compiled once (`src/utils/template.rs`: literal text, variable reads and `[[ ]]` trees; constant expressions are evaluated once) and rendered per run; the last dynamic binding is reused while the resolved values repeat. `interpolate_with` stays the reference semantics: any change to interpolation must change both and keep the differential test in `src/utils/template/tests.rs` passing. See `docs/prepared-pipelines-and-shared-statistics.md` and `docs/benchmarks/engine/`.
+
 ---
 
 ## 8. Bytecode Format

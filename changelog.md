@@ -115,6 +115,16 @@
 
 ### Changed
 
+- Engine performance: parameter templates and `[[ ]]` expressions are compiled
+  once per registered pipeline (constant expressions are evaluated once),
+  expressions are evaluated against a small read-only context, the context
+  instructions (`var`, `val`, `mutv`, `eval`, `blk`, `cblk`, `ifdc`) are bound
+  once, instructions with dynamic parameters reuse their last binding while the
+  values repeat (a `raw {{p}} X` regex is no longer recompiled on each run),
+  and bytecode files are decoded from memory. Output and errors are unchanged.
+  Constant expression parameters run 64× faster, templates 7×, blocks 6×,
+  variable-heavy pipelines 5×, `iter` with an expression 3.9× and bytecode
+  loading 2.1×; see `docs/benchmarks/engine/README.md`.
 - Dependencies: removed the unused optional test dependencies `rand` and
   `random-string` (and with them the unmaintained `instant`,
   RUSTSEC-2024-0384); updated `uuid` to 1.29.2 and `html-escape` to 0.3.1; ran
