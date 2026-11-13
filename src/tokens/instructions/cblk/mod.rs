@@ -1,7 +1,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    context::execution_context::{GlobalContextMethods, GlobalExecutionContext},
+    context::{
+        debug_trace::{plural, within},
+        execution_context::{GlobalContextMethods, GlobalExecutionContext},
+    },
     parse_args,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
@@ -56,13 +59,28 @@ impl InstructionMethods for Cblk {
                 std::borrow::Cow::Borrowed(""),
             )
         })?;
-        let mut result = input;
         let tokens = context.take_block(&self.block_name)?;
+        let result = within(
+            context,
+            |_| {
+                format!(
+                    "cblk {}  ({} {})",
+                    self.block_name,
+                    tokens.len(),
+                    plural(tokens.len(), "instruction")
+                )
+            },
+            &self.block_name,
+            input,
+            |mut result, context| {
+                for token in tokens.iter() {
+                    result = token.apply_nested(result, context)?;
+                }
+                Ok(result)
+            },
+        )?;
 
-        for token in tokens.iter() {
-            result = token.apply_token(result, context)?;
-        }
-
+        // On error the block stays taken, as before (see the cblk tests).
         context.put_block(&self.block_name, tokens);
         Ok(result)
     }

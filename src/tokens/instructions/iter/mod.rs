@@ -1,8 +1,9 @@
 use std::borrow::Cow;
 
 use crate::{
-    context::execution_context::{
-        GlobalContextMethods, GlobalExecutionContext, VarEntry, VarValues,
+    context::{
+        debug_trace::within,
+        execution_context::{GlobalContextMethods, GlobalExecutionContext, VarEntry, VarValues},
     },
     parse_args,
     parser::{params::TextForgeParamTypes, resolve_var::TokenWrapper},
@@ -104,7 +105,13 @@ impl InstructionMethods for Iter {
                 value: VarValues::Usize(0),
             },
         )?;
-        let result = self.run(input, context);
+        let result = within(
+            context,
+            |_| format!("iter {} times", self.times),
+            "iter",
+            input,
+            |input, context| self.run(input, context),
+        );
         context.rm_var(COUNTER)?;
         if let Some(entry) = enclosing {
             context.add_var(COUNTER, entry)?;

@@ -6,6 +6,8 @@ use crate::{
     },
 };
 use std::{borrow::Cow, collections::HashMap};
+
+use super::debug_trace::{DebugTrace, MAX_LISTED_REPLACEMENTS, Replacement, Size};
 #[derive(Clone)]
 pub enum VarValues {
     String(String),
@@ -17,6 +19,44 @@ pub enum VarValues {
 pub enum ToClean {
     Block(String),
     Var(String),
+}
+
+/// Replacements recorded for the debug trace: at most
+/// [`MAX_LISTED_REPLACEMENTS`] entries plus the total count. Character offsets
+/// advance incrementally, so recording is O(n) over the whole pass.
+#[derive(Default)]
+struct ReplacementLog {
+    listed: Vec<Replacement>,
+    total: usize,
+    scanned_bytes: usize,
+    scanned_chars: usize,
+}
+
+impl ReplacementLog {
+    fn record(
+        &mut self,
+        input: &str,
+        rule: usize,
+        regex: &regex::Regex,
+        found: regex::Match<'_>,
+        replacement: &str,
+    ) {
+        self.total += 1;
+        if self.listed.len() == MAX_LISTED_REPLACEMENTS {
+            return;
+        }
+        self.scanned_chars += input[self.scanned_bytes..found.start()].chars().count();
+        self.scanned_bytes = found.start();
+        let start = self.scanned_chars;
+        self.listed.push(Replacement {
+            rule: rule + 1,
+            pattern: regex.as_str().to_owned(),
+            original: found.as_str().to_owned(),
+            replacement: replacement.to_owned(),
+            start,
+            end: start + found.as_str().chars().count(),
+        });
+    }
 }
 
 // First thought of a simple hashmap, but it wouldn't suffice my needs
@@ -33,6 +73,8 @@ pub struct GlobalExecutionContext {
     blocks: HashMap<String, Vec<TokenWrapper>>,
     replace_maps: HashMap<String, Vec<(std::sync::Arc<regex::Regex>, String)>>,
     pub is_halted: bool,
+    /// Nested step trace; `Some` only during debug processing.
+    trace: Option<DebugTrace>,
 }
 
 // Variable Concept
@@ -89,9 +131,31 @@ impl GlobalExecutionContext {
     }
 
     pub(crate) fn execute_replace_map<'a>(
+        &mut self,
+        name: &str,
+        input: Cow<'a, str>,
+    ) -> Result<Cow<'a, str>, TextForgeError> {
+        if self.trace.is_none() {
+            return self.replace_with_map(name, input, None);
+        }
+        let mut log = ReplacementLog::default();
+        let before = Size::of(&input);
+        let output = self.replace_with_map(name, input, Some(&mut log))?;
+        let rules = self.replace_maps.get(name).map_or(0, Vec::len);
+        if let Some(trace) = self.trace.as_mut() {
+            let after = Size::of(&output);
+            trace.replace_map(name, rules, &log.listed, log.total, before, after);
+        }
+        Ok(output)
+    }
+
+    /// One non-cascading pass over the original input. When `log` is given,
+    /// each replacement is recorded from this same pass (debug only).
+    fn replace_with_map<'a>(
         &self,
         name: &str,
         input: Cow<'a, str>,
+        mut log: Option<&mut ReplacementLog>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let rules = self.replace_maps.get(name).ok_or_else(|| {
             TextForgeError::new(
@@ -144,7 +208,11 @@ impl GlobalExecutionContext {
                 && let Some(m) = caps.get(0)
             {
                 output.push_str(&input[cursor..m.start()]);
+                let replaced_from = output.len();
                 caps.expand(&rules[index].1, &mut output);
+                if let Some(log) = log.as_deref_mut() {
+                    log.record(&input, index, &rules[index].0, m, &output[replaced_from..]);
+                }
                 cursor = m.end();
                 last_end = Some(cursor);
             }
@@ -175,7 +243,26 @@ impl GlobalExecutionContext {
             blocks: HashMap::new(),
             replace_maps: HashMap::new(),
             is_halted: false,
+            trace: None,
         }
+    }
+
+    /// Record nested steps for debug output (see [`DebugTrace`]).
+    pub(crate) fn enable_trace(&mut self) {
+        self.trace = Some(DebugTrace::default());
+    }
+
+    /// The nested step trace, when debug processing enabled it.
+    pub(crate) fn trace_mut(&mut self) -> Option<&mut DebugTrace> {
+        self.trace.as_mut()
+    }
+
+    /// Rendered trace lines since the last call; empty when tracing is off.
+    pub(crate) fn take_trace_lines(&mut self) -> Vec<String> {
+        self.trace
+            .as_mut()
+            .map(DebugTrace::take_lines)
+            .unwrap_or_default()
     }
 }
 

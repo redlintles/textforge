@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    context::execution_context::GlobalExecutionContext,
+    context::{debug_trace::within, execution_context::GlobalExecutionContext},
     parse_args,
     parser::{params::TextForgeParamTypes, resolve_var::TokenWrapper},
     tokens::InstructionMethods,
@@ -83,7 +83,20 @@ impl InstructionMethods for Onck {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let range = char_section(&input, self.start_index, self.end_index, "onck")?;
         match context {
-            Some(context) => apply_to_section(input, range, &self.inner, context),
+            Some(context) => within(
+                context,
+                |input| {
+                    format!(
+                        "onck {} {}  (chunk: {} chars)",
+                        self.start_index,
+                        self.end_index,
+                        input[range.clone()].chars().count()
+                    )
+                },
+                "onck",
+                input,
+                |input, context| apply_to_section(input, range.clone(), &self.inner, context),
+            ),
             None => apply_to_section(
                 input,
                 range,

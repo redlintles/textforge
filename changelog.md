@@ -4,6 +4,11 @@
 
 ### Added
 
+- Nested debug trace: `process_all_with_debug` and `process_single_with_debug`
+  now show what happens inside `cblk`, `iter`, `onln`/`onck`/`onlni` and `rmape`
+  (steps, net effect in characters and lines, and up to 20 replacements per
+  `rmape` call), with and without `buffered`. Debug output never changes the
+  result. See [debug output](docs/debug-output.md).
 - Section instructions `onln` (one line, base 1), `onck` (character chunk,
   base 0) and `onlni` (line interval as one block, base 1):
   `onln {n} apply {instruction};`. The nested instruction receives only the

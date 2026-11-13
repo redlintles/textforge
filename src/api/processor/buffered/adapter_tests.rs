@@ -170,3 +170,82 @@ fn watchers_propagate_errors_and_retry_export_without_resetting_results() {
         "<abc>"
     );
 }
+
+fn plain_debug_log(source: &str, input: &str) -> (String, String) {
+    let mut processor = TextForgeProcessor::new();
+    let id = pipeline(&mut processor, source);
+    let mut log = Vec::new();
+    let document =
+        TextBuffer::from_text(input, TextBufferOptions::new(1, std::env::temp_dir())).unwrap();
+    let output = processor
+        .run_buffered_debug(&id, document, &mut log)
+        .unwrap()
+        .into_string()
+        .unwrap();
+    let ansi = regex::Regex::new("\x1b\\[[0-9;]*m").unwrap();
+    let log = ansi
+        .replace_all(&String::from_utf8(log).unwrap(), "")
+        .into_owned();
+    (output, log)
+}
+
+use crate::context::debug_trace::fixtures::{NESTED_DEBUG_PIPELINE, NESTED_DEBUG_TRACE};
+
+#[test]
+fn debug_traces_blocks_maps_iterations_and_sections() {
+    let (output, log) = plain_debug_log(NESTED_DEBUG_PIPELINE, "  cat   wolf  \nx");
+    assert_eq!(output, "# WOLF  DOG \nx01");
+    let mut rest = log.as_str();
+    for expected in NESTED_DEBUG_TRACE {
+        let at = rest
+            .find(expected)
+            .unwrap_or_else(|| panic!("missing {expected:?} in {log}"));
+        rest = &rest[at + expected.len()..];
+    }
+    assert_eq!(log.matches('▶').count(), NESTED_DEBUG_TRACE.len());
+}
+
+#[test]
+fn debug_trace_nests_containers_inside_blocks() {
+    let source =
+        "blk outer assoc iter 2 times onln 1 apply ate x;\nblk outer assoc dlf;\ncblk outer;\n";
+    let (output, log) = plain_debug_log(source, "ab\ncd");
+    assert_eq!(output, "bxx\ncd");
+    let expected = "▶ cblk outer  (2 instructions)\n  ▶ iter 2 times\n    ▶ onln 1  (line: 2 chars)\n      │ 1. ate x  2 → 3 chars\n    ◀ onln  5 → 6 chars (+1) · 2 → 2 lines\n    ▶ onln 1  (line: 3 chars)\n      │ 1. ate x  3 → 4 chars\n    ◀ onln  6 → 7 chars (+1) · 2 → 2 lines\n  ◀ iter  5 → 7 chars (+2) · 2 → 2 lines\n  │ 2. dlf  7 → 6 chars\n◀ outer  5 → 6 chars (+1) · 2 → 2 lines\n";
+    assert!(log.contains(expected), "{log}");
+}
+
+#[test]
+fn debug_lists_at_most_twenty_replacements() {
+    let source = "rmapd m add a b;\nrmape m;\n";
+    let (output, log) = plain_debug_log(source, &"a".repeat(25));
+    assert_eq!(output, "b".repeat(25));
+    assert_eq!(log.matches("│ rule 1 /a/  'a' → 'b'").count(), 20);
+    assert!(log.contains("│ rule 1 /a/  'a' → 'b'  @ 19..20\n  │ … +5 replacements\n"));
+    assert!(log.contains("◀ m  25 → 25 chars (±0) · 1 → 1 line · 25 replacements"));
+}
+
+#[test]
+fn debug_never_changes_results() {
+    for source in [
+        NESTED_DEBUG_PIPELINE,
+        "blk outer assoc iter 2 times onln 1 apply ate x;\ncblk outer;\n",
+        "rmapd m add 'é+' E;\nrmape m;\nonck 0 2 apply rev;\nonlni 1 2 apply uniqln;\n",
+        "atb A;\nend;\nate B;\n",
+    ] {
+        for input in ["", "é é\né", "  cat   wolf  \nx\nx\n"] {
+            let mut processor = TextForgeProcessor::new();
+            let id = pipeline(&mut processor, source);
+            let expected = processor.run_transform(&id, Cow::Borrowed(input));
+            let (output, _) = match expected {
+                Ok(_) => plain_debug_log(source, input),
+                Err(_) => continue,
+            };
+            assert_eq!(output, expected.unwrap(), "{source} {input:?}");
+            assert_eq!(
+                processor.process_all_with_debug(&id, input).unwrap(),
+                output
+            );
+        }
+    }
+}

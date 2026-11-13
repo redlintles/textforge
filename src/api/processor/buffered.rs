@@ -276,6 +276,7 @@ impl TextForgeProcessor {
             .get(id)
             .ok_or_else(token_array_not_found(id))?;
         let mut context = GlobalExecutionContext::new();
+        context.enable_trace();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
         run_tokens(
@@ -317,6 +318,13 @@ impl TextForgeProcessor {
                     log.write_all(b"\nAfter: ").map_err(adapter_io)?;
                     write_document(&mut input, log, "\x1b[32m")?;
                     log.write_all(b"\n\n").map_err(adapter_io)?;
+                }
+                let nested = context.take_trace_lines();
+                for line in &nested {
+                    writeln!(log, "{line}").map_err(adapter_io)?;
+                }
+                if !nested.is_empty() {
+                    log.write_all(b"\n").map_err(adapter_io)?;
                 }
                 if counter + 1 < tokens.len() {
                     log.write_all(b"----------\n\n").map_err(adapter_io)?;

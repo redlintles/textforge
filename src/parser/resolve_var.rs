@@ -193,7 +193,23 @@ impl TokenWrapper {
         input: Cow<'a, str>,
         context: &mut GlobalExecutionContext,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        self.apply_token(input, context)
+        let Some(trace) = context.trace_mut() else {
+            return self.apply_token(input, context);
+        };
+        let mark = trace.mark();
+        let before = input.chars().count();
+        // Bind once so the reported line shows the values actually executed.
+        let bound = self.bind_for_debug(context)?;
+        let output = bound.transform(input, Some(context))?;
+        if let Some(trace) = context.trace_mut() {
+            trace.step(
+                mark,
+                &bound.to_textforge_line(),
+                before,
+                output.chars().count(),
+            );
+        }
+        Ok(output)
     }
 
     #[cfg(feature = "buffered")]

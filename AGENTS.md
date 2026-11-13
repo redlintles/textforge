@@ -114,7 +114,7 @@ TextForge can be used in three ways.
 | `process_single` | Processes one instruction on a given input. |
 | `process_all` | Processes one full pipeline on a given input. |
 | `process_single_with_debug` | Like `process_single`, and prints processing info to the console. |
-| `process_all_with_debug` | Like `process_all`, and prints info for every step. |
+| `process_all_with_debug` | Like `process_all`, and prints info for every step, plus a nested trace for `cblk`, `iter`, `onln`/`onck`/`onlni` and `rmape` (see `docs/debug-output.md`). |
 | `process_all_with_watchers` | Like `process_all`, with watchers enabled. |
 | `process_file` | Reads an input file, runs a pipeline and writes the result to an output file. |
 | `process_batch` | Processes multiple pipelines from different files in parallel. |

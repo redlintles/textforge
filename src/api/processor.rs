@@ -815,90 +815,9 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
     #[cfg(not(feature = "buffered"))]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
-        let dashes = 10;
-
-        let tokens = match self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))
-        {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        let mut log = String::new();
-        log.push_str("PROCESSING STEP BY STEP:\n");
-        log.push_str(&"-".repeat(dashes));
-        log.push_str("\n\n");
-
-        let mut context = GlobalExecutionContext::new();
-        let errors = &mut self.errors;
-
-        let result = run_tokens(
-            tokens,
-            Cow::from(input),
-            &mut context,
-            |index, token, result, context| {
-                let counter = index as i64;
-                let bound = token
-                    .bind_for_debug(context)
-                    .inspect_err(|error| errors.add_error(error.clone()))?;
-                let line = bound.to_textforge_line();
-                let red_result = result.red();
-                let temp = bound
-                    .transform(result, Some(context))
-                    .inspect_err(|error| errors.add_error(error.clone()))?;
-
-                if token.get_string_repr() == "blk" {
-                    let v = match bound.get_params().first() {
-                        Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
-                        _ => {
-                            return Err(TextForgeError::new(
-                                TextForgeErrorCode::InvalidParameters(
-                                    "Invalid block debug metadata".into(),
-                                ),
-                                "process_all_with_debug",
-                                "block name",
-                            ));
-                        }
-                    };
-
-                    log.push_str(
-                        &format!(
-                            "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
-                            counter.to_string().blue(),
-                            (counter + 1).to_string().blue(),
-                            "Block Declaration: ".to_string().green(),
-                            line.yellow(),
-                            v.to_string().green(),
-                            context.get_formatted_block_items(v)?
-                        )
-                    );
-                } else {
-                    log.push_str(&format!(
-                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
-                        counter.to_string().blue(),
-                        (counter + 1).to_string().blue(),
-                        line.yellow(),
-                        red_result,
-                        temp.green()
-                    ));
-                }
-
-                if index + 1 < tokens.len() {
-                    log.push_str(&"-".repeat(dashes));
-                    log.push_str("\n\n");
-                }
-
-                Ok(temp)
-            },
-        )?;
-
+        let (result, log) = self.debug_log(id, input)?;
         print!("{log}"); // 1 única saída
-        Ok(result.to_string())
+        Ok(result)
     }
 
     fn process_single_with_debug(
@@ -907,6 +826,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         input: &str,
     ) -> Result<String, TextForgeError> {
         let mut ctx = GlobalExecutionContext::new();
+        ctx.enable_trace();
         let output = match token.apply_token(Cow::from(input), &mut ctx) {
             Ok(x) => x,
             Err(e) => {
@@ -922,6 +842,9 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             input.red(),
             output.green()
         );
+        for nested in ctx.take_trace_lines() {
+            println!("{nested}");
+        }
 
         Ok(output.to_string())
     }
@@ -1169,5 +1092,134 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         let identifier = self.add_transform(tokens.to_vec());
 
         Ok(identifier)
+    }
+}
+
+#[cfg(not(feature = "buffered"))]
+impl TextForgeProcessor {
+    /// Run `id` with debug output and return `(result, log)`; nested steps of
+    /// `cblk`, `iter`, `on*` and `rmape` follow each top-level step.
+    fn debug_log(&mut self, id: &str, input: &str) -> Result<(String, String), TextForgeError> {
+        let dashes = 10;
+
+        let tokens = match self
+            .transforms
+            .get(id)
+            .ok_or_else(token_array_not_found(id))
+        {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        let mut log = String::new();
+        log.push_str("PROCESSING STEP BY STEP:\n");
+        log.push_str(&"-".repeat(dashes));
+        log.push_str("\n\n");
+
+        let mut context = GlobalExecutionContext::new();
+        context.enable_trace();
+        let errors = &mut self.errors;
+
+        let result = run_tokens(
+            tokens,
+            Cow::from(input),
+            &mut context,
+            |index, token, result, context| {
+                let counter = index as i64;
+                let bound = token
+                    .bind_for_debug(context)
+                    .inspect_err(|error| errors.add_error(error.clone()))?;
+                let line = bound.to_textforge_line();
+                let red_result = result.red();
+                let temp = bound
+                    .transform(result, Some(context))
+                    .inspect_err(|error| errors.add_error(error.clone()))?;
+
+                if token.get_string_repr() == "blk" {
+                    let v = match bound.get_params().first() {
+                        Some(crate::parser::params::TextForgeParamTypes::String(name)) => name,
+                        _ => {
+                            return Err(TextForgeError::new(
+                                TextForgeErrorCode::InvalidParameters(
+                                    "Invalid block debug metadata".into(),
+                                ),
+                                "process_all_with_debug",
+                                "block name",
+                            ));
+                        }
+                    };
+
+                    log.push_str(
+                        &format!(
+                            "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
+                            counter.to_string().blue(),
+                            (counter + 1).to_string().blue(),
+                            "Block Declaration: ".to_string().green(),
+                            line.yellow(),
+                            v.to_string().green(),
+                            context.get_formatted_block_items(v)?
+                        )
+                    );
+                } else {
+                    log.push_str(&format!(
+                        "Step: [{}] => [{}]\nInstruction: {}\nBefore: {}\nAfter: {}\n\n",
+                        counter.to_string().blue(),
+                        (counter + 1).to_string().blue(),
+                        line.yellow(),
+                        red_result,
+                        temp.green()
+                    ));
+                }
+
+                let nested = context.take_trace_lines();
+                for line in &nested {
+                    log.push_str(line);
+                    log.push('\n');
+                }
+                if !nested.is_empty() {
+                    log.push('\n');
+                }
+
+                if index + 1 < tokens.len() {
+                    log.push_str(&"-".repeat(dashes));
+                    log.push_str("\n\n");
+                }
+
+                Ok(temp)
+            },
+        )?;
+
+        Ok((result.into_owned(), log))
+    }
+}
+
+#[cfg(all(test, not(feature = "buffered")))]
+mod debug_tests {
+    use super::*;
+    use crate::context::debug_trace::fixtures::{NESTED_DEBUG_PIPELINE, NESTED_DEBUG_TRACE};
+
+    #[test]
+    fn unbuffered_debug_traces_nested_steps_like_buffered_debug() {
+        let mut processor = TextForgeProcessor::new();
+        let tokens = NESTED_DEBUG_PIPELINE
+            .lines()
+            .map(|line| crate::text::reader::read_from_text(line).unwrap())
+            .collect();
+        let id = processor.add_transform(tokens);
+        let input = "  cat   wolf  \nx";
+        let (output, log) = processor.debug_log(&id, input).unwrap();
+        assert_eq!(output, processor.process_all(&id, input).unwrap());
+        let ansi = regex::Regex::new("\x1b\\[[0-9;]*m").unwrap();
+        let log = ansi.replace_all(&log, "");
+        let mut rest: &str = &log;
+        for expected in NESTED_DEBUG_TRACE {
+            let at = rest
+                .find(expected)
+                .unwrap_or_else(|| panic!("missing {expected:?} in {log}"));
+            rest = &rest[at + expected.len()..];
+        }
     }
 }

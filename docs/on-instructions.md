@@ -94,6 +94,11 @@ Combining `iter` and `onln` reaches lines one by one, using `__COUNTER__`
 If the nested instruction adds or removes lines, the following line numbers
 shift. Use `onlni` when the line count changes.
 
+## Debugging
+
+Debug runs show the section size and the nested step for every `on*` call; see
+[debug output](debug-output.md).
+
 ## Performance
 
 - Lines are located with one scan for terminators that stops at the last selected

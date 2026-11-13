@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    context::execution_context::GlobalExecutionContext,
+    context::{debug_trace::within, execution_context::GlobalExecutionContext},
     parse_args,
     parser::{params::TextForgeParamTypes, resolve_var::TokenWrapper},
     tokens::InstructionMethods,
@@ -85,7 +85,20 @@ impl InstructionMethods for Onlni {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let range = line_section(&input, self.start_line, self.end_line, "onlni")?;
         match context {
-            Some(context) => apply_to_section(input, range, &self.inner, context),
+            Some(context) => within(
+                context,
+                |input| {
+                    format!(
+                        "onlni {} {}  (block: {} chars)",
+                        self.start_line,
+                        self.end_line,
+                        input[range.clone()].chars().count()
+                    )
+                },
+                "onlni",
+                input,
+                |input, context| apply_to_section(input, range.clone(), &self.inner, context),
+            ),
             None => apply_to_section(
                 input,
                 range,
