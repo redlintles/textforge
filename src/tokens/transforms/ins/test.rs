@@ -9,6 +9,17 @@ mod tests {
     use crate::utils::errors::TextForgeErrorCode;
 
     #[test]
+    fn out_of_range_index_on_empty_input_is_an_error_not_a_panic() {
+        // Building the error message used to compute `0 - 1` and overflow.
+        let t = Ins::new(1, "x");
+        let error = t.transform("".into(), None).unwrap_err();
+        assert!(matches!(
+            error.error_code,
+            TextForgeErrorCode::IndexOutOfRange(_)
+        ));
+    }
+
+    #[test]
     fn params_sets_fields_and_to_textforge_line_formats() {
         let t = Ins::new(2, "laranja");
         assert_eq!(t.to_textforge_line().as_ref(), "ins 2 laranja;\n");

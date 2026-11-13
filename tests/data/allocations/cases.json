@@ -494,5 +494,23 @@
       "var x = value;",
       "ate \"{{x}}\";"
     ]
+  },
+  {
+    "name": "onln",
+    "lines": [
+      "onln 2 apply tua;"
+    ]
+  },
+  {
+    "name": "onck",
+    "lines": [
+      "onck 0 5 apply tua;"
+    ]
+  },
+  {
+    "name": "onlni",
+    "lines": [
+      "onlni 1 2 apply ate \"!\";"
+    ]
   }
 ]

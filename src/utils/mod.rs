@@ -13,3 +13,4 @@ pub mod test_helpers;
 pub(crate) mod lines;
 
 pub(crate) mod allocation;
+pub(crate) mod sections;

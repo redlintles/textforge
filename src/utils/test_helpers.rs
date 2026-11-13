@@ -1,5 +1,9 @@
 use crate::api::{TextForgeBlockMethods, TextForgeConditionalMethods};
 use crate::api::{TextForgeBuilderMethods, processor::TextForgeProcessor};
+use crate::tokens::{
+    InstructionMethods,
+    transforms::{tbs::Tbs, tua::Tua, uniqln::Uniqln},
+};
 use crate::utils::errors::TextForgeError;
 
 pub fn build_all_tokens_pipeline_safe(
@@ -142,6 +146,19 @@ pub fn build_all_tokens_pipeline_safe(
         .unique_lines()?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .join_lines(" ")?
+        // ========== on*: one instruction on a section ==========
+        .add_to_end("\n  LINE  \nLINE\nLINE\nTAIL")?
+        .on_line(2, Box::new(Tbs::default()) as Box<dyn InstructionMethods>)?
+        .on_line_interval(
+            2,
+            4,
+            Box::new(Uniqln::default()) as Box<dyn InstructionMethods>,
+        )?
+        .on_chunk(
+            0,
+            2,
+            Box::new(Tua::default()) as Box<dyn InstructionMethods>,
+        )?
         .build()?;
 
     Ok(id)

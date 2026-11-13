@@ -8,6 +8,13 @@ mod tests {
     use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 
     #[test]
+    fn end_past_empty_input_is_an_error_not_a_panic() {
+        // Clamping the end index used to compute `0 - 1` and overflow.
+        let t = crate::tokens::transforms::slt::Slt::new(0, 3).unwrap();
+        assert!(t.transform("".into(), None).is_err());
+    }
+
+    #[test]
     fn get_string_repr_is_slt() {
         let t = Slt::default();
         assert_eq!(t.get_string_repr(), "slt");

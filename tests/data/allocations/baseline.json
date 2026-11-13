@@ -1700,10 +1700,7 @@
     "outcome": {
       "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
     },
-    "owned": false,
-    "outcome_debug": {
-      "panic": true
-    }
+    "owned": false
   },
   {
     "case": {
@@ -1716,10 +1713,7 @@
     "outcome": {
       "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
     },
-    "owned": true,
-    "outcome_debug": {
-      "panic": true
-    }
+    "owned": true
   },
   {
     "case": {
@@ -8128,10 +8122,7 @@
     "outcome": {
       "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in current string, for the input , only indexes between 0-18446744073709551615 are allowed\"), instruction: \"ins 1 xy;\\n\", input: \"\" }"
     },
-    "owned": false,
-    "outcome_debug": {
-      "panic": true
-    }
+    "owned": false
   },
   {
     "case": {
@@ -8144,10 +8135,7 @@
     "outcome": {
       "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in current string, for the input , only indexes between 0-18446744073709551615 are allowed\"), instruction: \"ins 1 xy;\\n\", input: \"\" }"
     },
-    "owned": true,
-    "outcome_debug": {
-      "panic": true
-    }
+    "owned": true
   },
   {
     "case": {
@@ -17650,10 +17638,7 @@
     "outcome": {
       "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
     },
-    "owned": false,
-    "outcome_debug": {
-      "panic": true
-    }
+    "owned": false
   },
   {
     "case": {
@@ -17666,10 +17651,7 @@
     "outcome": {
       "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
     },
-    "owned": true,
-    "outcome_debug": {
-      "panic": true
-    }
+    "owned": true
   },
   {
     "case": {

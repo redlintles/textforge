@@ -64,7 +64,9 @@ impl InstructionMethods for Slt {
         let mut end = self.end_index;
 
         if end > len {
-            end = len - 1;
+            // Release builds always wrapped here; keep that result without the
+            // debug-build overflow panic on empty input.
+            end = len.wrapping_sub(1);
         }
 
         check_chunk_bound_indexes(self.start_index, end, Some(input.as_ref()))?;

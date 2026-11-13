@@ -11,6 +11,13 @@ mod tests {
     use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 
     #[test]
+    fn end_past_empty_input_is_an_error_not_a_panic() {
+        // Clamping the end index used to compute `0 - 1` and overflow.
+        let t = crate::tokens::transforms::ctc::Ctc::new(0, 3).unwrap();
+        assert!(t.transform("".into(), None).is_err());
+    }
+
+    #[test]
     fn params_accepts_valid_range() {
         let t = Ctc::new(0, 1).unwrap();
         assert_eq!(t.start_index, 0);

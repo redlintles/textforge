@@ -2286,6 +2286,98 @@ pub trait TextForgeBuilderMethods: Sized {
         self.push_token(tok)?;
         Ok(self)
     }
+    /// ONLN — Apply one instruction to a single line (base 1).
+    ///
+    /// The instruction receives only the line content, without its terminator,
+    /// so its indices are relative to the line. The terminator is preserved and
+    /// the result may contain any number of lines. See `docs/on-instructions.md`.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// use textforge::tokens::{InstructionMethods, transforms::tbs::Tbs};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let trim: Box<dyn InstructionMethods> = Box::new(Tbs::default());
+    /// let id = processor.create_pipeline().on_line(2, trim).unwrap().build().unwrap();
+    /// assert_eq!(processor.process_all(&id, "  a  \n  b  \n").unwrap(), "  a  \nb\n");
+    /// ```
+    fn on_line(
+        &mut self,
+        line: impl Into<ValType>,
+        inner: impl Into<TokenWrapper>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(onln::Onln::default()),
+            Some(vec![
+                line.into(),
+                ValType::Literal(TextForgeParamTypes::Token(inner.into())),
+            ]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
+    /// ONCK — Apply one instruction to characters `start..=end` (base 0).
+    ///
+    /// The instruction receives only that chunk, so its indices are relative to
+    /// it. An `end` past the last character is clamped, as in `delete_chunk`.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// use textforge::tokens::{InstructionMethods, transforms::dlf::Dlf};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let first: Box<dyn InstructionMethods> = Box::new(Dlf::default());
+    /// let id = processor.create_pipeline().on_chunk(1, 3, first).unwrap().build().unwrap();
+    /// assert_eq!(processor.process_all(&id, "abcde").unwrap(), "acde");
+    /// ```
+    fn on_chunk(
+        &mut self,
+        start_index: impl Into<ValType>,
+        end_index: impl Into<ValType>,
+        inner: impl Into<TokenWrapper>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(onck::Onck::default()),
+            Some(vec![
+                start_index.into(),
+                end_index.into(),
+                ValType::Literal(TextForgeParamTypes::Token(inner.into())),
+            ]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
+    /// ONLNI — Apply one instruction to lines `start..=end` (base 1) as one block.
+    ///
+    /// The block keeps its inner terminators; the terminator of the last selected
+    /// line is preserved outside it. The result may change the line count.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// use textforge::tokens::{InstructionMethods, transforms::uniqln::Uniqln};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let unique: Box<dyn InstructionMethods> = Box::new(Uniqln::default());
+    /// let id = processor.create_pipeline().on_line_interval(1, 3, unique).unwrap().build().unwrap();
+    /// assert_eq!(processor.process_all(&id, "b\nb\na\nc").unwrap(), "b\na\nc");
+    /// ```
+    fn on_line_interval(
+        &mut self,
+        start_line: impl Into<ValType>,
+        end_line: impl Into<ValType>,
+        inner: impl Into<TokenWrapper>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(onlni::Onlni::default()),
+            Some(vec![
+                start_line.into(),
+                end_line.into(),
+                ValType::Literal(TextForgeParamTypes::Token(inner.into())),
+            ]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     fn remove_pattern(&mut self, pattern: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(rmp::Rmp::default()), Some(vec![pattern.into()]));
 

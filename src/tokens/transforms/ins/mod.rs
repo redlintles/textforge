@@ -69,7 +69,7 @@ impl InstructionMethods for Ins {
                         format!(
                             "Index does not exist in current string, for the input {}, only indexes between 0-{} are allowed",
                             input,
-                            input.chars().count() - 1
+                            input.chars().count().wrapping_sub(1)
                         ).into()
                     ),
                     self.to_textforge_line(),

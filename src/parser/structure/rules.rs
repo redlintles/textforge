@@ -34,7 +34,9 @@ impl ValidationContext {
         Self {
             depth: self.depth + 1,
             inside_block: self.inside_block || parent_name == "blk",
-            inside_iteration: self.inside_iteration || parent_name == "iter",
+            // `on*` instructions inherit the structural rules of `iter`.
+            inside_iteration: self.inside_iteration
+                || matches!(parent_name, "iter" | "onln" | "onck" | "onlni"),
         }
     }
 }

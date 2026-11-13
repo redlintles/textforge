@@ -542,5 +542,17 @@ define_token_table! {
         ("revln", 0x4f, || TokenRef::Shared(Arc::new(revln::Revln::default())), []),
         ("uniqln", 0x50, || TokenRef::Shared(Arc::new(uniqln::Uniqln::default())), []),
         ("joinln", 0x51, || TokenRef::Shared(Arc::new(joinln::Joinln::default())), [SyntaxDef::req(SyntaxToken::String)]),
+        ("onln", 0x52, || TokenRef::Shared(Arc::new(onln::Onln::default())), [
+            SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Literal("apply")),
+            SyntaxDef::req(SyntaxToken::Token),
+        ]),
+        ("onck", 0x53, || TokenRef::Shared(Arc::new(onck::Onck::default())), [
+            SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize),
+            SyntaxDef::req(SyntaxToken::Literal("apply")), SyntaxDef::req(SyntaxToken::Token),
+        ]),
+        ("onlni", 0x54, || TokenRef::Shared(Arc::new(onlni::Onlni::default())), [
+            SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize),
+            SyntaxDef::req(SyntaxToken::Literal("apply")), SyntaxDef::req(SyntaxToken::Token),
+        ]),
     ];
 }
