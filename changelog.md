@@ -48,6 +48,7 @@
 
 ### Changed
 
+- Internal audit of this work: `docs/audits/0.3.0-on-debug-audit.md`.
 - Debug traces list at most 20 steps per container (`… +K steps`).
 - Nested instructions (inside `iter`, `onln`/`onck`/`onlni`, conditionals and
   block payloads) with literal parameters are bound once per registered
