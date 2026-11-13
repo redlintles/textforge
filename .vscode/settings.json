@@ -34,5 +34,6 @@
         "TextForge - Remove Ok"
       ]
     }
-  }
+  },
+  "cmake.sourceDirectory": "/home/jota/Documentos/atp_project/src/bindings/textforge_c"
 }

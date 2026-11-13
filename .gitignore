@@ -22,8 +22,6 @@ log.txt
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Independent nested Python binding repository
-/src/bindings/python/
+# Independent repositories for each language binding
+/src/bindings
 
-# Independent nested Node.js binding repository
-/src/bindings/node/
