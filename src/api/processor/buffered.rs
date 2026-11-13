@@ -149,8 +149,11 @@ impl TextForgeProcessor {
     }
 }
 
-fn adapter_options() -> TextBufferOptions {
-    TextBufferOptions::new(1024 * 1024, std::env::temp_dir())
+impl TextForgeProcessor {
+    /// Spool options for the String-based adapters, from the profile.
+    fn adapter_options(&self) -> TextBufferOptions {
+        TextBufferOptions::new(self.profile.spool_threshold, std::env::temp_dir())
+    }
 }
 
 fn adapter_io(error: std::io::Error) -> TextForgeError {
@@ -196,7 +199,7 @@ impl TextForgeProcessor {
         input: &str,
         input_file: Option<&Path>,
     ) -> Result<String, TextForgeError> {
-        let result = TextBuffer::from_text(input, adapter_options())
+        let result = TextBuffer::from_text(input, self.adapter_options())
             .and_then(|input| self.run_buffered(id, input.retain_materialized(), input_file))
             .and_then(TextBuffer::into_string);
         result.inspect_err(|error| self.errors.add_error(error.clone()))
@@ -232,7 +235,8 @@ impl TextForgeProcessor {
                         format!("{origin:?} - {error}"),
                     )
                 })?;
-                let input = TextBuffer::from_reader(file, adapter_options())?.retain_materialized();
+                let input =
+                    TextBuffer::from_reader(file, self.adapter_options())?.retain_materialized();
                 let mut output = self.run_buffered(id, input, Some(origin))?;
                 if let Some(parent) = target.parent()
                     && !parent.as_os_str().is_empty()
@@ -254,7 +258,7 @@ impl TextForgeProcessor {
         input: &str,
     ) -> Result<String, TextForgeError> {
         let result = (|| {
-            let options = adapter_options();
+            let options = self.adapter_options();
             let mut log = tempfile::SpooledTempFile::new_in(
                 options.memory_threshold(),
                 options.spill_directory(),
@@ -371,7 +375,8 @@ impl TextForgeProcessor {
             &mut context,
             |_, token, current, context| {
                 let before = Arc::clone(&current);
-                let document = TextBuffer::from_shared(Arc::clone(&current), adapter_options());
+                let document =
+                    TextBuffer::from_shared(Arc::clone(&current), self.adapter_options());
                 let output = token.apply_buffered(document, context)?;
                 let current = output.into_shared(&before)?;
                 if let Some((previous_before, previous_current, instruction)) = pending.take() {

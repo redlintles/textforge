@@ -4,6 +4,15 @@
 
 ### Added
 
+- Execution profiles: `ExecutionProfile` (`balanced`, the previous behavior;
+  `low-memory`; `fast`) with `spool_threshold`, set through
+  `TextForgeProcessor::with_profile`/`set_profile` (and the portable
+  `set_profile`). Profiles change memory use, never results; a test runs every
+  processing method under every preset. `txf` reads a strict JSON `.txfrc`
+  (schema in `docs/txfrc.schema.json`) and accepts `--profile`,
+  `--spool-threshold`, `--config` and `--no-rc`; `txf config show` prints the
+  effective profile and the source of each value. See
+  [execution profiles](docs/execution-profiles.md).
 - `ppjn {pipeline};` (pipeline join, opcode 0x58) runs a pipeline from another
   text or bytecode file on the current text, in a new execution context that
   shares only the static context; `end` inside it is local. The literal path

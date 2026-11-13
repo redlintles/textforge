@@ -15,6 +15,7 @@ facade. Existing fluent Rust contracts are unchanged.
 | `add_transform` | `add_transform(Vec<InstructionSpec>)`, atomically validated |
 | `remove_transform`, `transform_exists`, `show_transforms` | Same names; `list_transforms` additionally returns owned IDs |
 | `set_pipeline_name`, `pipeline_name` | Same names; `pipeline_name` returns an owned string |
+| `with_profile`, `set_profile`, `profile` | `set_profile` and `profile` with the same plain `ExecutionProfile` value (`with_profile` is the consuming form of `set_profile`) |
 | `get_transform_vec` | Same name, returns independent editable `InstructionSpec` snapshots |
 | `get_text_transform_vec` | Same name, delegates the core text representation |
 | cloning through `get_transform_vec` + `add_transform` | `clone_pipeline`, or snapshot/edit/register |

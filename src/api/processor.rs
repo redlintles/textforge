@@ -24,6 +24,7 @@ use crate::watchers::WatcherContext;
 use crate::watchers::WatcherList;
 
 use crate::api::builder::TextForgeBuilder;
+use crate::api::profile::ExecutionProfile;
 #[cfg(not(feature = "buffered"))]
 use crate::context::execution_context::GlobalContextMethods;
 use crate::context::execution_context::GlobalExecutionContext;
@@ -220,6 +221,9 @@ use crate::utils::errors::{
 /// - Debug methods (`*_with_debug`) only add printing; they do not change execution.
 pub struct TextForgeProcessor {
     transforms: HashMap<String, RegisteredPipeline>,
+    /// Engine resources; never changes results.
+    #[cfg_attr(not(feature = "buffered"), allow(dead_code))]
+    profile: ExecutionProfile,
     errors: ErrorManager,
 }
 
@@ -631,8 +635,25 @@ impl TextForgeProcessor {
     pub fn new() -> Self {
         TextForgeProcessor {
             transforms: HashMap::new(),
+            profile: ExecutionProfile::balanced(),
             errors: ErrorManager::default(),
         }
+    }
+
+    /// This processor using `profile` (see [`ExecutionProfile`]).
+    pub fn with_profile(mut self, profile: ExecutionProfile) -> Self {
+        self.profile = profile;
+        self
+    }
+
+    /// Use `profile` for later runs. Results never depend on the profile.
+    pub fn set_profile(&mut self, profile: ExecutionProfile) {
+        self.profile = profile;
+    }
+
+    /// The profile in use (`balanced` by default).
+    pub fn profile(&self) -> &ExecutionProfile {
+        &self.profile
     }
 
     /// Set the name of a registered pipeline, read by the DSL as

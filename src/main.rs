@@ -8,7 +8,10 @@ use std::{
 use textforge::{
     api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
     utils::{
-        cli::{process_input_by_chunks, process_input_line_by_line, process_input_single_chunk},
+        cli::{
+            ProfileOptions, process_input_by_chunks, process_input_line_by_line,
+            process_input_single_chunk, resolve_profile,
+        },
         errors::{TextForgeError, TextForgeErrorCode},
         validations::check_file_path,
     },
@@ -21,10 +24,59 @@ enum ReadMode {
     Chunk(usize),
 }
 
+/// Flags choosing the execution profile, shared by runs and `config show`.
+fn profile_args() -> [Arg; 4] {
+    [
+        Arg::new("profile")
+            .long("profile")
+            .value_name("PRESET")
+            .value_parser(["balanced", "low-memory", "fast"])
+            .global(true)
+            .help("Execution profile preset (memory/speed trade-off; never changes results)"),
+        Arg::new("spool_threshold")
+            .long("spool-threshold")
+            .value_name("SIZE")
+            .global(true)
+            .help("Override spool_threshold: bytes or e.g. 512MiB (buffered builds only)"),
+        Arg::new("config")
+            .long("config")
+            .value_name("PATH")
+            .value_parser(value_parser!(PathBuf))
+            .conflicts_with("no_rc")
+            .global(true)
+            .help("Read this configuration file instead of ./.txfrc"),
+        Arg::new("no_rc")
+            .long("no-rc")
+            .action(ArgAction::SetTrue)
+            .global(true)
+            .help("Do not read ./.txfrc"),
+    ]
+}
+
+fn profile_options(matches: &clap::ArgMatches) -> ProfileOptions {
+    ProfileOptions {
+        profile: matches.get_one::<String>("profile").cloned(),
+        spool_threshold: matches.get_one::<String>("spool_threshold").cloned(),
+        config: matches.get_one::<PathBuf>("config").cloned(),
+        no_rc: matches.get_flag("no_rc"),
+    }
+}
+
 fn build_cli() -> Command {
     Command::new("txf")
         .version(env!("CARGO_PKG_VERSION"))
         .about("CLI for TextForge")
+        .subcommand_negates_reqs(true)
+        .args(profile_args())
+        .subcommand(
+            Command::new("config")
+                .about("Inspect the engine configuration")
+                .subcommand_required(true)
+                .subcommand(
+                    Command::new("show")
+                        .about("Print the effective profile and where each value comes from"),
+                ),
+        )
         .arg(
             Arg::new("file")
                 .short('f')
@@ -162,6 +214,11 @@ fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor)
 
 fn main() -> Result<(), TextForgeError> {
     let matches = build_cli().get_matches();
+    let profile = resolve_profile(&profile_options(&matches), Path::new("."))?;
+    if matches.subcommand_matches("config").is_some() {
+        print!("{}", profile.describe());
+        return Ok(());
+    }
 
     let file = matches.get_one::<PathBuf>("file").unwrap();
     let input = matches.get_one::<PathBuf>("input");
@@ -213,6 +270,7 @@ fn main() -> Result<(), TextForgeError> {
     };
 
     let (id, mut processor) = load_pipeline(textforge_mode.as_str(), file)?;
+    processor.set_profile(profile.profile);
     let result = process_by_mode(read_mode, &id, &data, *debug, &mut processor)?;
 
     match output {
@@ -252,6 +310,34 @@ mod textforge_tests {
     mod parser_tests {
         use crate::{ReadMode, build_cli};
         use std::{path::PathBuf, str::FromStr};
+
+        #[test]
+        fn config_show_needs_no_pipeline_and_accepts_profile_flags() {
+            let parser = build_cli();
+            let m = parser
+                .try_get_matches_from(["txf", "config", "show", "--profile", "fast", "--no-rc"])
+                .unwrap();
+            assert!(m.subcommand_matches("config").is_some());
+            let options = crate::profile_options(&m);
+            assert_eq!(options.profile.as_deref(), Some("fast"));
+            assert!(options.no_rc);
+            // --config and --no-rc contradict each other; runs still need --file.
+            assert!(
+                build_cli()
+                    .try_get_matches_from(["txf", "-f", "p.textforge", "--config", "a", "--no-rc"])
+                    .is_err()
+            );
+            assert!(
+                build_cli()
+                    .try_get_matches_from(["txf", "--profile", "fast"])
+                    .is_err()
+            );
+            assert!(
+                build_cli()
+                    .try_get_matches_from(["txf", "-f", "p.textforge", "--profile", "turbo"])
+                    .is_err()
+            );
+        }
 
         #[test]
         fn test_all_with_long_params() {

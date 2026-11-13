@@ -144,6 +144,14 @@ impl PortableProcessor {
     pub fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, BindingError> {
         self.core.get_text_transform_vec(id).map_err(execution)
     }
+    /// Core `set_profile`: engine resources, never results.
+    pub fn set_profile(&mut self, profile: crate::api::ExecutionProfile) {
+        self.core.set_profile(profile);
+    }
+    /// Core `profile`.
+    pub fn profile(&self) -> crate::api::ExecutionProfile {
+        *self.core.profile()
+    }
     /// Name read by the DSL as `__PIPELINE_NAME__` (core `set_pipeline_name`).
     pub fn set_pipeline_name(&mut self, id: &str, name: String) -> Result<(), BindingError> {
         self.core.set_pipeline_name(id, name).map_err(execution)

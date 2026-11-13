@@ -120,7 +120,12 @@ assert_eq!(result, "HELLO RUST");
 txf --file pipeline.textforge --input input.txt --output output.txt
 ```
 
-Without `--output`, the result is printed to stdout. `.textforgebc` pipelines need the `bytecode` feature. The CLI is still being completed. The `atp-shell` and `atp-game` binaries are empty placeholders for now.
+Without `--output`, the result is printed to stdout. `.textforgebc` pipelines need the `bytecode` feature.
+
+`--profile balanced|low-memory|fast` and `--spool-threshold 512MiB` choose how
+much memory the engine may use, never the result; a `.txfrc` in the current
+directory can set them (`--config PATH`, `--no-rc`), and `txf config show`
+prints the effective profile. See [execution profiles](docs/execution-profiles.md). The CLI is still being completed. The `atp-shell` and `atp-game` binaries are empty placeholders for now.
 
 ---
 

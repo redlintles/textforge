@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/redlintles/textforge/docs/txfrc.schema.json",
+  "title": "TextForge .txfrc",
+  "description": "Engine resources for the txf CLI. Changes memory and speed, never results. Kept in sync with src/api/profile.rs by a test.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version"],
+  "properties": {
+    "version": { "const": 1 },
+    "profile": { "enum": ["balanced", "low-memory", "fast"] },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "spool_threshold": {
+          "description": "Bytes, or text with a binary unit: \"512MiB\". 4 KiB to 64 GiB.",
+          "oneOf": [
+            { "type": "integer", "minimum": 4096, "maximum": 68719476736 },
+            { "type": "string", "pattern": "^\\s*[0-9]+\\s*([Bb]|[KkMmGg][Ii][Bb])?\\s*$" }
+          ]
+        }
+      }
+    }
+  }
+}
