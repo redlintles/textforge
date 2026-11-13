@@ -301,18 +301,20 @@ impl TextForgeErrorCode {
 }
 
 pub fn token_array_not_found(identifier: &str) -> impl Fn() -> TextForgeError {
-    let message = TextForgeError::new(
-        TextForgeErrorCode::TokenArrayNotFound(
-            format!(
-                "Token array not found, is {} a valid identifier for this processor?",
-                identifier
-            )
-            .into(),
-        ),
-        Cow::Borrowed("get identifier"),
-        Cow::Borrowed(""),
-    );
-    move || message.clone()
+    // Built only when called: lookups that succeed format nothing.
+    move || {
+        TextForgeError::new(
+            TextForgeErrorCode::TokenArrayNotFound(
+                format!(
+                    "Token array not found, is {} a valid identifier for this processor?",
+                    identifier
+                )
+                .into(),
+            ),
+            Cow::Borrowed("get identifier"),
+            Cow::Borrowed(""),
+        )
+    }
 }
 
 #[cfg(feature = "test_access")]
