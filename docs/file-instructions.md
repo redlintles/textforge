@@ -1,7 +1,38 @@
 # File instructions
 
-`wtf`, `apf` and `inf` let a pipeline write its current text to a file, or
-read text from files, in the middle of processing. Their paths are **data**:
+`ppjn` runs a pipeline from another file. `wtf`, `apf` and `inf` let a
+pipeline write its current text to a file, or read text from files, in the
+middle of processing.
+
+## `ppjn` (pipeline join)
+
+`ppjn {pipeline};` runs a whole pipeline from another file on the current text
+and continues with its result. It works like a subshell: text in, text out.
+
+```text
+// main.textforge
+ppjn lib/clean.textforge;     // lib/ is next to main.textforge
+ate ' — {{__PIPELINE_NAME__}}';
+```
+
+| Topic | Rule |
+| --- | --- |
+| Path | A **literal** (no `{{ }}`/`[[ ]]`: `ValidationError`). Relative to the file containing `ppjn`; for pipelines built in code (builder, portable plans, `add_transform`), relative to the working directory |
+| Loading | When the outer pipeline is loaded (`get_pipeline_from_file`, `build`, portable `register`, `add_transform`), never while it runs: `iter 1000 times ppjn lib.textforge;` reads the file once. A file that fails to load fails `get_pipeline_from_file`, `build` and `register`; `add_transform` cannot report errors, so there the join loads, and reports, when it runs |
+| Format | Text or bytecode, recognized by the first bytes (the bytecode magic number), not the extension. Bytecode without the `bytecode` feature is an error |
+| State | The joined pipeline runs in a **new** execution context: outer variables, blocks and replacement maps are invisible, and its own do not leak out. It shares only the static context (`__PIPELINE_NAME__` stays the outer name; `__LINES__` and `__LEN_CHARS__` describe the text it receives) |
+| `end` | Ends only the joined pipeline |
+| Cycles | Detected when loading, with the whole chain in the error input (`a.textforge → b.textforge → a.textforge`). Nesting is limited to `MAX_JOIN_DEPTH` (16) |
+| Modes | The joined pipeline runs in the outer mode: plain, debug (its steps appear nested under `▶ ppjn {path}`), watchers (one outer step) and buffered (spooled text stays spooled) |
+| Errors | Name the file and line (`ppjn lib.textforge:3 › dlc 99 100;`); the file contents are never quoted |
+| Bytecode | The outer bytecode **embeds** the joined pipeline (parameter type 0x05, see `AGENTS.md` §8), so it runs without the original files. Converting back to text writes `ppjn "path";` |
+
+Builder: `pipeline_join(path)`. Portable: `InstructionSpec` `ppjn` with one
+`Argument::Text`. Opcode 0x58.
+
+## Reading and writing files
+
+The paths of `wtf`, `apf` and `inf` are **data**:
 they may use `{{ }}` and `[[ ]]` interpolation and are resolved when the
 instruction runs. A relative path is relative to the process working
 directory. Files are read with the same helper as `process_file`

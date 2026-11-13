@@ -140,6 +140,7 @@ pub(super) fn convert(specification: &InstructionSpec) -> Result<TokenWrapper, T
                 )),
             });
         }
+        crate::parser::joins::implicit_parameters(&specification.name, &mut parameters);
         converted.push(TokenWrapper::new(token, Some(parameters)));
     }
     converted.pop().ok_or_else(|| {
@@ -181,6 +182,7 @@ pub(super) fn describe(root: &TokenWrapper) -> Result<InstructionSpec, TextForge
         let mut arguments = Vec::new();
         for value in token.get_params() {
             arguments.push(match value {
+                ValType::Literal(TextForgeParamTypes::Pipeline(_)) => continue,
                 ValType::VarRef(name) | ValType::Literal(TextForgeParamTypes::VarRef(name)) => {
                     Argument::Variable(name.clone())
                 }

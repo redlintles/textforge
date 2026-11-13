@@ -234,6 +234,10 @@ impl ValidationRule for SignatureRule {
                         Parameter::Literal(TextForgeParamTypes::Usize(_)),
                         SyntaxToken::Usize
                     ) | (Parameter::Instruction, SyntaxToken::Token)
+                        | (
+                            Parameter::Literal(TextForgeParamTypes::Pipeline(_)),
+                            SyntaxToken::Pipeline
+                        )
                         | (Parameter::Reference, _)
                 ) || matches!(
                     (parameter, expected),
@@ -281,13 +285,52 @@ impl ValidationRule for ReservedNameRule {
     }
 }
 
-pub(super) const BUILTIN_RULES: &[&dyn ValidationRule] =
-    &[&NestingRule, &SignatureRule, &ReservedNameRule];
+/// `ppjn` takes a literal path: joined pipelines are code, loaded with the
+/// outer pipeline, so the path cannot depend on execution-time values.
+pub(super) struct JoinPathRule;
+
+impl ValidationRule for JoinPathRule {
+    fn check(
+        &self,
+        instruction: &InstructionView<'_>,
+        _context: ValidationContext,
+    ) -> Result<(), TextForgeError> {
+        if instruction.name != "ppjn" {
+            return Ok(());
+        }
+        let literal = match instruction.parameters.first() {
+            Some(Parameter::Literal(TextForgeParamTypes::String(path))) => {
+                !["{{", "}}", "[[", "]]"]
+                    .iter()
+                    .any(|marker| path.contains(marker))
+            }
+            _ => false,
+        };
+        if literal {
+            Ok(())
+        } else {
+            Err(TextForgeError::new(
+                TextForgeErrorCode::ValidationError(
+                    "ppjn takes a literal path, without {{ }} or [[ ]]".into(),
+                ),
+                instruction.name,
+                "path",
+            ))
+        }
+    }
+}
+
+pub(super) const BUILTIN_RULES: &[&dyn ValidationRule] = &[
+    &NestingRule,
+    &SignatureRule,
+    &ReservedNameRule,
+    &JoinPathRule,
+];
 
 /// Rules every parsed instruction must satisfy, whatever its origin (text or
 /// bytecode). Kept apart from [`BUILTIN_RULES`] so parsing does not start
 /// enforcing builder-only structure rules on existing pipelines.
-pub(super) const PARSE_RULES: &[&dyn ValidationRule] = &[&ReservedNameRule];
+pub(super) const PARSE_RULES: &[&dyn ValidationRule] = &[&ReservedNameRule, &JoinPathRule];
 
 pub(super) fn check_with_rules(
     instruction: &InstructionView<'_>,

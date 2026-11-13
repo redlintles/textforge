@@ -2378,6 +2378,30 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// PPJN — Run a whole pipeline from another file (text or bytecode) on the
+    /// current text, in a new execution context, and continue with its result.
+    ///
+    /// The path is a literal, relative to the working directory; the file is
+    /// loaded when the pipeline is built. See [`Ppjn`](crate::tokens::instructions::ppjn::Ppjn).
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let path = std::env::temp_dir().join(format!("ppjn-builder-{}.textforge", std::process::id()));
+    /// std::fs::write(&path, "tua;\n").unwrap();
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().pipeline_join(path.to_string_lossy().as_ref())?.build()?;
+    /// assert_eq!(processor.process_all(&id, "abc")?, "ABC");
+    /// # std::fs::remove_file(&path).unwrap();
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn pipeline_join(&mut self, path: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        let mut parameters = vec![path.into()];
+        crate::parser::joins::implicit_parameters("ppjn", &mut parameters);
+        let token = TokenWrapper::new(Box::new(ppjn::Ppjn::default()), Some(parameters));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// WTF — Write the current text to a file and keep it unchanged.
     ///
     /// The file is replaced atomically; missing directories are an error. The

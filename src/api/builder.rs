@@ -37,7 +37,9 @@ impl<'ap> TextForgeBuilder<'ap> {
     /// On failure, the processor and the construction tree remain unchanged.
     /// Successful builds retain the tree and may be repeated.
     pub fn build(&mut self) -> Result<String, TextForgeError> {
-        let tokens = validate_and_lower(&self.nodes)?;
+        let mut tokens = validate_and_lower(&self.nodes)?;
+        // Joined pipelines (`ppjn`) load now, relative to the working directory.
+        crate::parser::joins::link(&mut tokens, std::path::Path::new("."), &[])?;
         Ok(self.processor.add_transform(tokens))
     }
 }

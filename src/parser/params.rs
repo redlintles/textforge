@@ -34,6 +34,9 @@ pub enum TextForgeParamTypes {
     Usize(usize),
     Token(TokenWrapper),
     VarRef(String),
+    /// The pipeline joined by `ppjn`. It has no text form: parsers add it
+    /// after the path, and bytecode embeds the loaded pipeline (type 0x05).
+    Pipeline(crate::parser::joins::JoinState),
 }
 
 // --------------------------
@@ -71,6 +74,9 @@ impl TryFrom<TextForgeParamTypes> for String {
             TextForgeParamTypes::Usize(v) => v.to_string(),
             TextForgeParamTypes::Token(v) => v.to_text_line_unresolved()?,
             TextForgeParamTypes::VarRef(v) => v,
+            TextForgeParamTypes::Pipeline(_) => {
+                return Err(not_a_value("String"));
+            }
         })
     }
 }
@@ -92,6 +98,7 @@ impl TryFrom<TextForgeParamTypes> for VarValues {
             TextForgeParamTypes::String(s) => VarValues::String(s),
             TextForgeParamTypes::Usize(n) => VarValues::Usize(n),
             TextForgeParamTypes::Token(t) => VarValues::Token(t),
+            TextForgeParamTypes::Pipeline(_) => return Err(not_a_value("VarValues")),
             TextForgeParamTypes::VarRef(_) => {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::TryIntoFailError(
@@ -148,8 +155,18 @@ impl std::fmt::Debug for TextForgeParamTypes {
                 f.debug_tuple("Token").field(&t.get_string_repr()).finish()
             }
             TextForgeParamTypes::VarRef(s) => f.debug_tuple("VarRef").field(s).finish(),
+            TextForgeParamTypes::Pipeline(state) => f.debug_tuple("Pipeline").field(state).finish(),
         }
     }
+}
+
+/// A joined pipeline (`ppjn`) is not a value a variable or text can hold.
+fn not_a_value(target: &'static str) -> TextForgeError {
+    TextForgeError::new(
+        TextForgeErrorCode::TryIntoFailError("A joined pipeline is not a value".into()),
+        target,
+        "",
+    )
 }
 
 pub trait TextForgeParamTypesJoin {
@@ -193,6 +210,7 @@ const PARAM_STRING: u32 = 0x01;
 const PARAM_USIZE: u32 = 0x02;
 const PARAM_TOKEN: u32 = 0x03;
 const PARAM_VARREF: u32 = 0x04;
+pub(crate) const PARAM_PIPELINE: u32 = 0x05;
 
 impl std::fmt::Display for TextForgeParamTypes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -200,6 +218,7 @@ impl std::fmt::Display for TextForgeParamTypes {
             Self::String(value) | Self::VarRef(value) => f.write_str(value),
             Self::Usize(value) => write!(f, "{value}"),
             Self::Token(value) => f.write_str(&value.to_textforge_line()),
+            Self::Pipeline(_) => Ok(()),
         }
     }
 }
@@ -236,6 +255,13 @@ impl TextForgeParamTypes {
         let this_is_block_like = Self::is_block_like_signature(&expected);
 
         for p in expected.iter() {
+            // A joined pipeline has no text: it is loaded later (`ppjn`).
+            if matches!(p.token, SyntaxToken::Pipeline) {
+                out.push(ValType::Literal(TextForgeParamTypes::Pipeline(
+                    crate::parser::joins::JoinState::Unloaded,
+                )));
+                continue;
+            }
             // Context references occupy every parameter kind in the portable
             // API. Recognize them before parsing numeric or nested token data,
             // just as the existing String branch does.
@@ -255,6 +281,7 @@ impl TextForgeParamTypes {
                 continue;
             }
             match p.token {
+                SyntaxToken::Pipeline => {}
                 SyntaxToken::Literal(expected_literal) => {
                     let literal = chunks.get(i).ok_or_else(|| {
                         TextForgeError::new(
@@ -572,6 +599,10 @@ impl TextForgeParamTypes {
         assoc_mode: AssocMode,
     ) -> Result<TextForgeParamTypes, TextForgeError> {
         match param_type {
+            #[cfg(feature = "bytecode")]
+            PARAM_PIPELINE => Ok(TextForgeParamTypes::Pipeline(
+                crate::bytecode::reader::decode_pipeline_payload(&payload)?,
+            )),
             PARAM_STRING => {
                 let text = str::from_utf8(&payload).map_err(|e| {
                     TextForgeError::new(
@@ -950,6 +981,7 @@ impl TextForgeParamTypes {
             TextForgeParamTypes::Usize(_) => PARAM_USIZE,
             TextForgeParamTypes::Token(_) => PARAM_TOKEN,
             TextForgeParamTypes::VarRef(_) => PARAM_VARREF,
+            TextForgeParamTypes::Pipeline(_) => PARAM_PIPELINE,
         }
     }
 
@@ -986,6 +1018,7 @@ impl TextForgeParamTypes {
                 None => t.to_bytecode_unresolved()?,
             },
             TextForgeParamTypes::VarRef(s) => s.as_bytes().to_vec(),
+            TextForgeParamTypes::Pipeline(state) => encode_pipeline(state)?,
         };
 
         let payload_size_u32: u32 = payload.len() as u32;
@@ -1009,4 +1042,31 @@ impl TextForgeParamTypes {
         let total = u64::from_be_bytes(result[0..8].try_into().unwrap());
         Ok((total, result))
     }
+}
+
+/// Bytecode payload of a joined pipeline: instruction count (u32), then each
+/// instruction record as in a bytecode file body.
+#[cfg(feature = "bytecode")]
+fn encode_pipeline(state: &crate::parser::joins::JoinState) -> Result<Vec<u8>, TextForgeError> {
+    let crate::parser::joins::JoinState::Loaded(pipeline) = state else {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::SerializationError(
+                "ppjn: the joined pipeline is not loaded, so it cannot be embedded".into(),
+            ),
+            "ppjn",
+            "",
+        ));
+    };
+    let count = u32::try_from(pipeline.tokens().len()).map_err(|_| {
+        TextForgeError::new(
+            TextForgeErrorCode::SerializationError("Too many joined instructions".into()),
+            "ppjn",
+            "",
+        )
+    })?;
+    let mut payload = count.to_be_bytes().to_vec();
+    for token in pipeline.tokens() {
+        payload.extend_from_slice(&token.to_bytecode_unresolved()?);
+    }
+    Ok(payload)
 }

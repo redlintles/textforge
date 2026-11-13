@@ -26,7 +26,7 @@ instructions inside it, a nested trace follows the step:
 ◀ onln  16 → 16 chars (±0) · 2 → 2 lines
 ```
 
-- `▶` opens a container (`cblk`, `iter`, `onln`, `onck`, `onlni`, `rmape`) and
+- `▶` opens a container (`cblk`, `iter`, `onln`, `onck`, `onlni`, `ppjn`, `rmape`) and
   `◀` closes it with its **net effect** on the text it received: characters
   (Unicode scalars) and logical lines before → after.
 - `│ n.` is one nested step with the instruction as executed (variables and

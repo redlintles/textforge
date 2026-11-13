@@ -133,7 +133,8 @@ impl TokenWrapper {
         if !self.token.supports_preparation()
             || !self.params.iter().all(|parameter| match parameter {
                 ValType::Literal(TextForgeParamTypes::Usize(_))
-                | ValType::Literal(TextForgeParamTypes::Token(_)) => true,
+                | ValType::Literal(TextForgeParamTypes::Token(_))
+                | ValType::Literal(TextForgeParamTypes::Pipeline(_)) => true,
                 ValType::Literal(TextForgeParamTypes::String(text)) => !["{{", "}}", "[[", "]]"]
                     .iter()
                     .any(|marker| text.contains(marker)),
@@ -177,6 +178,10 @@ impl TokenWrapper {
 
     pub fn get_params(&self) -> &Vec<ValType> {
         &self.params
+    }
+    /// Parameters, for loading joined pipelines in place (`parser::joins`).
+    pub(crate) fn params_mut(&mut self) -> &mut [ValType] {
+        &mut self.params
     }
     pub fn get_default_token(&self) -> Box<dyn InstructionMethods> {
         self.token.clone()
@@ -340,6 +345,11 @@ impl TokenWrapper {
                     fields.push(literal.to_owned());
                     continue;
                 }
+                // A joined pipeline has no text form: `ppjn "path";`.
+                if matches!(part.token, SyntaxToken::Pipeline) {
+                    parameters.next();
+                    continue;
+                }
                 let parameter = parameters.next().ok_or_else(|| {
                     TextForgeError::new(
                         TextForgeErrorCode::SerializationError(
@@ -350,6 +360,15 @@ impl TokenWrapper {
                     )
                 })?;
                 let value = match parameter {
+                    ValType::Literal(TextForgeParamTypes::Pipeline(_)) => {
+                        return Err(TextForgeError::new(
+                            TextForgeErrorCode::SerializationError(
+                                "Joined pipeline in a text position".into(),
+                            ),
+                            "to_text_line_unresolved",
+                            wrapper.get_string_repr(),
+                        ));
+                    }
                     ValType::Literal(TextForgeParamTypes::Token(_)) => {
                         output.pop().ok_or_else(|| {
                             TextForgeError::new(
@@ -576,7 +595,8 @@ impl ValType {
                     }
 
                     (TextForgeParamTypes::Usize(_), SyntaxToken::Usize)
-                    | (TextForgeParamTypes::Token(_), SyntaxToken::Token) => {
+                    | (TextForgeParamTypes::Token(_), SyntaxToken::Token)
+                    | (TextForgeParamTypes::Pipeline(_), SyntaxToken::Pipeline) => {
                         result.push(literal.clone());
                     }
 

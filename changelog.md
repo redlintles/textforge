@@ -4,6 +4,15 @@
 
 ### Added
 
+- `ppjn {pipeline};` (pipeline join, opcode 0x58) runs a pipeline from another
+  text or bytecode file on the current text, in a new execution context that
+  shares only the static context; `end` inside it is local. The literal path
+  is resolved against the containing file and loaded once with the outer
+  pipeline; cycles and nesting deeper than 16 are errors, and errors name the
+  joined file and line. Bytecode embeds joined pipelines through a new
+  parameter type, 0x05 (protocol version unchanged), so it runs without the
+  original files. Builder method `pipeline_join`; portable `InstructionSpec`.
+  See [file instructions](docs/file-instructions.md).
 - File instructions: `wtf {file};` writes the current text to a file and keeps
   it unchanged (atomic replace through a temporary file in the same directory;
   missing directories are an error), `apf {file};` appends a UTF-8 file and

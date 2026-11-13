@@ -100,7 +100,9 @@ impl PortableProcessor {
         PipelinePlan::new()
     }
     pub fn register(&mut self, plan: &PipelinePlan) -> Result<String, BindingError> {
-        let tokens = validate_and_lower(&plan.nodes).map_err(validation)?;
+        let mut tokens = validate_and_lower(&plan.nodes).map_err(validation)?;
+        crate::parser::joins::link(&mut tokens, std::path::Path::new("."), &[])
+            .map_err(persistence)?;
         let id = self.core.add_transform(tokens);
         self.ids.insert(id.clone());
         Ok(id)

@@ -750,7 +750,20 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     }
 
     fn get_pipeline_from_file(&mut self, path: &Path) -> Result<String, TextForgeError> {
-        let tokens = match read_from_file(Path::new(path)) {
+        // Joined pipelines (`ppjn`) load now, relative to this file.
+        let tokens = read_from_file(Path::new(path)).and_then(|mut tokens| {
+            let file = path.canonicalize().map_err(|e| {
+                TextForgeError::new(
+                    TextForgeErrorCode::FileNotFound(e.to_string().into()),
+                    "get_pipeline_from_file",
+                    path.display().to_string(),
+                )
+            })?;
+            let directory = file.parent().unwrap_or(Path::new("."));
+            crate::parser::joins::link(&mut tokens, directory, std::slice::from_ref(&file))?;
+            Ok(tokens)
+        });
+        let tokens = match tokens {
             Ok(x) => x,
             Err(e) => {
                 self.errors.add_error(e.clone());
@@ -766,6 +779,12 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     // -- Pipeline registration & inspection ---------------------------
 
     fn add_transform(&mut self, mut tokens: Vec<TokenWrapper>) -> String {
+        // Load joined pipelines (`ppjn`) still unloaded, from the working
+        // directory. This method cannot report errors: a join that fails to
+        // load here is loaded, and reports its error, when it runs.
+        for token in &mut tokens {
+            let _ = crate::parser::joins::link(std::slice::from_mut(token), Path::new("."), &[]);
+        }
         for token in &mut tokens {
             token.prepare_constant();
         }

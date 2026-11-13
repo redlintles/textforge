@@ -265,6 +265,27 @@ impl GlobalExecutionContext {
         }
     }
 
+    /// The shared static context, for a joined pipeline (`ppjn`) to run with.
+    pub(crate) fn shared_static(&self) -> Arc<StaticContext> {
+        Arc::clone(&self.static_ctx)
+    }
+
+    /// Whether debug tracing is on.
+    #[cfg(feature = "buffered")]
+    pub(crate) fn is_tracing(&self) -> bool {
+        self.trace.is_some()
+    }
+
+    /// Move the debug trace out, to continue it in another context (`ppjn`).
+    pub(crate) fn take_trace(&mut self) -> Option<DebugTrace> {
+        self.trace.take()
+    }
+
+    /// Continue a debug trace taken from another context.
+    pub(crate) fn put_trace(&mut self, trace: DebugTrace) {
+        self.trace = Some(trace);
+    }
+
     /// Read-only facts about this run (see [`StaticContext`]).
     pub fn static_context(&self) -> &StaticContext {
         &self.static_ctx

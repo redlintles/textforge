@@ -530,5 +530,11 @@
     "lines": [
       "inf tests/data/allocations/piece.txt 2;"
     ]
+  },
+  {
+    "name": "ppjn",
+    "lines": [
+      "ppjn tests/data/allocations/joined.textforge;"
+    ]
   }
 ]

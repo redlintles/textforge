@@ -142,6 +142,7 @@ Without `--output`, the result is printed to stdout. `.textforgebc` pipelines ne
 
 | Mnemonic | Description | Args |
 |----------|-------------|------|
+| `ppjn` | Run a whole pipeline from another file in a new context (loaded once, embedded in bytecode) | `<pipeline file>` |
 | `wtf` | Write the current text to a file (atomically) and keep it unchanged | `<file>` |
 | `apf` | Append the contents of a UTF-8 file | `<file>` |
 | `inf` | Insert the contents of a UTF-8 file after the character at `index` (like `ins`) | `<file> <index>` |

@@ -1,6 +1,7 @@
 use std::{
+    cell::Cell,
     fs::OpenOptions,
-    io::{BufReader, Read, Seek, SeekFrom},
+    io::{BufReader, Cursor, Read, Seek, SeekFrom},
     path::Path,
 };
 
@@ -21,6 +22,26 @@ const PARAM_STRING: u32 = 0x01;
 const PARAM_USIZE: u32 = 0x02;
 const PARAM_TOKEN: u32 = 0x03;
 const PARAM_VARREF: u32 = 0x04;
+use crate::parser::params::PARAM_PIPELINE;
+
+/// Where bytecode is read from: a file, or an embedded pipeline in memory.
+trait Source: Read + Seek {
+    /// Bytes left to read, to check declared sizes before trusting them.
+    fn remaining(&mut self) -> std::io::Result<u64>;
+}
+
+impl Source for BufReader<std::fs::File> {
+    fn remaining(&mut self) -> std::io::Result<u64> {
+        let length = self.get_ref().metadata()?.len();
+        Ok(length.saturating_sub(self.stream_position()?))
+    }
+}
+
+impl Source for Cursor<&[u8]> {
+    fn remaining(&mut self) -> std::io::Result<u64> {
+        Ok((self.get_ref().len() as u64).saturating_sub(self.position()))
+    }
+}
 
 fn param_type_from_code(code: u32) -> Option<SyntaxToken> {
     match code {
@@ -28,6 +49,7 @@ fn param_type_from_code(code: u32) -> Option<SyntaxToken> {
         PARAM_USIZE => Some(SyntaxToken::Usize),
         PARAM_TOKEN => Some(SyntaxToken::Token),
         PARAM_VARREF => Some(SyntaxToken::String), // VarRef ocupa slot "string-like" no schema
+        PARAM_PIPELINE => Some(SyntaxToken::Pipeline),
         _ => None,
     }
 }
@@ -44,6 +66,7 @@ fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: 
         // Numeric expression stored as text; its payload is checked after decoding.
         (SyntaxToken::Usize, SyntaxToken::String, PARAM_STRING) => true,
         (SyntaxToken::Token, SyntaxToken::Token, PARAM_TOKEN) => true,
+        (SyntaxToken::Pipeline, SyntaxToken::Pipeline, PARAM_PIPELINE) => true,
 
         // VarRef: pode aparecer onde o schema espera String/Usize/Token
         (SyntaxToken::String, SyntaxToken::String, PARAM_VARREF) => true,
@@ -56,7 +79,7 @@ fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: 
 
 /// Lê exatamente N bytes do reader com erro bem formado.
 fn read_exact<const N: usize>(
-    reader: &mut BufReader<std::fs::File>,
+    reader: &mut impl Source,
     ctx: &'static str,
 ) -> Result<[u8; N], TextForgeError> {
     let mut buf = [0u8; N];
@@ -72,27 +95,19 @@ fn read_exact<const N: usize>(
 
 /// Check the physical file bound before trusting a declared byte count.
 fn ensure_available(
-    reader: &mut BufReader<std::fs::File>,
+    reader: &mut impl Source,
     len: u64,
     ctx: &'static str,
 ) -> Result<(), TextForgeError> {
-    let remaining = reader
-        .get_ref()
-        .metadata()
-        .and_then(|metadata| {
-            reader
-                .stream_position()
-                .map(|position| metadata.len().saturating_sub(position))
-        })
-        .map_err(|error| {
-            TextForgeError::new(
-                TextForgeErrorCode::BytecodeParsingError(
-                    "Cannot determine remaining bytecode size".into(),
-                ),
-                ctx,
-                error.to_string(),
-            )
-        })?;
+    let remaining = reader.remaining().map_err(|error| {
+        TextForgeError::new(
+            TextForgeErrorCode::BytecodeParsingError(
+                "Cannot determine remaining bytecode size".into(),
+            ),
+            ctx,
+            error.to_string(),
+        )
+    })?;
     if len > remaining {
         return Err(TextForgeError::new(
             TextForgeErrorCode::BytecodeParsingError(
@@ -119,7 +134,7 @@ fn byte_buffer(len: usize, ctx: &'static str) -> Result<Vec<u8>, TextForgeError>
 }
 
 fn read_vec(
-    reader: &mut BufReader<std::fs::File>,
+    reader: &mut impl Source,
     len: usize,
     ctx: &'static str,
 ) -> Result<Vec<u8>, TextForgeError> {
@@ -137,7 +152,7 @@ fn read_vec(
 }
 
 /// Skip compatible instruction padding without allocating a padding-sized buffer.
-fn skip_bytes(reader: &mut BufReader<std::fs::File>, len: u64) -> Result<(), TextForgeError> {
+fn skip_bytes(reader: &mut impl Source, len: u64) -> Result<(), TextForgeError> {
     const CONTEXT: &str = "read_bytecode_from_file(skip)";
     ensure_available(reader, len, CONTEXT)?;
     reader
@@ -268,6 +283,9 @@ fn decode_param_record_to_valtype(
                 )),
             }
         }
+        PARAM_PIPELINE => Ok(ValType::Literal(TextForgeParamTypes::Pipeline(
+            decode_pipeline_payload(payload)?,
+        ))),
         _ => Err(TextForgeError::new(
             TextForgeErrorCode::BytecodeParamNotRecognized(
                 format!("Param Bytecode Not Recognized 0x{:X}", type_code).into(),
@@ -289,11 +307,19 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         )
     })?;
 
-    let mut reader = BufReader::new(file);
+    read_pipeline(&mut BufReader::new(file))
+}
 
+/// Read a complete bytecode pipeline held in memory (a file `ppjn` joins).
+pub(crate) fn read_bytecode_from_bytes(bytes: &[u8]) -> Result<Vec<TokenWrapper>, TextForgeError> {
+    read_pipeline(&mut Cursor::new(bytes))
+}
+
+/// Header, then instructions.
+fn read_pipeline(reader: &mut impl Source) -> Result<Vec<TokenWrapper>, TextForgeError> {
     // --- header ---
     let expected_magic_number: [u8; 8] = [38, 235, 245, 8, 244, 137, 1, 179];
-    let magic_number = read_exact::<8>(&mut reader, "read_bytecode_from_file(magic)")?;
+    let magic_number = read_exact::<8>(reader, "read_bytecode_from_file(magic)")?;
     if magic_number != expected_magic_number {
         return Err(TextForgeError::new(
             TextForgeErrorCode::FileReadingError("Incompatible Magic Number with ATP".into()),
@@ -302,7 +328,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         ));
     }
 
-    let protocol_version_bytes = read_exact::<8>(&mut reader, "read_bytecode_from_file(protocol)")?;
+    let protocol_version_bytes = read_exact::<8>(reader, "read_bytecode_from_file(protocol)")?;
     let protocol_version = u64::from_be_bytes(protocol_version_bytes);
     if protocol_version != 1 {
         return Err(TextForgeError::new(
@@ -312,24 +338,70 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         ));
     }
 
-    let instruction_count_bytes =
-        read_exact::<4>(&mut reader, "read_bytecode_from_file(instr_count)")?;
+    let instruction_count_bytes = read_exact::<4>(reader, "read_bytecode_from_file(instr_count)")?;
     let instruction_count = u32::from_be_bytes(instruction_count_bytes);
 
     // Even a parameterless instruction needs size(8), opcode(4), count(1).
     // Validate plausibility without reserving memory from an untrusted count.
     ensure_available(
-        &mut reader,
+        reader,
         u64::from(instruction_count) * 13,
         "read_bytecode_from_file(instr_count)",
     )?;
+    read_instructions(reader, instruction_count)
+}
+
+thread_local! {
+    /// Embedded pipelines currently being decoded, to bound recursion.
+    static EMBEDDED_DEPTH: Cell<usize> = const { Cell::new(0) };
+}
+
+/// Decode an embedded joined pipeline (parameter type 0x05): instruction count
+/// (u32), then instruction records. Nesting is limited to
+/// [`MAX_JOIN_DEPTH`](crate::parser::joins::MAX_JOIN_DEPTH).
+pub(crate) fn decode_pipeline_payload(
+    payload: &[u8],
+) -> Result<crate::parser::joins::JoinState, TextForgeError> {
+    use crate::parser::joins::{JoinState, JoinedPipeline, MAX_JOIN_DEPTH};
+    const CONTEXT: &str = "decode_pipeline_payload";
+    let depth = EMBEDDED_DEPTH.with(Cell::get);
+    if depth >= MAX_JOIN_DEPTH {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::BytecodeParsingError("Embedded ppjn nesting too deep".into()),
+            CONTEXT,
+            format!("max={MAX_JOIN_DEPTH}"),
+        ));
+    }
+    let mut reader = Cursor::new(payload);
+    let count = u32::from_be_bytes(read_exact::<4>(&mut reader, CONTEXT)?);
+    EMBEDDED_DEPTH.with(|cell| cell.set(depth + 1));
+    let tokens = read_instructions(&mut reader, count);
+    EMBEDDED_DEPTH.with(|cell| cell.set(depth));
+    let tokens = tokens?;
+    if reader.remaining().unwrap_or(0) != 0 {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::BytecodeParsingError("Trailing bytes in embedded ppjn".into()),
+            CONTEXT,
+            "",
+        ));
+    }
+    Ok(JoinState::Loaded(std::sync::Arc::new(
+        JoinedPipeline::embedded(tokens),
+    )))
+}
+
+/// `count` instruction records.
+fn read_instructions(
+    reader: &mut impl Source,
+    instruction_count: u32,
+) -> Result<Vec<TokenWrapper>, TextForgeError> {
     let mut result: Vec<TokenWrapper> = Vec::new();
 
     // --- body ---
     for _ in 0..instruction_count {
         // instruction_total_size (u64)
         let instruction_total_size_bytes =
-            read_exact::<8>(&mut reader, "read_bytecode_from_file(instr_total)")?;
+            read_exact::<8>(reader, "read_bytecode_from_file(instr_total)")?;
         let instruction_total_size = u64::from_be_bytes(instruction_total_size_bytes);
 
         // mínimo interno = opcode(4) + param_count(1) = 5
@@ -342,7 +414,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         }
 
         ensure_available(
-            &mut reader,
+            reader,
             instruction_total_size,
             "read_bytecode_from_file(instr_total)",
         )?;
@@ -351,7 +423,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         let mut consumed_in_instruction: u64 = 0;
 
         // opcode (u32)
-        let opcode_bytes = read_exact::<4>(&mut reader, "read_bytecode_from_file(opcode)")?;
+        let opcode_bytes = read_exact::<4>(reader, "read_bytecode_from_file(opcode)")?;
         let opcode = u32::from_be_bytes(opcode_bytes);
         consumed_in_instruction += 4;
 
@@ -364,8 +436,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         }
 
         // param_count (u8)
-        let param_count_bytes =
-            read_exact::<1>(&mut reader, "read_bytecode_from_file(param_count)")?;
+        let param_count_bytes = read_exact::<1>(reader, "read_bytecode_from_file(param_count)")?;
         let param_count = param_count_bytes[0] as usize;
         consumed_in_instruction += 1;
 
@@ -406,7 +477,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         for param_i in 0..param_count {
             // Param total size (u64)
             let param_total_size_bytes =
-                read_exact::<8>(&mut reader, "read_bytecode_from_file(param_total)")?;
+                read_exact::<8>(reader, "read_bytecode_from_file(param_total)")?;
             let param_total_size = u64::from_be_bytes(param_total_size_bytes);
             consumed_in_instruction += 8;
 
@@ -437,7 +508,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
                 )
             })?;
             let param_record = read_vec(
-                &mut reader,
+                reader,
                 param_record_len,
                 "read_bytecode_from_file(param_record)",
             )?;
@@ -522,10 +593,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
         // guardrail instruction_total_size
         if consumed_in_instruction != instruction_total_size {
             if consumed_in_instruction < instruction_total_size {
-                skip_bytes(
-                    &mut reader,
-                    instruction_total_size - consumed_in_instruction,
-                )?;
+                skip_bytes(reader, instruction_total_size - consumed_in_instruction)?;
             } else {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
@@ -631,6 +699,69 @@ mod tests {
             parse(&bytes).err().unwrap().error_code,
             TextForgeErrorCode::BytecodeParsingError(_)
         ));
+    }
+
+    /// One instruction record: size, opcode, parameters as (type, payload).
+    fn record(opcode: u32, parameters: &[(u32, Vec<u8>)]) -> Vec<u8> {
+        let mut body = opcode.to_be_bytes().to_vec();
+        body.push(parameters.len() as u8);
+        for (kind, payload) in parameters {
+            body.extend_from_slice(&(16 + payload.len() as u64).to_be_bytes());
+            body.extend_from_slice(&kind.to_be_bytes());
+            body.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+            body.extend_from_slice(payload);
+        }
+        let mut bytes = (body.len() as u64).to_be_bytes().to_vec();
+        bytes.extend_from_slice(&body);
+        bytes
+    }
+
+    /// `ppjn` records nested `levels` deep around a `null`.
+    fn nested_joins(levels: usize) -> Vec<u8> {
+        let mut inner = record(0x38, &[]);
+        for _ in 0..levels {
+            let mut payload = 1u32.to_be_bytes().to_vec();
+            payload.extend_from_slice(&inner);
+            inner = record(
+                0x58,
+                &[
+                    (PARAM_STRING, b"lib.textforge".to_vec()),
+                    (PARAM_PIPELINE, payload),
+                ],
+            );
+        }
+        let mut bytes = header(1);
+        bytes.extend_from_slice(&inner);
+        bytes
+    }
+
+    #[test]
+    fn embedded_joins_are_decoded_up_to_the_nesting_limit() {
+        use crate::parser::joins::MAX_JOIN_DEPTH;
+        let tokens = read_bytecode_from_bytes(&nested_joins(MAX_JOIN_DEPTH)).unwrap();
+        assert_eq!(tokens.len(), 1);
+        let error = read_bytecode_from_bytes(&nested_joins(MAX_JOIN_DEPTH + 1))
+            .err()
+            .unwrap();
+        assert!(matches!(
+            error.error_code,
+            TextForgeErrorCode::BytecodeParsingError(_)
+        ));
+        // Deep malicious nesting fails cleanly instead of exhausting the stack.
+        assert!(read_bytecode_from_bytes(&nested_joins(5_000)).is_err());
+    }
+
+    #[test]
+    fn embedded_joins_reject_trailing_bytes() {
+        let mut payload = 1u32.to_be_bytes().to_vec();
+        payload.extend_from_slice(&record(0x38, &[]));
+        payload.push(0);
+        let mut bytes = header(1);
+        bytes.extend_from_slice(&record(
+            0x58,
+            &[(PARAM_STRING, b"x".to_vec()), (PARAM_PIPELINE, payload)],
+        ));
+        assert!(read_bytecode_from_bytes(&bytes).is_err());
     }
 
     #[test]

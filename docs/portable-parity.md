@@ -208,10 +208,13 @@ in an adapter.
 
 ## File instructions (unreleased)
 
-Rust `write_to_file(path)`, `append_file(path)` and `insert_file(path, index)`
-map to `InstructionSpec` mnemonics `wtf`, `apf` and `inf`, with
+Rust `pipeline_join(path)`, `write_to_file(path)`, `append_file(path)` and
+`insert_file(path, index)` map to `InstructionSpec` mnemonics `ppjn`, `wtf`,
+`apf` and `inf`, with
 `Argument::Text` paths and an `Argument::Number` (or `Variable`) index. No new
-portable type or method is needed. `tests/file_instructions.rs` checks portable
+portable type or method is needed: the joined pipeline `ppjn` carries is
+implied by the instruction, so descriptions and snapshots hold only the path,
+and `register` loads it (a missing file is a persistence error). `tests/file_instructions.rs` checks portable
 plans against the builder and the text form. See [file instructions](file-instructions.md).
 
 ## Section instructions (unreleased)

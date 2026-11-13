@@ -24,6 +24,9 @@ pub fn build_all_tokens_pipeline_safe(
     std::fs::write(&piece, " FILE é🍌 ").map_err(io)?;
     let piece = piece.to_string_lossy().into_owned();
     let snapshot = files.join("snapshot.txt").to_string_lossy().into_owned();
+    let joined = files.join("joined.textforge");
+    std::fs::write(&joined, "tua;\nvar inner = 1;\nate ' JOINED';\n").map_err(io)?;
+    let joined = joined.to_string_lossy().into_owned();
 
     let id = processor
         .create_pipeline()
@@ -179,6 +182,7 @@ pub fn build_all_tokens_pipeline_safe(
         .write_to_file(snapshot.as_str())?
         .append_file(piece.as_str())?
         .insert_file(piece.as_str(), 3)?
+        .pipeline_join(joined.as_str())?
         .build()?;
 
     Ok(id)

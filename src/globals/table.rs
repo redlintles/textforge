@@ -147,6 +147,8 @@ pub enum SyntaxToken {
     Usize,
     Token,
     Literal(&'static str),
+    /// A joined pipeline (`ppjn`): not written in text, embedded in bytecode.
+    Pipeline,
 }
 
 pub struct SyntaxDef {
@@ -553,6 +555,9 @@ define_token_table! {
         ("onlni", 0x54, || TokenRef::Shared(Arc::new(onlni::Onlni::default())), [
             SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize),
             SyntaxDef::req(SyntaxToken::Literal("apply")), SyntaxDef::req(SyntaxToken::Token),
+        ]),
+        ("ppjn", 0x58, || TokenRef::Shared(Arc::new(ppjn::Ppjn::default())), [
+            SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Pipeline),
         ]),
         ("wtf", 0x55, || TokenRef::Shared(Arc::new(wtf::Wtf::default())), [SyntaxDef::req(SyntaxToken::String)]),
         ("apf", 0x56, || TokenRef::Shared(Arc::new(apf::Apf::default())), [SyntaxDef::req(SyntaxToken::String)]),
