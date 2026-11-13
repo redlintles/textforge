@@ -216,5 +216,15 @@ mod tests {
                 _ => panic!("Expected Usize param #2"),
             }
         }
+
+        #[test]
+        fn end_equal_to_the_length_is_clamped_like_larger_ends() {
+            // Previously `ctc 0 5` on "ab cd" was an error while `ctc 0 6` worked.
+            use crate::tokens::{InstructionMethods, transforms::ctc::Ctc};
+            for end in [5, 6, 100] {
+                let token = Ctc::new(0, end).unwrap();
+                assert_eq!(token.transform("ab cd".into(), None).unwrap(), "Ab Cd");
+            }
+        }
     }
 }

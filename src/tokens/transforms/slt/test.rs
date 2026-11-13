@@ -128,5 +128,17 @@ mod tests {
             let param_count = bc[12] as usize;
             assert_eq!(param_count, 2);
         }
+
+        #[test]
+        fn end_equal_to_the_length_is_clamped_like_larger_ends() {
+            // Previously `slt 1 3` on "abc" was an error while `slt 1 4` worked.
+            use crate::tokens::{InstructionMethods, transforms::slt::Slt};
+            for end in [3, 4, 100] {
+                let token = Slt::new(1, end).unwrap();
+                assert_eq!(token.transform("abc".into(), None).unwrap(), "bc");
+            }
+            let token = Slt::new(0, 2).unwrap();
+            assert_eq!(token.transform("é👩🏽‍💻".into(), None).unwrap(), "é👩🏽");
+        }
     }
 }

@@ -65,7 +65,8 @@ impl InstructionMethods for Ctc {
 
         let mut end = self.end_index;
 
-        if end > len {
+        // An end at or past the last character selects up to the end.
+        if end >= len {
             // Release builds always wrapped here; keep that result without the
             // debug-build overflow panic on empty input.
             end = len.wrapping_sub(1);
