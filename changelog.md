@@ -4,6 +4,12 @@
 
 ### Added
 
+- Safety limits for instructions that multiply work: `rpt`, `padl` and `padr`
+  fail when their output would exceed `max_generated_bytes` (default 2 GiB),
+  and `iter` when its count exceeds `max_iterations` (default 10,000,000),
+  instead of exhausting memory, CPU or (buffered `rpt`) the disk. Set them in
+  `ExecutionProfile::limits`, in `.txfrc` `overrides` (including
+  `"unlimited"`) or with `txf --max-generated-bytes`/`--max-iterations`.
 - Execution profiles: `ExecutionProfile` (`balanced`, the previous behavior;
   `low-memory`; `fast`) with `spool_threshold`, set through
   `TextForgeProcessor::with_profile`/`set_profile` (and the portable
@@ -77,6 +83,13 @@
   ignores trailing whitespace.
 - `padl` and `padr` with a huge length panicked (`capacity overflow`); they
   now return a `ValidationError`.
+- `tucw`, `tlcw`, `cts` and `ctr` change only the chosen words and keep the
+  original separators; they used to rebuild the text with single spaces,
+  joining lines.
+- Inclusive character and word ranges accept `start == end` (one item), as
+  `onck` did. `tucc` and `tlcc` clamp an end past the text like `slt`, `ctc`
+  and `dlc`; `dlc` on empty text is an index error; a start past the text is
+  reported as `IndexOutOfRange` in every range instruction.
 - `eval` and `rmp` wrote no parameters from `to_bytecode()`, so
   `TokenWrapper::to_bytecode_resolved` produced unreadable bytecode.
 - Internal audit of `src/tokens`: `docs/audits/0.3.0-tokens-audit.md`.

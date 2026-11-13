@@ -119,7 +119,7 @@ TextForge can be used in three ways.
 | `process_file` | Reads an input file, runs a pipeline and writes the result to an output file. |
 | `process_batch` | Processes multiple pipelines from different files in parallel. |
 | `process_batch_in_pool` | Like `process_batch`, on a caller-supplied thread pool. |
-| `with_profile`, `set_profile`, `profile` | Choose the `ExecutionProfile` (`api::profile`): memory/speed resources that never change results. See `docs/execution-profiles.md`. |
+| `with_profile`, `set_profile`, `profile` | Choose the `ExecutionProfile` (`api::profile`): memory/speed resources and safety `Limits` (`max_generated_bytes` for `rpt`/`padl`/`padr`, `max_iterations` for `iter`). A profile never changes the text produced; past a limit the run fails. Transforms read the limits from the execution context. See `docs/execution-profiles.md`. |
 | `set_pipeline_name`, `pipeline_name` | Name a registered pipeline (read by the DSL as `__PIPELINE_NAME__`). Defaults to the identifier, or the file name without extension for pipelines read from files. |
 | `process_*_buffered` | Buffered variants (`process_all_buffered`, `process_single_buffered`, `process_file_buffered`, `process_batch_buffered`). Requires the `buffered` feature. |
 
@@ -129,7 +129,7 @@ With the `bytecode` feature, `TextForgeProcessor` also exposes `write_to_bytecod
 
 ### 5.2 As a textual DSL
 
-Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides.spool_threshold`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--config` and `--no-rc`; `txf config show` prints the effective profile. The library never reads configuration files implicitly.
+Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. The library never reads configuration files implicitly.
 
 ### 5.3 As a bytecode generator
 
