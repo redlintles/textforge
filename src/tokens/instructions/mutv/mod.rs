@@ -43,6 +43,10 @@ impl InstructionMethods for Mutv {
     fn get_opcode(&self) -> u32 {
         0x3a
     }
+    // Bound state is immutable; only the execution context changes.
+    fn supports_preparation(&self) -> bool {
+        true
+    }
     fn get_string_repr(&self) -> &'static str {
         "mutv"
     }

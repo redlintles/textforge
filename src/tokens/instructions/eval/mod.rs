@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::Arc};
 
 use crate::{
     context::builtins::{CurrentText, VarReader, check_definable},
@@ -10,7 +10,8 @@ use crate::{
     tokens::InstructionMethods,
     utils::{
         errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
-        expr::{evaluate_with, value_to_plain_string},
+        expr::value_to_plain_string,
+        template::CompiledExpr,
         validations::check_vec_len,
     },
 };
@@ -24,6 +25,8 @@ pub struct Eval {
     expr: String,
     target: String,
     params: Vec<TextForgeParamTypes>,
+    /// `expr` with its operator tree built when the parameters are set.
+    compiled: Option<Arc<CompiledExpr>>,
 }
 
 impl InstructionMethods for Eval {
@@ -33,6 +36,10 @@ impl InstructionMethods for Eval {
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32 {
         0x3b
+    }
+    // Bound state is immutable; only the execution context changes.
+    fn supports_preparation(&self) -> bool {
+        true
     }
     fn get_string_repr(&self) -> &'static str {
         "eval"
@@ -56,7 +63,10 @@ impl InstructionMethods for Eval {
         })?;
 
         let reader = VarReader::new(context, CurrentText::Str(&input));
-        let result = evaluate_with(&self.expr, &reader, "eval.transform")?;
+        let result = match &self.compiled {
+            Some(compiled) => compiled.evaluate(&reader, "eval.transform")?,
+            None => CompiledExpr::new(&self.expr).evaluate(&reader, "eval.transform")?,
+        };
 
         match context.get_mut_var(&self.target) {
             Ok(var_mut) => {
@@ -88,6 +98,7 @@ impl InstructionMethods for Eval {
         self.expr = parse_args!(params, 0, String, "Expr should be of type string");
         self.target = parse_args!(params, 1, String, " should be of type string");
         check_definable(&self.target, "eval")?;
+        self.compiled = Some(Arc::new(CompiledExpr::new(&self.expr)));
 
         self.params = vec![self.expr.to_string().into(), self.target.to_string().into()];
         Ok(())

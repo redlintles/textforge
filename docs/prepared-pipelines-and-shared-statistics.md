@@ -12,6 +12,14 @@ the new default-false InstructionMethods::supports_preparation method. Custom
 instructions keep per-execution binding unless their author explicitly opts in
 and guarantees reusable immutable state.
 
+Since the 0.3.0 engine work, the context instructions (`var`, `val`, `mutv`,
+`eval`, `blk`, `cblk`, `ifdc`) opt in too: their bound state is immutable and
+only the execution context changes, so binding them once changes nothing they
+do on each run. `eval` keeps its expression compiled. Text whose templates read
+nothing that changes between runs (only literal text and `[[ ]]` expressions
+without variables or function calls) counts as constant; every other template
+is compiled once and rendered per run (see `docs/benchmarks/engine/`).
+
 Preparation runs at registration for text files, builders and bytecode-loaded
 pipelines. Simple literal strings/numbers and nested-instruction parameters
 qualify. Any variable reference or interpolation delimiter (including escaped

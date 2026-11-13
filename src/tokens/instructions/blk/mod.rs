@@ -42,6 +42,10 @@ impl InstructionMethods for Blk {
     fn get_opcode(&self) -> u32 {
         0x34
     }
+    // Bound state is immutable; only the execution context changes.
+    fn supports_preparation(&self) -> bool {
+        true
+    }
     fn get_string_repr(&self) -> &'static str {
         "blk"
     }

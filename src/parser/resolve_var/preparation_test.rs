@@ -234,3 +234,50 @@ fn dynamic_nested_parameters_are_still_resolved_per_execution() {
         );
     }
 }
+
+#[test]
+fn constant_templates_are_bound_once_and_dynamic_ones_compiled() {
+    let mut constant = crate::text::reader::read_from_text("ate '[[1 + 2 * 3]]';").unwrap();
+    constant.prepare_constant();
+    assert!(constant.prepared.is_some());
+    let mut context = GlobalExecutionContext::new();
+    assert_eq!(
+        constant
+            .apply_token(Cow::Borrowed("x"), &mut context)
+            .unwrap(),
+        "x7"
+    );
+
+    // A failing constant expression is not bound; it fails when it runs.
+    let mut failing = crate::text::reader::read_from_text("ate '[[1 / 0]]';").unwrap();
+    failing.prepare_constant();
+    assert!(failing.prepared.is_none() && failing.compiled.is_some());
+    assert!(
+        failing
+            .apply_token(Cow::Borrowed("x"), &mut context)
+            .is_err()
+    );
+
+    let mut dynamic = crate::text::reader::read_from_text("ate '[[n * 2]]{{n}}';").unwrap();
+    dynamic.prepare_constant();
+    assert!(dynamic.prepared.is_none() && dynamic.compiled.is_some());
+    assert!(dynamic.without_preparation().compiled.is_none());
+}
+
+#[test]
+fn prepared_context_instructions_still_act_on_every_run() {
+    let mut processor = TextForgeProcessor::new();
+    let source = "var a = 1;\nmutv a = 2;\nval c = 3;\neval 'a + c' in d;\n\
+                  blk b assoc ate '{{d}}';\ncblk b;\nifdc x do ate '!';\n";
+    let tokens: Vec<_> = source
+        .lines()
+        .map(|line| crate::text::reader::read_from_text(line).unwrap())
+        .collect();
+    let id = processor.add_transform(tokens);
+    for _ in 0..3 {
+        assert_eq!(
+            processor.run_transform(&id, Cow::Borrowed("x")).unwrap(),
+            "x5!"
+        );
+    }
+}

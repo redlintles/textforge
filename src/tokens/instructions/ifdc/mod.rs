@@ -60,6 +60,10 @@ impl InstructionMethods for Ifdc {
         format!("ifdc {} do {}", self.text, self.inner.to_textforge_line()).into()
     }
 
+    // Bound state is immutable; only the execution context changes.
+    fn supports_preparation(&self) -> bool {
+        true
+    }
     fn get_string_repr(&self) -> &'static str {
         "ifdc"
     }
