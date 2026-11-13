@@ -65,6 +65,21 @@
 
 ### Fixed
 
+- `tucs` uppercased the wrong character (or none) when a multibyte character
+  came before the index: it compared byte offsets with the character index.
+- `slt` and `ctc` rejected an end index equal to the character count while
+  accepting any larger one; both now clamp it, as documented.
+- `cts` validated its word index against the character count (a missing word
+  silently left the text unchanged); `cts` and `ctr` now report a word index
+  past the last word.
+- `cfw` skips leading whitespace, and `clw` finds the last word across any
+  whitespace (it only split on `' '`, so `"ab\ncd"` capitalized `ab`) and
+  ignores trailing whitespace.
+- `padl` and `padr` with a huge length panicked (`capacity overflow`); they
+  now return a `ValidationError`.
+- `eval` and `rmp` wrote no parameters from `to_bytecode()`, so
+  `TokenWrapper::to_bytecode_resolved` produced unreadable bytecode.
+- Internal audit of `src/tokens`: `docs/audits/0.3.0-tokens-audit.md`.
 - Block binding during debug execution (`process_all_with_debug` and related
   debug paths).
 - `iter`: iteration `i` now sees `__COUNTER__ == i`. The body previously saw
