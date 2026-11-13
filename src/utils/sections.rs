@@ -103,10 +103,26 @@ pub(crate) fn apply_to_section<'a>(
             if result.as_ref() == section {
                 return Ok(Cow::Borrowed(text));
             }
-            let mut output = String::with_capacity(text.len() - section.len() + result.len());
-            output.push_str(&text[..range.start]);
-            output.push_str(&result);
-            output.push_str(&text[range.end..]);
+            let (prefix, suffix) = (&text[..range.start], &text[range.end..]);
+            let output = match result {
+                // Grow the nested instruction's own buffer instead of copying
+                // it into a third one: for large sections this halves the work
+                // and the peak memory (docs/benchmarks/on-instructions).
+                Cow::Owned(mut output) => {
+                    output.reserve_exact(prefix.len() + suffix.len());
+                    output.insert_str(0, prefix);
+                    output.push_str(suffix);
+                    output
+                }
+                Cow::Borrowed(result) => {
+                    let mut output =
+                        String::with_capacity(prefix.len() + result.len() + suffix.len());
+                    output.push_str(prefix);
+                    output.push_str(result);
+                    output.push_str(suffix);
+                    output
+                }
+            };
             Ok(Cow::Owned(output))
         }
         Cow::Owned(mut text) => {
