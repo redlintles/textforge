@@ -206,6 +206,14 @@ binding provides explicit typed methods matching the Rust names and delegates
 through this portable representation. No line-specific domain validation belongs
 in an adapter.
 
+## File instructions (unreleased)
+
+Rust `write_to_file(path)`, `append_file(path)` and `insert_file(path, index)`
+map to `InstructionSpec` mnemonics `wtf`, `apf` and `inf`, with
+`Argument::Text` paths and an `Argument::Number` (or `Variable`) index. No new
+portable type or method is needed. `tests/file_instructions.rs` checks portable
+plans against the builder and the text form. See [file instructions](file-instructions.md).
+
 ## Section instructions (unreleased)
 
 Rust `on_line(n, inner)`, `on_chunk(start, end, inner)` and

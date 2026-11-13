@@ -1,3 +1,4 @@
+pub mod apf;
 pub mod apl;
 pub mod atb;
 pub mod ate;
@@ -21,6 +22,7 @@ pub mod dls;
 pub mod emj;
 pub mod htmle;
 pub mod htmlu;
+pub mod inf;
 pub mod inl;
 pub mod ins;
 pub mod jcmc;
@@ -68,3 +70,4 @@ pub mod uniqln;
 pub mod unorm;
 pub mod urld;
 pub mod urle;
+pub mod wtf;

@@ -1,6 +1,6 @@
 #[cfg(feature = "buffered")]
 mod buffered;
-mod file_io;
+pub(crate) mod file_io;
 #[cfg(feature = "buffered")]
 pub use buffered::BufferedTask;
 

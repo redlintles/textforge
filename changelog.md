@@ -4,6 +4,14 @@
 
 ### Added
 
+- File instructions: `wtf {file};` writes the current text to a file and keeps
+  it unchanged (atomic replace through a temporary file in the same directory;
+  missing directories are an error), `apf {file};` appends a UTF-8 file and
+  `inf {file} {index};` inserts one with exactly the index rules of `ins`.
+  Paths accept interpolation. Opcodes 0x55–0x57; builder methods
+  `write_to_file`, `append_file` and `insert_file`; available through the
+  portable `InstructionSpec`. With `buffered`, `wtf` and `apf` work on spooled
+  documents without loading them. See [file instructions](docs/file-instructions.md).
 - Static context and built-in variables: `__PIPELINE_NAME__`,
   `__TEXTFORGE_VERSION__`, `__INPUT_FILE__` (empty for text input),
   `__LEN_CHARS__` and `__LINES__`, readable as `{{name}}`, in `[[ ]]`

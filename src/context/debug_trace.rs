@@ -185,6 +185,15 @@ impl DebugTrace {
         self.leave(name, Some((before, after)), &extra);
     }
 
+    /// A one-line remark about the current step (e.g. a file `wtf` wrote),
+    /// shown when the step itself would be shown.
+    pub(crate) fn note(&mut self, text: &str) {
+        if self.will_show() {
+            let line = format!("{}│ {}", self.indent(), text.dimmed());
+            self.lines.push(line);
+        }
+    }
+
     /// Rendered lines since the last call, leaving open containers untouched.
     pub(crate) fn take_lines(&mut self) -> Vec<String> {
         std::mem::take(&mut self.lines)

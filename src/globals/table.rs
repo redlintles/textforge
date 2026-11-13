@@ -554,5 +554,10 @@ define_token_table! {
             SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize),
             SyntaxDef::req(SyntaxToken::Literal("apply")), SyntaxDef::req(SyntaxToken::Token),
         ]),
+        ("wtf", 0x55, || TokenRef::Shared(Arc::new(wtf::Wtf::default())), [SyntaxDef::req(SyntaxToken::String)]),
+        ("apf", 0x56, || TokenRef::Shared(Arc::new(apf::Apf::default())), [SyntaxDef::req(SyntaxToken::String)]),
+        ("inf", 0x57, || TokenRef::Shared(Arc::new(inf::Inf::default())), [
+            SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Usize),
+        ]),
     ];
 }

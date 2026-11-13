@@ -512,5 +512,23 @@
     "lines": [
       "onlni 1 2 apply ate \"!\";"
     ]
+  },
+  {
+    "name": "wtf",
+    "lines": [
+      "wtf tests/data/allocations/wtf-output.txt;"
+    ]
+  },
+  {
+    "name": "apf",
+    "lines": [
+      "apf tests/data/allocations/piece.txt;"
+    ]
+  },
+  {
+    "name": "inf",
+    "lines": [
+      "inf tests/data/allocations/piece.txt 2;"
+    ]
   }
 ]

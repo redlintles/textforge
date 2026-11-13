@@ -149,6 +149,7 @@ The textual form resembles assembly, and the comparison is fair in terms of the 
 - Parameters can have different types. Some are pure **literals** that do not affect behavior and are **dropped during parsing** (e.g. `assoc`, `do`, `times`, `apply`).
 - Some instructions take one **nested instruction** as a parameter (`blk`, `ifdc`, `iter`, `onln`, `onck`, `onlni`). The root allows one nested level; a `blk` payload allows three (`MAX_DEPTH_NORMAL`/`MAX_DEPTH_ASSOC_PAYLOAD` in `src/parser/params.rs`).
 - **Section instructions** (`onln`, `onck`, `onlni`) give the nested instruction only part of the text, so its indices are relative to that part. Lines are base 1, characters base 0. See `docs/on-instructions.md`.
+- **File instructions** (`wtf`, `apf`, `inf`) write the current text to a file (atomically, through `write_atomically` in `src/api/processor/file_io.rs`) or read UTF-8 files into it (`read_utf8_file`). Their paths are data: interpolated at execution time and relative to the working directory. `inf` shares `ins`'s index rules (`insert_after_char`). See `docs/file-instructions.md`.
 
 **Naming convention**
 

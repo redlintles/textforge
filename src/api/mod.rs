@@ -2378,6 +2378,74 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// WTF — Write the current text to a file and keep it unchanged.
+    ///
+    /// The file is replaced atomically; missing directories are an error. The
+    /// path may use `{{ }}`/`[[ ]]` interpolation. See `docs/file-instructions.md`.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let path = std::env::temp_dir().join(format!("wtf-builder-{}.txt", std::process::id()));
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline()
+    ///     .write_to_file(path.to_string_lossy().as_ref())?
+    ///     .add_to_end("!")?
+    ///     .build()?;
+    /// assert_eq!(processor.process_all(&id, "draft")?, "draft!");
+    /// assert_eq!(std::fs::read_to_string(&path).unwrap(), "draft");
+    /// # std::fs::remove_file(&path).unwrap();
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn write_to_file(&mut self, path: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(wtf::Wtf::default()), Some(vec![path.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
+    /// APF — Append the contents of a UTF-8 file to the end of the text.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let path = std::env::temp_dir().join(format!("apf-builder-{}.txt", std::process::id()));
+    /// std::fs::write(&path, " world").unwrap();
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().append_file(path.to_string_lossy().as_ref())?.build()?;
+    /// assert_eq!(processor.process_all(&id, "hello")?, "hello world");
+    /// # std::fs::remove_file(&path).unwrap();
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn append_file(&mut self, path: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(apf::Apf::default()), Some(vec![path.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
+    /// INF — Insert the contents of a UTF-8 file after the character at
+    /// `index` (base 0), with the index rules of [`insert`](Self::insert).
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let path = std::env::temp_dir().join(format!("inf-builder-{}.txt", std::process::id()));
+    /// std::fs::write(&path, "-").unwrap();
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().insert_file(path.to_string_lossy().as_ref(), 0)?.build()?;
+    /// assert_eq!(processor.process_all(&id, "ab")?, "a-b");
+    /// # std::fs::remove_file(&path).unwrap();
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn insert_file(
+        &mut self,
+        path: impl Into<ValType>,
+        index: impl Into<ValType>,
+    ) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(inf::Inf::default()),
+            Some(vec![path.into(), index.into()]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     fn remove_pattern(&mut self, pattern: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(rmp::Rmp::default()), Some(vec![pattern.into()]));
 

@@ -25,3 +25,6 @@ log.txt
 # Independent repositories for each language binding
 /src/bindings
 
+
+# Written by the `wtf` allocation case
+tests/data/allocations/wtf-output.txt

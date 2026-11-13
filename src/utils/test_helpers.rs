@@ -9,6 +9,22 @@ use crate::utils::errors::TextForgeError;
 pub fn build_all_tokens_pipeline_safe(
     processor: &mut TextForgeProcessor,
 ) -> Result<String, TextForgeError> {
+    // File instructions need a readable file and a writable directory.
+    let files =
+        std::env::temp_dir().join(format!("textforge-safe-pipeline-{}", std::process::id()));
+    let io = |error: std::io::Error| {
+        TextForgeError::new(
+            crate::utils::errors::TextForgeErrorCode::FileWritingError(error.to_string().into()),
+            "build_all_tokens_pipeline_safe",
+            files.display().to_string(),
+        )
+    };
+    std::fs::create_dir_all(&files).map_err(io)?;
+    let piece = files.join("piece.txt");
+    std::fs::write(&piece, " FILE é🍌 ").map_err(io)?;
+    let piece = piece.to_string_lossy().into_owned();
+    let snapshot = files.join("snapshot.txt").to_string_lossy().into_owned();
+
     let id = processor
         .create_pipeline()
         .normalize_unicode("nfc")?
@@ -159,6 +175,10 @@ pub fn build_all_tokens_pipeline_safe(
             2,
             Box::new(Tua::default()) as Box<dyn InstructionMethods>,
         )?
+        // ========== files ==========
+        .write_to_file(snapshot.as_str())?
+        .append_file(piece.as_str())?
+        .insert_file(piece.as_str(), 3)?
         .build()?;
 
     Ok(id)
