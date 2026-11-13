@@ -40,6 +40,9 @@
 - `end` inside a block or an iteration now stops the rest of that block or
   loop. Previously `cblk` and `iter` kept running the instructions after `end`
   (e.g. `ate x; end; ate y` in a block produced `xy`).
+- The bytecode reader now applies the text parser's nesting limits. It used to
+  reject valid three-level block payloads (`blk b assoc iter 2 times onln 1
+  apply tbs;`) and accept two-level root nesting that text and builders reject.
 - `end` now halts pipelines run with watchers (`process_all_with_watchers`).
   Watcher runs previously kept executing the instructions after `end`.
 

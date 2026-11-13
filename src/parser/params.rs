@@ -427,6 +427,48 @@ impl TextForgeParamTypes {
         Self::from_bytecode_with_policy(&bytecode, 0, AssocMode::Normal)
     }
 
+    /// Decode the instruction parameter of a top-level instruction with the
+    /// text parser's rules: the child sits at depth 1, and the payload of a
+    /// block-like instruction (`blk`) uses the block depth limit and may not be
+    /// another block.
+    #[cfg(feature = "bytecode")]
+    pub(crate) fn from_bytecode_as_root_child(
+        bytecode: &[u8],
+        parent_opcode: u32,
+    ) -> Result<TextForgeParamTypes, TextForgeError> {
+        let parent =
+            match TOKEN_TABLE.find((QuerySource::Bytecode(parent_opcode), QueryTarget::Syntax))? {
+                TargetValue::Syntax(syntax) => syntax,
+                _ => unreachable!("Invalid query result (Syntax)"),
+            };
+        let block_payload = Self::is_block_like_signature(&parent);
+        let mode = if block_payload {
+            AssocMode::AssocPayload
+        } else {
+            AssocMode::Normal
+        };
+        let parsed = Self::from_bytecode_with_policy(bytecode, 1, mode)?;
+        if block_payload && let TextForgeParamTypes::Token(child) = &parsed {
+            let child_syntax = match TOKEN_TABLE.find((
+                QuerySource::Identifier(Cow::Owned(child.get_string_repr().to_string())),
+                QueryTarget::Syntax,
+            ))? {
+                TargetValue::Syntax(syntax) => syntax,
+                _ => unreachable!("Invalid query result (Syntax)"),
+            };
+            if Self::is_block_like_signature(&child_syntax) {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::BytecodeParsingError(
+                        "A block cannot contain another block".into(),
+                    ),
+                    "TextForgeParamTypes::from_bytecode(Token)",
+                    format!("nested_id={}", child.get_string_repr()),
+                ));
+            }
+        }
+        Ok(parsed)
+    }
+
     fn from_bytecode_with_policy(
         bytes: &[u8],
         token_depth: u8,

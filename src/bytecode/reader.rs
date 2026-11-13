@@ -170,7 +170,10 @@ fn utf8_string(bytes: &[u8], ctx: &'static str) -> Result<String, TextForgeError
 
 /// Decodifica um "param record" (já sem o u64 total_size externo),
 /// retornando um ValType (Literal ou VarRef).
-fn decode_param_record_to_valtype(param_record: &[u8]) -> Result<ValType, TextForgeError> {
+fn decode_param_record_to_valtype(
+    param_record: &[u8],
+    opcode: u32,
+) -> Result<ValType, TextForgeError> {
     if param_record.len() < 8 {
         return Err(TextForgeError::new(
             TextForgeErrorCode::BytecodeParsingError("Param record too small".into()),
@@ -251,7 +254,7 @@ fn decode_param_record_to_valtype(param_record: &[u8]) -> Result<ValType, TextFo
             full_param.extend_from_slice(&(payload.len() as u32).to_be_bytes());
             full_param.extend_from_slice(payload);
 
-            let parsed = TextForgeParamTypes::from_bytecode(full_param)?;
+            let parsed = TextForgeParamTypes::from_bytecode_as_root_child(&full_param, opcode)?;
             match parsed {
                 TextForgeParamTypes::Token(tw) => {
                     Ok(ValType::Literal(TextForgeParamTypes::Token(tw)))
@@ -502,7 +505,7 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
                 ));
             }
 
-            let vt = decode_param_record_to_valtype(&param_record)?;
+            let vt = decode_param_record_to_valtype(&param_record, opcode)?;
             if matches!(expected[expected_i].token, SyntaxToken::Usize)
                 && matches!(&vt, ValType::Literal(TextForgeParamTypes::String(text)) if !is_numeric_template(text))
             {

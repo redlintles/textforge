@@ -93,11 +93,6 @@ cblk each;
 
 Quote expressions that contain spaces, as with any parameter.
 
-Known limit: bytecode files cannot load block payloads three levels deep
-(`blk … assoc iter … onln … apply …`), although text files can. This predates the
-section instructions and affects any three-level payload (e.g.
-`blk b assoc iter 2 times ifdc x do ate y;`).
-
 If the nested instruction adds or removes lines, the following line numbers
 shift. Use `onlni` when the line count changes.
 

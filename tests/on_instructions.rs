@@ -522,3 +522,77 @@ fn end_stops_the_rest_of_blocks_and_iterations() {
     );
     assert_eq!(processor.process_all(&id, "").unwrap(), "xxx");
 }
+
+fn bytecode_load(token: textforge::parser::resolve_var::TokenWrapper) -> Result<String, String> {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("depth.textforgebc");
+    std::fs::File::create(&path).unwrap();
+    let mut processor = TextForgeProcessor::new();
+    let id = processor.add_transform(vec![token]);
+    processor.write_to_bytecode_file(&id, &path).unwrap();
+    processor
+        .read_from_bytecode_file(&path)
+        .map_err(|error| format!("{:?}", error.error_code))
+}
+
+fn nested(
+    outer: Box<dyn InstructionMethods>,
+    head: Vec<textforge::parser::resolve_var::ValType>,
+    child: &str,
+) -> textforge::parser::resolve_var::TokenWrapper {
+    use textforge::parser::{
+        params::TextForgeParamTypes,
+        resolve_var::{TokenWrapper, ValType},
+    };
+    let mut params = head;
+    params.push(ValType::Literal(TextForgeParamTypes::Token(
+        read_from_text(child).unwrap(),
+    )));
+    TokenWrapper::new(outer, Some(params))
+}
+
+#[test]
+fn bytecode_depth_limits_match_the_text_parser() {
+    use textforge::parser::resolve_var::ValType;
+    use textforge::tokens::instructions::{blk::Blk, iter::Iter};
+    // Three levels inside a block are valid text; bytecode used to reject them.
+    let block =
+        read_from_text("blk b assoc iter 2 times onln '[[__COUNTER__ + 1]]' apply tbs;").unwrap();
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("block.textforgebc");
+    std::fs::File::create(&path).unwrap();
+    let mut processor = TextForgeProcessor::new();
+    let id = processor.add_transform(vec![block, read_from_text("cblk b;").unwrap()]);
+    processor.write_to_bytecode_file(&id, &path).unwrap();
+    let loaded = processor.read_from_bytecode_file(&path).unwrap();
+    assert_eq!(
+        processor.process_all(&loaded, " a \n b \n c ").unwrap(),
+        "a\nb\n c "
+    );
+
+    // Two levels at the root are rejected by the text parser; bytecode used to accept them.
+    let root = nested(
+        Box::new(Iter::default()),
+        vec![ValType::Literal(2.into())],
+        "onln 1 apply tbs;",
+    );
+    assert!(
+        bytecode_load(root)
+            .unwrap_err()
+            .contains("Nested token depth exceeded")
+    );
+
+    // A block payload cannot be another block, in bytecode as in text.
+    let inner_block = nested(
+        Box::new(Blk::default()),
+        vec![ValType::Literal(
+            textforge::parser::params::TextForgeParamTypes::String("b".into()),
+        )],
+        "blk c assoc tbs;",
+    );
+    assert!(
+        bytecode_load(inner_block)
+            .unwrap_err()
+            .contains("A block cannot contain another block")
+    );
+}
