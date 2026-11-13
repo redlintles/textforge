@@ -1724,7 +1724,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": false
   },
@@ -1737,7 +1737,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": true
   },
@@ -1750,7 +1750,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": false
   },
@@ -1763,7 +1763,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": true
   },
@@ -1776,7 +1776,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": false
   },
@@ -1789,7 +1789,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": true
   },
@@ -1802,7 +1802,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 1;\", input: \"Start Index: 1, End Index: 1\" }"
+      "ok": "é"
     },
     "owned": false
   },
@@ -1815,7 +1815,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 1;\", input: \"Start Index: 1, End Index: 1\" }"
+      "ok": "é"
     },
     "owned": true
   },
@@ -3414,7 +3414,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": false
   },
@@ -3427,7 +3427,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": true
   },
@@ -3440,7 +3440,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": false
   },
@@ -3453,7 +3453,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": true
   },
@@ -3466,7 +3466,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": false
   },
@@ -3479,7 +3479,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
+      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must not be greater than end index\"), instruction: \"check_chunk_bound_indexes 1 0;\", input: \"Start Index: 1, End Index: 0\" }"
     },
     "owned": true
   },
@@ -3492,7 +3492,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 1;\", input: \"Start Index: 1, End Index: 1\" }"
+      "ok": "e"
     },
     "owned": false
   },
@@ -3505,7 +3505,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 1 1;\", input: \"Start Index: 1, End Index: 1\" }"
+      "ok": "e"
     },
     "owned": true
   },
@@ -17662,7 +17662,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 0 0;\", input: \"Start Index: 0, End Index: 0\" }"
+      "ok": "x"
     },
     "owned": false
   },
@@ -17675,7 +17675,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 0 0;\", input: \"Start Index: 0, End Index: 0\" }"
+      "ok": "x"
     },
     "owned": true
   },
@@ -17688,7 +17688,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 0 0;\", input: \"Start Index: 0, End Index: 0\" }"
+      "ok": "é"
     },
     "owned": false
   },
@@ -17701,7 +17701,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 0 0;\", input: \"Start Index: 0, End Index: 0\" }"
+      "ok": "é"
     },
     "owned": true
   },
@@ -17714,7 +17714,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 0 0;\", input: \"Start Index: 0, End Index: 0\" }"
+      "ok": "🍌"
     },
     "owned": false
   },
@@ -17727,7 +17727,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: InvalidIndex(\"Start index must be smaller than end index\"), instruction: \"check_chunk_bound_indexes 0 0;\", input: \"Start Index: 0, End Index: 0\" }"
+      "ok": "🍌"
     },
     "owned": true
   },

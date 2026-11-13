@@ -53,14 +53,12 @@ All errors are `TextForgeError`; nothing panics.
 | Instruction | Error | Same as |
 | --- | --- | --- |
 | `onln`, `onlni` | line `0`, line past the end, reversed interval, empty document (zero lines) | `dlni`/`slnc` (identical error values) |
-| `onck` | `start > end` (`InvalidIndex`), `start` outside the text (`IndexOutOfRange`), empty document | `dlc`, with two documented differences below |
+| `onck` | `start > end` (`InvalidIndex`), `start` outside the text (`IndexOutOfRange`), empty document | `dlc`, with the documented difference below |
 | all | an error from the nested instruction | — |
 
-Differences from `dlc`, both deliberate:
+`start == end` selects one character (`onck 0 0 apply tua;`), as in every
+inclusive range. Difference from `dlc`, deliberate:
 
-- `start == end` is accepted and selects one character (`dlc` requires
-  `start < end`). A one-character section is a meaningful target, e.g.
-  `onck 0 0 apply tua;`.
 - An empty document is an error. `dlc` returns empty text because deleting from
   nothing is a no-op; `onck` has no section to give to the nested instruction.
 

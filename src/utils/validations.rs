@@ -72,21 +72,21 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
 /// assumindo semântica inclusiva em tokens (start..=end).
 ///
 /// Regras:
-/// - Sempre exige `start_index < end_index`
+/// - Exige `start_index <= end_index` (`start == end` seleciona um item)
 /// - Se `check_against` for Some(text):
 ///     - exige `start_index` e `end_index` dentro de `0..text.chars().count()`
-///
-/// Obs: se você quiser permitir chunks de 1 caractere (start==end), mude a regra.
 pub fn check_chunk_bound_indexes(
     start_index: usize,
     end_index: usize,
     check_against: Option<&str>,
 ) -> Result<(), TextForgeError> {
-    // regra estrutural (independente do texto)
-    if start_index >= end_index {
+    // regra estrutural (independente do texto); intervalo inclusivo
+    if start_index > end_index {
         let fmt_err = format!("check_chunk_bound_indexes {} {};", start_index, end_index);
         return Err(TextForgeError::new(
-            TextForgeErrorCode::InvalidIndex("Start index must be smaller than end index".into()),
+            TextForgeErrorCode::InvalidIndex(
+                "Start index must not be greater than end index".into(),
+            ),
             Cow::Owned(fmt_err),
             format!("Start Index: {}, End Index: {}", start_index, end_index),
         ));
@@ -393,8 +393,9 @@ mod tests {
         }
 
         #[test]
-        fn err_when_start_ge_end_no_text() {
-            assert!(check_chunk_bound_indexes(3, 3, None).is_err());
+        fn err_only_when_start_gt_end_no_text() {
+            // Inclusive ranges: start == end selects one item (it was an error).
+            assert!(check_chunk_bound_indexes(3, 3, None).is_ok());
             assert!(check_chunk_bound_indexes(4, 2, None).is_err());
         }
 
@@ -418,9 +419,9 @@ mod tests {
         }
 
         #[test]
-        fn err_when_start_ge_end_with_text() {
+        fn err_only_when_start_gt_end_with_text() {
             let text = "abcdef";
-            assert!(check_chunk_bound_indexes(2, 2, Some(text)).is_err());
+            assert!(check_chunk_bound_indexes(2, 2, Some(text)).is_ok());
             assert!(check_chunk_bound_indexes(3, 1, Some(text)).is_err());
         }
     }
