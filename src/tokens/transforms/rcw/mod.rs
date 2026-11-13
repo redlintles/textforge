@@ -60,7 +60,7 @@ impl Rcw {
 impl Default for Rcw {
     fn default() -> Self {
         Rcw {
-            pattern: Regex::new("").unwrap(),
+            pattern: crate::utils::regexes::EMPTY_RE.clone(),
             text_to_replace: "".to_string(),
             count: 0_usize,
             params: vec!["".to_string().into(), "".to_string().into(), (0).into()],

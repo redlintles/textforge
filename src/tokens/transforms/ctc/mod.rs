@@ -75,20 +75,13 @@ impl InstructionMethods for Ctc {
         check_chunk_bound_indexes(self.start_index, end, Some(&input))?;
 
         // Convert char indices to byte indices
-        let start_byte = input
-            .char_indices()
-            .nth(self.start_index)
-            .map(|(byte_idx, _)| byte_idx)
-            .unwrap(); // safe: start_index < total_chars
+        let start_byte =
+            crate::utils::transforms::get_safe_utf8_char_index(self.start_index, &input)?;
 
         let end_byte = if end + 1 >= len {
             input.len()
         } else {
-            input
-                .char_indices()
-                .nth(end + 1)
-                .map(|(byte_idx, _)| byte_idx)
-                .unwrap()
+            crate::utils::transforms::get_safe_utf8_char_index(end + 1, &input)?
         };
 
         let mut result = String::with_capacity(input.len());

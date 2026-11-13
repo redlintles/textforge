@@ -64,7 +64,7 @@ impl Rnw {
 impl Default for Rnw {
     fn default() -> Self {
         Rnw {
-            pattern: Regex::new("").unwrap(),
+            pattern: crate::utils::regexes::EMPTY_RE.clone(),
             text_to_replace: "".to_string(),
             index: 0,
             params: vec!["".to_string().into(), "".to_string().into(), (0).into()],

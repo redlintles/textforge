@@ -54,7 +54,7 @@ impl Sslt {
 impl Default for Sslt {
     fn default() -> Self {
         Sslt {
-            pattern: Regex::new("").unwrap(),
+            pattern: crate::utils::regexes::EMPTY_RE.clone(),
             index: 0,
             params: vec!["".to_string().into(), (0).into()],
         }

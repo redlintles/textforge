@@ -36,7 +36,7 @@ impl Rmp {
 impl Default for Rmp {
     fn default() -> Self {
         Rmp {
-            pattern: Regex::new("").unwrap(),
+            pattern: crate::utils::regexes::EMPTY_RE.clone(),
             params: vec!["".to_string().into(), "".to_string().into()],
         }
     }
