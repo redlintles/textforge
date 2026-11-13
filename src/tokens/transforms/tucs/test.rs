@@ -83,5 +83,18 @@ mod tests {
             let param_count = bc[12] as usize;
             assert_eq!(param_count, 1);
         }
+
+        #[test]
+        fn index_counts_characters_not_bytes() {
+            // Previously compared byte offsets with the index: "éa" stayed unchanged.
+            let token = Tucs::new(1);
+            assert_eq!(token.transform("éa".into(), None).unwrap(), "éA");
+            assert_eq!(token.transform("👩🏽‍💻b".into(), None).unwrap(), "👩🏽‍💻b");
+            assert_eq!(Tucs::new(4).transform("👩🏽‍💻b".into(), None).unwrap(), "👩🏽‍💻B");
+            assert_eq!(
+                Tucs::new(2).transform("e\u{301}ß".into(), None).unwrap(),
+                "e\u{301}SS"
+            );
+        }
     }
 }

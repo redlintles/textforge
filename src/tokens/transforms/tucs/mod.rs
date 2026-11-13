@@ -66,7 +66,7 @@ impl InstructionMethods for Tucs {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_input(self.index, input.as_ref())?;
         let mut result = String::with_capacity(input.len());
-        for (i, c) in input.char_indices() {
+        for (i, c) in input.chars().enumerate() {
             if i == self.index {
                 result.extend(c.to_uppercase());
             } else {
