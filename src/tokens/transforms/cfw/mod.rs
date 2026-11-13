@@ -43,13 +43,14 @@ impl InstructionMethods for Cfw {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let Some(first) = input.chars().next() else {
+        // The first word starts at the first non-whitespace character.
+        let Some((start, first)) = input.char_indices().find(|(_, c)| !c.is_whitespace()) else {
             return Ok(input);
         };
         let replacement: String = first.to_uppercase().collect();
         Ok(crate::utils::allocation::replace(
             input,
-            0..first.len_utf8(),
+            start..start + first.len_utf8(),
             &replacement,
         ))
     }

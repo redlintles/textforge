@@ -1178,7 +1178,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "  banana  pear\tapple\r\n\r\nbanana\r\ntail"
+      "ok": "  Banana  pear\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": false
   },
@@ -1191,7 +1191,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "  banana  pear\tapple\r\n\r\nbanana\r\ntail"
+      "ok": "  Banana  pear\tapple\r\n\r\nbanana\r\ntail"
     },
     "owned": true
   },
@@ -1490,7 +1490,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ΟΣ İ banana\r\n\r\nbanana Tail end"
+      "ok": "ß ΟΣ İ banana\r\n\r\nbanana tail End"
     },
     "owned": false
   },
@@ -1503,7 +1503,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ß ΟΣ İ banana\r\n\r\nbanana Tail end"
+      "ok": "ß ΟΣ İ banana\r\n\r\nbanana tail End"
     },
     "owned": true
   },
@@ -1516,7 +1516,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "  banana  Pear\tapple\r\n\r\nbanana\r\ntail"
+      "ok": "  banana  pear\tapple\r\n\r\nbanana\r\nTail"
     },
     "owned": false
   },
@@ -1529,7 +1529,7 @@
     },
     "input": "  banana  pear\tapple\r\n\r\nbanana\r\ntail",
     "outcome": {
-      "ok": "  banana  Pear\tapple\r\n\r\nbanana\r\ntail"
+      "ok": "  banana  pear\tapple\r\n\r\nbanana\r\nTail"
     },
     "owned": true
   },
@@ -1594,7 +1594,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana banana Banana\nsecond\nthird\n"
+      "ok": "banana banana banana\nsecond\nThird\n"
     },
     "owned": false
   },
@@ -1607,7 +1607,7 @@
     },
     "input": "banana banana banana\nsecond\nthird\n",
     "outcome": {
-      "ok": "banana banana Banana\nsecond\nthird\n"
+      "ok": "banana banana banana\nsecond\nThird\n"
     },
     "owned": true
   },
@@ -1672,7 +1672,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "A\u000bb\fcd e"
+      "ok": "a\u000bb\fcd E"
     },
     "owned": false
   },
@@ -1685,7 +1685,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "ok": "A\u000bb\fcd e"
+      "ok": "a\u000bb\fcd E"
     },
     "owned": true
   },

@@ -71,19 +71,19 @@ mod tests {
     }
 
     #[test]
-    fn transform_trailing_space_edge_case_current_behavior() {
-        // Observação: como o split é por ' ' (espaço literal),
-        // "foo " vira ["foo", ""] e o "último" vira "".
-        // Então o resultado fica "foo " (permanece igual).
+    fn transform_ignores_trailing_whitespace_and_splits_on_any_whitespace() {
+        // Previously only ' ' separated words: "foo " stayed unchanged and
+        // "ab\ncd" capitalized "ab".
         let t = Clw::default();
-        let mut ctx = GlobalExecutionContext::new();
-
-        assert_eq!(
-            t.transform("foo ".into(), Some(&mut ctx))
-                .unwrap()
-                .to_string(),
-            "foo "
-        );
+        for (input, expected) in [
+            ("foo ", "Foo "),
+            ("ab\ncd", "ab\nCd"),
+            ("ab cd \r\n", "ab Cd \r\n"),
+            ("a\u{2003}é", "a\u{2003}É"),
+            ("   ", "   "),
+        ] {
+            assert_eq!(t.transform(input.into(), None).unwrap(), expected);
+        }
     }
 
     #[test]

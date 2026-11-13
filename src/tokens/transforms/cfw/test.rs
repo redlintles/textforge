@@ -129,5 +129,18 @@ mod tests {
             let param_count = bc[i] as usize;
             assert_eq!(param_count, 0);
         }
+
+        #[test]
+        fn leading_whitespace_is_skipped() {
+            // Previously "  ab cd" stayed unchanged.
+            let t = Cfw::default();
+            for (input, expected) in [
+                ("  ab cd", "  Ab cd"),
+                ("\n\tß x", "\n\tSS x"),
+                (" \r\n", " \r\n"),
+            ] {
+                assert_eq!(t.transform(input.into(), None).unwrap(), expected);
+            }
+        }
     }
 }
