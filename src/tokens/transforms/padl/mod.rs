@@ -6,7 +6,11 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{errors::TextForgeError, transforms::extend_string, validations::check_vec_len},
+    utils::{
+        errors::TextForgeError,
+        transforms::{push_padding, reserve_padding},
+        validations::check_vec_len,
+    },
 };
 
 use crate::parse_args;
@@ -75,8 +79,8 @@ impl InstructionMethods for Padl {
         if self.text.is_empty() {
             return Ok(input);
         }
-        let mut output = extend_string(&self.text, ml);
-        output.reserve(input.len());
+        let mut output = reserve_padding(&self.text, ml, input.len(), "padl")?;
+        push_padding(&mut output, &self.text, ml);
         output.push_str(&input);
         Ok(output.into())
     }

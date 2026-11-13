@@ -32,6 +32,56 @@ pub fn extend_string(input: &str, max_len: usize) -> String {
     input.chars().cycle().take(max_len).collect()
 }
 
+/// An empty string with room for `chars` characters of `text` repeated (as
+/// [`extend_string`] builds them) plus `extra` bytes. A size that cannot be
+/// represented or allocated is an error instead of a panic or an abort.
+/// `text` must not be empty.
+pub(crate) fn reserve_padding(
+    text: &str,
+    chars: usize,
+    extra: usize,
+    instruction: &'static str,
+) -> Result<String, TextForgeError> {
+    let error = |detail: String| {
+        TextForgeError::new(
+            super::errors::TextForgeErrorCode::ValidationError(
+                "Cannot allocate padded output".into(),
+            ),
+            instruction,
+            detail,
+        )
+    };
+    let count = text.chars().count().max(1);
+    let rest = text
+        .char_indices()
+        .nth(chars % count)
+        .map_or(text.len(), |(i, _)| i);
+    let bytes = (chars / count)
+        .checked_mul(text.len())
+        .and_then(|bytes| bytes.checked_add(rest))
+        .and_then(|bytes| bytes.checked_add(extra))
+        .ok_or_else(|| error(format!("padding of {chars} characters overflows")))?;
+    let mut output = String::new();
+    output
+        .try_reserve_exact(bytes)
+        .map_err(|e| error(format!("{bytes} bytes: {e}")))?;
+    Ok(output)
+}
+
+/// Append `chars` characters of `text`, repeated (see [`extend_string`]).
+/// `text` must not be empty.
+pub(crate) fn push_padding(output: &mut String, text: &str, chars: usize) {
+    let count = text.chars().count().max(1);
+    for _ in 0..chars / count {
+        output.push_str(text);
+    }
+    let end = text
+        .char_indices()
+        .nth(chars % count)
+        .map_or(text.len(), |(i, _)| i);
+    output.push_str(&text[..end]);
+}
+
 pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, TextForgeError> {
     input
         .char_indices()

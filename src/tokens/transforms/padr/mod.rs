@@ -6,6 +6,7 @@ use std::borrow::Cow;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
+    utils::transforms::{push_padding, reserve_padding},
     utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
@@ -72,8 +73,9 @@ impl InstructionMethods for Padr {
         if self.text.is_empty() {
             return Ok(input);
         }
-        let mut output = input.into_owned();
-        output.extend(self.text.chars().cycle().take(ml));
+        let mut output = reserve_padding(&self.text, ml, input.len(), "padr")?;
+        output.push_str(&input);
+        push_padding(&mut output, &self.text, ml);
         Ok(output.into())
     }
 

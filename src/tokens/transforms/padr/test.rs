@@ -173,5 +173,28 @@ mod tests {
             assert_eq!(usize::from_be_bytes(p2_payload.try_into().unwrap()), 7);
             assert_eq!(i, i); // Anti unused var warning, fix this for testing purposes on the bytecode size
         }
+
+        #[test]
+        fn huge_lengths_are_errors_not_panics() {
+            // Previously panicked with "capacity overflow" (or aborted on memory).
+            use crate::tokens::{InstructionMethods, transforms::padr::Padr};
+            for length in [usize::MAX, usize::MAX / 2, usize::MAX / 1024] {
+                let error = Padr::new("é🍌", length)
+                    .transform("x".into(), None)
+                    .unwrap_err();
+                assert!(matches!(
+                    error.error_code,
+                    crate::utils::errors::TextForgeErrorCode::ValidationError(_)
+                ));
+            }
+        }
+
+        #[test]
+        fn padding_repeats_whole_characters() {
+            use crate::tokens::{InstructionMethods, transforms::padr::Padr};
+            let output = Padr::new("é🍌x", 8).transform("ab".into(), None).unwrap();
+            assert_eq!(output.chars().count(), 8);
+            assert_eq!(output.matches('🍌').count(), 2);
+        }
     }
 }
