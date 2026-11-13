@@ -48,6 +48,12 @@
 
 ### Changed
 
+- Nested instructions (inside `iter`, `onln`/`onck`/`onlni`, conditionals and
+  block payloads) with literal parameters are bound once per registered
+  pipeline instead of on every execution; a nested regex is no longer
+  recompiled each iteration (block `iter 2000 times onln 3 apply raw a A`:
+  7.0 ms → 0.23 ms). `iter` and `on*` opt into preparation.
+  `get_transform_vec` still returns templates without cached bindings.
 - `[[ ]]` expressions and `eval` build their evaluation context from the
   variables the expression reads instead of copying every variable (with a
   1 MB variable present, 2000 evaluations: 89 ms → 4.8 ms).

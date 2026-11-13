@@ -1,9 +1,9 @@
-use std::{borrow::Cow, ops::Deref};
+use std::{borrow::Cow, ops::Deref, sync::Arc};
 
 use crate::{
     context::execution_context::{GlobalContextMethods, GlobalExecutionContext},
     globals::table::{QuerySource, QueryTarget, SyntaxDef, SyntaxToken, TOKEN_TABLE, TargetValue},
-    parser::params::TextForgeParamTypes,
+    parser::params::{MAX_DEPTH_ASSOC_PAYLOAD, TextForgeParamTypes},
     tokens::{InstructionMethods, instructions::null::Null},
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
@@ -50,17 +50,23 @@ impl From<ValType> for TextForgeParamTypes {
 pub struct TokenWrapper {
     params: Vec<ValType>,
     pub token: Box<dyn InstructionMethods>,
-    prepared: Option<Box<dyn InstructionMethods>>,
+    prepared: Option<Arc<dyn InstructionMethods>>,
 }
 
-// Clones may leave the processor through get_transform_vec and expose a mutable
-// public token template. Only the private registered instance retains its cache.
+/// Deepest nested level `prepare_constant` descends to; matches the parsers'
+/// largest nesting limit, so every parseable child can be prepared.
+const MAX_PREPARED_DEPTH: usize = MAX_DEPTH_ASSOC_PAYLOAD as usize;
+
+// Internal clones (parameter resolution clones nested wrappers on every
+// execution) share the prepared binding, so nested instructions are bound once.
+// The only public exit, `get_transform_vec`, uses `without_preparation`, so an
+// exported, mutable public template never carries a stale cache.
 impl Clone for TokenWrapper {
     fn clone(&self) -> Self {
         Self {
             params: self.params.clone(),
             token: self.token.clone(),
-            prepared: None,
+            prepared: self.prepared.clone(),
         }
     }
 }
@@ -108,9 +114,23 @@ impl TokenWrapper {
     // Only called after ownership moves into a processor's private pipeline map.
     // Externally mutable public token templates never acquire a stale cache.
     pub(crate) fn prepare_constant(&mut self) {
+        self.prepare_at(0);
+    }
+
+    /// Prepare nested instructions first, so the parameters bound for this
+    /// instruction already carry their children's cached bindings.
+    fn prepare_at(&mut self, depth: usize) {
+        if depth < MAX_PREPARED_DEPTH {
+            for parameter in &mut self.params {
+                if let ValType::Literal(TextForgeParamTypes::Token(child)) = parameter {
+                    child.prepare_at(depth + 1);
+                }
+            }
+        }
         if !self.token.supports_preparation()
             || !self.params.iter().all(|parameter| match parameter {
-                ValType::Literal(TextForgeParamTypes::Usize(_)) => true,
+                ValType::Literal(TextForgeParamTypes::Usize(_))
+                | ValType::Literal(TextForgeParamTypes::Token(_)) => true,
                 ValType::Literal(TextForgeParamTypes::String(text)) => !["{{", "}}", "[[", "]]"]
                     .iter()
                     .any(|marker| text.contains(marker)),
@@ -125,7 +145,26 @@ impl TokenWrapper {
         {
             let mut token = self.token.clone();
             if token.set_params(&parameters).is_ok() {
-                self.prepared = Some(token);
+                self.prepared = Some(Arc::from(token));
+            }
+        }
+    }
+
+    /// A copy with every cached binding removed, for wrappers that leave the
+    /// processor as public, mutable templates.
+    pub(crate) fn without_preparation(&self) -> Self {
+        let mut copy = self.clone();
+        copy.strip_preparation(0);
+        copy
+    }
+
+    fn strip_preparation(&mut self, depth: usize) {
+        self.prepared = None;
+        if depth < MAX_PREPARED_DEPTH {
+            for parameter in &mut self.params {
+                if let ValType::Literal(TextForgeParamTypes::Token(child)) = parameter {
+                    child.strip_preparation(depth + 1);
+                }
             }
         }
     }

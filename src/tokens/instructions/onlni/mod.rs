@@ -58,6 +58,11 @@ impl Onlni {
 }
 
 impl InstructionMethods for Onlni {
+    /// Holds only immutable bound state, so it can be bound once; the nested
+    /// instruction keeps its own (possibly dynamic) parameters.
+    fn supports_preparation(&self) -> bool {
+        true
+    }
     fn get_params(&self) -> &Vec<TextForgeParamTypes> {
         &self.params
     }

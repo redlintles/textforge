@@ -732,7 +732,9 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                     id.to_string(),
                 )
             })?
-            .clone())
+            .iter()
+            .map(TokenWrapper::without_preparation)
+            .collect())
     }
 
     fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, TextForgeError> {
