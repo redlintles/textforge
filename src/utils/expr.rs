@@ -3,8 +3,9 @@ use std::{borrow::Cow, collections::HashMap};
 use evalexpr::{ContextWithMutableVariables, DefaultNumericTypes, HashMapContext, Value};
 
 use crate::{
-    context::execution_context::{
-        GlobalContextMethods, GlobalExecutionContext, VarEntry, VarValues,
+    context::{
+        builtins::{CurrentText, VarReader},
+        execution_context::{GlobalExecutionContext, VarEntry, VarValues},
     },
     parser::params::TextForgeParamTypes,
     utils::{
@@ -34,37 +35,34 @@ use crate::{
 pub fn build_eval_context(
     vars: &HashMap<String, VarEntry>,
 ) -> Result<HashMapContext, TextForgeError> {
-    build_eval_context_from(vars.iter().map(|(name, entry)| (name.clone(), entry)))
+    let mut ctx = HashMapContext::new();
+    for (name, entry) in vars {
+        set_eval_value(&mut ctx, name, &entry.value)?;
+    }
+    Ok(ctx)
 }
 
-/// [`build_eval_context`] over any subset of the variable table.
-fn build_eval_context_from<'a>(
-    vars: impl Iterator<Item = (String, &'a VarEntry)>,
-) -> Result<HashMapContext, TextForgeError> {
-    let mut ctx = HashMapContext::new();
-
-    for (name, entry) in vars {
-        let value = match &entry.value {
-            VarValues::Usize(n) => Value::from_int(*n as i64),
-            VarValues::String(s) => match s.parse::<i64>() {
-                Ok(i) => Value::from_int(i),
-                Err(_) => Value::from(s.clone()),
-            },
-            VarValues::Token(_) => {
-                continue;
-            }
-        };
-
-        ctx.set_value(name.clone(), value).map_err(|e| {
-            TextForgeError::new(
-                InvalidExprError(Cow::from(e.to_string())),
-                Cow::from("eval.build_eval_context"),
-                Cow::from(name.clone()),
-            )
-        })?;
-    }
-
-    Ok(ctx)
+/// Add one variable to an evalexpr context (token variables are skipped).
+fn set_eval_value(
+    ctx: &mut HashMapContext,
+    name: &str,
+    value: &VarValues,
+) -> Result<(), TextForgeError> {
+    let value = match value {
+        VarValues::Usize(n) => Value::from_int(*n as i64),
+        VarValues::String(s) => match s.parse::<i64>() {
+            Ok(i) => Value::from_int(i),
+            Err(_) => Value::from(s.clone()),
+        },
+        VarValues::Token(_) => return Ok(()),
+    };
+    ctx.set_value(name.to_owned(), value).map_err(|e| {
+        TextForgeError::new(
+            InvalidExprError(Cow::from(e.to_string())),
+            Cow::from("eval.build_eval_context"),
+            Cow::from(name.to_owned()),
+        )
+    })
 }
 
 /// Whether a parameter in a numeric position is an interpolated expression
@@ -111,10 +109,19 @@ pub fn value_to_plain_string(value: &Value) -> String {
 /// - Nada é re-escaneado: o valor resolvido de uma variável ou expressão
 ///   nunca volta a ser interpolado, mesmo que contenha `{{`/`[[` por
 ///   coincidência — evita loop em variáveis que se referenciam entre si.
+///
+/// Built-in variables that describe the current text (`__LINES__`,
+/// `__LEN_CHARS__`) need a running instruction and fail here.
 pub fn interpolate(
     input: &str,
     context: &GlobalExecutionContext,
 ) -> Result<String, TextForgeError> {
+    interpolate_with(input, &VarReader::new(context, CurrentText::Unavailable))
+}
+
+/// [`interpolate`] reading variables through `reader`, which also knows the
+/// text the running instruction receives.
+pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String, TextForgeError> {
     // Fast path: nenhum dos quatro delimitadores aparece de forma nenhuma
     // (completa, solta ou escapada) — nada a fazer.
     if !input.contains("{{")
@@ -136,12 +143,12 @@ pub fn interpolate(
             // esc.as_str() é "\{{", "\}}", "\[[" ou "\]]" — descarta o \.
             out.push_str(&esc.as_str()[1..]);
         } else if let Some(var_name) = caps.name("var") {
-            let variable = context.get_var(var_name.as_str())?;
-            let value: TextForgeParamTypes = variable.value.clone().into();
+            let value: TextForgeParamTypes = reader.value(var_name.as_str())?.into_owned().into();
             let as_string: String = value.try_into()?;
             out.push_str(&as_string);
         } else if let Some(expr_src) = caps.name("expr") {
-            out.push_str(&expr(expr_src.as_str(), context)?);
+            let result = evaluate_with(expr_src.as_str(), reader, "api::expr")?;
+            out.push_str(&value_to_plain_string(&result));
         }
         // Nenhum grupo nomeado bateu: caiu no fallback de delimitador solto
         // (`{{`, `}}`, `[[` ou `]]` incompleto/inválido) — não empurra nada
@@ -173,6 +180,20 @@ pub(crate) fn evaluate(
     context: &GlobalExecutionContext,
     stage: &'static str,
 ) -> Result<Value, TextForgeError> {
+    evaluate_with(
+        expression,
+        &VarReader::new(context, CurrentText::Unavailable),
+        stage,
+    )
+}
+
+/// [`evaluate`] reading variables (and built-ins) through `reader`. An unknown
+/// identifier is left out, so evalexpr reports it as its own error.
+pub(crate) fn evaluate_with(
+    expression: &str,
+    reader: &VarReader,
+    stage: &'static str,
+) -> Result<Value, TextForgeError> {
     let invalid = |e: evalexpr::EvalexprError| {
         TextForgeError::new(
             TextForgeErrorCode::InvalidExprError(Cow::from(e.to_string())),
@@ -181,11 +202,18 @@ pub(crate) fn evaluate(
         )
     };
     let tree = evalexpr::build_operator_tree::<DefaultNumericTypes>(expression).map_err(invalid)?;
-    let all = context.get_all_vars();
-    let read = tree
-        .iter_read_variable_identifiers()
-        .filter_map(|name| all.get_key_value(name))
-        .map(|(name, entry)| (name.clone(), entry));
-    let eval_ctx = build_eval_context_from(read)?;
+    let mut eval_ctx = HashMapContext::new();
+    for name in tree.iter_read_variable_identifiers() {
+        match reader.value(name) {
+            Ok(value) => set_eval_value(&mut eval_ctx, name, &value)?,
+            Err(error) if matches!(error.error_code, TextForgeErrorCode::VariableNotFound(_)) => {}
+            Err(error) => return Err(error),
+        }
+    }
+    reader
+        .context()
+        .static_context()
+        .functions()
+        .install(&mut eval_ctx);
     tree.eval_with_context(&eval_ctx).map_err(invalid)
 }

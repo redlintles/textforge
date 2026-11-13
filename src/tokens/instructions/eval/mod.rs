@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
+    context::builtins::{CurrentText, VarReader, check_definable},
     context::execution_context::{
         GlobalContextMethods, GlobalExecutionContext, VarEntry, VarValues,
     },
@@ -9,7 +10,7 @@ use crate::{
     tokens::InstructionMethods,
     utils::{
         errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
-        expr::{evaluate, value_to_plain_string},
+        expr::{evaluate_with, value_to_plain_string},
         validations::check_vec_len,
     },
 };
@@ -54,7 +55,8 @@ impl InstructionMethods for Eval {
             )
         })?;
 
-        let result = evaluate(&self.expr, context, "eval.transform")?;
+        let reader = VarReader::new(context, CurrentText::Str(&input));
+        let result = evaluate_with(&self.expr, &reader, "eval.transform")?;
 
         match context.get_mut_var(&self.target) {
             Ok(var_mut) => {
@@ -85,6 +87,7 @@ impl InstructionMethods for Eval {
 
         self.expr = parse_args!(params, 0, String, "Expr should be of type string");
         self.target = parse_args!(params, 1, String, " should be of type string");
+        check_definable(&self.target, "eval")?;
 
         self.params = vec![self.expr.to_string().into(), self.target.to_string().into()];
         Ok(())

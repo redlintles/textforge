@@ -77,7 +77,7 @@ Key design facts:
 | `src/main.rs` | The `txf` CLI entry point. |
 | `src/bin` | Placeholder binaries (`atp-shell`, `atp-game`) for a planned REPL shell and an educational CLI game; no behavior yet. |
 | `src/bytecode` | Bytecode compilation. Only present under the `bytecode` feature. |
-| `src/context` | The execution context object and the debug trace (`debug_trace.rs`, nested steps shown by debug runs). A `static_context` with predefined functionality is planned. |
+| `src/context` | The execution context, the read-only static context (`static_context.rs`: pipeline name, core version, input file, global-function registry), built-in variables and the single variable lookup (`builtins.rs`), and the debug trace (`debug_trace.rs`). See `docs/execution-context.md`. |
 | `src/globals` | The lookup map the engine uses to decide which instruction to call for a given token. **Must be updated whenever an instruction is added.** |
 | `src/macros` | Project macros. |
 | `src/parser` | Types used for parsing the DSL, and for resolving/converting parameters and variables. |
@@ -119,6 +119,7 @@ TextForge can be used in three ways.
 | `process_file` | Reads an input file, runs a pipeline and writes the result to an output file. |
 | `process_batch` | Processes multiple pipelines from different files in parallel. |
 | `process_batch_in_pool` | Like `process_batch`, on a caller-supplied thread pool. |
+| `set_pipeline_name`, `pipeline_name` | Name a registered pipeline (read by the DSL as `__PIPELINE_NAME__`). Defaults to the identifier, or the file name without extension for pipelines read from files. |
 | `process_*_buffered` | Buffered variants (`process_all_buffered`, `process_single_buffered`, `process_file_buffered`, `process_batch_buffered`). Requires the `buffered` feature. |
 
 All processing modes (plain, debug, watchers and the buffered variants) run the same loop, `run_tokens` in `src/utils/apply.rs`; a mode only supplies the per-step behavior. Halting (`end`) and ordering rules live there.
@@ -155,7 +156,7 @@ Instruction names (especially transforms) abbreviate a short English phrase desc
 
 **Execution context**
 
-A `GlobalExecutionContext` is created at the start of each processing run. It can be read and modified during execution and enables variables and other features. Any instruction may use it, though transforms commonly ignore it.
+A `GlobalExecutionContext` is created at the start of each processing run. It can be read and modified during execution and enables variables and other features. Any instruction may use it, though transforms commonly ignore it. It also carries a read-only `StaticContext` (pipeline name, core version, input file), shared through an `Arc` and never changed during a run; see `docs/execution-context.md`.
 
 **Errors**
 
@@ -179,6 +180,8 @@ Input `xfruitx` → output `banana fruit`.
 |---|---|---|
 | `[[ 2 + 3 ]]` | Math expression interpolation | Resolved by `evalexpr`. Variables from the execution context can be referenced inside expressions. |
 | `{{name}}` | Variable interpolation | Currently **only parameter substitution** is supported. Replaced at execution time by the value of the named variable. |
+
+**Built-in variables** are read-only: `__PIPELINE_NAME__`, `__TEXTFORGE_VERSION__`, `__INPUT_FILE__` (empty when the input is not a file), `__LEN_CHARS__` and `__LINES__`. The last two describe the text the running instruction receives (the section, inside `on*`) and are computed only when a parameter reads them. `var`/`val`/`mutv`/`eval … in` cannot define these names (`ValidationError`). All reads go through `context::builtins::VarReader`. See `docs/execution-context.md`.
 
 Variable names start with a letter or `_` and continue with letters, digits or `_` (`__COUNTER__`, `line_no`). A numeric parameter may also be written as an expression or template (`[[__COUNTER__ + 1]]`, `'{{a}}{{b}}'`): it is kept as text when parsed and must interpolate to a non-negative integer at execution time (`IncompatibleTypeError` otherwise). Plain text in a numeric position is still rejected while parsing.
 
@@ -249,6 +252,7 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 | `TextForgeParamTypes` | Types accepted as parameters by instructions. |
 | `ValType` | Simple enum for values that may be variables: either a literal value or a reference to a variable stored in the context. |
 | `GlobalExecutionContext` | Manages the execution context of each pipeline. |
+| `StaticContext` | Read-only facts about a run (pipeline name, core version, input file, `GlobalFunctions`), built by the processor and shared through an `Arc`. |
 | `to_bytecode!` | Macro converting a token to its bytecode. |
 | `parse_args!` | Macro converting a `TextForgeParamTypes` into its specific type so it can be stored in the instruction object during execution. |
 

@@ -556,7 +556,9 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
                 error.to_string(),
             )
         })?;
-        result.push(TokenWrapper::new(token, Some(params)));
+        let wrapper = TokenWrapper::new(token, Some(params));
+        crate::parser::structure::validate_parsed(&wrapper)?;
+        result.push(wrapper);
     }
 
     Ok(result)

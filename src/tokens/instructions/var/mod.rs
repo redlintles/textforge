@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
+    context::builtins::{CurrentText, VarReader, check_definable},
     context::execution_context::{
         GlobalContextMethods, GlobalExecutionContext, VarEntry, VarValues,
     },
@@ -64,7 +65,9 @@ impl InstructionMethods for Var {
             )
         })?;
         let value = match &self.var_value {
-            TextForgeParamTypes::VarRef(name) => context.get_var(name)?.value.clone(),
+            TextForgeParamTypes::VarRef(name) => VarReader::new(context, CurrentText::Str(&input))
+                .value(name)?
+                .into_owned(),
             other => VarValues::try_from(other.clone())?,
         };
 
@@ -86,6 +89,7 @@ impl InstructionMethods for Var {
         check_vec_len(params, 2, "var", "param parsing error, invalid vec len")?;
 
         self.var_name = parse_args!(params, 0, String, "Val name should be of string type");
+        check_definable(&self.var_name, "var")?;
         self.var_value = params[1].clone();
 
         self.params = vec![self.var_name.to_string().into(), self.var_value.clone()];

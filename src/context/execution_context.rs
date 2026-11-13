@@ -5,9 +5,12 @@ use crate::{
         TextForgeErrorCode::{self, VariableNotFound},
     },
 };
-use std::{borrow::Cow, collections::HashMap};
+use std::{borrow::Cow, collections::HashMap, sync::Arc};
 
-use super::debug_trace::{DebugTrace, MAX_LISTED_REPLACEMENTS, Replacement, Size};
+use super::{
+    debug_trace::{DebugTrace, MAX_LISTED_REPLACEMENTS, Replacement, Size},
+    static_context::StaticContext,
+};
 #[derive(Clone)]
 pub enum VarValues {
     String(String),
@@ -67,7 +70,6 @@ pub struct VarEntry {
 }
 // This Object will be re-created every time the program starts.
 // Some tokens could access this object for additional data
-#[derive(Default)]
 pub struct GlobalExecutionContext {
     variables: HashMap<String, VarEntry>,
     blocks: HashMap<String, Vec<TokenWrapper>>,
@@ -75,6 +77,14 @@ pub struct GlobalExecutionContext {
     pub is_halted: bool,
     /// Nested step trace; `Some` only during debug processing.
     trace: Option<DebugTrace>,
+    /// Read-only facts about the run, shared with concurrent tasks.
+    static_ctx: Arc<StaticContext>,
+}
+
+impl Default for GlobalExecutionContext {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 // Variable Concept
@@ -108,7 +118,6 @@ pub trait GlobalContextMethods {
     fn clean_context(&mut self) {}
     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError>;
     fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>);
-    fn get_all_vars(&self) -> &HashMap<String, VarEntry>;
     fn halt(&mut self) -> bool;
 }
 
@@ -244,7 +253,21 @@ impl GlobalExecutionContext {
             replace_maps: HashMap::new(),
             is_halted: false,
             trace: None,
+            static_ctx: StaticContext::shared_default(),
         }
+    }
+
+    /// A fresh context reading the given static facts (pipeline name, input file).
+    pub(crate) fn with_static(static_ctx: Arc<StaticContext>) -> Self {
+        GlobalExecutionContext {
+            static_ctx,
+            ..Self::new()
+        }
+    }
+
+    /// Read-only facts about this run (see [`StaticContext`]).
+    pub fn static_context(&self) -> &StaticContext {
+        &self.static_ctx
     }
 
     /// Record nested steps for debug output (see [`DebugTrace`]).
@@ -267,10 +290,6 @@ impl GlobalExecutionContext {
 }
 
 impl GlobalContextMethods for GlobalExecutionContext {
-    fn get_all_vars(&self) -> &HashMap<String, VarEntry> {
-        &self.variables
-    }
-
     fn halt(&mut self) -> bool {
         self.is_halted = true;
         self.is_halted

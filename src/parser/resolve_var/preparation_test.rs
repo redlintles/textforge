@@ -1,6 +1,6 @@
 use super::*;
 use crate::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
-use crate::context::execution_context::{VarEntry, VarValues};
+use crate::context::execution_context::{GlobalContextMethods, VarEntry, VarValues};
 use crate::tokens::transforms::{atb::Atb, ate::Ate};
 use std::sync::{
     Arc,

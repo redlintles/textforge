@@ -279,7 +279,8 @@ src/
 ├── bytecode/                  — Binary .textforgebc protocol (feature-gated)
 ├── context/
 │   ├── execution_context.rs   — Runtime execution state (variables, blocks)
-│   └── static_context.rs      — Static/compile-time context
+│   ├── static_context.rs      — Read-only facts about a run (pipeline name, version, input file)
+│   └── builtins.rs            — Built-in variables (`__LINES__`, …) and variable lookup
 ├── globals/
 │   └── table.rs               — Instruction registry
 ├── macros/                    — Internal Rust macros
@@ -351,6 +352,15 @@ Use `rmapd animals add 'cat' 'wolf';`, `rmapd animals add 'wolf' 'dog';`, then
 execution context; execution can be reused from blocks. Rust builders expose
 `define_replace_map` and `execute_replace_map`. See [replacement maps](docs/replace-maps.md)
 for overlap rules, capture expansion, scope, bytecode and concurrent batch reuse.
+
+### Built-in variables
+
+Pipelines can read `__PIPELINE_NAME__`, `__TEXTFORGE_VERSION__`, `__INPUT_FILE__`,
+`__LEN_CHARS__` and `__LINES__` like any variable:
+`onln '[[__LINES__]]' apply ate '.';` changes the last line, whatever the
+document length. The text-derived values are computed only when read and always
+describe the current text (or the section, inside `on*`). Name a pipeline with
+`TextForgeProcessor::set_pipeline_name`. See [execution context](docs/execution-context.md).
 
 ### Unicode normalization
 

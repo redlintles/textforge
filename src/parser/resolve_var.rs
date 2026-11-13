@@ -1,13 +1,16 @@
 use std::{borrow::Cow, ops::Deref, sync::Arc};
 
 use crate::{
-    context::execution_context::{GlobalContextMethods, GlobalExecutionContext},
+    context::{
+        builtins::{CurrentText, VarReader},
+        execution_context::GlobalExecutionContext,
+    },
     globals::table::{QuerySource, QueryTarget, SyntaxDef, SyntaxToken, TOKEN_TABLE, TargetValue},
     parser::params::{MAX_DEPTH_ASSOC_PAYLOAD, TextForgeParamTypes},
     tokens::{InstructionMethods, instructions::null::Null},
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
-        expr::{interpolate, is_numeric_template},
+        expr::{interpolate_with, is_numeric_template},
         regexes::VAR_REF_RE,
     },
 };
@@ -140,9 +143,12 @@ impl TokenWrapper {
             return;
         }
         let context = &mut GlobalExecutionContext::new();
-        if let Ok(parameters) =
-            ValType::resolve_variables(self.token.as_ref(), &self.params, context)
-        {
+        if let Ok(parameters) = ValType::resolve_variables(
+            self.token.as_ref(),
+            &self.params,
+            context,
+            CurrentText::Unavailable,
+        ) {
             let mut token = self.token.clone();
             if token.set_params(&parameters).is_ok() {
                 self.prepared = Some(Arc::from(token));
@@ -199,11 +205,13 @@ impl TokenWrapper {
     }
     /// Bind once for debug execution and metadata, so logging cannot consult a
     /// token template whose default parameters differ from the executed values.
+    /// `text` is what the instruction will receive (for `__LINES__` and similar).
     pub(crate) fn bind_for_debug(
         &self,
-        context: &mut GlobalExecutionContext,
+        context: &GlobalExecutionContext,
+        text: CurrentText,
     ) -> Result<Box<dyn InstructionMethods>, TextForgeError> {
-        let params = ValType::resolve_variables(self.token.as_ref(), &self.params, context)?;
+        let params = ValType::resolve_variables(self.token.as_ref(), &self.params, context, text)?;
         let mut token = self.token.clone();
         token.set_params(&params)?;
         Ok(token)
@@ -217,8 +225,12 @@ impl TokenWrapper {
         if let Some(prepared) = &self.prepared {
             return prepared.transform(input, Some(context));
         }
-        let parsed_params =
-            ValType::resolve_variables(self.token.as_ref(), &self.params, &mut *context)?;
+        let parsed_params = ValType::resolve_variables(
+            self.token.as_ref(),
+            &self.params,
+            context,
+            CurrentText::Str(&input),
+        )?;
         let mut t = self.token.clone();
         t.set_params(&parsed_params)?;
         t.transform(input, Some(context))
@@ -246,7 +258,7 @@ impl TokenWrapper {
         }
         let before = input.chars().count();
         // Bind once so the reported line shows the values actually executed.
-        let bound = self.bind_for_debug(context)?;
+        let bound = self.bind_for_debug(context, CurrentText::Str(&input))?;
         let output = bound.transform(input, Some(context))?;
         if let Some(trace) = context.trace_mut() {
             let line = bound.to_textforge_line();
@@ -258,13 +270,18 @@ impl TokenWrapper {
     #[cfg(feature = "buffered")]
     pub(crate) fn apply_buffered(
         &self,
-        input: crate::api::TextBuffer,
+        mut input: crate::api::TextBuffer,
         context: &mut GlobalExecutionContext,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
         if let Some(prepared) = &self.prepared {
             return prepared.transform_buffered(input, Some(context));
         }
-        let params = ValType::resolve_variables(self.token.as_ref(), &self.params, context)?;
+        let params = ValType::resolve_variables(
+            self.token.as_ref(),
+            &self.params,
+            context,
+            CurrentText::Buffer(std::cell::RefCell::new(&mut input)),
+        )?;
         let mut token = self.token.clone();
         token.set_params(&params)?;
         token.transform_buffered(input, Some(context))
@@ -274,8 +291,12 @@ impl TokenWrapper {
         &self,
         context: &mut GlobalExecutionContext,
     ) -> Result<String, TextForgeError> {
-        let parsed_params =
-            ValType::resolve_variables(self.token.as_ref(), &self.params, &mut *context)?;
+        let parsed_params = ValType::resolve_variables(
+            self.token.as_ref(),
+            &self.params,
+            context,
+            CurrentText::Unavailable,
+        )?;
         let mut t = self.token.clone();
         t.set_params(&parsed_params)?;
 
@@ -383,8 +404,12 @@ impl TokenWrapper {
         &self,
         context: &mut GlobalExecutionContext,
     ) -> Result<Vec<u8>, TextForgeError> {
-        let parsed_params =
-            ValType::resolve_variables(self.token.as_ref(), &self.params, &mut *context)?;
+        let parsed_params = ValType::resolve_variables(
+            self.token.as_ref(),
+            &self.params,
+            context,
+            CurrentText::Unavailable,
+        )?;
         let mut t = self.token.clone();
         t.set_params(&parsed_params)?;
 
@@ -488,12 +513,17 @@ impl ValType {
             )),
         }
     }
+    /// Bind parameters: interpolate templates and read variable references.
+    /// `text` is the text the instruction will receive; text-derived built-ins
+    /// are computed from it only if a parameter reads them.
     fn resolve_variables(
         t: &dyn InstructionMethods,
         values: &[ValType],
-        context: &mut GlobalExecutionContext,
+        context: &GlobalExecutionContext,
+        text: CurrentText,
     ) -> Result<Vec<TextForgeParamTypes>, TextForgeError> {
         let mut result = Vec::new();
+        let reader = VarReader::new(context, text);
 
         let query_result = TOKEN_TABLE.find((
             QuerySource::Identifier(t.get_string_repr().into()),
@@ -529,7 +559,7 @@ impl ValType {
                     // interpolate() devolve a string inalterada pelo
                     // fast-path) quanto strings com N marcadores misturados.
                     (TextForgeParamTypes::String(s), SyntaxToken::String) => {
-                        result.push(TextForgeParamTypes::String(interpolate(s, context)?));
+                        result.push(TextForgeParamTypes::String(interpolate_with(s, &reader)?));
                     }
 
                     // A numeric parameter written as an expression
@@ -537,7 +567,7 @@ impl ValType {
                     (TextForgeParamTypes::String(s), SyntaxToken::Usize)
                         if is_numeric_template(s) =>
                     {
-                        let text = interpolate(s, context)?;
+                        let text = interpolate_with(s, &reader)?;
                         result.push(Self::coerce_param(
                             TextForgeParamTypes::String(text),
                             SyntaxToken::Usize,
@@ -562,13 +592,9 @@ impl ValType {
                 },
 
                 ValType::VarRef(name) => {
-                    let variable = context.get_var(name)?;
+                    let value = reader.value(name)?.into_owned();
 
-                    let coerced = Self::coerce_param(
-                        variable.value.clone().into(),
-                        expected_params[i],
-                        name,
-                    )?;
+                    let coerced = Self::coerce_param(value.into(), expected_params[i], name)?;
 
                     result.push(coerced);
                 }

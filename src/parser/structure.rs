@@ -10,10 +10,29 @@ use crate::{
     },
     utils::errors::TextForgeError,
 };
-use rules::{BUILTIN_RULES, InstructionView, ValidationContext, ValidationRule, check_with_rules};
+use rules::{
+    BUILTIN_RULES, InstructionView, PARSE_RULES, ValidationContext, ValidationRule,
+    check_with_rules,
+};
 
 pub(crate) fn validate(token: &TokenWrapper) -> Result<(), TextForgeError> {
     validate_at(token, 0, false)
+}
+
+/// Checks applied to every instruction read from text or bytecode, nested
+/// instructions included (see [`rules::PARSE_RULES`]).
+pub(crate) fn validate_parsed(token: &TokenWrapper) -> Result<(), TextForgeError> {
+    walk(
+        vec![(
+            token,
+            ValidationContext {
+                depth: 0,
+                inside_block: false,
+                inside_iteration: false,
+            },
+        )],
+        PARSE_RULES,
+    )
 }
 
 pub(crate) fn validate_block_child(token: &TokenWrapper) -> Result<(), TextForgeError> {

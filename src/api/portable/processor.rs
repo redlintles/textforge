@@ -142,6 +142,17 @@ impl PortableProcessor {
     pub fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, BindingError> {
         self.core.get_text_transform_vec(id).map_err(execution)
     }
+    /// Name read by the DSL as `__PIPELINE_NAME__` (core `set_pipeline_name`).
+    pub fn set_pipeline_name(&mut self, id: &str, name: String) -> Result<(), BindingError> {
+        self.core.set_pipeline_name(id, name).map_err(execution)
+    }
+    /// Core `pipeline_name`, as an owned string.
+    pub fn pipeline_name(&self, id: &str) -> Result<String, BindingError> {
+        self.core
+            .pipeline_name(id)
+            .map(str::to_owned)
+            .map_err(execution)
+    }
     pub fn clone_pipeline(&mut self, id: &str) -> Result<String, BindingError> {
         let tokens = self.core.get_transform_vec(id).map_err(execution)?;
         let id = self.core.add_transform(tokens);

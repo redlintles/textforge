@@ -4,6 +4,19 @@
 
 ### Added
 
+- Static context and built-in variables: `__PIPELINE_NAME__`,
+  `__TEXTFORGE_VERSION__`, `__INPUT_FILE__` (empty for text input),
+  `__LEN_CHARS__` and `__LINES__`, readable as `{{name}}`, in `[[ ]]`
+  expressions and as numeric parameters (`onln '[[__LINES__]]' apply …`). The
+  text-derived values are computed only when read and describe the text the
+  instruction receives (the section, inside `on*`). `var`, `val`, `mutv` and
+  `eval … in` reject these names with `ValidationError`, in text, bytecode and
+  builders. New `TextForgeProcessor::set_pipeline_name` and `pipeline_name`
+  (and their portable equivalents); a pipeline is named after its identifier,
+  or after its file when read from one. See
+  [execution context](docs/execution-context.md) and the
+  [benchmark](docs/benchmarks/builtin-variables/README.md): about 16 ns more per
+  run, no change for pipelines that do not read built-ins.
 - Numeric parameters accept `[[ ]]` expressions and `{{ }}` templates, resolved
   at execution time: `onln '[[__COUNTER__ + 1]]' apply tbs;`. Text, bytecode,
   the builder and portable plans keep the expression. A result that is not a

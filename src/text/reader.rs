@@ -69,6 +69,7 @@ pub fn read_from_text(token_string: &str) -> Result<TokenWrapper, TextForgeError
                 TextForgeParamTypes::from_expected(token_param_types, &chunks[1..])?;
 
             let wrapper = TokenWrapper::new(token, Some(parsed_params));
+            crate::parser::structure::validate_parsed(&wrapper)?;
 
             Ok(wrapper)
         }

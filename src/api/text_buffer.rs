@@ -361,6 +361,28 @@ impl TextBuffer {
         }
     }
 
+    /// Pass the document's bytes to `visit` in order, in chunks of at most
+    /// 64 KiB when spooled (a chunk may end inside a code point). Does not
+    /// materialize a spooled document; later appends still go to the end.
+    pub(crate) fn for_each_chunk(
+        &mut self,
+        mut visit: impl FnMut(&[u8]),
+    ) -> Result<(), TextForgeError> {
+        if let Some(text) = &self.materialized {
+            visit(text.as_str().as_bytes());
+            return Ok(());
+        }
+        self.storage.rewind().map_err(io_error)?;
+        let mut chunk = [0; COPY_SIZE];
+        loop {
+            let count = self.storage.read(&mut chunk).map_err(io_error)?;
+            if count == 0 {
+                return Ok(());
+            }
+            visit(&chunk[..count]);
+        }
+    }
+
     pub(crate) fn options(&self) -> &TextBufferOptions {
         &self.options
     }

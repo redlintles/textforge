@@ -1,6 +1,7 @@
 //! Side-effect-free validation rules shared by tree groups and instruction leaves.
 //! Register a rule in `BUILTIN_RULES`; traversal and lowering require no changes.
 use crate::{
+    context::builtins::check_definable,
     globals::table::{QuerySource, QueryTarget, SyntaxToken, TOKEN_TABLE, TargetValue},
     parser::{
         params::{MAX_DEPTH_ASSOC_PAYLOAD, MAX_DEPTH_NORMAL, TextForgeParamTypes},
@@ -255,7 +256,38 @@ impl ValidationRule for SignatureRule {
 }
 
 /// Ordered policy registry. Add a new rule here after documenting and testing it.
-pub(super) const BUILTIN_RULES: &[&dyn ValidationRule] = &[&NestingRule, &SignatureRule];
+/// Built-in variable names (`__LINES__`, …) cannot be defined by `var`, `val`,
+/// `mutv` or `eval … in`. A name computed at execution time is checked again
+/// when the instruction binds its parameters.
+pub(super) struct ReservedNameRule;
+
+impl ValidationRule for ReservedNameRule {
+    fn check(
+        &self,
+        instruction: &InstructionView<'_>,
+        _context: ValidationContext,
+    ) -> Result<(), TextForgeError> {
+        let position = match instruction.name {
+            "var" | "val" | "mutv" => 0,
+            "eval" => 1,
+            _ => return Ok(()),
+        };
+        if let Some(Parameter::Literal(TextForgeParamTypes::String(name))) =
+            instruction.parameters.get(position)
+        {
+            check_definable(name, instruction.name)?;
+        }
+        Ok(())
+    }
+}
+
+pub(super) const BUILTIN_RULES: &[&dyn ValidationRule] =
+    &[&NestingRule, &SignatureRule, &ReservedNameRule];
+
+/// Rules every parsed instruction must satisfy, whatever its origin (text or
+/// bytecode). Kept apart from [`BUILTIN_RULES`] so parsing does not start
+/// enforcing builder-only structure rules on existing pipelines.
+pub(super) const PARSE_RULES: &[&dyn ValidationRule] = &[&ReservedNameRule];
 
 pub(super) fn check_with_rules(
     instruction: &InstructionView<'_>,

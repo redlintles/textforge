@@ -12,8 +12,8 @@ use crate::api::{TextBuffer, TextBufferOptions};
 use crate::context::execution_context::GlobalContextMethods;
 use crate::context::execution_context::GlobalExecutionContext;
 use crate::utils::apply::run_tokens;
+use crate::utils::errors::TextForgeError;
 use crate::utils::errors::TextForgeErrorCode;
-use crate::utils::errors::{TextForgeError, token_array_not_found};
 use colored::Colorize;
 use rayon::prelude::*;
 use std::io::{Seek, Write};
@@ -51,12 +51,13 @@ impl BufferedTask {
 }
 
 impl TextForgeProcessor {
-    fn run_buffered(&self, id: &str, input: TextBuffer) -> Result<TextBuffer, TextForgeError> {
-        let tokens = self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))?;
-        let mut context = GlobalExecutionContext::new();
+    fn run_buffered(
+        &self,
+        id: &str,
+        input: TextBuffer,
+        input_file: Option<&Path>,
+    ) -> Result<TextBuffer, TextForgeError> {
+        let (tokens, mut context) = Self::pipeline_run(&self.transforms, id, input_file)?;
         run_tokens(tokens, input, &mut context, |_, token, input, context| {
             token.apply_buffered(input, context)
         })
@@ -82,7 +83,7 @@ impl TextForgeProcessor {
         id: &str,
         input: TextBuffer,
     ) -> Result<TextBuffer, TextForgeError> {
-        self.run_buffered(id, input)
+        self.run_buffered(id, input, None)
             .inspect_err(|error| self.errors.add_error(error.clone()))
     }
 
@@ -106,8 +107,9 @@ impl TextForgeProcessor {
         path: impl AsRef<Path>,
         options: TextBufferOptions,
     ) -> Result<TextBuffer, TextForgeError> {
-        let result =
-            TextBuffer::from_file(path, options).and_then(|input| self.run_buffered(id, input));
+        let path = path.as_ref();
+        let result = TextBuffer::from_file(path, options)
+            .and_then(|input| self.run_buffered(id, input, Some(path)));
         result.inspect_err(|error| self.errors.add_error(error.clone()))
     }
 
@@ -135,7 +137,9 @@ impl TextForgeProcessor {
             .iter()
             .map(|task| {
                 TextBuffer::from_file(&task.input_path, options.clone())
-                    .and_then(|input| self.run_buffered(&task.pipeline_id, input))
+                    .and_then(|input| {
+                        self.run_buffered(&task.pipeline_id, input, Some(&task.input_path))
+                    })
                     .and_then(|mut output| {
                         output.spill()?;
                         Ok(output)
@@ -190,9 +194,10 @@ impl TextForgeProcessor {
         &mut self,
         id: &str,
         input: &str,
+        input_file: Option<&Path>,
     ) -> Result<String, TextForgeError> {
         let result = TextBuffer::from_text(input, adapter_options())
-            .and_then(|input| self.run_buffered(id, input.retain_materialized()))
+            .and_then(|input| self.run_buffered(id, input.retain_materialized(), input_file))
             .and_then(TextBuffer::into_string);
         result.inspect_err(|error| self.errors.add_error(error.clone()))
     }
@@ -228,7 +233,7 @@ impl TextForgeProcessor {
                     )
                 })?;
                 let input = TextBuffer::from_reader(file, adapter_options())?.retain_materialized();
-                let mut output = self.run_buffered(id, input)?;
+                let mut output = self.run_buffered(id, input, Some(origin))?;
                 if let Some(parent) = target.parent()
                     && !parent.as_os_str().is_empty()
                 {
@@ -271,11 +276,7 @@ impl TextForgeProcessor {
         input: TextBuffer,
         log: &mut impl Write,
     ) -> Result<TextBuffer, TextForgeError> {
-        let tokens = self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))?;
-        let mut context = GlobalExecutionContext::new();
+        let (tokens, mut context) = Self::pipeline_run(&self.transforms, id, None)?;
         context.enable_trace();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
@@ -284,7 +285,12 @@ impl TextForgeProcessor {
             input,
             &mut context,
             |counter, token, mut input, context| {
-                let bound = token.bind_for_debug(context)?;
+                let bound = token.bind_for_debug(
+                    context,
+                    crate::context::builtins::CurrentText::Buffer(std::cell::RefCell::new(
+                        &mut input,
+                    )),
+                )?;
                 let line = bound.to_textforge_line();
                 if bound.get_string_repr() == "blk" {
                     let name = match bound.get_params().first() {
@@ -350,18 +356,13 @@ impl TextForgeProcessor {
     ) -> Result<String, TextForgeError> {
         use crate::watchers::WatcherContext;
         use std::sync::Arc;
-        let tokens = match self
-            .transforms
-            .get(id)
-            .ok_or_else(token_array_not_found(id))
-        {
+        let (tokens, mut context) = match Self::pipeline_run(&self.transforms, id, None) {
             Ok(tokens) => tokens,
             Err(error) => {
                 self.errors.add_error(error.clone());
                 return Err(error);
             }
         };
-        let mut context = GlobalExecutionContext::new();
         let current: Arc<str> = Arc::from(input);
         let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
         let current = run_tokens(
