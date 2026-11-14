@@ -15,7 +15,11 @@ mod tests {
             error.error_code,
             TextForgeErrorCode::ValidationError(_)
         ));
-        assert_eq!(error.instruction, "rpt");
+        let message = error.error_code.message();
+        assert!(
+            message.contains("repeat") || message.contains("`rpt`"),
+            "{message}"
+        );
     }
 
     #[test]

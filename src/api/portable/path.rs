@@ -85,10 +85,10 @@ fn unsupported(representation: &str) -> BindingError {
         ErrorStage::Conversion,
         TextForgeError::new(
             TextForgeErrorCode::ValidationError(
-                format!("{representation} are not native on this target").into(),
+                format!("{representation} are not native paths on this platform").into(),
             ),
-            "FilePath",
-            "path representation",
+            "",
+            "",
         ),
     )
 }

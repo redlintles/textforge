@@ -207,10 +207,11 @@ fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor)
             {
                 Err(TextForgeError::new(
                     TextForgeErrorCode::ValidationError(
-                        "Bytecode mode requires building txf with `--features bytecode`".into(),
+                        "bytecode mode (`--mode b`) needs a txf built with `--features bytecode`"
+                            .into(),
                     ),
-                    Cow::from("main.load_pipeline"),
-                    Cow::from("mode=b"),
+                    Cow::from("txf"),
+                    Cow::from(""),
                 ))
             }
         }
@@ -220,8 +221,7 @@ fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor)
             let id = processor.get_pipeline_from_file(file)?;
             Ok((id, processor))
         }
-        // clap já restringe "mode" a ["b", "t"] via value_parser — qualquer
-        // outro valor nunca chega aqui.
+        // clap's value_parser restricts "mode" to "b" and "t".
         _ => unreachable!("clap value_parser restricts mode to b/t"),
     }
 }
@@ -245,16 +245,20 @@ fn main() -> Result<(), TextForgeError> {
         Some(path) => {
             if !path.exists() {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::FileNotFound("Input file does not exist".into()),
-                    Cow::from("main"),
+                    TextForgeErrorCode::FileNotFound(
+                        format!("the input file `{}` does not exist", path.display()).into(),
+                    ),
+                    Cow::from("txf"),
                     Cow::from(path.display().to_string()),
                 ));
             }
 
             let mut input_file = OpenOptions::new().read(true).open(path).map_err(|e| {
                 TextForgeError::new(
-                    TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
-                    Cow::from("main"),
+                    TextForgeErrorCode::FileOpeningError(
+                        format!("cannot open the input file `{}`: {e}", path.display()).into(),
+                    ),
+                    Cow::from("txf"),
                     Cow::from(path.display().to_string()),
                 )
             })?;
@@ -262,8 +266,14 @@ fn main() -> Result<(), TextForgeError> {
             let mut b = String::new();
             input_file.read_to_string(&mut b).map_err(|e| {
                 TextForgeError::new(
-                    TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
-                    Cow::from("main"),
+                    TextForgeErrorCode::FileReadingError(
+                        format!(
+                            "cannot read the input file `{}` as UTF-8 text: {e}",
+                            path.display()
+                        )
+                        .into(),
+                    ),
+                    Cow::from("txf"),
                     Cow::from(path.display().to_string()),
                 )
             })?;
@@ -274,9 +284,11 @@ fn main() -> Result<(), TextForgeError> {
             let mut b = String::new();
             io::stdin().read_to_string(&mut b).map_err(|e| {
                 TextForgeError::new(
-                    TextForgeErrorCode::FileReadingError(Cow::from(e.to_string())),
-                    Cow::from("main"),
-                    Cow::from("<stdin>"),
+                    TextForgeErrorCode::FileReadingError(
+                        format!("cannot read standard input as UTF-8 text: {e}").into(),
+                    ),
+                    Cow::from("txf"),
+                    Cow::from(""),
                 )
             })?;
             b
@@ -296,22 +308,26 @@ fn main() -> Result<(), TextForgeError> {
                 .open(p)
                 .map_err(|e| {
                     TextForgeError::new(
-                        TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
-                        Cow::from("main"),
+                        TextForgeErrorCode::FileOpeningError(
+                            format!("cannot create the output file `{}`: {e}", p.display()).into(),
+                        ),
+                        Cow::from("txf"),
                         Cow::from(p.display().to_string()),
                     )
                 })?;
 
             f.write_all(result.as_bytes()).map_err(|e| {
                 TextForgeError::new(
-                    TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
-                    Cow::from("main"),
+                    TextForgeErrorCode::FileWritingError(
+                        format!("cannot write the output file `{}`: {e}", p.display()).into(),
+                    ),
+                    Cow::from("txf"),
                     Cow::from(p.display().to_string()),
                 )
             })?;
         }
         None => {
-            println!("Resultado do processamento: {}", result);
+            println!("Processing result: {}", result);
         }
     }
 

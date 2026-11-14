@@ -41,7 +41,9 @@ impl ReplaceMapBuilder {
         replacement: impl Into<ValType>,
     ) -> Result<&mut Self, TextForgeError> {
         if self.ended {
-            return Err(map_error("Replacement map configuration has already ended"));
+            return Err(map_error(
+                "this replacement map was already finished with end(); start a new map to add more rules",
+            ));
         }
         self.rules.push(TokenWrapper::new(
             Box::new(Rmapd::default()),
@@ -54,7 +56,9 @@ impl ReplaceMapBuilder {
     /// This method never emits the DSL `end` instruction or executes the map.
     pub fn end(&mut self) -> Result<(), TextForgeError> {
         if self.ended {
-            return Err(map_error("Replacement map configuration has already ended"));
+            return Err(map_error(
+                "this replacement map was already finished with end(); start a new map to add more rules",
+            ));
         }
         validate_rule_count(self.rules.len())?;
         self.ended = true;
@@ -64,7 +68,7 @@ impl ReplaceMapBuilder {
     pub(crate) fn finish(self) -> Result<Vec<TokenWrapper>, TextForgeError> {
         if !self.ended {
             return Err(map_error(
-                "Replacement map configuration must finish with end()",
+                "a replacement map must be finished with end() before the pipeline is built",
             ));
         }
         Ok(self.rules)
@@ -73,7 +77,9 @@ impl ReplaceMapBuilder {
 
 pub(crate) fn validate_rule_count(count: usize) -> Result<(), TextForgeError> {
     if count == 0 {
-        return Err(map_error("Replacement maps require at least one rule"));
+        return Err(map_error(
+            "a replacement map needs at least one rule; add one with rule() before end()",
+        ));
     }
     Ok(())
 }
@@ -81,7 +87,7 @@ pub(crate) fn validate_rule_count(count: usize) -> Result<(), TextForgeError> {
 fn map_error(message: &str) -> TextForgeError {
     TextForgeError::new(
         TextForgeErrorCode::ValidationError(message.to_owned().into()),
-        "define_replace_map",
-        "map configuration",
+        "rmapd",
+        "",
     )
 }

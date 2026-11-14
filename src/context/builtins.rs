@@ -141,9 +141,9 @@ impl<'c, 't> VarReader<'c, 't> {
             CurrentText::Unavailable => {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::RequiredContextError(
-                        "This built-in variable is only available while text is processed".into(),
+                        format!("the built-in variable `{}` only has a value while a text is being processed", builtin.name()).into(),
                     ),
-                    "builtin variable",
+                    "",
                     builtin.name(),
                 ));
             }

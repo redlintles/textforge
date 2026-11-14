@@ -36,9 +36,9 @@ fn repeat_reports_allocator_refusal_instead_of_aborting() {
     // Native buffered repetition can spill the 800 MiB result successfully;
     // the String-returning API must then reject final materialization safely.
     let expected = if cfg!(feature = "buffered") {
-        "Cannot materialize TextBuffer"
+        "not enough memory to load the"
     } else {
-        "Cannot allocate repeated output"
+        "not enough memory to repeat the text"
     };
     assert!(
         String::from_utf8_lossy(&result.stderr).contains(expected),

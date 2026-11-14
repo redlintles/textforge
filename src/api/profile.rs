@@ -134,12 +134,13 @@ fn exceeded(
 ) -> TextForgeError {
     TextForgeError::new(
         TextForgeErrorCode::ValidationError(
-            format!("{instruction} exceeds the {limit_name} limit").into(),
+            format!(
+                "`{instruction}` needs {needed}, but the {limit_name} limit is {limit}; raise or remove the limit with overrides.{limit_name} in .txfrc (\"unlimited\"), the txf flag, or ExecutionProfile::limits"
+            )
+            .into(),
         ),
-        instruction,
-        format!(
-            "needs {needed}, limit {limit}; raise or remove it with overrides.{limit_name} in .txfrc (\"unlimited\"), the txf flag, or ExecutionProfile::limits"
-        ),
+        "",
+        "",
     )
 }
 
@@ -186,7 +187,9 @@ impl ExecutionProfile {
             "low-memory" => Ok(Self::low_memory()),
             "fast" => Ok(Self::fast()),
             other => Err(invalid(
-                "Unknown profile; expected balanced, low-memory or fast",
+                &format!(
+                    "unknown profile `{other}`; the profiles are balanced, low-memory and fast"
+                ),
                 other,
             )),
         }
@@ -294,43 +297,61 @@ fn parse_bytes(text: &str) -> Result<u64, TextForgeError> {
         "kib" => KIB,
         "mib" => MIB,
         "gib" => GIB,
-        _ => return Err(invalid("Unknown size unit; use B, KiB, MiB or GiB", text)),
+        _ => {
+            return Err(invalid(
+                &format!(
+                    "`{text}` has an unknown size unit; use B, KiB, MiB or GiB (for example 64MiB)"
+                ),
+                text,
+            ));
+        }
     };
     number
         .parse::<u64>()
         .ok()
         .and_then(|number| number.checked_mul(multiplier))
-        .ok_or_else(|| invalid("Invalid size", text))
+        .ok_or_else(|| invalid(&format!("`{text}` is not a size; write a whole number of bytes, optionally followed by B, KiB, MiB or GiB"), text))
 }
 
 fn checked_threshold(bytes: u64) -> Result<usize, TextForgeError> {
     let maximum = ExecutionProfile::MAX_SPOOL_THRESHOLD.min(usize::MAX as u64);
     if !(ExecutionProfile::MIN_SPOOL_THRESHOLD..=maximum).contains(&bytes) {
         return Err(invalid(
-            "spool_threshold out of range",
-            format!(
-                "{bytes} bytes; accepted: {} to {maximum} bytes (4 KiB to 64 GiB)",
+            &format!(
+                "spool_threshold must be between {} and {maximum} bytes (4 KiB to 64 GiB), but it is {bytes} bytes",
                 ExecutionProfile::MIN_SPOOL_THRESHOLD
             ),
+            bytes.to_string(),
         ));
     }
-    usize::try_from(bytes).map_err(|_| invalid("spool_threshold out of range", bytes.to_string()))
+    usize::try_from(bytes).map_err(|_| {
+        invalid(
+            &format!("spool_threshold ({bytes} bytes) is too large for this machine"),
+            bytes.to_string(),
+        )
+    })
 }
 
 impl RcFile {
     /// Parse and validate the JSON text of a `.txfrc`.
     pub fn parse(text: &str) -> Result<Self, TextForgeError> {
         let value: serde_json::Value = serde_json::from_str(text)
-            .map_err(|error| invalid("Invalid .txfrc", error.to_string()))?;
+            .map_err(|error| invalid(&format!("the .txfrc is not valid JSON: {error}"), ""))?;
         // serde would also accept a JSON array in field order.
         if !value.is_object() {
-            return Err(invalid("A .txfrc must be a JSON object", ""));
+            return Err(invalid(
+                "a .txfrc must be a JSON object, like {\"version\": 1}",
+                "",
+            ));
         }
         let rc: RcFile = serde_json::from_value(value)
-            .map_err(|error| invalid("Invalid .txfrc", error.to_string()))?;
+            .map_err(|error| invalid(&format!("the .txfrc has an invalid setting: {error}"), ""))?;
         if rc.version != 1 {
             return Err(invalid(
-                "Unsupported .txfrc version; expected 1",
+                &format!(
+                    "unsupported .txfrc version {}; this version of TextForge reads version 1",
+                    rc.version
+                ),
                 rc.version.to_string(),
             ));
         }
@@ -346,13 +367,19 @@ impl RcFile {
     pub fn from_path(path: &Path) -> Result<Self, TextForgeError> {
         let text = std::fs::read_to_string(path).map_err(|error| {
             TextForgeError::new(
-                TextForgeErrorCode::FileReadingError(error.to_string().into()),
+                TextForgeErrorCode::FileReadingError(
+                    format!("cannot read `{}`: {error}", path.display()).into(),
+                ),
                 "txfrc",
                 path.display().to_string(),
             )
         })?;
         Self::parse(&text).map_err(|mut error| {
-            error.input = format!("{}: {}", path.display(), error.input).into();
+            error.input = if error.input.is_empty() {
+                path.display().to_string().into()
+            } else {
+                format!("{}: {}", path.display(), error.input).into()
+            };
             error
         })
     }
@@ -488,7 +515,11 @@ mod tests {
         };
         assert!(limits.check_generated(Some(10), "rpt").is_ok());
         let error = limits.check_generated(Some(11), "rpt").unwrap_err();
-        assert!(error.input.contains("11 bytes") && error.input.contains("max_generated_bytes"));
+        let message = error.error_code.message();
+        assert!(
+            message.contains("11 bytes") && message.contains("max_generated_bytes"),
+            "{message}"
+        );
         assert!(limits.check_generated(None, "rpt").is_err());
         assert!(limits.check_iterations(3, "iter").is_ok());
         assert!(limits.check_iterations(4, "iter").is_err());

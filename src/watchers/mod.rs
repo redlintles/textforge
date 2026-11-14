@@ -269,9 +269,12 @@ impl WatcherList {
         let callback = self.watchers.get(watcher_name).ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::WatcherNotFoundError(
-                    format!("Watcher {watcher_name} not found").into(),
+                    format!(
+                        "no watcher is named `{watcher_name}`; register it before scheduling it"
+                    )
+                    .into(),
                 ),
-                "WatcherList.schedule_watcher",
+                "",
                 watcher_name.to_string(),
             )
         })?;
@@ -400,12 +403,13 @@ impl WatcherList {
     fn write_json(&self, writer: &mut dyn Write) -> Result<(), TextForgeError> {
         serde_json::to_writer_pretty(&mut *writer, &(ReportView { rows: &self.result })).map_err(
             |error| {
+                let message = format!("cannot write the watcher report: {error}").into();
                 let code = if error.is_io() {
-                    TextForgeErrorCode::FileWritingError(error.to_string().into())
+                    TextForgeErrorCode::FileWritingError(message)
                 } else {
-                    TextForgeErrorCode::SerializationError(error.to_string().into())
+                    TextForgeErrorCode::SerializationError(message)
                 };
-                TextForgeError::new(code, "WatcherList.to_json", "report serialization")
+                TextForgeError::new(code, "", "")
             },
         )?;
         writer.flush().map_err(write_error)
@@ -414,17 +418,21 @@ impl WatcherList {
 
 fn report_error(error: impl std::fmt::Display) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::ValidationError(error.to_string().into()),
-        "WatcherList",
-        "report allocation or counter",
+        TextForgeErrorCode::ValidationError(
+            format!("cannot build the watcher report: {error}").into(),
+        ),
+        "",
+        "",
     )
 }
 
 fn write_error(error: std::io::Error) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::FileWritingError(error.to_string().into()),
-        "WatcherList.to_json",
-        "report output",
+        TextForgeErrorCode::FileWritingError(
+            format!("cannot write the watcher report: {error}").into(),
+        ),
+        "",
+        "",
     )
 }
 
@@ -537,8 +545,14 @@ fn publish_report(
         .open(&temporary)
         .map_err(|error| {
             TextForgeError::new(
-                TextForgeErrorCode::FileOpeningError(error.to_string().into()),
-                "WatcherList.to_json",
+                TextForgeErrorCode::FileOpeningError(
+                    format!(
+                        "cannot create the watcher report file `{}`: {error}",
+                        temporary.display()
+                    )
+                    .into(),
+                ),
+                "",
                 temporary.display().to_string(),
             )
         })?;

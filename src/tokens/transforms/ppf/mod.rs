@@ -68,7 +68,7 @@ impl InstructionMethods for Ppf {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut prefix = read_utf8_file(Path::new(&self.path), "ppf")?;
+        let mut prefix = read_utf8_file(Path::new(&self.path), "")?;
         if prefix.is_empty() {
             return Ok(input);
         }
@@ -87,7 +87,7 @@ impl InstructionMethods for Ppf {
         input: crate::api::TextBuffer,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
-        let prefix = read_utf8_file(Path::new(&self.path), "ppf")?;
+        let prefix = read_utf8_file(Path::new(&self.path), "")?;
         if prefix.is_empty() {
             return Ok(input);
         }

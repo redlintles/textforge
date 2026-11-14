@@ -19,22 +19,33 @@ pub(crate) fn read_utf8_file(
 ) -> Result<String, TextForgeError> {
     let mut file = File::open(path).map_err(|error| {
         TextForgeError::new(
-            TextForgeErrorCode::FileOpeningError(error.to_string().into()),
+            TextForgeErrorCode::FileOpeningError(
+                format!("cannot open `{}`: {error}", path.display()).into(),
+            ),
             location,
-            format!("{}: {error}", path.display()),
+            path.display().to_string(),
         )
     })?;
     let mut bytes = Vec::new();
     file.read_to_end(&mut bytes).map_err(|error| {
         TextForgeError::new(
-            TextForgeErrorCode::FileReadingError(error.to_string().into()),
+            TextForgeErrorCode::FileReadingError(
+                format!("cannot read `{}`: {error}", path.display()).into(),
+            ),
             location,
-            format!("{}: {error}", path.display()),
+            path.display().to_string(),
         )
     })?;
     String::from_utf8(bytes).map_err(|error| {
         TextForgeError::new(
-            TextForgeErrorCode::InvalidUtf8Error(error.utf8_error().to_string().into()),
+            TextForgeErrorCode::InvalidUtf8Error(
+                format!(
+                    "`{}` is not UTF-8 text: {}",
+                    path.display(),
+                    error.utf8_error()
+                )
+                .into(),
+            ),
             location,
             path.to_string_lossy().into_owned(),
         )
@@ -56,24 +67,36 @@ pub(crate) fn write_atomically(
     write: impl FnOnce(&mut File) -> Result<(), TextForgeError>,
 ) -> Result<(), TextForgeError> {
     static NEXT: AtomicU64 = AtomicU64::new(0);
-    let error = |code: TextForgeErrorCode, detail: &dyn std::fmt::Display| {
-        TextForgeError::new(code, location, format!("{}: {detail}", path.display()))
+    let error =
+        |code: TextForgeErrorCode| TextForgeError::new(code, location, path.display().to_string());
+    let failed = |action: &str, cause: &std::io::Error| {
+        format!(
+            "cannot write `{}`: {action} failed: {cause}",
+            path.display()
+        )
     };
     let name = path.file_name().ok_or_else(|| {
-        error(
-            TextForgeErrorCode::FileWritingError("Output path has no file name".into()),
-            &"no file name",
-        )
+        error(TextForgeErrorCode::FileWritingError(
+            format!(
+                "cannot write `{}`: the path does not name a file",
+                path.display()
+            )
+            .into(),
+        ))
     })?;
     let directory = match path.parent() {
         Some(parent) if !parent.as_os_str().is_empty() => parent,
         _ => Path::new("."),
     };
     if !directory.is_dir() {
-        return Err(error(
-            TextForgeErrorCode::FileNotFound("Output directory does not exist".into()),
-            &directory.display(),
-        ));
+        return Err(error(TextForgeErrorCode::FileNotFound(
+            format!(
+                "cannot write `{}`: the directory `{}` does not exist (it is not created automatically)",
+                path.display(),
+                directory.display()
+            )
+            .into(),
+        )));
     }
     let mut temporary = OsString::from(".");
     temporary.push(name);
@@ -90,24 +113,21 @@ pub(crate) fn write_atomically(
             .create_new(true)
             .open(&temporary)
             .map_err(|e| {
-                error(
-                    TextForgeErrorCode::FileOpeningError(e.to_string().into()),
-                    &e,
-                )
+                error(TextForgeErrorCode::FileOpeningError(
+                    failed("creating a temporary file", &e).into(),
+                ))
             })?;
         write(&mut file)?;
         file.sync_all().map_err(|e| {
-            error(
-                TextForgeErrorCode::FileWritingError(e.to_string().into()),
-                &e,
-            )
+            error(TextForgeErrorCode::FileWritingError(
+                failed("flushing to disk", &e).into(),
+            ))
         })?;
         drop(file);
         std::fs::rename(&temporary, path).map_err(|e| {
-            error(
-                TextForgeErrorCode::FileWritingError(e.to_string().into()),
-                &e,
-            )
+            error(TextForgeErrorCode::FileWritingError(
+                failed("replacing the file", &e).into(),
+            ))
         })
     })();
     if result.is_err() {

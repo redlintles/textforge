@@ -90,8 +90,8 @@ impl InstructionMethods for Rpt {
                 TextForgeErrorCode::ValidationError(
                     format!("repeating the text {} times would produce more bytes than this machine can address", self.times).into(),
                 ),
-                "rpt",
-                format!("input_bytes={}, times={}", input.len(), self.times),
+                "",
+                "",
             )
         })?;
         let reserve = |output: &mut String, additional| {
@@ -100,7 +100,7 @@ impl InstructionMethods for Rpt {
                     TextForgeErrorCode::ValidationError(
                         format!("not enough memory to repeat the text {} times", self.times).into(),
                     ),
-                    "rpt",
+                    "",
                     error.to_string(),
                 )
             })

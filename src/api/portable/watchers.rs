@@ -106,8 +106,18 @@ impl Observers {
             .map(|(_, callback)| *callback)
             .ok_or_else(|| {
                 conversion(TextForgeError::new(
-                    TextForgeErrorCode::WatcherNotFoundError("Unknown builtin watcher".into()),
-                    "Observers.set_builtin",
+                    TextForgeErrorCode::WatcherNotFoundError(
+                        format!(
+                            "unknown built-in metric `{metric}`; available metrics: {}",
+                            BUILTINS
+                                .iter()
+                                .map(|(key, _)| *key)
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        )
+                        .into(),
+                    ),
+                    "",
                     metric.to_string(),
                 ))
             })?;

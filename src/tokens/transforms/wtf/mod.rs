@@ -88,7 +88,7 @@ impl InstructionMethods for Wtf {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        write_atomically(Path::new(&self.path), "wtf", |file| {
+        write_atomically(Path::new(&self.path), "", |file| {
             file.write_all(input.as_bytes()).map_err(write_error)
         })?;
         self.written(input.len() as u64, context);
@@ -103,7 +103,7 @@ impl InstructionMethods for Wtf {
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
         let mut bytes = 0;
-        write_atomically(Path::new(&self.path), "wtf", |file| {
+        write_atomically(Path::new(&self.path), "", |file| {
             bytes = input.copy_to(file)?;
             Ok(())
         })?;

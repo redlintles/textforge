@@ -72,7 +72,7 @@ impl InstructionMethods for Inf {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let inserted = read_utf8_file(Path::new(&self.path), "inf")?;
+        let inserted = read_utf8_file(Path::new(&self.path), "")?;
         insert_after_char(input, self.index, &inserted, || self.to_textforge_line())
     }
 

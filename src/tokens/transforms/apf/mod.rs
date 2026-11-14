@@ -67,7 +67,7 @@ impl InstructionMethods for Apf {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let appended = read_utf8_file(Path::new(&self.path), "apf")?;
+        let appended = read_utf8_file(Path::new(&self.path), "")?;
         if appended.is_empty() {
             return Ok(input);
         }
@@ -84,7 +84,7 @@ impl InstructionMethods for Apf {
         mut input: crate::api::TextBuffer,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
-        let appended = read_utf8_file(Path::new(&self.path), "apf")?;
+        let appended = read_utf8_file(Path::new(&self.path), "")?;
         input.append_text(&appended)?;
         Ok(input)
     }

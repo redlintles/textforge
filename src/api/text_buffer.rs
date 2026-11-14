@@ -94,25 +94,31 @@ impl MaterializedText {
 
 fn io_error(error: std::io::Error) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::FileReadingError(error.to_string().into()),
-        "TextBuffer",
-        "buffer I/O",
+        TextForgeErrorCode::FileReadingError(
+            format!("cannot read the text buffer (or its temporary file): {error}").into(),
+        ),
+        "",
+        "",
     )
 }
 
 fn write_error(error: std::io::Error) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::FileWritingError(error.to_string().into()),
-        "TextBuffer",
-        "buffer output I/O",
+        TextForgeErrorCode::FileWritingError(
+            format!("cannot write the text buffer (or its temporary file): {error}").into(),
+        ),
+        "",
+        "",
     )
 }
 
 fn invalid_utf8(error: impl ToString) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::InvalidUtf8Error(error.to_string().into()),
-        "TextBuffer",
-        "invalid UTF-8 document",
+        TextForgeErrorCode::InvalidUtf8Error(
+            format!("the text is not valid UTF-8: {}", error.to_string()).into(),
+        ),
+        "",
+        "",
     )
 }
 
@@ -206,10 +212,10 @@ impl TextBuffer {
         pending.try_reserve_exact(COPY_SIZE + 3).map_err(|error| {
             TextForgeError::new(
                 TextForgeErrorCode::ValidationError(
-                    "Cannot allocate UTF-8 validation buffer".into(),
+                    format!("not enough memory to read the text: {error}").into(),
                 ),
-                "TextBuffer::from_reader",
-                error.to_string(),
+                "",
+                "",
             )
         })?;
         loop {
@@ -341,18 +347,21 @@ impl TextBuffer {
                 let len = usize::try_from(self.len).map_err(|error| {
                     TextForgeError::new(
                         TextForgeErrorCode::ValidationError(
-                            "TextBuffer size cannot fit a String".into(),
+                            format!("the text ({} bytes) is too large to hold in memory on this machine", self.len).into(),
                         ),
-                        "TextBuffer::into_string",
+                        "",
                         error.to_string(),
                     )
                 })?;
                 let mut output = String::new();
                 output.try_reserve_exact(len).map_err(|error| {
                     TextForgeError::new(
-                        TextForgeErrorCode::ValidationError("Cannot materialize TextBuffer".into()),
-                        "TextBuffer::into_string",
-                        error.to_string(),
+                        TextForgeErrorCode::ValidationError(
+                            format!("not enough memory to load the {len}-byte text: {error}")
+                                .into(),
+                        ),
+                        "",
+                        "",
                     )
                 })?;
                 file.rewind().map_err(io_error)?;
@@ -394,9 +403,9 @@ impl TextBuffer {
         }
         let len = self.len.checked_add(bytes.len() as u64).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::ValidationError("TextBuffer size overflow".into()),
-                "TextBuffer",
-                "append",
+                TextForgeErrorCode::ValidationError("the text would grow beyond 2^64 bytes".into()),
+                "",
+                "",
             )
         })?;
         self.storage.seek(SeekFrom::End(0)).map_err(io_error)?;
@@ -473,9 +482,14 @@ impl TextBuffer {
     pub(crate) fn repeat(mut self, times: usize) -> Result<Self, TextForgeError> {
         self.len.checked_mul(times as u64).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::ValidationError("Repeated output size overflow".into()),
-                "rpt",
-                "buffered repeat",
+                TextForgeErrorCode::ValidationError(
+                    format!(
+                        "repeating the text {times} times would make it larger than 2^64 bytes"
+                    )
+                    .into(),
+                ),
+                "",
+                "",
             )
         })?;
         if times == 1 {
@@ -486,11 +500,27 @@ impl TextBuffer {
             let size = input
                 .len()
                 .checked_mul(times)
-                .ok_or_else(|| io_error(std::io::Error::other("Repeated output size overflow")))?;
+                .ok_or_else(|| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::ValidationError(
+                            format!("repeating the text {times} times would make it larger than this machine can address").into(),
+                        ),
+                        "",
+                        "",
+                    )
+                })?;
             let mut result = String::new();
             result
                 .try_reserve_exact(size)
-                .map_err(|_| io_error(std::io::Error::other("Cannot allocate repeated output")))?;
+                .map_err(|error| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::ValidationError(
+                            format!("not enough memory to repeat the text {times} times ({size} bytes): {error}").into(),
+                        ),
+                        "",
+                        "",
+                    )
+                })?;
             if size != 0 {
                 result.push_str(input);
                 while result.len() <= size / 2 {
@@ -510,9 +540,11 @@ impl TextBuffer {
             let mut block = Vec::new();
             block.try_reserve_exact(COPY_SIZE).map_err(|error| {
                 TextForgeError::new(
-                    TextForgeErrorCode::ValidationError("Cannot allocate repeat block".into()),
-                    "rpt",
-                    error.to_string(),
+                    TextForgeErrorCode::ValidationError(
+                        format!("not enough memory to repeat the text: {error}").into(),
+                    ),
+                    "",
+                    "",
                 )
             })?;
             block.resize(self.len as usize, 0);

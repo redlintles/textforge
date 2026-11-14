@@ -29,7 +29,7 @@ fn limited(generated: u64, iterations: u64) -> ExecutionProfile {
 
 fn is_limit(error: &textforge::utils::errors::TextForgeError) -> bool {
     matches!(error.error_code, TextForgeErrorCode::ValidationError(_))
-        && error.input.contains(".txfrc")
+        && error.error_code.message().contains(".txfrc")
 }
 
 #[test]

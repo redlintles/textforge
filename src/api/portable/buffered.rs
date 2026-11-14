@@ -152,9 +152,12 @@ impl PortableBuffer {
             .try_reserve_exact(native_size(count, "PortableBuffer.read_at")?)
             .map_err(|error| {
                 execution(TextForgeError::new(
-                    TextForgeErrorCode::GenericError(error.to_string().into()),
-                    "PortableBuffer.read_at",
-                    "allocation",
+                    TextForgeErrorCode::GenericError(
+                        format!("not enough memory to read {count} bytes from the buffer: {error}")
+                            .into(),
+                    ),
+                    "",
+                    "",
                 ))
             })?;
         bytes.resize(native_size(count, "PortableBuffer.read_at")?, 0);
@@ -170,8 +173,10 @@ impl PortableBuffer {
     pub fn write_to_file(&mut self, path: &FilePath) -> Result<u64, BindingError> {
         let file = std::fs::File::create(path.as_path()).map_err(|error| {
             execution(TextForgeError::new(
-                TextForgeErrorCode::FileOpeningError(error.to_string().into()),
-                "PortableBuffer.write_to_file",
+                TextForgeErrorCode::FileOpeningError(
+                    format!("cannot create `{}`: {error}", path.as_path().display()).into(),
+                ),
+                "",
                 path.as_path().display().to_string(),
             ))
         })?;

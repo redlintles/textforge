@@ -654,8 +654,10 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         let tokens = read_from_file(Path::new(path)).and_then(|mut tokens| {
             let file = path.canonicalize().map_err(|e| {
                 TextForgeError::new(
-                    TextForgeErrorCode::FileNotFound(e.to_string().into()),
-                    "get_pipeline_from_file",
+                    TextForgeErrorCode::FileNotFound(
+                        format!("cannot open the pipeline file `{}`: {e}", path.display()).into(),
+                    ),
+                    "processor",
                     path.display().to_string(),
                 )
             })?;
@@ -698,8 +700,13 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     fn remove_transform(&mut self, id: &str) -> Result<(), TextForgeError> {
         match self.transforms.remove(id).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::TokenNotFound("Transformation not found".into()),
-                "remove_transform",
+                TextForgeErrorCode::TokenArrayNotFound(
+                    format!(
+                        "cannot remove the pipeline `{id}`: no pipeline is registered with that id"
+                    )
+                    .into(),
+                ),
+                "processor",
                 id.to_string(),
             )
         }) {
@@ -724,8 +731,10 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             .get(id)
             .ok_or_else(|| {
                 TextForgeError::new(
-                    TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
-                    "get_transform_vec".to_string(),
+                    TextForgeErrorCode::TokenArrayNotFound(
+                        format!("no pipeline is registered with the id `{id}`").into(),
+                    ),
+                    "processor",
                     id.to_string(),
                 )
             })?
@@ -740,8 +749,10 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             .get(id)
             .ok_or_else(|| {
                 TextForgeError::new(
-                    TextForgeErrorCode::TokenArrayNotFound("Transform not found".into()),
-                    "get_transform_vec",
+                    TextForgeErrorCode::TokenArrayNotFound(
+                        format!("no pipeline is registered with the id `{id}`").into(),
+                    ),
+                    "processor",
                     id.to_string(),
                 )
             })?
@@ -844,7 +855,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         use std::fs::File;
 
         let output_path_str = output_path.to_string_lossy().into_owned();
-        let input = file_io::read_utf8_file(file_path, "processor.process_file")?;
+        let input = file_io::read_utf8_file(file_path, "processor")?;
 
         // Transfer ownership to the whole-document engine instead of cloning input.
         #[cfg(not(feature = "buffered"))]
@@ -855,16 +866,21 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         #[cfg(feature = "buffered")]
         let result = self.process_all_via_buffer(pipeline_id, &input, Some(file_path))?;
 
-        // Garante que o diretório de destino exista antes de criar o arquivo de saída,
-        // no mesmo espírito do que process_batch já faz para cada `target`.
+        // Create the output directory first, as process_batch does for each target.
         if let Some(parent) = output_path.parent()
             && !parent.as_os_str().is_empty()
             && !parent.exists()
         {
             std::fs::create_dir_all(parent).map_err(|e| {
                 TextForgeError::new(
-                    TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
-                    Cow::from("processor.process_file"),
+                    TextForgeErrorCode::FileWritingError(
+                        format!(
+                            "cannot create the output directory `{}`: {e}",
+                            parent.display()
+                        )
+                        .into(),
+                    ),
+                    Cow::from("processor"),
                     output_path_str.clone(),
                 )
             })?;
@@ -872,16 +888,20 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
         let mut out = File::create(output_path).map_err(|e| {
             TextForgeError::new(
-                TextForgeErrorCode::FileOpeningError(Cow::from(e.to_string())),
-                Cow::from("processor.process_file"),
+                TextForgeErrorCode::FileOpeningError(
+                    format!("cannot create the output file `{output_path_str}`: {e}").into(),
+                ),
+                Cow::from("processor"),
                 output_path_str.clone(),
             )
         })?;
 
         out.write_all(result.as_bytes()).map_err(|e| {
             TextForgeError::new(
-                TextForgeErrorCode::FileWritingError(Cow::from(e.to_string())),
-                Cow::from("processor.process_file"),
+                TextForgeErrorCode::FileWritingError(
+                    format!("cannot write the output file `{output_path_str}`: {e}").into(),
+                ),
+                Cow::from("processor"),
                 output_path_str.clone(),
             )
         })?;
@@ -902,21 +922,27 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                 |(origin, pipeline_id, target)| -> Result<(), TextForgeError> {
                     if !origin.exists() {
                         return Err(TextForgeError::new(
-                            TextForgeErrorCode::FileNotFound("Origin file does not exist".into()),
-                            Cow::Borrowed("process_batch"),
-                            format!("{:?}", origin),
+                            TextForgeErrorCode::FileNotFound(
+                                format!("the input file `{}` does not exist", origin.display())
+                                    .into(),
+                            ),
+                            Cow::Borrowed("processor"),
+                            origin.display().to_string(),
                         ));
                     }
 
                     if !origin.is_file() {
                         return Err(TextForgeError::new(
-                            TextForgeErrorCode::ValidationError("Origin path is not a file".into()),
-                            Cow::Borrowed("process_batch"),
-                            format!("{:?}", origin),
+                            TextForgeErrorCode::ValidationError(
+                                format!("the input path `{}` is not a file", origin.display())
+                                    .into(),
+                            ),
+                            Cow::Borrowed("processor"),
+                            origin.display().to_string(),
                         ));
                     }
 
-                    let input = file_io::read_utf8_file(origin, "process_batch")?;
+                    let input = file_io::read_utf8_file(origin, "processor")?;
                     let output =
                         self.run_transform_from(pipeline_id, Cow::Owned(input), Some(origin))?;
 
@@ -927,10 +953,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                         std::fs::create_dir_all(parent).map_err(|e| {
                             TextForgeError::new(
                                 TextForgeErrorCode::FileWritingError(
-                                    "Failed to create target directory".into(),
+                                    format!(
+                                        "cannot create the output directory `{}`: {e}",
+                                        parent.display()
+                                    )
+                                    .into(),
                                 ),
-                                Cow::Borrowed("process_batch"),
-                                format!("{:?} - {}", parent, e),
+                                Cow::Borrowed("processor"),
+                                target.display().to_string(),
                             )
                         })?;
                     }
@@ -938,10 +968,11 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                     std::fs::write(target, output.as_bytes()).map_err(|e| {
                         TextForgeError::new(
                             TextForgeErrorCode::FileWritingError(
-                                "Failed to write target file".into(),
+                                format!("cannot write the output file `{}`: {e}", target.display())
+                                    .into(),
                             ),
-                            Cow::Borrowed("process_batch"),
-                            format!("{:?} - {}", target, e),
+                            Cow::Borrowed("processor"),
+                            target.display().to_string(),
                         )
                     })?;
 
@@ -1150,10 +1181,10 @@ impl TextForgeProcessor {
                         _ => {
                             return Err(TextForgeError::new(
                                 TextForgeErrorCode::InvalidParameters(
-                                    "Invalid block debug metadata".into(),
+                                    "internal error: a `blk` instruction has no block name".into(),
                                 ),
-                                "process_all_with_debug",
-                                "block name",
+                                "blk",
+                                "",
                             ));
                         }
                     };

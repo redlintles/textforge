@@ -71,9 +71,11 @@ impl BatchPool {
             .map(Self)
             .map_err(|error| {
                 execution(TextForgeError::new(
-                    TextForgeErrorCode::GenericError(error.to_string().into()),
-                    "BatchPool",
-                    "worker initialization",
+                    TextForgeErrorCode::GenericError(
+                        format!("cannot start the batch worker threads: {error}").into(),
+                    ),
+                    "",
+                    "",
                 ))
             })
     }

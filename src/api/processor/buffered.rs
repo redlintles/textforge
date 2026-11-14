@@ -162,9 +162,11 @@ impl TextForgeProcessor {
 
 fn adapter_io(error: std::io::Error) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::FileWritingError(error.to_string().into()),
-        "buffered processor adapter",
-        "output or debug log",
+        TextForgeErrorCode::FileWritingError(
+            format!("cannot write the output or the debug log: {error}").into(),
+        ),
+        "processor",
+        "",
     )
 }
 
@@ -180,9 +182,11 @@ fn write_document(
         document.copy_to(&mut bytes)?;
         let text = String::from_utf8(bytes).map_err(|error| {
             TextForgeError::new(
-                TextForgeErrorCode::InvalidUtf8Error(error.to_string().into()),
-                "buffered debug",
-                "snapshot",
+                TextForgeErrorCode::InvalidUtf8Error(
+                    format!("internal error: a debug snapshot is not UTF-8 text: {error}").into(),
+                ),
+                "processor",
+                "",
             )
         })?;
         if color == "\x1b[31m" {
@@ -220,23 +224,30 @@ impl TextForgeProcessor {
             .map(|(origin, id, target)| {
                 if !origin.exists() {
                     return Err(TextForgeError::new(
-                        TextForgeErrorCode::FileNotFound("Origin file does not exist".into()),
-                        "process_batch",
-                        format!("{origin:?}"),
+                        TextForgeErrorCode::FileNotFound(
+                            format!("the input file `{}` does not exist", origin.display()).into(),
+                        ),
+                        "processor",
+                        origin.display().to_string(),
                     ));
                 }
                 if !origin.is_file() {
                     return Err(TextForgeError::new(
-                        TextForgeErrorCode::ValidationError("Origin path is not a file".into()),
-                        "process_batch",
-                        format!("{origin:?}"),
+                        TextForgeErrorCode::ValidationError(
+                            format!("the input path `{}` is not a file", origin.display()).into(),
+                        ),
+                        "processor",
+                        origin.display().to_string(),
                     ));
                 }
                 let file = std::fs::File::open(origin).map_err(|error| {
                     TextForgeError::new(
-                        TextForgeErrorCode::FileOpeningError("Failed to open origin file".into()),
-                        "process_batch",
-                        format!("{origin:?} - {error}"),
+                        TextForgeErrorCode::FileOpeningError(
+                            format!("cannot open the input file `{}`: {error}", origin.display())
+                                .into(),
+                        ),
+                        "processor",
+                        origin.display().to_string(),
                     )
                 })?;
                 let input =
@@ -307,8 +318,11 @@ impl TextForgeProcessor {
                         _ => {
                             return Err({
                                 TextForgeError::new(
-                                    TextForgeErrorCode::IndexOutOfRange("Invalid BLK Block".into()),
-                                    "process_all_with_debug",
+                                    TextForgeErrorCode::InvalidParameters(
+                                        "internal error: a `blk` instruction has no block name"
+                                            .into(),
+                                    ),
+                                    "blk",
                                     "",
                                 )
                             });

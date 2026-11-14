@@ -170,8 +170,10 @@ impl GlobalExecutionContext {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let rules = self.replace_maps.get(name).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::ValidationError("Replacement map not found".into()),
-                "rmape",
+                TextForgeErrorCode::ValidationError(
+                    format!("no replacement map is named `{name}`; define it with `rmapd` before `rmape`").into(),
+                ),
+                "",
                 name.to_owned(),
             )
         })?;
@@ -347,8 +349,10 @@ impl GlobalContextMethods for GlobalExecutionContext {
     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError> {
         self.blocks.remove(block_id).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::BlockNotFound("Block not found".into()),
-                "context.take_block",
+                TextForgeErrorCode::BlockNotFound(
+                    format!("no block is named `{block_id}`; define it with `blk` before running it with `cblk`").into(),
+                ),
+                "",
                 block_id.to_string(),
             )
         })
@@ -363,8 +367,10 @@ impl GlobalContextMethods for GlobalExecutionContext {
 
         let block_items = self.blocks.get(block_id).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::BlockNotFound("Block not found".into()),
-                "context.get_formatted_block_items",
+                TextForgeErrorCode::BlockNotFound(
+                    format!("no block is named `{block_id}`; define it with `blk` before running it with `cblk`").into(),
+                ),
+                "",
                 block_id.to_owned(),
             )
         })?;
@@ -424,8 +430,10 @@ impl GlobalContextMethods for GlobalExecutionContext {
     fn get_var(&self, var_id: &str) -> Result<&VarEntry, TextForgeError> {
         self.variables.get(var_id).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::VariableNotFound("Variable not found".into()),
-                "get_var",
+                TextForgeErrorCode::VariableNotFound(
+                    format!("no variable is named `{var_id}`; define it with `var` (or `mutv`) before using it").into(),
+                ),
+                "",
                 var_id.to_string(),
             )
         })
@@ -434,8 +442,13 @@ impl GlobalContextMethods for GlobalExecutionContext {
     fn get_mut_var(&mut self, var_id: &str) -> Result<&mut VarEntry, TextForgeError> {
         let v = self.variables.get_mut(var_id).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::VariableNotFound("Variable not found".into()),
-                "get_var",
+                TextForgeErrorCode::VariableNotFound(
+                    format!(
+                        "no variable is named `{var_id}`; define it with `mutv` before changing it"
+                    )
+                    .into(),
+                ),
+                "",
                 var_id.to_string(),
             )
         })?;
@@ -443,8 +456,10 @@ impl GlobalContextMethods for GlobalExecutionContext {
             Ok(v)
         } else {
             Err(TextForgeError::new(
-                TextForgeErrorCode::NonMutableVariableError("Variable is not mutable".into()),
-                "get_mut_var",
+                TextForgeErrorCode::NonMutableVariableError(
+                    format!("the variable `{var_id}` cannot be changed: it was defined with `var`; define it with `mutv` to make it mutable").into(),
+                ),
+                "",
                 var_id.to_string(),
             ))
         }

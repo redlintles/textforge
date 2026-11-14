@@ -74,10 +74,10 @@ pub(super) fn convert(specification: &InstructionSpec) -> Result<TokenWrapper, T
             if depth > maximum {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::ValidationError(
-                        "Nested instruction description depth exceeded".into(),
+                        format!("instructions are nested too deeply: at most {maximum} levels are allowed").into(),
                     ),
                     specification.name.clone(),
-                    format!("depth={depth}, max={maximum}"),
+                    "",
                 ));
             }
             pending.push((specification, depth, true));
@@ -104,10 +104,10 @@ pub(super) fn convert(specification: &InstructionSpec) -> Result<TokenWrapper, T
             _ => {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::GenericError(
-                        "Registry did not return an instruction".into(),
+                        "internal error: the instruction table returned no instruction".into(),
                     ),
                     specification.name.clone(),
-                    "portable conversion",
+                    "",
                 ));
             }
         };
@@ -121,7 +121,11 @@ pub(super) fn convert(specification: &InstructionSpec) -> Result<TokenWrapper, T
                     usize::try_from(*value).map_err(|_| {
                         TextForgeError::new(
                             TextForgeErrorCode::TryIntoFailError(
-                                "Number exceeds the target's usize range".into(),
+                                format!(
+                                    "the number {value} is too large for this machine (maximum {})",
+                                    usize::MAX
+                                )
+                                .into(),
                             ),
                             specification.name.clone(),
                             value.to_string(),
@@ -132,9 +136,11 @@ pub(super) fn convert(specification: &InstructionSpec) -> Result<TokenWrapper, T
                 Argument::Instruction(_) => ValType::Literal(TextForgeParamTypes::Token(
                     converted.pop().ok_or_else(|| {
                         TextForgeError::new(
-                            TextForgeErrorCode::ValidationError("Missing converted child".into()),
+                            TextForgeErrorCode::ValidationError(
+                                "internal error: a nested instruction was not converted".into(),
+                            ),
                             specification.name.clone(),
-                            "portable conversion",
+                            "",
                         )
                     })?,
                 )),
@@ -145,8 +151,10 @@ pub(super) fn convert(specification: &InstructionSpec) -> Result<TokenWrapper, T
     }
     converted.pop().ok_or_else(|| {
         TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Missing converted instruction".into()),
-            "portable conversion",
+            TextForgeErrorCode::ValidationError(
+                "internal error: the instruction was not converted".into(),
+            ),
+            "",
             "",
         )
     })
@@ -190,9 +198,12 @@ pub(super) fn describe(root: &TokenWrapper) -> Result<InstructionSpec, TextForge
                 ValType::Literal(TextForgeParamTypes::Usize(number)) => {
                     Argument::Number(u64::try_from(*number).map_err(|error| {
                         TextForgeError::new(
-                            TextForgeErrorCode::TryIntoFailError(error.to_string().into()),
+                            TextForgeErrorCode::TryIntoFailError(
+                                format!("the number {number} does not fit in 64 bits: {error}")
+                                    .into(),
+                            ),
                             token.get_string_repr(),
-                            "numeric snapshot",
+                            "",
                         )
                     })?)
                 }
@@ -200,10 +211,10 @@ pub(super) fn describe(root: &TokenWrapper) -> Result<InstructionSpec, TextForge
                     Argument::Instruction(Box::new(output.pop().ok_or_else(|| {
                         TextForgeError::new(
                             TextForgeErrorCode::ValidationError(
-                                "Missing instruction snapshot".into(),
+                                "internal error: a nested instruction was not described".into(),
                             ),
                             token.get_string_repr(),
-                            "portable snapshot",
+                            "",
                         )
                     })?))
                 }
@@ -216,8 +227,10 @@ pub(super) fn describe(root: &TokenWrapper) -> Result<InstructionSpec, TextForge
     }
     output.pop().ok_or_else(|| {
         TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Missing root snapshot".into()),
-            "portable snapshot",
+            TextForgeErrorCode::ValidationError(
+                "internal error: the instruction was not described".into(),
+            ),
+            "",
             "",
         )
     })
