@@ -11,7 +11,7 @@ use crate::{
     utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
-/// Apf - Append File
+/// `apf {file};` — Append the contents of `file`.
 ///
 /// Appends the contents of a UTF-8 file to the end of the current text. A
 /// missing file or invalid UTF-8 is an error. The path may use `{{ }}`/`[[ ]]`

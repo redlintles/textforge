@@ -13,7 +13,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// TUCC - To uppercase Chunk
+/// `tucc {start} {end};` — Uppercase the characters `start..=end`.
 ///
 /// Lowercases every character from a chunk delimited by `start_index` and `end_index`(inclusive) in `input`
 ///

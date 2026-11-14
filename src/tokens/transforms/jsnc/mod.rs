@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// JSNC - Join to Snake Case
+/// `jsnc;` — Join the words as snake_case.
 ///
 /// If `input` is a string whose words are separated by spaces, join `input` as a snake_case lowercased string
 /// For conversion between the screaming and normal versions of this case style, use the tokens TLA(To Lowercase All) and TUA(To Uppercase All) together with this one.

@@ -16,6 +16,7 @@ use crate::{
 
 #[cfg(feature = "test_access")]
 pub mod test;
+/// `val {name} = {value};` — Define an immutable variable.
 #[derive(Clone)]
 pub struct Val {
     val_name: String,

@@ -19,7 +19,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Eval - Parses logical and
+/// `eval {expression} in {name};` — Evaluate an expression into a variable.
 #[derive(Clone, Default)]
 pub struct Eval {
     expr: String,

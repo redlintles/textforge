@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-/// Wtf - Write to File
+/// `wtf {file};` — Write the text to `file` and keep it unchanged.
 ///
 /// Writes the current text to `path` and returns it **unchanged**, so it can be
 /// used in the middle of a pipeline. The file is created or replaced

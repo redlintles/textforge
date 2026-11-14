@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// JPSC - Join to PascalCase
+/// `jpsc;` — Join the words as PascalCase.
 ///
 /// If `input` is a string whose words are separated by spaces, join `input` as a PascalCase string
 ///

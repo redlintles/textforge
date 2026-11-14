@@ -13,7 +13,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// URLD - URL Decode
+/// `urld;` — URL-decode.
 ///
 /// Decodes `input` from the URL Encoding Format
 ///

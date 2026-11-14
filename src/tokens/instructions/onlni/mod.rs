@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Onlni - On Line Interval
+/// `onlni {start} {end} apply {instruction};` — Run `instruction` on lines `start..=end` as one section.
 ///
 /// Applies one instruction to lines `start..=end` (base 1, inclusive) as a
 /// single block. The instruction receives the block with its inner terminators

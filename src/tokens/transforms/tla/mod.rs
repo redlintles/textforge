@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// TLA - To Lowercase All
+/// `tla;` — Lowercase everything.
 ///
 /// Lowercases every character from `input`
 ///

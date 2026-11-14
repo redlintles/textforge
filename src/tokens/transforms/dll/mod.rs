@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// DLL - Delete Last
+/// `dll;` — Delete the last character.
 ///
 /// Deletes the last character of `input`
 ///

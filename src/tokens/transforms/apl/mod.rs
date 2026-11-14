@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// APL — Append one logical line, preserving the final-terminator convention.
+/// `apl {text};` — Append a line.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

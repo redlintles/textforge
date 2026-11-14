@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// DLNA — Delete lines after the given line, retaining that line and its terminator.
+/// `dlna {line};` — Delete the lines after `line`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

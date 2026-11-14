@@ -14,7 +14,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// TLCS - To Lowercase Single
+/// `tlcs {index};` — Lowercase the character at `index`.
 ///
 /// Lowercases a single character in `input` identified by `index`
 ///

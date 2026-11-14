@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-/// Ppjn - Pipeline Join
+/// `ppjn {pipeline};` — Run the pipeline in another file on the text.
 ///
 /// Runs a whole pipeline from another file on the current text and continues
 /// with its result, like a subshell: text in, text out. The joined pipeline

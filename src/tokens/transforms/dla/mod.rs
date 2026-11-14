@@ -10,7 +10,7 @@ use crate::utils::validations::{check_index_against_input, check_vec_len};
 
 use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 
-/// Dla - Delete After
+/// `dla {index};` — Delete every character after `index`.
 /// Delete all characters after `index` in the specified `input`
 ///
 /// It will throw an `TextForgeError` if index does not exists in the current `input`

@@ -11,7 +11,7 @@ use crate::{
     utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
-/// Ppf - Prepend File
+/// `ppf {file};` — Prepend the contents of `file`.
 ///
 /// Inserts the contents of a UTF-8 file at the beginning of the current text,
 /// the counterpart of [`Apf`](super::apf::Apf). A missing file or invalid

@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// DLNI — Delete an inclusive interval of lines and retain the rest.
+/// `dlni {start} {end};` — Delete lines `start..=end`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

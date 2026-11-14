@@ -12,7 +12,7 @@ use crate::{
         validations::{check_index_against_words, check_vec_len},
     },
 };
-/// TUCW - To Uppercase Word
+/// `tucw {index};` — Uppercase word `index`.
 ///
 /// Uppercase a single word of string
 ///

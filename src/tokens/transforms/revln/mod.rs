@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// REVLN — Reverse line contents while preserving terminators at their original positions.
+/// `revln;` — Reverse the order of the lines.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

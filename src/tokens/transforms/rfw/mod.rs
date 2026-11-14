@@ -15,7 +15,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// RFW - Replace First With
+/// `rfw {pattern} {text};` — Replace the first match.
 ///
 /// Replace the first ocurrency of `pattern` in `input` with `text_to_replace`
 ///

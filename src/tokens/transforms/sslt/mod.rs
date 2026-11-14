@@ -12,7 +12,7 @@ use crate::utils::validations::check_vec_len;
 
 use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 
-/// SSLT - Split Select
+/// `sslt {pattern} {index};` — Split by `pattern` and keep piece `index`.
 ///
 /// Splits `input` by `pattern and return `index` of the resulting vec,
 /// *discarding* the rest of the text in the process.

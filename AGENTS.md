@@ -296,6 +296,7 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 5. Update `src/tokens/mod.rs` to include the new instruction. The project handles the rest.
 6. Update `build_all_tokens_pipeline_safe` in `src/utils/test_helpers.rs` to include the new instruction.
 7. Add a case to `tests/data/allocations/cases.json` (the allocation parity test requires one per registered instruction).
+8. Add the instruction to `CATALOG` in `scripts/instruction_index.py` (syntax and a one-line effect) and run `python3 scripts/instruction_index.py`: it writes the instruction index of the rustdoc (`src/tokens/mod.rs`) and of `README.md`, the module lists and the first doc line of each instruction struct. `tests/instruction_index.rs` fails when an instruction is missing.
 
 ### Run an audit
 

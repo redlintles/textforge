@@ -11,7 +11,7 @@ use crate::parser::params::TextForgeParamTypes;
 use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 use crate::utils::validations::check_vec_len;
 
-/// Jsonu - Json Unescape
+/// `jsonu;` — Unescape a JSON string.
 ///
 /// Unescapes JSON Special Characters in `input` with serde_json::from_str
 ///

@@ -13,7 +13,7 @@ use crate::{
     utils::validations::{check_chunk_bound_indexes, check_index_against_words},
 };
 
-/// Token `Ctr` — Capitalize Range
+/// `ctr {start} {end};` — Capitalize words `start..=end`.
 ///
 /// Capitalizes a range of words delimited by `start_index` and `end_index`(inclusive)
 ///

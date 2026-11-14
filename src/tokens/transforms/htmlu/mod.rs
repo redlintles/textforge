@@ -13,7 +13,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// HTMLU - HTML Unescape
+/// `htmlu;` — Unescape HTML entities.
 ///
 /// Unescapes Special HTML Entities in `input` to their corresponding characters
 /// Used when some HTML text is gonna be processed as a normal string

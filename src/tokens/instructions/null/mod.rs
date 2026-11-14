@@ -10,7 +10,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Null - Does nothing
+/// `null;` — Do nothing.
 #[derive(Clone, Default)]
 pub struct Null {
     params: Vec<TextForgeParamTypes>,

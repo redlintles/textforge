@@ -11,6 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
+/// `tua;` — Uppercase everything.
 #[derive(Clone, Default)]
 pub struct Tua {
     params: Vec<TextForgeParamTypes>,

@@ -15,7 +15,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// RAW - Replace All With
+/// `raw {pattern} {text};` — Replace every match of `pattern` with `text`.
 ///
 /// Replace all ocurrences of `pattern` in `input` with `text_to_replace`
 ///

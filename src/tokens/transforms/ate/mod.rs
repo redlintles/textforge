@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// Token `Ate` — Add to End
+/// `ate {text};` — Add `text` to the end.
 ///
 /// Appends `text` to the end of `input`
 ///

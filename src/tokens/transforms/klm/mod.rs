@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// KLM — Keep lines whose content matches a regular expression.
+/// `klm {pattern};` — Keep the lines that match `pattern`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

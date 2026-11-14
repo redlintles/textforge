@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// TBS - Trim both sides
+/// `tbs;` — Trim whitespace on both sides.
 ///
 /// Trim Both Sides of `input`, removing all spaces from both the beginning and the end
 ///

@@ -11,7 +11,7 @@ use crate::utils::errors::TextForgeError;
 use crate::parser::params::TextForgeParamTypes;
 use crate::utils::validations::check_vec_len;
 
-/// TLS - Trim left sides
+/// `tls;` — Trim whitespace on the left.
 ///
 /// Trim the left Side of `input`, removing all spaces from the beginning
 ///

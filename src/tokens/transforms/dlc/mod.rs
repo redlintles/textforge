@@ -10,7 +10,7 @@ use crate::{tokens::InstructionMethods, utils::validations::check_chunk_bound_in
 use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 
 use crate::parser::params::TextForgeParamTypes;
-/// Dlc - Delete Chunk
+/// `dlc {start} {end};` — Delete the characters `start..=end`.
 ///
 /// Deletes an specific subslice of `input` delimited by `start_index` and `end_index`(inclusive)
 ///

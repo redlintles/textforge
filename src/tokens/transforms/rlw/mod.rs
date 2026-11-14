@@ -15,7 +15,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// RLW - Replace Last With
+/// `rlw {pattern} {text};` — Replace the last match.
 ///
 /// Replace the last ocurrency of `pattern` in `input` with `text_to_replace`
 ///

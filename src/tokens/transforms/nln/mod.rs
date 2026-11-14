@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// NLN — Remove all recognized line terminators without inserting spaces.
+/// `nln;` — Remove every line terminator.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// RLN — Replace a line content, preserving its terminator.
+/// `rln {line} {text};` — Replace the content of `line`, keeping its terminator.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

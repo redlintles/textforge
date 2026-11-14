@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// DLM — Delete lines whose content matches a regular expression.
+/// `dlm {pattern};` — Delete the lines that match `pattern`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

@@ -10,7 +10,7 @@ use crate::parser::params::TextForgeParamTypes;
 use crate::utils::errors::TextForgeError;
 use crate::utils::validations::check_vec_len;
 
-/// SPLC - Split Characters
+/// `splc;` — Separate every character with a space.
 ///
 /// Split `input` characters in a result whose chars are separed by spaces
 ///

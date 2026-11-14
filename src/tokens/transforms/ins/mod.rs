@@ -11,7 +11,7 @@ use crate::{
     tokens::InstructionMethods,
     utils::errors::{TextForgeError, TextForgeErrorCode},
 };
-/// Ins - Insert
+/// `ins {index} {text};` — Insert `text` after the character at `index`.
 ///
 /// Inserts `text` after `index` position in `input`
 ///

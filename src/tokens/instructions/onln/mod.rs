@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Onln - On Line
+/// `onln {line} apply {instruction};` — Run `instruction` on one line only.
 ///
 /// Applies one instruction to line `line` (base 1) only. The instruction
 /// receives the line content without its terminator, so every index it uses is

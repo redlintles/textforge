@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Onck - On Chunk
+/// `onck {start} {end} apply {instruction};` — Run `instruction` on the characters `start..=end` only.
 ///
 /// Applies one instruction to characters `start..=end` (base 0, inclusive,
 /// Unicode scalars) only. The instruction receives that slice, so every index

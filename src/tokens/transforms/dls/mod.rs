@@ -14,7 +14,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// DLS - Delete Single
+/// `dls {index};` — Delete the character at `index`.
 ///
 /// Delete's a single character specified by `index` in `input`
 ///

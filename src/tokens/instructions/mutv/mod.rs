@@ -15,6 +15,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
+/// `mutv {name} = {value};` — Change a mutable variable.
 #[derive(Clone)]
 pub struct Mutv {
     val_name: String,

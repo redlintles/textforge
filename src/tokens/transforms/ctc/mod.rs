@@ -9,7 +9,7 @@ use crate::utils::validations::check_vec_len;
 use crate::{tokens::InstructionMethods, utils::validations::check_chunk_bound_indexes};
 
 use crate::parser::params::TextForgeParamTypes;
-/// Token `Ctc` — Capitalize Chunk
+/// `ctc {start} {end};` — Capitalize the words in the characters `start..=end`.
 ///
 /// Capitalizes every word in a character slice of the input, defined by `start_index` and `end_index` (inclusive).
 ///

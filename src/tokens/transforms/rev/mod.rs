@@ -9,7 +9,7 @@ use crate::parser::params::TextForgeParamTypes;
 use crate::utils::validations::check_vec_len;
 use crate::{tokens::InstructionMethods, utils::errors::TextForgeError};
 
-/// Rev - Reverse
+/// `rev;` — Reverse the characters.
 ///
 /// Reverses `input` character order
 ///

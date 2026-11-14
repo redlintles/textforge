@@ -10,7 +10,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// End - Does nothing
+/// `end;` — Stop the pipeline (or the current block or loop).
 #[derive(Clone, Default)]
 pub struct End {
     params: Vec<TextForgeParamTypes>,

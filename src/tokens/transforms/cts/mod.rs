@@ -13,7 +13,7 @@ use crate::utils::errors::TextForgeError;
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// Token `Cts` — Capitalize Single
+/// `cts {index};` — Capitalize word `index`.
 ///
 /// Capitalizes a single word at the given index `i` within the input string.
 ///

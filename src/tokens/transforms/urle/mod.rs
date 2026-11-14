@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// URLE - URL Encode
+/// `urle;` — URL-encode.
 ///
 /// Encodes `input` to the URL Encoding Format
 ///

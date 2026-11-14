@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// DLE — Delete empty lines; lines containing whitespace are retained.
+/// `dle;` — Delete empty lines.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

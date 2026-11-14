@@ -16,7 +16,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// RLW - Replace Last With
+/// `rnw {pattern} {text} {n};` — Replace the `n`th match.
 ///
 /// Replace the `nth`` ocurrency of `pattern` in `input` with `text_to_replace`
 ///

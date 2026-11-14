@@ -14,6 +14,7 @@ use crate::{
 
 #[cfg(feature = "test_access")]
 pub mod test;
+/// `blk {name} assoc {instruction};` — Add an instruction to block `name`.
 #[derive(Clone)]
 pub struct Blk {
     block_name: String,

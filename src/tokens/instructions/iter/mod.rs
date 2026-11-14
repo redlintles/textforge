@@ -17,7 +17,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Iter - Iterate
+/// `iter {times} times {instruction};` — Run `instruction` `times` times (`__COUNTER__` counts from 0).
 ///
 /// Applies `inner` `times` times. During iteration `i` (starting at zero) the
 /// body can read the index as `__COUNTER__` inside `[[ ]]` expressions. Nested

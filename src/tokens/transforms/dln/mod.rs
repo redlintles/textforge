@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// DLN — Delete one line, including its terminator.
+/// `dln {line};` — Delete `line`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

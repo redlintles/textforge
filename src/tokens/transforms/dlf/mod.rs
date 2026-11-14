@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// DLF - Delete First
+/// `dlf;` — Delete the first character.
 ///
 /// Deletes the first character of `input`
 ///

@@ -10,7 +10,7 @@ use crate::{tokens::InstructionMethods, utils::validations::check_chunk_bound_in
 
 use crate::utils::errors::TextForgeError;
 
-/// Slt - Select
+/// `slt {start} {end};` — Keep only the characters `start..=end`.
 ///
 /// Selects a subslice of `input` delimited by `start_index` and `end_index`(inclusive) discarding the rest in the process
 /// If end_index is bigger than the length of the string, the subslice will include up to the last character of `input`

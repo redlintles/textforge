@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// Token `Clw` — Capitalize Last Word
+/// `clw;` — Capitalize the last word.
 ///
 /// Capitalizes the last word of `input`
 ///

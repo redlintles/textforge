@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// TLS - Trim left sides
+/// `trs;` — Trim whitespace on the right.
 ///
 /// Trim the right side of `input`, removing all spaces from the end
 ///

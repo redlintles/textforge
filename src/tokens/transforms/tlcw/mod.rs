@@ -11,7 +11,7 @@ use crate::{
     utils::{errors::TextForgeError, validations::check_index_against_words},
 };
 
-/// TLCW - To Lowercase Word
+/// `tlcw {index};` — Lowercase word `index`.
 ///
 /// Lowercase a single word of string
 ///

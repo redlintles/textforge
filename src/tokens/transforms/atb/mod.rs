@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// Token `Atb` — Add to Beginning
+/// `atb {text};` — Add `text` to the beginning.
 ///
 /// Adds `text` to the beginning of `input`
 ///

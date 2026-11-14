@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// JOINLN — Join line contents with a separator, discarding the final terminator.
+/// `joinln {separator};` — Join the lines with `separator`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

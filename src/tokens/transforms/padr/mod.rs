@@ -11,7 +11,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// PADR - Pad Right
+/// `padr {text} {length};` — Pad on the right with `text` up to `length` characters.
 ///
 /// Repeats `text` characters until `max_len` is reached, and then insert the result at the end of `input`
 ///

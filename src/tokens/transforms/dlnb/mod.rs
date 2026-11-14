@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// DLNB — Delete lines before the given line, retaining that line.
+/// `dlnb {line};` — Delete the lines before `line`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

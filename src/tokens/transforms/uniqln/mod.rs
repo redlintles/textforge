@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// UNIQLN — Keep the first occurrence of each exact line content, in original order.
+/// `uniqln;` — Keep the first occurrence of each line.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

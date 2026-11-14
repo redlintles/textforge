@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// SLNC — Select an inclusive line interval and discard the remaining lines.
+/// `slnc {start} {end};` — Keep only lines `start..=end`.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

@@ -17,6 +17,7 @@ use crate::{
 
 #[cfg(feature = "test_access")]
 pub mod test;
+/// `cblk {name};` — Run the instructions of block `name`.
 #[derive(Clone)]
 pub struct Cblk {
     block_name: String,

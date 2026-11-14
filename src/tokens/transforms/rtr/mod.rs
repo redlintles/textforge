@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// RTR - Rotate Right
+/// `rtr {times};` — Rotate the characters `times` positions to the right.
 ///
 /// Rotates `input` to the right `n` times
 ///

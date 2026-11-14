@@ -11,7 +11,7 @@ use crate::parser::params::TextForgeParamTypes;
 use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 use crate::utils::validations::check_vec_len;
 
-/// Jsone - Json Escape
+/// `jsone;` — Escape as a JSON string.
 ///
 /// Escapes JSON Special Characters in `input` with serde_json::to_string
 ///

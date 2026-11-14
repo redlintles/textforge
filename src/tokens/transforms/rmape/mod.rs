@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// RMAPE — apply a named replacement map without cascading.
+/// `rmape {map};` — Apply a replacement map defined with `rmapd`, without cascading.
 ///
 /// ```
 /// use textforge::tokens::transforms::rmape::Rmape;

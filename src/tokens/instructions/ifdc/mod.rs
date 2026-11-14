@@ -15,7 +15,7 @@ use crate::utils::errors::TextForgeError;
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// Ifdc - If Do Contains
+/// `ifdc {text} do {instruction};` — Run `instruction` if the text contains `text`.
 ///
 /// if `input` contains `text`, the `inner` token will be executed, otherwise `input` is returned with no changes
 ///

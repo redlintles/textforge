@@ -14,7 +14,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// TLCC - To Lowercase Chunk
+/// `tlcc {start} {end};` — Lowercase the characters `start..=end`.
 ///
 /// Lowercases every character from a chunk delimited by `start_index` and `end_index`(inclusive) in `input`
 ///

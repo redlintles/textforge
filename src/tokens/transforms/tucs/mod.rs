@@ -14,7 +14,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// TUCS - To Uppercase Single
+/// `tucs {index};` — Uppercase the character at `index`.
 ///
 /// Uppercases a single character in `input` identified by `index`
 ///

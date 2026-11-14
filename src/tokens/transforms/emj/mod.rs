@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// EMJ - Extract Matches Joined
+/// `emj {pattern} {separator};` — Keep only the matches, joined with `separator`.
 ///
 /// Finds every non-overlapping match of `pattern` in `input`, discards everything
 /// that did not match, and joins the surviving matches (in the order they appear)

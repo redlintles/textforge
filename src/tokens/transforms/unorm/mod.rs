@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-/// UNORM — normalize a complete Unicode string to NFC, NFD, NFKC or NFKD.
+/// `unorm {mode};` — Normalize Unicode to `nfc`, `nfd`, `nfkc` or `nfkd`.
 ///
 /// Mode names are lowercase and validated before execution. Unresolved parameter
 /// expressions can be retained for pipeline construction and serialization. Already-normalized

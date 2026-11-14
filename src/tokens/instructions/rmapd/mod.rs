@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// RMAPD — define or update a named replacement rule.
+/// `rmapd {map} add {pattern} {text};` — Add a rule to replacement map `map`.
 ///
 /// ```
 /// use textforge::tokens::instructions::rmapd::Rmapd;

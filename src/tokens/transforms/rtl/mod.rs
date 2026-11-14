@@ -10,7 +10,7 @@ use crate::utils::validations::check_vec_len;
 
 use crate::utils::errors::TextForgeError;
 
-/// RTL - Rotate Left
+/// `rtl {times};` — Rotate the characters `times` positions to the left.
 ///
 /// Rotates `input` to the left `n` times
 ///

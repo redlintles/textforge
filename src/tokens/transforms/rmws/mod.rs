@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// RMWS - Remove Whitespace
+/// `rmws;` — Remove all whitespace.
 ///
 /// Removes all whitespaces in `input`
 ///

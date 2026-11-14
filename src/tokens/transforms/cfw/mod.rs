@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::parser::params::TextForgeParamTypes;
-/// Token `Cfw` — Capitalize First Word
+/// `cfw;` — Capitalize the first word.
 ///
 /// Capitalizes the first word of `input`
 ///

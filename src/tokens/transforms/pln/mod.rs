@@ -6,7 +6,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// PLN — Prepend one logical line.
+/// `pln {text};` — Prepend a line.
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///

@@ -16,7 +16,7 @@ use crate::{
 #[cfg(feature = "test_access")]
 pub mod test;
 
-/// Rmp - Does nothing
+/// `rmp {pattern};` — Remove every match of `pattern`.
 #[derive(Clone, Debug)]
 pub struct Rmp {
     pattern: Regex,

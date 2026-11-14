@@ -11,7 +11,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// JCMC - Join to Camel Case
+/// `jcmc;` — Join the words as camelCase.
 ///
 /// If `input` is a string whose words are separated by spaces, join `input` as a camelCase string
 ///

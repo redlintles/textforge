@@ -14,7 +14,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// RPT - Repeat
+/// `rpt {times};` — Repeat the text `times` times.
 ///
 /// Repeats `input` n `times`
 ///

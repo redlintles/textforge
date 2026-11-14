@@ -12,7 +12,7 @@ use crate::parser::params::TextForgeParamTypes;
 use crate::tokens::InstructionMethods;
 use crate::utils::validations::check_vec_len;
 
-/// RCW - Replace Count With
+/// `rcw {pattern} {text} {count};` — Replace the first `count` matches.
 ///
 /// Replace `count` ocurrences of `pattern` in `input` with `text_to_replace`
 ///

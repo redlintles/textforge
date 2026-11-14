@@ -13,7 +13,7 @@ use crate::{
 
 use crate::parser::params::TextForgeParamTypes;
 
-/// HTMLE - HTML Escape
+/// `htmle;` — Escape HTML special characters.
 ///
 /// Escapes Special HTML Characters in `input` to HTML Entities
 /// So they can be rendered correctly later

@@ -10,7 +10,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-/// INL — Insert before a line; line count plus one appends a line.
+/// `inl {line} {text};` — Insert a line before `line` (one past the last appends).
 ///
 /// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
 ///
