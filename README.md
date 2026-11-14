@@ -116,6 +116,13 @@ assert_eq!(result, "HELLO RUST");
 
 ### From a `.textforge` file (CLI)
 
+The `txf` program is behind the `cli` feature, so library users do not pull in
+its dependencies:
+
+```bash
+cargo install textforge --features cli            # add bytecode for .textforgebc
+```
+
 ```bash
 txf --file pipeline.textforge --input input.txt --output output.txt
 ```
@@ -262,7 +269,8 @@ Paths accept `{{ }}`/`[[ ]]` interpolation. See [file instructions](docs/file-in
 | `bytecode` | Enables the `.textforgebc` binary protocol (library and CLI) |
 | `watchers` | Enables pipeline observability probes and JSON execution reports |
 | `buffered` | Enables buffered, spool-backed processing (`process_*_buffered`); pulls in `tempfile` |
-| `test_access` | Enables test helpers (`tempfile`) and pulls in `bytecode`/`watchers`/`buffered` |
+| `cli` | Builds the `txf` command-line program and `utils::cli`; pulls in `clap` |
+| `test_access` | Enables test helpers (`tempfile`) and pulls in `bytecode`/`watchers`/`buffered`/`cli` |
 
 ---
 

@@ -1,4 +1,5 @@
 pub mod apply;
+#[cfg(feature = "cli")]
 pub mod cli;
 pub mod errors;
 

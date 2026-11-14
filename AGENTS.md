@@ -273,7 +273,8 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 | `watchers` | Enables the reporting mechanism. |
 | `bytecode` | Enables bytecode compilation code. |
 | `buffered` | Enables buffered (spool-backed) processing; pulls in `tempfile`. |
-| `test_access` | Enables **all** features (bytecode + watchers + buffered + test helpers). **Use only in tests.** |
+| `cli` | Builds the `txf` binary (`required-features`) and exposes `utils::cli`; pulls in `clap`. |
+| `test_access` | Enables **all** features (bytecode + watchers + buffered + cli + test helpers). **Use only in tests.** |
 
 ---
 
@@ -342,7 +343,8 @@ cargo test                              # includes doctests
 cargo test --features bytecode
 cargo test --features watchers
 cargo test --features buffered
-cargo test --features test_access       # enables bytecode + watchers + buffered + test helpers
+cargo test --features cli                # builds the txf binary
+cargo test --features test_access       # enables bytecode + watchers + buffered + cli + test helpers
 ```
 
 Then review the documentation as described in [section 18](#18-keeping-documentation-current).
@@ -374,7 +376,7 @@ Ask a human before doing any of the following:
 | `html-escape` | `htmle` and `htmlu` transforms. |
 | `uuid` | Identifying transforms in the processor. |
 | `colored` | Debug-mode output. |
-| `clap` | CLI construction. |
+| `clap` | Optional; CLI construction (`cli` feature). |
 | `rayon` | Parallelism in `process_batch`. |
 | `evalexpr` | Resolving math expressions in `[[ ... ]]` interpolation. |
 | `unicode-normalization` | The `unorm` transform (NFC, NFD, NFKC, NFKD). |
