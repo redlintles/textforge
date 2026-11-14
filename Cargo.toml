@@ -7,6 +7,19 @@ license-file = "LICENSE"
 repository = "https://github.com/redlintles/textforge"
 documentation = "https://docs.rs/textforge"
 readme = "README.md"
+rust-version = "1.89"
+keywords = ["text", "dsl", "pipeline", "text-processing", "transform"]
+categories = ["text-processing", "command-line-utilities"]
+# Only what builds the crate and documents it: benchmarks, data sets, scripts
+# and bindings stay in the repository.
+include = [
+  "/src/**/*.rs",
+  "!/src/bindings/**",
+  "/docs/txfrc.schema.json",
+  "/README.md",
+  "/changelog.md",
+  "/LICENSE",
+]
 
 [dependencies]
 unicode-normalization = "0.1.26"
@@ -62,3 +75,6 @@ resolver = "3"
 [[example]]
 name = "allocation_benchmark"
 required-features = ["test_access"]
+
+[package.metadata.docs.rs]
+features = ["bytecode", "watchers", "buffered", "cli"]

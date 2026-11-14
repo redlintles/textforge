@@ -29,6 +29,7 @@ use crate::{
 
 /// Tipos resolvidos (sem variáveis pendentes)
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum TextForgeParamTypes {
     String(String),
     Usize(usize),

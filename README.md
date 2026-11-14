@@ -86,7 +86,7 @@ cblk block_1;
 
 ### As a Rust library
 
-Add it from crates.io:
+Add it from crates.io (Rust 1.89 or newer):
 
 ```toml
 [dependencies]
