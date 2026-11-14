@@ -36,7 +36,7 @@ pub(crate) fn invalid(name: &'static str, message: &str, input: &str) -> TextFor
     TextForgeError::new(
         TextForgeErrorCode::InvalidParameters(message.to_owned().into()),
         name,
-        input.to_owned(),
+        crate::utils::errors::input_excerpt(input),
     )
 }
 
@@ -52,7 +52,7 @@ pub(crate) fn check_line(
                 format!("Line {line} does not exist; expected 1..={count}").into(),
             ),
             name,
-            input.to_owned(),
+            crate::utils::errors::input_excerpt(input),
         ));
     }
     Ok(())
@@ -93,5 +93,42 @@ mod test {
                 ("z", "")
             ]
         );
+    }
+}
+
+#[cfg(test)]
+mod excerpt_test {
+    use crate::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+
+    /// Index errors keep the beginning of a large document, not all of it.
+    #[test]
+    fn index_errors_on_large_documents_keep_an_excerpt() {
+        let document = "line\n".repeat(200_000);
+        for step in [
+            "dlni 5 1;",
+            "onln 300000 apply tua;",
+            "dls 2000000;",
+            "ins 2000000 x;",
+        ] {
+            let mut processor = TextForgeProcessor::new();
+            let token = crate::text::reader::read_from_text(step).unwrap();
+            let id = processor.add_transform(vec![token]);
+            let error = processor.process_all(&id, &document).unwrap_err();
+            assert!(
+                error.input.len() < 200,
+                "{step}: {} bytes",
+                error.input.len()
+            );
+            assert!(
+                error.input.ends_with("… [1000000 bytes]"),
+                "{step}: {}",
+                error.input
+            );
+            assert!(
+                error.to_string().len() < 1000,
+                "{step}: {}",
+                &error.to_string()[..300]
+            );
+        }
     }
 }

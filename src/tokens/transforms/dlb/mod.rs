@@ -74,7 +74,7 @@ impl InstructionMethods for Dlb {
                 .into(),
             ),
             self.to_textforge_line(),
-            input.to_string(),
+            crate::utils::errors::input_excerpt(&input),
         ))
     }
     fn get_string_repr(&self) -> &'static str {

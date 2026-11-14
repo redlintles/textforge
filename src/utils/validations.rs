@@ -92,7 +92,7 @@ pub fn check_chunk_bound_indexes(
                 "Start index does not exist in current string!".into(),
             ),
             Cow::Borrowed("check_chunk_bound_indexes"),
-            text.to_string(),
+            crate::utils::errors::input_excerpt(text),
         ));
     }
 
@@ -117,7 +117,7 @@ pub fn check_chunk_bound_indexes(
                 "End index does not exist in current string!".into(),
             ),
             Cow::Borrowed("check_chunk_bound_indexes"),
-            text.to_string(),
+            crate::utils::errors::input_excerpt(text),
         ));
     }
 
@@ -132,13 +132,13 @@ pub fn check_index_against_input(index: usize, input: &str) -> Result<(), TextFo
                 format!(
                     "Index {} does not exist for {}, only indexes between 0-{} are allowed!",
                     index,
-                    input,
+                    crate::utils::errors::input_excerpt(input),
                     character_count.saturating_sub(1)
                 )
                 .into(),
             ),
             Cow::Borrowed("check_index_against_input"),
-            input.to_string(),
+            crate::utils::errors::input_excerpt(input),
         ));
     }
 
@@ -152,7 +152,7 @@ pub fn check_index_against_words(index: usize, input: &str) -> Result<(), TextFo
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange("Input has no words".into()),
             Cow::Borrowed("check_index_against_words"),
-            input.to_string(),
+            crate::utils::errors::input_excerpt(input),
         ));
     }
 
@@ -167,7 +167,7 @@ pub fn check_index_against_words(index: usize, input: &str) -> Result<(), TextFo
                     ).into()
                 ),
                 Cow::Borrowed("check_index_against_words"),
-                input.to_string()
+                crate::utils::errors::input_excerpt(input)
             )
         );
     }

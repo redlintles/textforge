@@ -58,7 +58,7 @@ impl InstructionMethods for Jsonu {
                 TextForgeError::new(
                     TextForgeErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
                     "serde_json::from_str",
-                    input.to_string(),
+                    crate::utils::errors::input_excerpt(&input),
                 )
             })?;
             let start = result.as_ptr() as usize - input.as_ptr() as usize;
@@ -69,7 +69,7 @@ impl InstructionMethods for Jsonu {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
                 "serde_json::from_str",
-                input.to_string(),
+                crate::utils::errors::input_excerpt(&input),
             )
         })?;
         Ok(result.into())

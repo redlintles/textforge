@@ -112,12 +112,12 @@ pub(crate) fn insert_after_char<'a>(
                 TextForgeErrorCode::IndexOutOfRange(
                     format!(
                         "Index does not exist in current string, for the input {}, only indexes between 0-{} are allowed",
-                        input,
+                        crate::utils::errors::input_excerpt(&input),
                         input.chars().count().wrapping_sub(1)
                     ).into()
                 ),
                 instruction(),
-                input.to_string()
+                crate::utils::errors::input_excerpt(&input)
             )
         );
     }

@@ -68,7 +68,7 @@ impl InstructionMethods for Dla {
                 "Index is out of range for the desired string".into(),
             ),
             self.to_textforge_line(),
-            input.as_ref().to_string(),
+            crate::utils::errors::input_excerpt(&input),
         ))
     }
 

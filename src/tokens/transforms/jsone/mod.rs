@@ -56,7 +56,7 @@ impl InstructionMethods for Jsone {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed to serialize to JSON".into()),
                 "serde_json::to_string".to_string(),
-                input.to_string(),
+                crate::utils::errors::input_excerpt(&input),
             )
         })?;
 

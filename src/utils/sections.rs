@@ -75,7 +75,7 @@ pub(crate) fn char_section(
                 .into(),
             ),
             name,
-            input.to_owned(),
+            crate::utils::errors::input_excerpt(input),
         ));
     };
     let section_end = characters

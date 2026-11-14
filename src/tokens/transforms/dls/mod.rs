@@ -71,7 +71,7 @@ impl InstructionMethods for Dls {
                     "Invalid character index".into(),
                 ),
                 "dls",
-                input.to_string(),
+                crate::utils::errors::input_excerpt(&input),
             )
         })?;
         Ok(crate::utils::allocation::replace(

@@ -86,7 +86,7 @@ impl InstructionMethods for Dlc {
                         ).into()
                     ),
                     self.to_textforge_line(),
-                    input.to_string()
+                    crate::utils::errors::input_excerpt(&input)
                 )
             })?;
 

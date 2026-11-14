@@ -66,7 +66,7 @@ impl InstructionMethods for End {
                         "Context required for end instruction".into(),
                     ),
                     "end",
-                    input.to_string(),
+                    crate::utils::errors::input_excerpt(&input),
                 )
             })?
             .halt();

@@ -67,7 +67,7 @@ impl InstructionMethods for Urld {
                     return Err(TextForgeError::new(
                         TextForgeErrorCode::TextParsingError("Failed parsing URL string".into()),
                         "urld",
-                        input.to_string(),
+                        crate::utils::errors::input_excerpt(&input),
                     ));
                 }
                 i += 3;
@@ -80,7 +80,7 @@ impl InstructionMethods for Urld {
             TextForgeError::new(
                 TextForgeErrorCode::TextParsingError("Failed parsing URL string".into()),
                 "urld",
-                input.to_string(),
+                crate::utils::errors::input_excerpt(&input),
             )
         })?;
 

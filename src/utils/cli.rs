@@ -62,7 +62,7 @@ pub fn process_input_by_chunks(
         return Err(TextForgeError::new(
             super::errors::TextForgeErrorCode::ZeroDivisionError("chunk size == 0".into()),
             Cow::Borrowed("process_input_by_chunks"),
-            Cow::Owned(input.to_string()),
+            crate::utils::errors::input_excerpt(input),
         ));
     }
     let character_count = input.chars().count();

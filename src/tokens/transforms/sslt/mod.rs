@@ -87,7 +87,7 @@ impl InstructionMethods for Sslt {
                         "Index does not exist in the splitted vec".into(),
                     ),
                     self.to_textforge_line(),
-                    input.to_string(),
+                    crate::utils::errors::input_excerpt(&input),
                 )
             })?;
         let start = result.as_ptr() as usize - input.as_ptr() as usize;

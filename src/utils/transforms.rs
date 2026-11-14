@@ -93,7 +93,7 @@ pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, Text
             TextForgeError::new(
                 super::errors::TextForgeErrorCode::IndexOutOfRange("".into()),
                 Cow::Borrowed("Get safe utf-8 char index"),
-                input.to_string(),
+                crate::utils::errors::input_excerpt(input),
             )
         })
 }

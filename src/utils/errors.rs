@@ -5,6 +5,27 @@ use std::fmt::Display;
 // Colored formatting (presentation only)
 use colored::{Color, Colorize};
 
+/// Characters of the processed text an error keeps in its `input` field.
+pub const INPUT_EXCERPT_CHARS: usize = 80;
+
+/// The beginning of `text` for an error's `input` field: at most
+/// [`INPUT_EXCERPT_CHARS`] characters, followed by `… [N bytes]` when the
+/// text is longer. Errors about a position in the document use this instead of
+/// copying the whole document, which could be hundreds of megabytes.
+///
+/// ```
+/// use textforge::utils::errors::input_excerpt;
+/// assert_eq!(input_excerpt("short"), "short");
+/// let long = "a".repeat(1000);
+/// assert_eq!(input_excerpt(&long), format!("{}… [1000 bytes]", "a".repeat(80)));
+/// ```
+pub fn input_excerpt(text: &str) -> String {
+    match text.char_indices().nth(INPUT_EXCERPT_CHARS) {
+        None => text.to_owned(),
+        Some((cut, _)) => format!("{}… [{} bytes]", &text[..cut], text.len()),
+    }
+}
+
 #[derive(Default, Clone)]
 pub struct ErrorManager {
     panic_with_error: bool,
