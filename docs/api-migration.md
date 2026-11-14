@@ -1,6 +1,8 @@
-# API migration for the next release
+# API migration in 0.2.0
 
-These contract changes were explicitly approved during the builder cleanup.
+These contract changes were explicitly approved during the builder cleanup and
+shipped in 0.2.0. For the 0.3.0 changes, see the upgrade notes at the top of the
+[changelog](../changelog.md).
 
 ## Instruction parameter binding
 

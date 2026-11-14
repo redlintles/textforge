@@ -38,7 +38,7 @@ Key design facts:
 
 - **Linear DSL.** No recursion, no AST. Each instruction is a single line. High-level implementations (e.g. the Rust builder) can give the *illusion* of recursion/nesting.
 - **Trait-object architecture.** Instructions are implemented as trait objects to keep maintenance simple and to avoid giant `match` statements and enums.
-- **Published on crates.io**. Core version in `Cargo.toml`: `0.3.0` (release prepared, see `docs/release-0.3.0.md`); latest published: `0.2.0` until 0.3.0 is published.
+- **Published on crates.io**, current core version: `0.3.0` (see `docs/release-0.3.0.md`).
 - **Minimum Rust version** (`rust-version`): 1.89, set by the dependencies (`uuid`). The published package holds only `src/` (without bindings), `docs/txfrc.schema.json`, `README.md`, `changelog.md` and `LICENSE` (`include` in `Cargo.toml`); add a file there if library code starts reading it.
 - **Legacy name.** The project was formerly called **ATP** ("Advanced Text Processor"). Some doctests and internals still reference `atp` / `Atp*`. This is a leftover from the rename, not a separate component.
 
@@ -291,6 +291,20 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 4. Update the global lookup table in `src/globals/table.rs`. **Avoid collisions** with existing names and opcodes.
 5. Update `src/tokens/mod.rs` to include the new instruction. The project handles the rest.
 6. Update `build_all_tokens_pipeline_safe` in `src/utils/test_helpers.rs` to include the new instruction.
+7. Add a case to `tests/data/allocations/cases.json` (the allocation parity test requires one per registered instruction).
+
+### Run an audit
+
+1. Write an internal report in `docs/audits/` before changing code: for each finding, what is wrong, how to reproduce it (input, pipeline, observed and expected result) and the proposed fix.
+2. Show the maintainer a summary of the report; findings that change behavior or a public contract wait for a decision, which is recorded in the report.
+3. Fix the findings **one per commit**, each with a test that reproduces the previous behavior (rule 6), and mark them as fixed in the report.
+
+### Prepare a release
+
+1. The changelog section of the version opens with **Breaking changes** (API, features, minimum Rust version) and **Behavior changes** (what an existing pipeline may notice), followed by everything added, fixed and changed since the previous release. Check the API with `cargo semver-checks --baseline-version <previous>` and list every failure it reports.
+2. The published package contains only what builds and documents the crate (`include` in `Cargo.toml`): no data sets, benchmarks, logs or scripts. Check it with `cargo package --list`, and keep `rust-version`, keywords, categories and the docs.rs features current.
+3. The library must not depend on what only the `txf` program needs: CLI-only code and dependencies go behind the `cli` feature.
+4. Record scope, validation and publication commands in `docs/release-<version>.md`. Version bumps and publication still need human approval (section 15).
 
 ---
 
@@ -329,6 +343,17 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 14. Run the [pre-commit checklist](#14-pre-commit-checklist) before every commit.
 15. Request human approval where required ([section 15](#15-human-approval-required)).
 16. Keep `AGENTS.md`, `README.md` and the changelog current ([section 18](#18-keeping-documentation-current)).
+17. **Version branches.** The work of a version is consolidated on `feat/<version>` (e.g. `feat/0.3.0`), by fast-forward from the worktree branches, before it reaches `main`.
+
+### Instruction behavior
+
+18. **An instruction does only what it is expected to do.** A transform changes exactly what its name and documentation say and nothing else, so pipelines stay predictable: a word instruction keeps the original separators, an instruction never rewrites the parts of the text it does not target, and instructions of the same family share edge rules (inclusive ranges accept `start == end`; an `end` past the text is clamped in the same way; empty text where a position is required is an error).
+19. **Work-multiplying instructions are limited by default.** Instructions whose output or work grows with a parameter (`rpt`, `padl`, `padr`, `iter`) check generous default limits (`Limits`: `max_generated_bytes`, `max_iterations`) and fail with an error instead of exhausting memory, CPU or disk. The user decides: limits can be raised or set to `unlimited` in `ExecutionProfile`, `.txfrc` and `txf` flags. A new instruction of this kind uses the same limits; a profile or limit never changes the text produced, it can only make a run fail.
+20. **Errors never carry the whole document.** When an error refers to the processed text, its `input` field and message use `utils::errors::input_excerpt`, not a copy of the text, which may be hundreds of megabytes.
+
+### Change verification
+
+21. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
 
 ---
 

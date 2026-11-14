@@ -1,9 +1,9 @@
 # TextForge 0.3.0 core release
 
-The core package version is **0.3.0**. Unlike 0.2.0, this release has breaking
-changes; the [changelog](../changelog.md) lists them first, followed by the
-behavior changes an existing pipeline may notice. Publication (crates.io, Git
-tags, pushes) is a maintainer action and is not done by this preparation.
+The core package version is **0.3.0**, published to crates.io on 2026-11-14.
+Unlike 0.2.0, this release has breaking changes; the
+[changelog](../changelog.md) lists them first, followed by the behavior changes
+an existing pipeline may notice.
 
 ## Scope
 
@@ -25,7 +25,7 @@ tags, pushes) is a maintainer action and is not done by this preparation.
 
 ## Validation
 
-All of the following passed on the release revision (Docker `rust:1-bookworm`,
+All of the following passed on the release revision (`d8c05c2`) (Docker `rust:1-bookworm`,
 rustc 1.100.0): 1,491 tests and doctests with `test_access` (two informational
 benchmarks ignored), the allocation parity corpus in release mode, rustdoc with
 `-D warnings` for the default and the docs.rs feature sets, a check with rustc
@@ -57,7 +57,7 @@ is intended (they read data sets that stay in the repository).
 
 ## Publication
 
-From the committed, clean release revision:
+The release was published from the committed, clean release revision with:
 
 ```sh
 cargo package            # target/package/textforge-0.3.0.crate
@@ -65,5 +65,5 @@ cargo publish
 git tag -a v0.3.0 -m "TextForge 0.3.0" && git push origin v0.3.0
 ```
 
-After publishing, update `AGENTS.md` §3 ("latest published") and the binding
-repositories when they move to the 0.3.0 core.
+The binding repositories still vendor the 0.2.0 core; they move to 0.3.0 in
+their own repositories.
