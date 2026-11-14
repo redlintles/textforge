@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn transform_replaces_first_match_when_regex_groups() {
-        // "a+" casa o bloco inteiro de 'a' como um único match, então só 1 troca acontece.
+        // "a+" matches the whole run of 'a' as one match, so only one replacement happens.
         let t = Rfw::new("a+", "b").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -132,7 +132,7 @@ mod tests {
             let mut t = Rfw::default();
 
             let params = vec![
-                TextForgeParamTypes::Usize(7), // deveria ser String (pattern)
+                TextForgeParamTypes::Usize(7), // should be String (pattern)
                 TextForgeParamTypes::String("b".to_string()),
             ];
 

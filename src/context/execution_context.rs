@@ -392,7 +392,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
                     "(BLOCK ALREADY EXISTS) ADDING: ".green()
                 }
             } else {
-                // sem prefixo para itens antigos
+                // no prefix for older items
                 "".normal()
             };
 

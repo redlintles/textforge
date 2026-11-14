@@ -251,7 +251,7 @@ impl WatcherList {
     /// watchers.set_watcher("len", |ctx: WatcherContext| ctx.current.len().to_string());
     ///
     /// assert!(watchers.schedule_watcher("len", ExecutionWindows::All).is_ok());
-    /// assert!(watchers.schedule_watcher("nao_existe", ExecutionWindows::All).is_err());
+    /// assert!(watchers.schedule_watcher("missing", ExecutionWindows::All).is_err());
     /// ```
     pub fn schedule_watcher(
         &mut self,

@@ -52,8 +52,8 @@ mod tests {
 
     #[test]
     fn transform_encodes_plus_as_percent2b() {
-        // importante: urlencoding::encode NÃO usa '+' pra espaço; ele usa %20,
-        // e '+' vira %2B
+        // urlencoding::encode does NOT use '+' for a space; it uses %20,
+        // and '+' becomes %2B
         let t = Urle::default();
 
         let input = "a+b c";
@@ -83,7 +83,7 @@ mod tests {
     fn transform_unicode_is_percent_encoded_utf8() {
         let t = Urle::default();
 
-        // "maçã 🍎" em UTF-8 percent-encoded
+        // "maçã 🍎" as percent-encoded UTF-8
         let input = "maçã 🍎";
         let expected = "ma%C3%A7%C3%A3%20%F0%9F%8D%8E".to_string();
         let mut ctx = GlobalExecutionContext::new();
@@ -118,7 +118,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -134,7 +134,7 @@ mod tests {
             let t = Urle::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

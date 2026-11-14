@@ -226,7 +226,7 @@ mod tests {
 
     #[test]
     fn bytecode_string_roundtrip() {
-        // agora param_to_bytecode exige context
+        // param_to_bytecode requires a context
         let p = TextForgeParamTypes::String("abc".to_string());
 
         let mut ctx = GlobalExecutionContext::default();
@@ -275,15 +275,15 @@ mod tests {
             TextForgeParamTypes::Token(tw) => {
                 assert_eq!(tw.get_string_repr(), "ifdc");
 
-                // importante: agora token params são ValType dentro do wrapper
+                // instruction params are ValType inside the wrapper
                 let token = tw.get_default_token();
                 let expected = expected_for(token.get_string_repr());
                 let effective = TextForgeParamTypes::effective_syntax_tokens(&expected);
                 assert_eq!(effective.len(), 2);
 
-                // e o wrapper deve ter 2 params
-                // (não expomos params aqui; então só verificamos via renderização sem resolver:
-                // get_string_repr já garantiu que o wrapper está do token certo)
+                // and the wrapper must have 2 params
+                // (params are not exposed here, so only the rendering is checked:
+                // get_string_repr already confirmed the wrapper holds the right instruction)
             }
             _ => panic!("Expected Token(ifdc)"),
         }
@@ -309,7 +309,7 @@ mod tests {
         let raw_op = opcode_for("raw");
 
         let raw_tok = bc_token_param(raw_op, vec![bc_string("laranja"), bc_string("abacaxi")]);
-        // blk tem 2 params efetivos (String + Token), o literal "assoc" é sintaxe
+        // blk has 2 effective params (String + Token); the literal "assoc" is syntax
         let blk_tok = bc_token_param(blk_op, vec![bc_string("x"), raw_tok]);
 
         let ifdc_tok = bc_token_param(ifdc_op, vec![bc_string("laranja"), blk_tok]);
@@ -329,7 +329,7 @@ mod tests {
         let atb_tok = bc_token_param(atb_op, vec![bc_string("banana")]);
         // blk_inner = blk(y, atb(banana))
         let blk_inner = bc_token_param(blk_op, vec![bc_string("y"), atb_tok]);
-        // blk_outer = blk(x, blk_inner) => deve falhar (block dentro de assoc payload)
+        // blk_outer = blk(x, blk_inner) => must fail (a block inside an assoc payload)
         let blk_outer = bc_token_param(blk_op, vec![bc_string("x"), blk_inner]);
 
         let err = TextForgeParamTypes::from_bytecode(blk_outer).unwrap_err();
@@ -353,7 +353,6 @@ mod tests {
         assert!(is_bc_err(&err.error_code));
     }
 
-    // OBS: não adicionamos testes novos, mas precisamos manter a suite compilável.
-    // O helper bc_varref foi incluído apenas para acompanhar o novo opcode 0x04,
-    // sem criar um teste extra por enquanto.
+    // The bc_varref helper follows the 0x04 opcode;
+    // no test uses it yet.
 }

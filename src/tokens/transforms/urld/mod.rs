@@ -53,7 +53,7 @@ impl InstructionMethods for Urld {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        // Validação de percent encoding
+        // Validate the percent encoding
         let bytes = input.as_bytes();
         let len = bytes.len();
 

@@ -1,9 +1,9 @@
 // params.rs
-// Reescrito para suportar:
-// - Texto: retorna Vec<ValType> (Literal / VarRef) via sintaxe {{nome}}
+// Supports:
+// - Text: returns Vec<ValType> (Literal / VarRef) through the {{name}} syntax
 // - Bytecode: 0x01 String, 0x02 Usize, 0x03 Token, 0x04 VarRef
-// - PARAM_TOKEN: constrói TokenWrapper(params: Vec<ValType>, token: Box<dyn InstructionMethods>)
-//   (não chama set_params aqui; isso fica pro runtime no TokenWrapper)
+// - PARAM_TOKEN: builds TokenWrapper(params: Vec<ValType>, token: Box<dyn InstructionMethods>)
+//   (does not call set_params here; TokenWrapper does that at run time)
 
 #[cfg(feature = "bytecode")]
 use crate::context::execution_context::GlobalExecutionContext;
@@ -178,7 +178,7 @@ fn not_a_value(target: &'static str) -> TextForgeError {
 }
 
 // --------------------------
-// Política de aninhamento
+// Nesting policy
 // --------------------------
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -222,7 +222,7 @@ impl TextForgeParamTypes {
     }
 
     // --------------------------
-    // Parsing de texto -> Vec<ValType>
+    // Text parsing -> Vec<ValType>
     // --------------------------
 
     pub fn from_expected(
@@ -406,7 +406,7 @@ impl TextForgeParamTypes {
                         _ => unreachable!("Invalid Query result (Syntax)"),
                     };
 
-                    // Dentro de AssocPayload não pode existir outro token block-like
+                    // No other block-like instruction may appear inside an AssocPayload
                     if child_assoc_mode == AssocMode::AssocPayload
                         && Self::is_block_like_signature(&nested_expected)
                     {
@@ -466,7 +466,7 @@ impl TextForgeParamTypes {
     }
 
     // --------------------------
-    // Parsing de Bytecode -> TextForgeParamTypes (raiz) / ValType (params internos)
+    // Bytecode parsing -> TextForgeParamTypes (root) / ValType (inner params)
     // --------------------------
 
     pub fn from_bytecode(bytecode: Vec<u8>) -> Result<TextForgeParamTypes, TextForgeError> {
@@ -520,14 +520,14 @@ impl TextForgeParamTypes {
         token_depth: u8,
         assoc_mode: AssocMode,
     ) -> Result<TextForgeParamTypes, TextForgeError> {
-        // Layout novo: [u64 total][u32 type][u32 payload_size][payload]
+        // Current layout: [u64 total][u32 type][u32 payload_size][payload]
         if bytes.len() >= 16
             && let Ok(total) = Self::peek_u64_be(&bytes[0..8])
             && (total as usize) == bytes.len()
         {
             return Self::parse_param_new_layout(bytes, token_depth, assoc_mode);
         }
-        // Layout antigo: [u32 type][u32 payload_size][payload]
+        // Legacy layout: [u32 type][u32 payload_size][payload]
         Self::parse_param_old_layout(bytes, token_depth, assoc_mode)
     }
 
@@ -636,8 +636,8 @@ impl TextForgeParamTypes {
             }
 
             PARAM_VARREF => {
-                // VarRef só deveria existir dentro de Token params (ValType),
-                // mas se aparecer aqui como raiz, retorna erro claro.
+                // A VarRef should exist only inside Token params (ValType);
+                // if one appears here as a root, return a clear error.
                 Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParamParsingError(
                     "internal error: a variable reference cannot be decoded at this position".into(),
@@ -669,7 +669,7 @@ impl TextForgeParamTypes {
                     "bytecode parameter",
                 )? as usize;
 
-                // Sintaxe esperada (com literais)
+                // Expected syntax (with literals)
                 let expected =
                     match TOKEN_TABLE.find((QuerySource::Bytecode(opcode), QueryTarget::Syntax))? {
                         TargetValue::Syntax(p) => p,
@@ -694,7 +694,7 @@ impl TextForgeParamTypes {
                 let mut params: Vec<ValType> = Vec::with_capacity(param_count);
 
                 for expected_type in &expected_effective {
-                    // Cada parâmetro do token está no layout novo (começa com u64 total)
+                    // Each parameter of the instruction uses the current layout (starts with a u64 total)
                     let size_u64 = Self::read_u64_be(
                         &mut reader,
                         "bytecode parameter",
@@ -709,7 +709,7 @@ impl TextForgeParamTypes {
                     })?;
 
                     if size_usize < 16 {
-                        // no layout novo, mínimo: 8+4+4
+                        // in the current layout, at least 8+4+4
                         return Err(TextForgeError::new(
                             TextForgeErrorCode::BytecodeParsingError(
                                 "a parameter record declares an impossible size; the file is corrupt or was not written by TextForge".into(),
@@ -739,7 +739,7 @@ impl TextForgeParamTypes {
                         AssocMode::Normal
                     };
 
-                    // Peek do tipo do filho para checar depth
+                    // Peek at the child's type to check the depth
                     #[allow(unused_parens)]
                     if let Ok(next_param_type) = {
                         let mut cursor = Cursor::new(full_param.as_slice());
@@ -766,14 +766,14 @@ impl TextForgeParamTypes {
                         }
                     }
 
-                    // Agora decodifica o child param como ValType (pode ser VarRef)
+                    // Decode the child param as a ValType (it may be a VarRef)
                     let parsed_val = Self::decode_full_param_as_valtype(
                         &full_param,
                         token_depth + 1,
                         child_assoc_mode,
                     )?;
 
-                    // Regra: em AssocPayload não pode existir block-like (só se child for Token literal)
+                    // Rule: no block-like instruction inside an AssocPayload (only when the child is a Token literal)
                     if child_assoc_mode == AssocMode::AssocPayload
                         && let ValType::Literal(TextForgeParamTypes::Token(ref tok)) = parsed_val
                     {
@@ -799,7 +799,7 @@ impl TextForgeParamTypes {
                     params.push(parsed_val);
                 }
 
-                // Token base (default), embrulhado com params não resolvidos
+                // Default instruction, wrapped with unresolved params
                 let query_result =
                     TOKEN_TABLE.find((QuerySource::Bytecode(opcode), QueryTarget::Token))?;
                 match query_result {
@@ -888,7 +888,7 @@ impl TextForgeParamTypes {
                 Ok(ValType::VarRef(name.to_string()))
             }
 
-            // Qualquer outro tipo é Literal(TextForgeParamTypes)
+            // Any other type is a Literal(TextForgeParamTypes)
             _ => Ok(ValType::Literal(Self::decode_param_payload(
                 ty,
                 payload,
@@ -899,7 +899,7 @@ impl TextForgeParamTypes {
     }
 
     // --------------------------
-    // Helpers de leitura de bytecode
+    // Bytecode reading helpers
     // --------------------------
 
     fn read_exact_vec(

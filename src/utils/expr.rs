@@ -169,8 +169,8 @@ pub fn interpolate(
 /// [`interpolate`] reading variables through `reader`, which also knows the
 /// text the running instruction receives.
 pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String, TextForgeError> {
-    // Fast path: nenhum dos quatro delimitadores aparece de forma nenhuma
-    // (completa, solta ou escapada) — nada a fazer.
+    // Fast path: none of the four delimiters appears at all
+    // (complete, stray or escaped), so there is nothing to do.
     if !input.contains("{{")
         && !input.contains("}}")
         && !input.contains("[[")
@@ -187,7 +187,7 @@ pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String
         out.push_str(&input[last_end..m.start()]);
 
         if let Some(esc) = caps.name("esc") {
-            // esc.as_str() é "\{{", "\}}", "\[[" ou "\]]" — descarta o \.
+            // esc.as_str() is "\{{", "\}}", "\[[" or "\]]"; drop the \.
             out.push_str(&esc.as_str()[1..]);
         } else if let Some(var_name) = caps.name("var") {
             let value: TextForgeParamTypes = reader.value(var_name.as_str())?.into_owned().into();
@@ -197,9 +197,9 @@ pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String
             let result = evaluate_with(expr_src.as_str(), reader, "api::expr")?;
             out.push_str(&value_to_plain_string(&result));
         }
-        // Nenhum grupo nomeado bateu: caiu no fallback de delimitador solto
-        // (`{{`, `}}`, `[[` ou `]]` incompleto/inválido) — não empurra nada
-        // pra `out`, ou seja, remove esse trecho.
+        // No named group matched: this is the stray-delimiter fallback
+        // (an incomplete or invalid `{{`, `}}`, `[[` or `]]`): push nothing
+        // to `out`, which removes that piece.
 
         last_end = m.end();
     }

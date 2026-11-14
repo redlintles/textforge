@@ -812,7 +812,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     #[cfg(not(feature = "buffered"))]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
         let (result, log) = self.debug_log(id, input)?;
-        print!("{log}"); // 1 única saída
+        print!("{log}"); // a single write
         Ok(result)
     }
 
@@ -1010,14 +1010,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             };
         let mut local_errors = ErrorManager::default();
 
-        // Estado do pipeline como Arc<str>, não String: reusar `current_arc` de
-        // uma iteração como `before` da próxima é um Arc::clone (refcount bump),
-        // não uma cópia de texto. apply_transform ainda recebe &str normalmente
-        // (Arc<str> faz Deref<Target = str>, então &current_arc já serve).
+        // The pipeline state is an Arc<str>, not a String: reusing `current_arc` from
+        // one step as the `before` of the next is an Arc::clone (a refcount bump),
+        // not a text copy. apply_transform still takes a &str
+        // (Arc<str> derefs to str, so &current_arc works).
         let current_arc: Arc<str> = Arc::from(input);
 
-        // Guarda (before, current, instruction) do passo anterior até sabermos
-        // o "after" dele — que só existe depois de rodar o passo seguinte.
+        // Holds (before, current, instruction) of the previous step until its
+        // "after" is known, which happens only after the next step runs.
         let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
 
         let current_arc = run_tokens(
@@ -1034,10 +1034,10 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
                     context,
                 )?;
 
-                // Única cópia de texto inteiro por passo: a saída do transform
-                // (String nova, alocada pelo apply_transform em si — isso é
-                // inerante ao trabalho da instrução) também precisa existir como
-                // Arc<str> pra virar "current" deste passo / "before" do próximo.
+                // The only whole-text copy per step: the transform's output
+                // (a new String, allocated by apply_transform itself, which is
+                // inherent to the instruction's work) must also exist as an
+                // Arc<str> to become this step's "current" and the next step's "before".
                 let current_arc: Arc<str> = Arc::from(after.as_ref());
 
                 if let Some((prev_before, prev_current, prev_instruction)) = pending.take() {
@@ -1059,7 +1059,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
             },
         )?;
 
-        // Última instrução: não existe próximo passo — after = None, explícito.
+        // Last instruction: there is no next step, so after = None.
         if let Some((before, current, instruction)) = pending.take() {
             let watcher_ctx = WatcherContext::new(current, before, None::<Arc<str>>, instruction);
             watcher_list.run_watchers(watcher_ctx)?;
@@ -1122,7 +1122,7 @@ impl TextForgeProcessor {
         let (tokens, mut context) =
             Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
 
-        // ErrorManager local, descartável — não é o self.errors compartilhado
+        // A local, throwaway ErrorManager, not the shared self.errors
         let mut local_errors = ErrorManager::default();
 
         run_tokens(

@@ -66,8 +66,8 @@ pub fn whitespace_count(ctx: WatcherContext) -> String {
         .to_string()
 }
 
-// is_numeric() cobre dígitos unicode além de ASCII; troque por is_ascii_digit()
-// se você quiser um watcher estritamente ASCII.
+// is_numeric() covers Unicode digits beyond ASCII; use is_ascii_digit()
+// for a strictly ASCII watcher.
 /// Number of digits.
 pub fn digit_count(ctx: WatcherContext) -> String {
     ctx.current
@@ -116,7 +116,7 @@ mod tests {
 
     use super::*;
 
-    // src/watchers/default_watchers.rs — helper de teste
+    // test helper
     fn ctx(before: &str, current: &str, instruction: &str) -> WatcherContext {
         WatcherContext {
             current: Arc::from(current),
@@ -128,7 +128,7 @@ mod tests {
 
     #[test]
     fn test_current_len_bytes_counts_utf8_bytes_not_chars() {
-        // 'é' ocupa 2 bytes em UTF-8; "abcdé" = 4 ASCII + 2 bytes = 6 bytes, 5 chars
+        // 'é' takes 2 bytes in UTF-8; "abcdé" = 4 ASCII + 2 bytes = 6 bytes, 5 chars
         let c = ctx("abcd", "abcdé", "add_to_end");
         assert_eq!(current_len_bytes(c), "6");
     }
@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn test_char_delta_negative_on_shrink_no_panic() {
-        // Esse é exatamente o caso que quebrava a implementação original com usize
+        // This is exactly the case that broke the original usize implementation
         let c = ctx("banana", "ba", "trim_both_sides");
         assert_eq!(char_delta(c), "-4");
     }

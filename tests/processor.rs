@@ -131,14 +131,14 @@ pub mod processor {
             .build()
             .unwrap();
 
-        // ✅ não ignore o erro
+        // do not ignore the error
         processor.write_pipeline_to_file(&identifier, path)?;
 
         let mut opened_file = File::open(path).unwrap();
         let mut content = String::new();
         opened_file.read_to_string(&mut content).unwrap();
 
-        // ✅ normaliza CRLF só por segurança
+        // normalize CRLF, to be safe
         let content = content.replace("\r\n", "\n");
 
         let expected_content = "atb Banana;\nate Laranja;\nrpt 3;\n";

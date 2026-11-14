@@ -97,13 +97,13 @@ impl TokenTable {
         };
 
         match (query_source, query_target) {
-            // ✅ CORINGA: QuerySource e QueryTarget "iguais" (eco + valida existência)
+            // Wildcard: QuerySource and QueryTarget are the same kind (echo the value and check it exists)
             #[cfg(feature = "test_access")]
             (QuerySource::Identifier(id), QueryTarget::Identifier) => {
-                // valida que existe
+                // check that it exists
                 if self.id_to_code.contains_key(id.as_ref()) {
-                    // devolve o próprio id, mas como &'static str:
-                    // como seu mapa usa &'static str, pegamos pelo code_to_id via code:
+                    // return the id itself, as a &'static str:
+                    // the map stores &'static str, so take it from code_to_id through the code:
                     let code = *self.id_to_code.get(id.as_ref()).ok_or_else(err)?;
                     let real_id = *self.code_to_id.get(&code).ok_or_else(err)?;
                     Ok(TargetValue::Identifier(real_id))
@@ -113,7 +113,7 @@ impl TokenTable {
             }
             #[cfg(feature = "test_access")]
             (QuerySource::Bytecode(code), QueryTarget::Bytecode) => {
-                // valida que existe
+                // check that it exists
                 if self.code_to_id.contains_key(&code) {
                     Ok(TargetValue::Bytecode(code))
                 } else {
@@ -121,7 +121,7 @@ impl TokenTable {
                 }
             }
 
-            // --- demais casos normais ---
+            // --- the other, ordinary cases ---
             #[cfg(feature = "test_access")]
             (QuerySource::Identifier(id), QueryTarget::Bytecode) => {
                 let code = *self.id_to_code.get(id.as_ref()).ok_or_else(err)?;
@@ -189,7 +189,7 @@ macro_rules! define_token_table {
                 $id:literal,
                 $code:expr,
                 $ctor:expr,
-                $params:expr $(,)? // ✅ aceita vírgula opcional aqui
+                $params:expr $(,)? // optional trailing comma
             )),*
             $(,)?
         ];
@@ -214,7 +214,7 @@ macro_rules! define_token_table {
                     panic!("define_token_table: duplicate bytecode: 0x{:x} for {}", $code, $id);
                 }
 
-                // ✅ aqui é o ponto crítico: array -> slice
+                // the array becomes a slice here
 
                 id_to_code.insert($id, $code);
                 code_to_id.insert($code, $id);
@@ -242,7 +242,7 @@ macro_rules! define_token_table {
     };
 }
 
-// ✅ sua “tabela 3 colunas” vira só isso:
+// The instruction table, one row per instruction:
 define_token_table! {
     pub static TOKEN_TABLE = [
         (

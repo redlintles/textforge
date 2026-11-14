@@ -6,7 +6,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
     let allowed_extensions = ["textforge", "tft", "textforgebc", "tfb"];
     let parsed_ext = ext.unwrap_or("tft");
 
-    // canonicalize() exige que o path exista; isso é ok aqui porque queremos validar um arquivo real.
+    // canonicalize() requires the path to exist; that is fine here, because the file must be real.
     let path = path.canonicalize().map_err(|e| {
         TextForgeError::new(
             TextForgeErrorCode::ValidationError(
@@ -17,7 +17,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
         )
     })?;
 
-    // Extensão
+    // Extension
     let file_ext = path.extension().and_then(|x| x.to_str()).ok_or_else(|| {
         TextForgeError::new(
             TextForgeErrorCode::ValidationError(
@@ -52,7 +52,7 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
         ));
     }
 
-    // Diretório pai (redundante depois do canonicalize, mas mantém a intenção explícita)
+    // Parent directory (redundant after canonicalize, but keeps the intent explicit)
     let parent = path.parent().ok_or_else(|| {
         TextForgeError::new(
             TextForgeErrorCode::ValidationError("the pipeline path has no parent directory".into()),
@@ -97,8 +97,8 @@ pub fn check_chunk_bound_indexes(
 ) -> Result<(), TextForgeError> {
     let total_chars = check_against.map(|text| text.chars().count());
 
-    // start precisa existir: checado antes da ordem, porque um `end` além do
-    // texto é cortado no último caractere e ficaria "antes" de um `start` inexistente
+    // start must exist: checked before the order, because an `end` past the
+    // text is clamped to the last character and would come "before" a missing `start`
     if let (Some(text), Some(total)) = (check_against, total_chars)
         && start_index >= total
     {
@@ -116,7 +116,7 @@ pub fn check_chunk_bound_indexes(
         ));
     }
 
-    // regra estrutural (independente do texto); intervalo inclusivo
+    // structural rule (independent of the text); the range is inclusive
     if start_index > end_index {
         return Err(TextForgeError::new(
             TextForgeErrorCode::InvalidIndex(
@@ -130,7 +130,7 @@ pub fn check_chunk_bound_indexes(
         ));
     }
 
-    // end também precisa existir
+    // end must exist too
     if let (Some(text), Some(total)) = (check_against, total_chars)
         && end_index >= total
     {
@@ -277,11 +277,9 @@ mod tests {
 
             assert!(result.is_err());
 
-            // Se TextForgeError tiver Display, isso geralmente vira uma checagem bem útil
             let err = result.unwrap_err();
             let msg = format!("{err}");
 
-            // Não assumo a estrutura interna do TextForgeError, então valido por mensagem
             assert!(
                 msg.contains("`check_vec_len` takes 3 parameters, but 2 were given"),
                 "{msg}"
@@ -409,7 +407,7 @@ mod tests {
             let dir = unique_tmp_dir("textforge_check_file_path_is_dir");
             fs::create_dir_all(&dir).unwrap();
 
-            // canonicalize vai funcionar, mas is_dir deve falhar
+            // canonicalize succeeds, but is_dir must fail
             let r = check_file_path(&dir, None);
             assert!(r.is_err());
 
@@ -419,7 +417,7 @@ mod tests {
         #[test]
         fn err_for_nonexistent_path_canonicalize_fails() {
             let dir = unique_tmp_dir("textforge_check_file_path_missing");
-            // não cria diretório/arquivo
+            // creates no directory or file
             let file = dir.join("missing.textforge");
 
             let r = check_file_path(&file, None);
@@ -444,7 +442,7 @@ mod tests {
 
         #[test]
         fn ok_when_indices_in_range_with_text() {
-            // "banàna" tem 6 chars
+            // "banàna" has 6 chars
             let text = "banàna";
             assert!(check_chunk_bound_indexes(1, 4, Some(text)).is_ok());
         }
@@ -518,7 +516,7 @@ mod tests {
 
         #[test]
         fn supports_unicode_words() {
-            // split_whitespace funciona bem com unicode; aqui garante que o contador não quebra
+            // split_whitespace handles Unicode; this checks the counter does not break
             assert!(check_index_against_words(1, "banàna maçã").is_ok());
             assert!(check_index_against_words(2, "banàna maçã").is_err());
         }

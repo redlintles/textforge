@@ -38,7 +38,7 @@ mod tests {
     fn transform_unescapes_quotes_backslashes_and_controls() {
         let t = Jsonu::default();
 
-        // JSON string com escapes
+        // a JSON string with escapes
         let input = "\"a \\\"quote\\\" and a \\\\ slash\\nline2\\tend\\r\"";
         let expected = "a \"quote\" and a \\ slash\nline2\tend\r".to_string();
         let mut ctx = GlobalExecutionContext::new();
@@ -84,15 +84,17 @@ mod tests {
     fn transform_returns_error_on_invalid_json_string() {
         let t = Jsonu::default();
 
-        // não é uma string JSON válida (faltam aspas, ou JSON inválido)
+        // not a valid JSON string (no quotes, or invalid JSON)
         let input = "{banana: '10'}";
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform(input.into(), Some(&mut ctx));
 
         let expected = Err(TextForgeError::new(
-            TextForgeErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
-            "serde_json::from_str",
+            TextForgeErrorCode::TextParsingError(
+                "the text is not a JSON string literal; `jsonu` expects a quoted, escaped string such as \"a\\nb\"".into(),
+            ),
+            "jsonu",
             input.to_string(),
         ));
 
@@ -122,7 +124,7 @@ mod tests {
 
     #[test]
     fn roundtrip_jsone_then_jsonu_returns_original() {
-        // teste de consistência do par encode/decode
+        // the encode/decode pair must round-trip
         use crate::tokens::transforms::jsone::Jsone;
 
         let enc = Jsone::default();
@@ -138,7 +140,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -155,7 +157,7 @@ mod tests {
             let t = Jsonu::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

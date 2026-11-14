@@ -103,7 +103,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -120,7 +120,7 @@ mod tests {
             let t = Dll::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;
@@ -128,7 +128,7 @@ mod tests {
             let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
             i += 8;
 
-            // total_size = tamanho do "body" (opcode+count+params...)
+            // total_size = size of the body (opcode + count + params...)
             assert_eq!(total_size as usize, bc.len() - 8);
 
             let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());

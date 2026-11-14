@@ -35,8 +35,8 @@ mod tests {
 
     #[test]
     fn transform_pads_right_until_max_len_doc_example() {
-        // "banana" tem 6 chars, max_len=7 => precisa de 1 char de padding.
-        // extend_string("xy", 1) => "x" (pelo exemplo da doc)
+        // "banana" has 6 chars, max_len=7 => 1 char of padding.
+        // extend_string("xy", 1) => "x" (as in the docs example)
         let t = Padr::new("xy", 7);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -50,8 +50,8 @@ mod tests {
 
     #[test]
     fn transform_pads_right_multiple_chars() {
-        // 6 -> 10 precisa de 4 chars
-        // extend_string("xy", 4) => "xyxy" (comportamento esperado de repetição)
+        // 6 -> 10 needs 4 chars
+        // extend_string("xy", 4) => "xyxy" (the text repeats)
         let t = Padr::new("xy", 10);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -103,7 +103,7 @@ mod tests {
 
         let got = t.set_params(&params);
 
-        // parse_args! retorna InvalidParameters com a msg do callsite
+        // parse_args! returns InvalidParameters naming the parameter
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::InvalidParameters(
                 "parameter 1 (`text`) must be text, but it is a number".into(),
@@ -116,7 +116,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -133,7 +133,7 @@ mod tests {
             let t = Padr::new("xy", 7);
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

@@ -51,8 +51,8 @@ mod tests {
 
     #[test]
     fn transform_decodes_plus_literal_not_space() {
-        // importante: urlencoding::decode NÃO converte '+' em espaço.
-        // '+' permanece '+'; espaço é %20.
+        // urlencoding::decode does NOT turn '+' into a space:
+        // '+' stays '+'; a space is %20.
         let t = Urld::default();
 
         let input = "a%2Bb%20c";
@@ -99,7 +99,7 @@ mod tests {
     fn transform_returns_error_on_invalid_percent_encoding() {
         let t = Urld::default();
 
-        // '%' seguido de algo que não forma um byte hex válido
+        // '%' followed by something that is not a valid hex byte
         let input = "banana%2Glaranja";
         let mut ctx = GlobalExecutionContext::new();
 
@@ -152,7 +152,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -169,7 +169,7 @@ mod tests {
             let t = Urld::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

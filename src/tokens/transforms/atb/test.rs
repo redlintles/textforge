@@ -101,33 +101,33 @@ mod common {
 
     #[test]
     fn atb_to_bytecode_can_be_parsed_into_params_and_feed_set_params() {
-        // Fluxo real:
-        // Atb::to_bytecode -> extrair param -> TextForgeParamTypes::from_bytecode(param bytes) -> Atb::set_params
+        // The real flow:
+        // Atb::to_bytecode -> extract the param -> TextForgeParamTypes::from_bytecode(param bytes) -> Atb::set_params
         //
         // Layout:
         // [u64 instruction_total_size][u32 opcode][u8 param_count]
         // [u64 param_total_size][u32 param_type][u32 payload_size][payload]
         //
-        // E TextForgeParamTypes::from_bytecode espera:
+        // And TextForgeParamTypes::from_bytecode expects:
         // [u32 type][u32 payload_size][payload]
         //
-        // Então pulamos o u64 param_total_size.
+        // So skip the u64 param_total_size.
         let mut ctx = GlobalExecutionContext::new();
 
         let original = Atb::new("hello");
         let bytes = original.to_bytecode().unwrap();
 
-        // sanity: param_count deve ser 1
+        // sanity: param_count must be 1
         assert_eq!(bytes[12], 1);
 
-        // pulo: 8 (total) + 4 (opcode) + 1 (param_count) = 13
+        // skip: 8 (total) + 4 (opcode) + 1 (param_count) = 13
         let mut idx = 13;
 
-        // lê u64 param_total_size, mas não usa (8 bytes)
+        // read the u64 param_total_size and ignore it (8 bytes)
         let _param_total_size = u64::from_be_bytes(bytes[idx..idx + 8].try_into().unwrap());
         idx += 8;
 
-        // Agora o sub-slice começa em [u32 param_type][u32 payload_size][payload...]
+        // The slice now starts at [u32 param_type][u32 payload_size][payload...]
         let param_slice = bytes[idx..].to_vec();
 
         let parsed_param = TextForgeParamTypes::from_bytecode(param_slice).unwrap();

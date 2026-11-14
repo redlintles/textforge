@@ -125,7 +125,7 @@ mod tests {
             let t = Jsnc::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 (size) + 4 (opcode) + 1 (param count)
+            // minimum header: 8 (size) + 4 (opcode) + 1 (param count)
             assert!(bc.len() >= 13);
 
             let mut i = 0;

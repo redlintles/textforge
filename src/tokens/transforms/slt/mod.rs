@@ -83,7 +83,7 @@ impl InstructionMethods for Slt {
             .map(|(i, _)| i)
             .unwrap_or(0);
 
-        // Fim EXCLUSIVO: byte do (end_index + 1)º char, ou input.len() se passar do fim
+        // EXCLUSIVE end: the byte of char (end_index + 1), or input.len() past the end
         let end_byte_exclusive = input
             .char_indices()
             .nth(end.saturating_add(1))

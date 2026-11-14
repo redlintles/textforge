@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn transform_deletes_after_index_example_like_doc() {
-        // índice 3 em "banana ..." => mantém até char index 3 inclusive => "bana"
+        // index 3 in "banana ..." => keeps up to char index 3 inclusive => "bana"
         let t = Dla::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -55,8 +55,8 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe_char_indexing() {
-        // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
-        // index 1 mantém "áb"
+        // "á" is one char but several bytes: indexing is by char
+        // index 1 keeps "áb"
         let t = Dla::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
-        // check_index_against_input deve falhar antes do drain
+        // check_index_against_input must fail before the drain
         let t = Dla::new(999);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -80,10 +80,10 @@ mod tests {
 
     #[test]
     fn transform_returns_index_out_of_range_when_index_is_last_char() {
-        // comportamento atual do código:
-        // se index aponta pro último char, nth(index+1) vira None -> cai no Err(IndexOutOfRange)
+        // current behavior:
+        // when the index points at the last char, nth(index+1) is None -> Err(IndexOutOfRange)
         let input = "abc";
-        let t = Dla::new(2); // último char
+        let t = Dla::new(2); // last char
         let mut ctx = GlobalExecutionContext::new();
 
         let got = t.transform(input.into(), Some(&mut ctx));
@@ -140,7 +140,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -157,7 +157,7 @@ mod tests {
             let t = Dla::new(7);
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

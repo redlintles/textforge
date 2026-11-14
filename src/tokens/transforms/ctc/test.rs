@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn transform_capitalizes_chunk_simple_letters() {
-        // exemplo do doc: 1..5 em "bananabananosa" => "bAnanabananosa"
+        // docs example: 1..5 in "bananabananosa" => "bAnanabananosa"
         let mut ctx = GlobalExecutionContext::new();
 
         let t = Ctc::new(1, 5).unwrap();
@@ -52,13 +52,13 @@ mod tests {
 
     #[test]
     fn transform_capitalizes_words_inside_chunk_and_reinserts() {
-        // chunk pega "foo bar" e vira "Foo Bar"
+        // the chunk takes "foo bar" and becomes "Foo Bar"
         let input = "xx foo bar yy";
-        // índices por caractere:
+        // char indices:
         // "xx " = 3 chars => start 3
-        // "xx foo bar" (sem o espaço antes de yy) termina no índice 10? vamos computar:
+        // "xx foo bar" (without the space before yy) ends at index 10:
         // string: x(0) x(1) ' '(2) f(3) o(4) o(5) ' '(6) b(7) a(8) r(9) ' '(10) y(11) y(12)
-        // chunk [3..10) => chars 3..10 => "foo bar" (até antes do espaço)
+        // chunk [3..10) => chars 3..10 => "foo bar" (up to the space)
         let mut ctx = GlobalExecutionContext::new();
 
         let t = Ctc::new(3, 10).unwrap();
@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn transform_end_index_clamps_to_len() {
         let input = "hello";
-        let t = Ctc::new(0, 999).unwrap(); // end enorme, deve clamp
+        let t = Ctc::new(0, 999).unwrap(); // end far past the text is clamped
         let mut ctx = GlobalExecutionContext::new();
 
         assert_eq!(
@@ -86,10 +86,10 @@ mod tests {
 
     #[test]
     fn transform_on_unicode_char_indices() {
-        // garante que char_indices/byte slicing está correto
-        // "á" é 1 char (2 bytes), mas índice por char deve funcionar
+        // checks that char_indices/byte slicing is correct
+        // "á" is one char (2 bytes); indexing is by char
         let input = "ábc def";
-        // capitalizar chunk "ábc" => "Ábc"
+        // capitalize the chunk "ábc" => "Ábc"
         let t = Ctc::new(0, 3).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn transform_errors_on_out_of_bounds_start() {
         let input = "abc";
-        let t = Ctc::new(5, 6).unwrap(); // params() só valida relação, não input
+        let t = Ctc::new(5, 6).unwrap(); // params() checks only the order of the bounds, not the input
         let mut ctx = GlobalExecutionContext::new();
 
         let got: Result<Cow<'_, str>, TextForgeError> = t.transform(input.into(), Some(&mut ctx));
@@ -156,7 +156,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -174,7 +174,7 @@ mod tests {
             let t = Ctc::new(2, 7).unwrap();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

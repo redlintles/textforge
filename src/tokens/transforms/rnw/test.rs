@@ -37,9 +37,9 @@ mod tests {
 
     #[test]
     fn transform_replaces_nth_occurrence_doc_example_zero_based() {
-        // No código, index é 0-based:
-        // input "aaaaa" com pattern "a" tem matches: [0],[1],[2],[3],[4]
-        // index=2 => troca o 3º 'a'
+        // index is 0-based:
+        // input "aaaaa" with pattern "a" matches at [0],[1],[2],[3],[4]
+        // index=2 => replaces the 3rd 'a'
         let t = Rnw::new("a", "b", 2).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn transform_replaces_correct_nth_for_multi_length_matches() {
         // matches "aa" in "aaaaaa": positions (0..2), (2..4), (4..6)
-        // index=1 troca o segundo "aa"
+        // index=1 replaces the second "aa"
         let t = Rnw::new("aa", "X", 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn transform_handles_utf8_safely() {
-        // troca a 2ª ocorrência de "ã" (0-based index=1)
+        // replaces the 2nd "ã" (0-based index=1)
         let t = Rnw::new("ã", "A", 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -121,12 +121,12 @@ mod tests {
 
     #[test]
     fn transform_handles_zero_length_matches_without_crash() {
-        // regex vazio costuma casar em "bordas" (inclusive fim),
-        // o importante aqui é: não crashar e produzir algo determinístico.
+        // an empty regex matches at boundaries (including the end);
+        // what matters is not crashing and producing a deterministic result.
         //
-        // Para input "ab", matches vazios em posições 0,1,2 (dependendo do motor)
-        // Vamos só testar um caso simples e estável: substituir o primeiro match (index 0)
-        // normalmente insere no começo.
+        // For input "ab" there are empty matches at 0, 1 and 2
+        // Test only the simple, stable case: replacing the first match (index 0)
+        // inserts at the start.
         let t = Rnw::new("", "X", 0).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -175,7 +175,7 @@ mod tests {
         let mut t = Rnw::default();
 
         let params = vec![
-            TextForgeParamTypes::Usize(7), // deveria ser String(pattern)
+            TextForgeParamTypes::Usize(7), // should be String(pattern)
             TextForgeParamTypes::String("b".to_string()),
             TextForgeParamTypes::Usize(2),
         ];

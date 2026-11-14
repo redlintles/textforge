@@ -152,7 +152,7 @@ mod tests {
             let bc = t.to_bytecode().unwrap();
 
             assert!(!bc.is_empty());
-            assert!(bc.len() >= 13); // header mínimo
+            assert!(bc.len() >= 13); // minimum header
 
             let mut i = 0;
 

@@ -35,8 +35,8 @@ mod tests {
 
     #[test]
     fn transform_pads_left_until_max_len_doc_example() {
-        // "banana" tem 6 chars, max_len=7 => precisa de 1 char de padding.
-        // extend_string("xy", 1) => "x" (pelo exemplo da doc)
+        // "banana" has 6 chars, max_len=7 => 1 char of padding.
+        // extend_string("xy", 1) => "x" (as in the docs example)
         let t = Padl::new("xy", 7);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -50,8 +50,8 @@ mod tests {
 
     #[test]
     fn transform_pads_left_multiple_chars() {
-        // 6 -> 10 precisa de 4 chars
-        // extend_string("xy", 4) => "xyxy" (comportamento esperado de repetição)
+        // 6 -> 10 needs 4 chars
+        // extend_string("xy", 4) => "xyxy" (the text repeats)
         let t = Padl::new("xy", 10);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -103,7 +103,7 @@ mod tests {
 
         let got = t.set_params(&params);
 
-        // parse_args! retorna InvalidParameters com a msg do callsite
+        // parse_args! returns InvalidParameters naming the parameter
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::InvalidParameters(
                 "parameter 1 (`text`) must be text, but it is a number".into(),
@@ -116,7 +116,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -134,7 +134,7 @@ mod tests {
             let t = Padl::new("xy", 7);
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;
@@ -151,8 +151,8 @@ mod tests {
             i += 1;
             assert_eq!(param_count, 2);
 
-            // Cada param: [total u64][type u32][payload_size u32][payload...]
-            // Implementação atual de to_bytecode emite: Usize(max_len) depois String(text)
+            // Each param: [total u64][type u32][payload_size u32][payload...]
+            // to_bytecode emits Usize(max_len), then String(text)
 
             // Param 1: String("xy")
             let _p1_total = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
@@ -183,12 +183,12 @@ mod tests {
 
         #[test]
         fn bytecode_param_order_currently_conflicts_with_set_params_expectation() {
-            // Este teste documenta o bug atual:
-            // - set_params espera [String, Usize]
-            // - to_bytecode emite [Usize, String]
+            // This test documents the current order mismatch:
+            // - set_params expects [String, Usize]
+            // - to_bytecode emits [Usize, String]
             //
-            // Aqui a gente mostra que, SE alguém tentar alimentar set_params
-            // com params na ordem do bytecode, vai falhar por tipo inválido.
+            // feeding set_params the parameters in bytecode order
+            // fails on the parameter type.
             let mut t = Padl::default();
 
             let params_as_emitted_by_to_bytecode_today = vec![

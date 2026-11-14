@@ -11,7 +11,7 @@ mod tests {
     use crate::utils::errors::TextForgeErrorCode;
 
     // ============================
-    // Contrato básico da instrução
+    // Basic instruction contract
     // ============================
 
     #[test]
@@ -97,7 +97,7 @@ mod tests {
     }
 
     // ============================
-    // transform(): alteração de variável existente
+    // transform(): changing an existing variable
     // ============================
 
     #[test]
@@ -126,14 +126,14 @@ mod tests {
 
         let n = ctx.get_var("n").unwrap();
         assert!(matches!(&n.value, VarValues::String(s) if s == "new"));
-        // continua mutável após a alteração
+        // still mutable after the change
         assert!(n.mutable);
     }
 
     #[test]
     fn transform_allows_changing_the_stored_type() {
-        // get_mut_var só valida mutabilidade, não tipo: nada em `mutv` impede
-        // trocar VarValues::String por VarValues::Usize na mesma entrada.
+        // get_mut_var checks only mutability, not type: nothing in `mutv` prevents
+        // replacing VarValues::String with VarValues::Usize in the same entry.
         let mut ctx = GlobalExecutionContext::new();
         ctx.add_var(
             "n",
@@ -249,7 +249,7 @@ mod tests {
             TextForgeErrorCode::NonMutableVariableError(_)
         ));
 
-        // e o valor original não deve ter sido tocado
+        // and the original value must be untouched
         let n = ctx.get_var("n").unwrap();
         assert!(matches!(&n.value, VarValues::String(s) if s == "old"));
     }
@@ -281,7 +281,7 @@ mod tests {
     }
 
     // ============================
-    // Integração: var declara, mutv altera
+    // Integration: var declares, mutv changes
     // ============================
 
     #[test]
@@ -312,8 +312,8 @@ mod tests {
 
     #[test]
     fn mutv_cannot_alter_a_variable_declared_by_val() {
-        // val declara sempre mutable: false, então mutv sobre um nome criado
-        // por val deve falhar com NonMutableVariableError.
+        // val always declares mutable: false, so mutv on a name created
+        // by val must fail with NonMutableVariableError.
         use crate::tokens::instructions::val::Val;
 
         let mut ctx = GlobalExecutionContext::new();

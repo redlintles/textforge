@@ -139,7 +139,7 @@ mod tests {
             let t = Dlc::new(2, 7).unwrap();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

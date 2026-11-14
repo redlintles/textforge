@@ -59,7 +59,7 @@ fn param_type_from_code(code: u32) -> Option<SyntaxToken> {
 /// instruction is expected; its value is checked when it is resolved at run time.
 fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: u32) -> bool {
     match (expected, actual, type_code) {
-        // Tipos diretos
+        // Direct types
         (SyntaxToken::String, SyntaxToken::String, PARAM_STRING) => true,
         (SyntaxToken::Usize, SyntaxToken::Usize, PARAM_USIZE) => true,
         // Numeric expression stored as text; its payload is checked after decoding.
@@ -67,7 +67,7 @@ fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: 
         (SyntaxToken::Token, SyntaxToken::Token, PARAM_TOKEN) => true,
         (SyntaxToken::Pipeline, SyntaxToken::Pipeline, PARAM_PIPELINE) => true,
 
-        // VarRef: pode aparecer onde o schema espera String/Usize/Token
+        // A VarRef can appear wherever the schema expects String/Usize/Token
         (SyntaxToken::String, SyntaxToken::String, PARAM_VARREF) => true,
         (SyntaxToken::Usize, SyntaxToken::String, PARAM_VARREF) => true,
         (SyntaxToken::Token, SyntaxToken::String, PARAM_VARREF) => true,
@@ -250,11 +250,11 @@ fn decode_param_record_to_valtype(
             Ok(ValType::VarRef(name))
         }
         PARAM_TOKEN => {
-            // Aqui payload é o "token payload":
+            // Here the payload is the "instruction payload":
             // opcode(u32) + param_count(u8) + params...
-            // Seu TextForgeParamTypes::from_bytecode já sabe ler o layout do PARAM_TOKEN
-            // (ele espera receber o param completo no formato param record ou no formato total_size+...,
-            // então vamos reconstruir no formato "param completo": total(u64)+type+payload_size+payload.
+            // TextForgeParamTypes::from_bytecode reads the PARAM_TOKEN layout
+            // (it expects the complete parameter record, total_size first,
+            // so rebuild the "complete parameter": total(u64)+type+payload_size+payload.
             let total = 8u64 + 4 + 4 + (payload.len() as u64);
             let full_len = usize::try_from(total).map_err(|error| {
                 TextForgeError::new(
@@ -437,7 +437,7 @@ fn read_instructions(
         let instruction_total_size_bytes = read_exact::<8>(reader, "bytecode instruction")?;
         let instruction_total_size = u64::from_be_bytes(instruction_total_size_bytes);
 
-        // mínimo interno = opcode(4) + param_count(1) = 5
+        // internal minimum = opcode(4) + param_count(1) = 5
         if instruction_total_size < 5 {
             return Err(TextForgeError::new(
                 TextForgeErrorCode::BytecodeParsingError("an instruction record declares an impossible size; the file is corrupt or was not written by TextForge".into()),
@@ -448,7 +448,7 @@ fn read_instructions(
 
         ensure_available(reader, instruction_total_size, "bytecode instruction")?;
 
-        // bytes consumidos dentro da instrução (sem contar os 8 do total_size)
+        // bytes consumed inside the instruction (not counting the 8 of total_size)
         let mut consumed_in_instruction: u64 = 0;
 
         // opcode (u32)
@@ -499,7 +499,7 @@ fn read_instructions(
             ));
         }
 
-        // lê params como ValType e valida vs schema
+        // read the params as ValType and check them against the schema
         let mut params: Vec<ValType> = Vec::with_capacity(param_count);
         let mut expected_i = 0usize;
 
@@ -564,7 +564,7 @@ fn read_instructions(
                 )
             })?;
 
-            // avança schema ignorando Literals e pulando optionals quando necessário
+            // advance the schema, skipping Literals and optional slots when needed
             while expected_i < expected.len() {
                 let expected_pt = &expected[expected_i].token;
 
@@ -638,7 +638,7 @@ fn read_instructions(
             }
         }
 
-        // instancia o token "default" (sem params aplicados!)
+        // create the default instruction (no params applied!)
         let token_ref =
             match TOKEN_TABLE.find((QuerySource::Bytecode(opcode), QueryTarget::Token))? {
                 TargetValue::Token(t) => t,

@@ -107,7 +107,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -122,13 +122,13 @@ mod tests {
 
         #[test]
         fn to_bytecode_has_expected_layout_and_decodes_param() {
-            // Confere layout gerado por to_bytecode! + write_as_instruction_param:
+            // Check the layout produced by to_bytecode! + write_as_instruction_param:
             // [total_size u64][opcode u32][param_count u8][param...]
             // param = [param_total_size u64][param_type u32][payload_size u32][payload...]
             let t = Ate::new(" bar");
             let bc = t.to_bytecode().unwrap();
 
-            // Header mínimo: 8 + 4 + 1 = 13 bytes
+            // Minimum header: 8 + 4 + 1 = 13 bytes
             assert!(bc.len() >= 13);
 
             let mut i = 0;
@@ -136,7 +136,7 @@ mod tests {
             let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
             i += 8;
 
-            // total_size = tamanho do "body" (opcode+count+params...)
+            // total_size = size of the body (opcode + count + params...)
             assert_eq!(total_size as usize, bc.len() - 8);
 
             let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());
@@ -147,17 +147,17 @@ mod tests {
             i += 1;
             assert_eq!(param_count, 1);
 
-            // param_total_size inclui os 8 bytes dele mesmo
+            // param_total_size includes its own 8 bytes
             let param_total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap()) as usize;
             i += 8;
 
-            // O resto do param tem (param_total_size - 8) bytes
+            // The rest of the param is (param_total_size - 8) bytes
             let param_start = i;
             let param_end = param_start + (param_total_size - 8);
 
             let param_payload_for_decoder = bc[param_start..param_end].to_vec();
 
-            // Agora dá pra usar seu decoder de param:
+            // Now decode the parameter:
             let decoded = TextForgeParamTypes::from_bytecode(param_payload_for_decoder).unwrap();
 
             match decoded {

@@ -72,9 +72,9 @@ mod tests {
 
     #[test]
     fn rmws_transform_unicode_whitespace_ok() {
-        // split_whitespace cobre vários espaços unicode.
-        // Ex.: NBSP (\u{00A0}) e EM SPACE (\u{2003}) podem variar por versão,
-        // então uso um que costuma ser reconhecido (EM SPACE).
+        // split_whitespace covers many Unicode spaces.
+        // NBSP (\u{00A0}) handling has varied between versions,
+        // so this uses EM SPACE, which is always whitespace.
         let t = Rmws::default();
         let input = "a\u{2003}b\u{2003}c".to_string();
         let mut ctx = GlobalExecutionContext::new();
@@ -115,7 +115,7 @@ mod tests {
             let t = Rmws::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13 bytes
+            // minimum header: 8 + 4 + 1 = 13 bytes
             assert!(bc.len() >= 13);
 
             let mut i = 0;
@@ -123,7 +123,7 @@ mod tests {
             let total_size = u64::from_be_bytes(bc[i..i + 8].try_into().unwrap());
             i += 8;
 
-            // total_size = tamanho do "body" (opcode+count+params...)
+            // total_size = size of the body (opcode + count + params...)
             assert_eq!(total_size as usize, bc.len() - 8);
 
             let opcode = u32::from_be_bytes(bc[i..i + 4].try_into().unwrap());

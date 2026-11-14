@@ -25,7 +25,7 @@ fn test_watcher_context_new_stores_fields_verbatim() {
 fn test_set_watcher_without_schedule_does_not_run() {
     let mut wl = WatcherList::default();
     wl.set_watcher("len", |c: WatcherContext| c.current.len().to_string());
-    // Nunca agendado -> run_watchers não deve produzir nenhuma entrada
+    // Never scheduled -> run_watchers must produce no entry
     wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
         .unwrap();
     assert!(wl.result.is_empty());
@@ -54,7 +54,7 @@ fn test_run_watchers_stores_result_under_current_counter() {
     wl.run_watchers(ctx("", "banana", None::<&str>, "add_to_end"))
         .unwrap();
 
-    let step0 = wl.result.first().expect("step 0 deveria existir");
+    let step0 = wl.result.first().expect("step 0 should exist");
     assert_eq!(step0.get("len").unwrap(), "6");
 }
 
@@ -107,20 +107,18 @@ fn test_reset_clears_result_and_counter_but_keeps_registration() {
     assert!(wl.result.is_empty());
     assert_eq!(wl.counter, 0);
 
-    // "len" continua registrado e agendado: run_watchers volta a produzir resultado
-    // sem precisar chamar set_watcher/schedule_watcher de novo.
+    // "len" is still registered and scheduled: run_watchers produces results again
+    // without calling set_watcher/schedule_watcher again.
     wl.run_watchers(ctx("", "abcd", None::<&str>, "add_to_end"))
         .unwrap();
     assert_eq!(wl.result.first().unwrap().get("len").unwrap(), "4");
 }
 
-// NOTA: o branch de erro "Watcher Not Found" dentro de run_watchers (o segundo
-// ok_or_else, distinto do de schedule_watcher) não é alcançável pela API pública
-// atual — schedule_watcher só agenda nomes já presentes em `watchers`, e não existe
-// remove_watcher pra desincronizar os dois mapas depois. Por isso não há teste
-// exercitando esse caminho; ele é só uma checagem defensiva.
-
-// ... ctx() e os testes anteriores continuam iguais ...
+// NOTE: the "watcher not found" error branch inside run_watchers (the second
+// ok_or_else, separate from schedule_watcher's) cannot be reached through the
+// public API: schedule_watcher only schedules names already in `watchers`, and there
+// is no remove_watcher to desynchronize the two maps. So no test
+// exercises that path; it is only a defensive check.
 
 #[test]
 fn test_to_json_writes_valid_json_matching_result() {
@@ -140,7 +138,7 @@ fn test_to_json_writes_valid_json_matching_result() {
 
     assert_eq!(parsed[0]["len"], "6");
     assert_eq!(parsed[1]["len"], "7");
-    // arquivo é removido automaticamente quando `file` sai de escopo
+    // the file is removed when `file` goes out of scope
 }
 
 #[test]
@@ -150,14 +148,14 @@ fn test_to_json_overwrites_existing_file() {
     wl.schedule_watcher("len", ExecutionWindows::All).unwrap();
 
     let file = NamedTempFile::new().unwrap();
-    fs::write(file.path(), "conteudo antigo que deve ser substituido").unwrap();
+    fs::write(file.path(), "old content that must be replaced").unwrap();
 
     wl.run_watchers(ctx("", "ab", None::<&str>, "add_to_end"))
         .unwrap();
     wl.to_json(file.path()).unwrap();
 
     let content = fs::read_to_string(file.path()).unwrap();
-    assert!(!content.contains("conteudo antigo"));
+    assert!(!content.contains("old content"));
 }
 
 fn populated_list() -> WatcherList {

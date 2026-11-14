@@ -434,7 +434,7 @@ mod tests {
     use std::borrow::Cow;
 
     fn disable_colors() {
-        // Mantém os testes determinísticos (sem ANSI).
+        // Keeps the tests deterministic (no ANSI).
         colored::control::set_override(false);
     }
 
@@ -507,7 +507,7 @@ mod tests {
     fn get_error_code_matches_all_variants() {
         use TextForgeErrorCode::*;
 
-        // cobre todos os braços do match de get_error_code()
+        // covers every arm of get_error_code()
         assert_eq!(FileNotFound(Cow::Borrowed("x")).get_error_code(), 1);
         assert_eq!(TokenNotFound(Cow::Borrowed("x")).get_error_code(), 2);
         assert_eq!(TokenArrayNotFound(Cow::Borrowed("x")).get_error_code(), 3);
@@ -660,7 +660,7 @@ mod tests {
     #[test]
     fn message_returns_the_same_inner_reference_for_all_variants() {
         // cobre o match "achatado" (| A(x) | B(x) => x) do method message()
-        // com alguns exemplos de grupos diferentes.
+        // with a few examples from different groups.
         use TextForgeErrorCode::*;
 
         let m1 = FileNotFound(Cow::Borrowed("a")).message().as_ref();
@@ -705,7 +705,7 @@ mod tests {
         mgr.reserve_errors(256);
         let after = mgr.error_vec.capacity();
 
-        assert!(after >= before, "reserve não deve reduzir capacity");
+        assert!(after >= before, "reserve must not reduce the capacity");
     }
 
     #[test]
@@ -751,17 +751,17 @@ mod tests {
 
         let out = String::from_utf8(buf).unwrap();
 
-        // seções do writer helper
+        // sections of the writer helper
         assert!(out.contains("Code:"));
         assert!(out.contains("Instruction:"));
         assert!(out.contains("Message:"));
         assert!(out.contains("Processing:"));
 
-        // índices enumerados
+        // enumerated indices
         assert!(out.contains("[0]"));
         assert!(out.contains("[1]"));
 
-        // conteúdo das mensagens/instruções/inputs
+        // message, instruction and input contents
         assert!(out.contains("first"));
         assert!(out.contains("second"));
         assert!(out.contains("inst1"));
@@ -808,10 +808,10 @@ mod tests {
             mgr.handle_error(err);
         }));
 
-        assert!(result.is_err(), "deve panicar quando panic_with_error=true");
+        assert!(result.is_err(), "must panic when panic_with_error=true");
         assert!(
             mgr.has_errors(),
-            "deve ter armazenado o erro antes do panic"
+            "must have stored the error before panicking"
         );
         assert_eq!(mgr.error_vec.len(), 1);
     }

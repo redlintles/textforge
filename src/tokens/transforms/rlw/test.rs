@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn transform_replaces_last_match_when_regex_groups() {
-        // aqui "a+" casa o bloco inteiro como UM match, então trocar "último match" == trocar o único match.
+        // "a+" matches the whole run as ONE match, so the last match is the only match.
         let t = Rlw::new("a+", "b").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn transform_handles_utf8_safely() {
-        // se o regex encontra "ã", a substituição precisa manter UTF-8 correto
+        // when the regex finds "ã", the replacement must keep the UTF-8 valid
         let t = Rlw::new("ã", "A").unwrap();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -147,7 +147,7 @@ mod tests {
             let mut t = Rlw::default();
 
             let params = vec![
-                TextForgeParamTypes::Usize(7), // deveria ser String (pattern)
+                TextForgeParamTypes::Usize(7), // should be String (pattern)
                 TextForgeParamTypes::String("b".to_string()),
             ];
 

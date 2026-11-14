@@ -91,7 +91,7 @@ pub fn process_input_by_chunks(
         processed.push(result);
     }
 
-    // Último chunk
+    // Last chunk
     let left_chunk_bound = get_safe_utf8_char_index((iterations - 1) * chunk_size, input)?;
     let result = process_run(processor, identifier, &input[left_chunk_bound..], debug)?;
     processed.push(result);

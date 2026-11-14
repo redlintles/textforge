@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn transform_deletes_single_char_basic_example() {
-        // index 3 em "banana" remove 'a' => "banna"
+        // index 3 in "banana" removes 'a' => "banna"
         let t = Dls::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe_deletes_accented_char() {
-        // "ábc" removendo index 0 => "bc"
+        // "ábc" without index 0 => "bc"
         let t = Dls::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -82,7 +82,7 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe_deletes_emoji() {
-        // "a💥b" indices por char: 0:'a', 1:'💥', 2:'b'
+        // "a💥b" char indices: 0:'a', 1:'💥', 2:'b'
         let t = Dls::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -144,7 +144,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -162,7 +162,7 @@ mod tests {
             let t = Dls::new(7);
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

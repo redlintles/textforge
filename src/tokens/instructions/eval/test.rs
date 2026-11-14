@@ -15,10 +15,10 @@ mod tests {
     use crate::tokens::InstructionMethods;
     use crate::tokens::instructions::eval::{Eval, value_to_plain_string};
     use crate::utils::errors::TextForgeErrorCode;
-    use crate::utils::expr::build_eval_context; // ajuste pro path real (parser::params, no seu caso)
+    use crate::utils::expr::build_eval_context;
 
     // ============================
-    // Contrato básico da instrução
+    // Basic instruction contract
     // ============================
 
     #[test]
@@ -82,7 +82,7 @@ mod tests {
     }
 
     // ============================
-    // build_eval_context(): conversão VarValues -> evalexpr::Value
+    // build_eval_context(): VarValues -> evalexpr::Value conversion
     // ============================
 
     #[test]
@@ -135,8 +135,8 @@ mod tests {
 
     #[test]
     fn build_eval_context_keeps_float_like_string_as_string() {
-        // Decisão de projeto: float não é tentado na conversão, então uma
-        // string como "5.5" continua sendo Value::String, não Value::Float.
+        // Design decision: floats are not tried in the conversion, so a
+        // string like "5.5" stays Value::String, not Value::Float.
         let mut vars = HashMap::new();
         vars.insert(
             "n".to_string(),
@@ -168,7 +168,7 @@ mod tests {
     }
 
     // ============================
-    // value_to_plain_string(): sem os artefatos do Display do evalexpr
+    // value_to_plain_string(): without the artifacts of evalexpr's Display
     // ============================
 
     #[test]
@@ -202,7 +202,7 @@ mod tests {
     }
 
     // ============================
-    // transform(): contrato geral
+    // transform(): general contract
     // ============================
 
     #[test]
@@ -359,8 +359,8 @@ mod tests {
         t.transform("input".into(), Some(&mut ctx)).unwrap();
 
         let var = ctx.get_var("result").unwrap();
-        // Sem essa checagem, o Display do evalexpr guardaria "\"ola mundo\""
-        // (com aspas literais) em vez de "ola mundo".
+        // Without this check, evalexpr's Display would store "\"ola mundo\""
+        // (with literal quotes) instead of "ola mundo".
         assert!(matches!(&var.value, VarValues::String(s) if s == "ola mundo"));
     }
 
@@ -476,9 +476,9 @@ mod tests {
 
     #[test]
     fn transform_fails_when_mixing_float_like_string_var_with_arithmetic() {
-        // "5.5" não é convertido pra Value::Float (decisão de projeto), então
-        // continua Value::String — somar com um Int não é uma combinação
-        // válida pro operador `+` do evalexpr.
+        // "5.5" is not converted to Value::Float (design decision), so it
+        // stays Value::String, and adding it to an Int is not a valid
+        // combination for evalexpr's `+` operator.
         let mut ctx = GlobalExecutionContext::new();
         ctx.add_var(
             "n",

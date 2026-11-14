@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe_rotation() {
-        // "áβç" rotate right 1 => "çáβ"
+        // "áβç" rotated right by 1 => "çáβ"
         let t = Rtr::new(1);
         let mut ctx = GlobalExecutionContext::new();
 

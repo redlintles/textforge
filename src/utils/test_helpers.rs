@@ -33,20 +33,20 @@ pub fn build_all_tokens_pipeline_safe(
         .normalize_unicode("nfc")?
         .add_replace_rule("safe", "NEVER_MATCH_SENTINEL", "replacement")?
         .execute_replace_map("safe")?
-        // ========== FASE 0: base previsível e grande ==========
-        // Garante B repetido e bastante comprimento desde o início.
+        // ========== PHASE 0: a large, predictable base ==========
+        // Ensures repeated Bs and plenty of length from the start.
         .add_to_beginning("B__SEED__B__SEED__B__SEED__ ")?
-        // garante split_select("B", 1) seguro
+        // makes split_select("B", 1) safe
         .add_to_end(" Banana Laranja cheia de canja ")?
-        // texto original
+        // original text
         .pad_right("x", 160)?
-        // len alto para índices
-        // ========== BLOCO 1: deletes/replace/insert/rotates/trims ==========
+        // high length for the indices
+        // ========== BLOCK 1: deletes/replace/insert/rotates/trims ==========
         .repeat(3)?
         .delete_after(120)?
         .delete_before(3)?
         .delete_chunk(0, 3)?
-        // aqui ainda é string “normal”, mas seu token existe: ok
+        // still a "normal" string here, and the instruction exists
         .delete_first()?
         .delete_last()?
         .replace_all_with(r"a", "e")?
@@ -58,14 +58,14 @@ pub fn build_all_tokens_pipeline_safe(
         .trim_both_sides()?
         .trim_left_side()?
         .trim_right_side()?
-        // Checkpoint: depois de reduzir/alterar, re-garantir comprimento
+        // Checkpoint: after shrinking or changing it, restore the length
         .add_to_end(" B__GUARD__B__GUARD__B__GUARD__ ")?
-        // mantém Bs
+        // keeps the Bs
         .pad_right("p", 140)?
-        // ========== BLOCO 2: select + caps + split_select ==========
+        // ========== BLOCK 2: select + caps + split_select ==========
         .add_to_beginning("laranjadebananavermelha")?
         .select(0, 60)?
-        // (mudança importante) janela maior e previsível
+        // a larger, predictable window
         .replace_count_with("a", "b", 3)?
         .to_uppercase_all()?
         .to_lowercase_all()?
@@ -75,42 +75,42 @@ pub fn build_all_tokens_pipeline_safe(
         .capitalize_single_word(1)?
         .capitalize_last_word()?
         .capitalize_range(1, 3)?
-        // split_select: agora é seguro porque forçamos vários "B" no começo/fim
+        // split_select is safe now, because several "B"s are forced at the start and end
         .split_select("B", 1)?
-        // não deve virar "nj" minúsculo aqui
-        // Checkpoint pós split_select (porque ele pode encolher muito)
+        // must not become a lowercase "nj" here
+        // Checkpoint after split_select (it can shrink the text a lot)
         .add_to_end(" SAFE_SEGMENT_ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789 ")?
         .pad_right("q", 120)?
-        // ========== BLOCO 3: replace nth/last + url/html/json ==========
+        // ========== BLOCK 3: replace nth/last + url/html/json ==========
         .capitalize_chunk(1, 3)?
-        // ainda existe, mas chunk ainda não foi criado -> seu token aceita? ok.
+        // still exists, but no chunk has been created yet
         .replace_last_with("b", "c")?
         .replace_nth_with("b", "d", 1)?
-        // (mudança importante) nth menor pra não depender de muitas ocorrências
+        // a smaller nth, so it does not depend on many occurrences
         .to_url_encoded()?
         .to_url_decoded()?
         .to_reverse()?
         .split_characters()?
-        // daqui em diante estamos em chunks
+        // from here on the text is in chunks
         .to_html_escaped()?
         .to_html_unescaped()?
         .to_json_escaped()?
         .to_json_unescaped()?
-        // Checkpoint: garantir chunk suficiente (split_characters já cria muitos)
+        // Checkpoint: make sure there are enough chunks (split_characters creates many)
         .insert(1, "banana")?
-        // insere item/trecho em posição baixa
+        // inserts an item at a low position
         .to_uppercase_chunk(0, 6)?
-        // ranges curtos e seguros
+        // short, safe ranges
         .to_lowercase_chunk(0, 10)?
-        // ========== BLOCO 4: joins + pads ==========
+        // ========== BLOCK 4: joins + pads ==========
         .join_to_camel_case()?
         .join_to_kebab_case()?
         .join_to_pascal_case()?
         .join_to_snake_case()?
         .pad_left("xy", 60)?
         .pad_right("yx", 80)?
-        // ========== BLOCO 5: if_do_contains_each ==========
-        // Condição sempre verdadeira porque pad_left colocou "xy" e pad_right colocou "yx"
+        // ========== BLOCK 5: if_do_contains_each ==========
+        // Always true, because pad_left added "xy" and pad_right added "yx"
         .if_do_contains_each("xy", |b| {
             b.add_to_beginning("Banana")?
                 .add_to_end("Bonanza")?

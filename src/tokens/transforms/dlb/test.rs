@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn transform_deletes_before_index_example_like_doc() {
-        // index 3 em "banana ..." remove "ban" => "ana ..."
+        // index 3 in "banana ..." removes "ban" => "ana ..."
         let t = Dlb::new(3);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn transform_index_zero_keeps_string_intact() {
-        // drain(0..0) não remove nada
+        // drain(0..0) removes nothing
         let t = Dlb::new(0);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -56,8 +56,8 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe_char_indexing() {
-        // "á" é 1 char, mas múltiplos bytes: index por char deve funcionar
-        // index 1 remove só o primeiro char => "bcdef"
+        // "á" is one char but several bytes: indexing is by char
+        // index 1 removes only the first char => "bcdef"
         let t = Dlb::new(1);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn transform_errors_when_index_out_of_bounds() {
-        // check_index_against_input deve falhar antes do drain
+        // check_index_against_input must fail before the drain
         let t = Dlb::new(999);
         let mut ctx = GlobalExecutionContext::new();
 
@@ -120,7 +120,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -137,7 +137,7 @@ mod tests {
             let t = Dlb::new(7);
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

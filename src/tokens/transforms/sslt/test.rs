@@ -16,7 +16,7 @@ mod tests {
     #[test]
     fn to_textforge_line_is_correctish() {
         let t = Sslt::new("_", 1).unwrap();
-        // Regex Display imprime o pattern, então isso deve bater.
+        // Regex's Display prints the pattern, so this must match.
         assert_eq!(t.to_textforge_line().as_ref(), "sslt _ 1;\n");
     }
 
@@ -108,7 +108,7 @@ mod tests {
             let t = Sslt::new("_", 1).unwrap();
             let bc = t.to_bytecode().unwrap();
 
-            // Formato: [u64 total_size_be][u32 opcode_be][u8 param_count]...
+            // Layout: [u64 total_size_be][u32 opcode_be][u8 param_count]...
             assert!(bc.len() >= 13);
 
             let total_size = u64::from_be_bytes(bc[0..8].try_into().unwrap()) as usize;

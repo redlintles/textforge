@@ -10,7 +10,7 @@ mod tests {
     use crate::utils::errors::TextForgeErrorCode;
 
     // ============================
-    // Contrato básico da instrução
+    // Basic instruction contract
     // ============================
 
     #[test]
@@ -73,9 +73,9 @@ mod tests {
     }
 
     // ============================
-    // Regressão: diferente de Val::default(), Var::default() já bate com a
-    // gramática (slot[1] = String) e to_textforge_line já inclui o ";\n".
-    // Mantidos como testes positivos para travar o comportamento correto.
+    // Regression: unlike Val::default(), Var::default() matches the
+    // grammar (slot[1] = String) and to_textforge_line includes ";\n".
+    // Kept as positive tests to lock the correct behavior in.
     // ============================
 
     #[test]
@@ -102,7 +102,7 @@ mod tests {
     }
 
     // ============================
-    // transform(): declaração de variável no contexto
+    // transform(): declaring a variable in the context
     // ============================
 
     #[test]
@@ -123,9 +123,9 @@ mod tests {
 
         let var = ctx
             .get_var("n")
-            .expect("variável 'n' deveria existir no contexto");
+            .expect("variable 'n' should exist in the context");
         assert!(matches!(&var.value, VarValues::String(s) if s == "5"));
-        assert!(var.mutable, "var deve sempre declarar variável mutável");
+        assert!(var.mutable, "var must always declare a mutable variable");
     }
 
     #[test]
@@ -169,10 +169,10 @@ mod tests {
 
         let y = ctx
             .get_var("y")
-            .expect("'y' deveria ter sido criada a partir de 'x'");
+            .expect("'y' should have been created from 'x'");
         assert!(matches!(&y.value, VarValues::String(s) if s == "hi"));
-        // aliasing via var sempre cria a cópia como mutável, independente da
-        // mutabilidade da variável de origem (x é imutável, y não é).
+        // aliasing through var always makes the copy mutable, whatever the
+        // mutability of the source variable (x is immutable, y is not).
         assert!(y.mutable);
     }
 
@@ -211,9 +211,9 @@ mod tests {
 
     #[test]
     fn transform_redeclaring_existing_name_overwrites_it() {
-        // add_var faz insert puro (sem checar se já existe), então `var` sobre
-        // um nome já usado por um `val` (imutável) deve simplesmente sobrescrever
-        // e a nova entrada deve ficar mutável.
+        // add_var inserts unconditionally, so `var` on a name already
+        // used by a `val` (immutable) simply overwrites it
+        // and the new entry is mutable.
         let mut ctx = GlobalExecutionContext::new();
         ctx.add_var(
             "n",

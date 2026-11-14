@@ -34,7 +34,7 @@ mod tests {
 
     #[test]
     fn transform_lowercases_single_char_unicode() {
-        // Índices por CHAR: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
+        // Indices by CHAR: 0 b, 1 a, 2 n, 3 à, 4 n, 5 a
         let t = Tlcs::new(3);
         let mut ctx = GlobalExecutionContext::new();
 

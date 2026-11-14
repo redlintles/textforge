@@ -739,7 +739,7 @@ impl ValType {
                 Ok(TextForgeParamTypes::Token(v))
             }
 
-            // Coerção elástica: string <-> número
+            // Lenient coercion: string <-> number
             (TextForgeParamTypes::String(s), SyntaxToken::Usize) => s
                 .parse::<usize>()
                 .map(TextForgeParamTypes::Usize)
@@ -759,9 +759,9 @@ impl ValType {
                 Ok(TextForgeParamTypes::String(n.to_string()))
             }
 
-            // Token não tem conversão sensata a partir de String/Usize, e cobre
-            // também o caso degenerado de um TextForgeParamTypes::VarRef não resolvido
-            // chegando aqui (não deveria acontecer, mas é um catch-all seguro).
+            // A Token has no sensible conversion from String/Usize; this also covers
+            // the degenerate case of an unresolved TextForgeParamTypes::VarRef
+            // reaching this point (it should not happen, but this is a safe catch-all).
             (_, expected) => Err(TextForgeError::new(
                 TextForgeErrorCode::IncompatibleTypeError(
                     format!(
@@ -850,11 +850,11 @@ impl ValType {
         for (i, value) in values.iter().enumerate() {
             match value {
                 ValType::Literal(literal) => match (literal, expected_params[i]) {
-                    // Único braço que muda: uma string literal passa pela
-                    // interpolação antes de virar o parâmetro final. Isso
-                    // cobre tanto o caso comum (nenhum {{}}/[[]] presente —
-                    // interpolate() devolve a string inalterada pelo
-                    // fast-path) quanto strings com N marcadores misturados.
+                    // The only arm that differs: a string literal is interpolated
+                    // before it becomes the final parameter. This covers both the
+                    // common case (no {{}}/[[]] present, so
+                    // interpolate() returns the string unchanged on its
+                    // fast path) and strings with any number of markers.
                     (TextForgeParamTypes::String(s), SyntaxToken::String) => {
                         result.push(TextForgeParamTypes::String(render(i, s)?));
                     }

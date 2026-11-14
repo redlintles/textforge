@@ -112,7 +112,7 @@ mod tests {
     fn set_params_rejects_wrong_param_types() {
         let mut t = Raw::default();
 
-        // primeiro deveria ser String(pattern)
+        // the first should be String(pattern)
         let params = vec![
             TextForgeParamTypes::Usize(7),
             TextForgeParamTypes::String("b".to_string()),
@@ -152,7 +152,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {

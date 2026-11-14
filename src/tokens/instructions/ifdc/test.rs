@@ -17,8 +17,8 @@ mod tests {
 
     #[test]
     fn transform_executes_inner_if_contains() {
-        // Se Dlf faz "prefixo laranja" ou algo diferente, troque esse teste.
-        // Aqui eu só testo o fluxo: contém => chama inner, não contém => retorna input
+        // Tests only the flow: contains => runs the inner instruction,
+        // does not contain => returns the input
         let mut ctx = GlobalExecutionContext::new();
         let token = Ifdc::new("xy", TokenWrapper::default());
 
@@ -62,7 +62,7 @@ mod tests {
             let mut t = Ifdc::default();
             let params: Vec<TextForgeParamTypes> = vec![
                 TextForgeParamTypes::String("xy".to_string()),
-                // depende de como você representa tokens no bytecode:
+                // depends on how nested instructions are encoded:
                 TextForgeParamTypes::Token(TokenWrapper::default()),
             ];
 

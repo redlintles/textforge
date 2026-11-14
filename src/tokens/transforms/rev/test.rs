@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn transform_unicode_safe() {
-        // chars() => reversão por scalar values (não por byte)
+        // chars() => reverses scalar values (not bytes)
         let t = Rev::default();
         let mut ctx = GlobalExecutionContext::new();
 

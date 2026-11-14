@@ -87,7 +87,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -138,7 +138,7 @@ mod tests {
             let mut t = Rcw::default();
 
             let params = vec![
-                TextForgeParamTypes::Usize(7), // deveria ser String (pattern)
+                TextForgeParamTypes::Usize(7), // should be String (pattern)
                 TextForgeParamTypes::String("b".to_string()),
                 TextForgeParamTypes::Usize(3),
             ];

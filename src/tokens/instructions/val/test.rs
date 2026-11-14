@@ -14,7 +14,7 @@ mod tests {
     use crate::utils::errors::TextForgeErrorCode;
 
     // ============================
-    // Contrato básico da instrução
+    // Basic instruction contract
     // ============================
 
     #[test]
@@ -77,37 +77,37 @@ mod tests {
     }
 
     // ============================
-    // Bugs encontrados durante a escrita da suíte (não relacionados à inferência,
-    // mas pegos ao conferir Val::default() contra a gramática real em table.rs)
+    // Bugs found while writing this suite (unrelated to type inference,
+    // caught by checking Val::default() against the grammar in table.rs)
     // ============================
 
     #[test]
     fn default_params_should_match_val_syntax_but_currently_dont() {
-        // A sintaxe de `val` em table.rs declara os dois slots como
-        // SyntaxToken::String. `Val::default()`, porém, põe um `Token` no slot 1
-        // (em vez de String), inconsistente com o próprio `val_value` (String(""))
-        // e com o que `resolve_variables` exige. Se um `Val::default()` for
-        // envolvido num TokenWrapper sem passar por `set_params` antes
-        // (ex: `TokenWrapper::new(Box::new(Val::default()), None)`), isso quebra
-        // em runtime com IncompatibleTypeError. Documenta o formato correto
-        // esperado — falha contra a implementação atual.
+        // The `val` syntax in table.rs declares both slots as
+        // SyntaxToken::String. `Val::default()`, however, put a `Token` in slot 1
+        // (instead of String), inconsistent with its own `val_value` (String(""))
+        // and with what `resolve_variables` requires. A `Val::default()`
+        // wrapped in a TokenWrapper without going through `set_params` first
+        // (e.g. `TokenWrapper::new(Box::new(Val::default()), None)`) then broke
+        // at run time with IncompatibleTypeError. This documents the expected
+        // format.
         let t = Val::default();
         let params = t.get_params();
 
         assert!(
             matches!(params.get(1), Some(TextForgeParamTypes::String(_))),
-            "esperado slot[1] = String (bate com val_value/gramática), veio {:?}",
+            "expected slot[1] = String (matching val_value and the grammar), got {:?}",
             params.get(1)
         );
     }
 
     #[test]
     fn to_textforge_line_should_be_reparseable_but_is_missing_the_terminator() {
-        // Toda outra instrução termina to_textforge_line() com ";\n" (ver rpt:
-        // "rpt {};\n", rfw: "rfw {} {};\n") porque read_from_text espera um ';'
-        // no fim da linha (strip_suffix(";") em text/reader.rs). Val::to_textforge_line()
-        // não adiciona esse sufixo — serializar um pipeline com `val` e tentar reler
-        // via read_from_text vai falhar. Documenta o formato esperado; falha hoje.
+        // Every other instruction ends to_textforge_line() with ";\n" (see rpt:
+        // "rpt {};\n", rfw: "rfw {} {};\n") because read_from_text expects a ';'
+        // at the end of the line (strip_suffix(";") in text/reader.rs). Val::to_textforge_line()
+        // did not add that suffix, so serializing a pipeline with `val` and reading it back
+        // through read_from_text failed. This documents the expected format.
         let mut t = Val::default();
         t.set_params(&[
             TextForgeParamTypes::String("n".to_string()),
@@ -119,7 +119,7 @@ mod tests {
     }
 
     // ============================
-    // transform(): declaração de variável no contexto
+    // transform(): declaring a variable in the context
     // ============================
 
     #[test]
@@ -140,9 +140,12 @@ mod tests {
 
         let var = ctx
             .get_var("n")
-            .expect("variável 'n' deveria existir no contexto");
+            .expect("variable 'n' should exist in the context");
         assert!(matches!(&var.value, VarValues::String(s) if s == "5"));
-        assert!(!var.mutable, "val deve sempre declarar variável imutável");
+        assert!(
+            !var.mutable,
+            "val must always declare an immutable variable"
+        );
     }
 
     #[test]
@@ -169,7 +172,7 @@ mod tests {
 
         let y = ctx
             .get_var("y")
-            .expect("'y' deveria ter sido criada a partir de 'x'");
+            .expect("'y' should have been created from 'x'");
         assert!(matches!(&y.value, VarValues::String(s) if s == "hi"));
     }
 
@@ -207,15 +210,12 @@ mod tests {
     }
 
     // ============================
-    // resolve_variables(): coerção de tipo entre variável e slot consumidor.
-    // Os dois testes pedidos (String->Usize com sucesso e com falha) mais os
-    // casos irmãos (Usize->String, e o caso sem conversão possível: Token).
+    // resolve_variables(): type coercion between a variable and the slot that uses it.
+    // String->Usize (success and failure) plus the sibling cases
+    // (Usize->String, and the case with no possible conversion: Token).
     //
-    // Estes só passam depois que o coerce_var_value discutido anteriormente for
-    // aplicado em globals/var.rs — hoje "resolve_variables_coerces_*" vão falhar
-    // contra a implementação antiga (que só aceita match exato de tipo).
-    // Nota: exercitam resolve_variables, não Val diretamente — plausível candidato
-    // a migrar pra um módulo de teste próprio de globals::var no futuro.
+    // These exercise resolve_variables, not Val itself; they could move to
+    // a test module of their own.
     // ============================
 
     #[test]

@@ -98,7 +98,7 @@ fn build_cli() -> Command {
                 .required(true)
                 .value_name("FILE")
                 .value_parser(value_parser!(PathBuf))
-                .help("Arquivo .textforge ou .textforgebc")
+                .help("The pipeline file: a .textforge text pipeline, or a .textforgebc bytecode pipeline with --mode b")
         )
         .arg(
             Arg::new("input")
@@ -108,7 +108,7 @@ fn build_cli() -> Command {
                 .value_name("INPUT")
                 .value_parser(value_parser!(PathBuf))
                 .help(
-                    "The file that will be processed, if not specified, will read from stdin, otherwise, will use an empty string"
+                    "The file to process; without it, txf reads standard input"
                 )
         )
         .arg(
@@ -119,7 +119,7 @@ fn build_cli() -> Command {
                 .value_name("OUTPUT")
                 .value_parser(value_parser!(PathBuf))
                 .help(
-                    "The file where the output will be stored, if not specified, the content will just be printed in stdout"
+                    "The file to write the result to; without it, txf prints the result"
                 )
         )
         .arg(
@@ -139,15 +139,15 @@ fn build_cli() -> Command {
                             num.parse::<usize>()
                                 .map(ReadMode::Chunk)
                                 .map_err(|_|
-                                    Error::new(io::ErrorKind::InvalidInput, "Chunk size inválido")
+                                    Error::new(io::ErrorKind::InvalidInput, "the chunk size after `chunk-` must be a whole number of characters, as in chunk-4096")
                                 )
                         } else {
-                            Err(Error::new(io::ErrorKind::InvalidInput, "Modo inválido"))
+                            Err(Error::new(io::ErrorKind::InvalidInput, "unknown read mode; use all, line or chunk-N (for example chunk-4096)"))
                         }
                     }
                 )
                 .help(
-                    "Input Read mode, default value is 'all', meaning it will read all file contents as a single string, other possible values are 'line', to read the file line by line, and 'chunk-X', meaning it will read the file in chunks of X characters"
+                    "How to feed the input to the pipeline: 'all' (default) processes it as one text, 'line' processes each line separately, and 'chunk-N' processes it in pieces of N characters"
                 )
         )
         .arg(
@@ -159,7 +159,7 @@ fn build_cli() -> Command {
                 .value_parser(["b", "t"])
                 .default_value("t")
                 .help(
-                    "The TextForge mode that will be used, default is 't', for text mode, you can also use 'b' for bytecode mode"
+                    "How to read --file: 't' for a text pipeline (default) or 'b' for a bytecode pipeline"
                 )
         )
         .arg(
@@ -170,7 +170,7 @@ fn build_cli() -> Command {
                 .value_name("debug")
                 .action(ArgAction::SetTrue)
                 .help(
-                    "Determines whether TextForge will run in debug mode or not, default is false"
+                    "Print the text after each instruction (default: off)"
                 )
         )
 }

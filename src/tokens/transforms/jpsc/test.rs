@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn transform_collapses_whitespace() {
-        // split_whitespace() colapsa espaços/tabs/newlines
+        // split_whitespace() collapses spaces, tabs and newlines
         let t = Jpsc::default();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -79,7 +79,7 @@ mod tests {
         let t = Jpsc::default();
         let mut ctx = GlobalExecutionContext::new();
 
-        // depende do capitalize() do seu projeto; esperado típico:
+        // capitalize() uppercases the first char:
         assert_eq!(
             t.transform("maçã com canela".into(), Some(&mut ctx))
                 .unwrap()
@@ -110,7 +110,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -127,7 +127,7 @@ mod tests {
             let t = Jpsc::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

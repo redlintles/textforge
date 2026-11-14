@@ -43,7 +43,7 @@ mod tests {
                 .to_string(),
             "a   b"
         );
-        // explicação: chars = ['a',' ','b'] => "a" + " " + " " + " " + "b" => "a␠␠␠b"
+        // chars = ['a',' ','b'] => "a" + " " + " " + " " + "b" => "a␠␠␠b"
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod tests {
             let t = Splc::default();
             let bc = t.to_bytecode().unwrap();
 
-            // Formato esperado: [u64 total_size_be][u32 opcode_be][u8 param_count]...
+            // Expected layout: [u64 total_size_be][u32 opcode_be][u8 param_count]...
             assert!(bc.len() >= 13);
 
             let total_size = u64::from_be_bytes(bc[0..8].try_into().unwrap()) as usize;

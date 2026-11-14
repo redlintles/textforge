@@ -56,7 +56,7 @@ mod tests {
     #[test]
     fn transform_index_last_char_appends_after_last_char() {
         // chars: b a n a n a (len 6), last index = 5
-        // usa nth(index+1) -> None -> split_at(len) => append
+        // uses nth(index+1) -> None -> split_at(len) => append
         let t = Ins::new(5, "X");
         let mut ctx = GlobalExecutionContext::new();
 
@@ -70,8 +70,8 @@ mod tests {
 
     #[test]
     fn transform_index_equal_char_count_appends_current_behavior() {
-        // detalhe: o código só erra se index > chars_count, então index == chars_count PASSA.
-        // byte_index usa nth(index+1) => None -> append.
+        // the code fails only when index > chars_count, so index == chars_count is accepted.
+        // byte_index uses nth(index+1) => None -> append.
         let t = Ins::new(6, "X"); // chars_count("banana") = 6
         let mut ctx = GlobalExecutionContext::new();
 
@@ -106,11 +106,8 @@ mod tests {
         let got = t.transform("abc".into(), Some(&mut ctx));
         assert!(got.is_err());
 
-        // opcional: valida o tipo do erro (não o texto, pq tem detalhe bytes/chars)
+        // checks the error kind, not the text
         if let Err(e) = got {
-            // TextForgeError é PartialEq, mas mensagem varia. Checamos só o código.
-            // (Não temos getter do code aqui, então comparamos o TextForgeError completo é chato.)
-            // Ainda assim, dá pra comparar construindo exatamente se quiser.
             let _ = e;
         }
     }
@@ -150,7 +147,7 @@ mod tests {
 
         let got = t.set_params(&params);
 
-        // primeiro parse_args! falha com "parameter 1 (`index`) must be a non-negative integer, but it is text"
+        // the first parse_args! fails with "parameter 1 (`index`) must be a non-negative integer, but it is text"
         let expected = Err(crate::utils::errors::TextForgeError::new(
             TextForgeErrorCode::InvalidParameters(
                 "parameter 1 (`index`) must be a non-negative integer, but it is text".into(),
@@ -163,7 +160,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -181,7 +178,7 @@ mod tests {
             let t = Ins::new(7, "laranja");
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

@@ -66,7 +66,7 @@ impl InstructionMethods for Dlc {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let len = input.chars().count();
 
-        // opcional: se string vazia, deletar "tudo" vira vazio
+        // deleting "everything" from an empty text gives an empty text
         let mut end = self.end_index;
 
         // ✅ clamp correto (inclusive range). Empty input wraps here and the
@@ -96,12 +96,12 @@ impl InstructionMethods for Dlc {
                 )
             })?;
 
-        // ✅ agora end é garantidamente <= last_index, então end+1 pode ser == len
+        // end is now <= last_index, so end + 1 may equal len
         let end_index = input
             .char_indices()
             .nth(end + 1)
             .map(|(i, _)| i)
-            .unwrap_or_else(|| input.len()); // se end é o último char, after começa no fim
+            .unwrap_or_else(|| input.len()); // when end is the last char, `after` starts at the end
 
         Ok(crate::utils::allocation::replace(
             input,

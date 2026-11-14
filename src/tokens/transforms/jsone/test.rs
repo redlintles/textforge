@@ -38,10 +38,10 @@ mod tests {
     fn transform_escapes_quotes_and_backslashes() {
         let t = Jsone::default();
 
-        // input contém aspas e barra
+        // the input contains quotes and a backslash
         let input = r#"a "quote" and a \ slash"#;
 
-        // serde_json::to_string gera string JSON com aspas externas e escapes internos
+        // serde_json::to_string makes a JSON string with outer quotes and inner escapes
         let expected = "\"a \\\"quote\\\" and a \\\\ slash\"".to_string();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -85,7 +85,7 @@ mod tests {
         let t = Jsone::default();
 
         let input = "maçã 🍎";
-        // serde_json mantém unicode (não escapa como \uXXXX por padrão)
+        // serde_json keeps Unicode (no \uXXXX escapes by default)
         let expected = "\"maçã 🍎\"".to_string();
         let mut ctx = GlobalExecutionContext::new();
 
@@ -119,7 +119,7 @@ mod tests {
     }
 
     // ============================
-    // Bytecode-only tests (separados)
+    // Bytecode-only tests
     // ============================
     #[cfg(feature = "bytecode")]
     mod bytecode_tests {
@@ -135,7 +135,7 @@ mod tests {
             let t = Jsone::default();
             let bc = t.to_bytecode().unwrap();
 
-            // header mínimo: 8 + 4 + 1 = 13
+            // minimum header: 8 + 4 + 1 = 13
             assert!(bc.len() >= 13);
 
             let mut i = 0;

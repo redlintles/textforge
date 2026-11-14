@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn transform_errors_on_invalid_bounds() {
-        // start > end (depende de como seu validator define)
+        // start > end is rejected by the range validation
         let got = Tlcc::new(4, 1);
         assert!(got.is_err());
     }

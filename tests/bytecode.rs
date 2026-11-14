@@ -36,7 +36,7 @@ pub mod bytecode {
                 .unwrap();
         }
 
-        /// Um exemplar de cada "forma" de instrução: 1 String, 1 Usize, 2 Usize e zero params.
+        /// One example of each instruction shape: 1 String, 1 Usize, 2 Usize and no params.
         fn sample_tokens() -> Vec<TokenWrapper> {
             let mut ctc = Ctc::default();
             ctc.set_params(&[TextForgeParamTypes::Usize(0), TextForgeParamTypes::Usize(3)])
@@ -51,9 +51,9 @@ pub mod bytecode {
             ]
         }
 
-        /// Mesma lista de tokens, mas como instâncias soltas — usadas só pra
-        /// calcular o bytecode esperado via to_bytecode() de cada uma,
-        /// sem depender de literais de bytes escritos à mão.
+        /// The same instructions as standalone instances, used only to
+        /// compute the expected bytecode through each one's to_bytecode(),
+        /// without hand-written byte literals.
         fn sample_instructions() -> Vec<Box<dyn InstructionMethods>> {
             let mut ctc = Ctc::default();
             ctc.set_params(&[TextForgeParamTypes::Usize(0), TextForgeParamTypes::Usize(3)])
@@ -210,8 +210,8 @@ pub mod bytecode {
             tokens::transforms::{atb::Atb, ate::Ate, rpt::Rpt},
         };
 
-        // atb "Banana" + ate "Pizza" + rpt 5 sobre "Coxinha":
-        // prepend -> append -> repete o resultado 5 vezes.
+        // atb "Banana" + ate "Pizza" + rpt 5 on "Coxinha":
+        // prepend -> append -> repeat the result 5 times.
         let tokens: Vec<TokenWrapper> = vec![
             TokenWrapper::new(Box::new(Atb::new("Banana")), None),
             TokenWrapper::new(Box::new(Ate::new("Pizza")), None),
@@ -237,15 +237,15 @@ pub mod bytecode {
 
         assert!(
             file_path.exists(),
-            "writer não criou o arquivo: {:?}",
+            "the writer did not create the file: {:?}",
             file_path
         );
 
         let read_tokens = read_bytecode_from_file(Path::new(&file_path)).unwrap();
 
         let input = "Coxinha";
-        // "Banana" + "Coxinha" + "Pizza", repetido 5x — bate com atb "Banana",
-        // ate "Pizza" e rpt 5 aplicados nessa ordem.
+        // "Banana" + "Coxinha" + "Pizza", repeated 5 times, matching atb "Banana",
+        // ate "Pizza" and rpt 5, applied in that order.
         let expected_output = "BananaCoxinhaPizza".repeat(5);
 
         let mut processor: Box<dyn TextForgeProcessorMethods> = Box::new(TextForgeProcessor::new());

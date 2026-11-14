@@ -21,7 +21,7 @@ mod tests {
 
     #[test]
     fn transform_uppercases_chunk_inclusive() {
-        // 1..=4 em "banana" => "a n a n" vira "A N A N"
+        // 1..=4 in "banana" => "a n a n" becomes "A N A N"
         let t = Tucc::new(1, 4).unwrap();
         let mut ctx = GlobalExecutionContext::new();
 

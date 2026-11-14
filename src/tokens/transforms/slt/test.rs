@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn transform_rejects_invalid_bounds() {
-        // start > end deve falhar (quem define isso é seu check_chunk_bound_indexes)
+        // start > end must fail (checked by check_chunk_bound_indexes)
         let t = Slt::new(5, 1);
 
         assert!(t.is_err());
@@ -116,7 +116,7 @@ mod tests {
             let t = Slt::new(1, 3).unwrap();
             let bc = t.to_bytecode().unwrap();
 
-            // Formato: [u64 total_size_be][u32 opcode_be][u8 param_count]...
+            // Layout: [u64 total_size_be][u32 opcode_be][u8 param_count]...
             assert!(bc.len() >= 13);
 
             let total_size = u64::from_be_bytes(bc[0..8].try_into().unwrap()) as usize;
