@@ -1,3 +1,4 @@
+//! Transforms: instructions that change the text.
 pub mod apf;
 pub mod apl;
 pub mod atb;

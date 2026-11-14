@@ -1,3 +1,5 @@
+//! [`TextForgeProcessor`]: registers pipelines and runs them on strings,
+//! files and batches, with optional debug output, watchers and buffering.
 #[cfg(feature = "buffered")]
 mod buffered;
 pub(crate) mod file_io;
@@ -234,33 +236,27 @@ struct RegisteredPipeline {
     statics: Arc<StaticContext>,
 }
 
-/// Operational API for `TextForgeProcessor`.
+/// Everything a [`TextForgeProcessor`] does: register, persist, inspect, remove
+/// and run pipelines.
 ///
-/// This trait defines the public "surface" of the processor: how pipelines are registered,
-/// executed, persisted, inspected, and removed.
-///
-/// A **transform** is stored internally as:
-/// `HashMap<String, Vec<TokenWrapper>>`
-///
-/// Where the key is a UUID string and the value is a linear sequence of tokens.
-///
-/// ## Error reporting
-/// Most methods will:
-/// - return `Err(TextForgeError)` on failure
-/// - and also push a copy into the internal `ErrorManager` (where you already do that)
-///
-/// The exact behavior depends on the implementation (and your `ErrorManager` is still WIP).
+/// A registered pipeline is identified by the string returned when it is
+/// registered ([`add_transform`](Self::add_transform),
+/// [`get_pipeline_from_file`](Self::get_pipeline_from_file), a builder's
+/// `build()` or `read_from_bytecode_file`).
 ///
 /// ## Method groups
-/// Methods below are grouped by responsibility:
-/// - **Pipeline persistence (text)** — move a pipeline to/from a `.textforge` text file.
-/// - **Pipeline registration & inspection** — register, remove, list, or clone pipelines.
-/// - **Processing** — the only methods that ever run a pipeline against input text.
-/// - **Bytecode persistence** (`bytecode` feature) — move a pipeline to/from a `.textforgebc`
-///   binary file. Like the text persistence methods, these never process input directly; they
-///   only read/write `self.transforms`. To run a bytecode-loaded pipeline, register it with
-///   `read_from_bytecode_file` and then call any of the
-///   `process_*` methods, the same way you would for a text- or builder-originated pipeline.
+///
+/// - **Text persistence**: save a pipeline to, or load it from, a `.textforge` file.
+/// - **Registration and inspection**: register, remove, list or copy pipelines.
+/// - **Processing**: the only methods that run a pipeline on text (`process_*`,
+///   `run_transform`), with debug, watcher and buffered variants.
+/// - **Bytecode persistence** (`bytecode` feature): the same as text
+///   persistence for `.textforgebc` files.
+///
+/// ## Errors
+///
+/// Methods return [`TextForgeError`]; the processor also keeps a copy of the
+/// errors it reports.
 pub trait TextForgeProcessorMethods {
     // -----------------------------------------------------------------
     // Pipeline persistence (text format)

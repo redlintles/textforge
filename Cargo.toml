@@ -8,6 +8,8 @@ repository = "https://github.com/redlintles/textforge"
 documentation = "https://docs.rs/textforge"
 readme = "README.md"
 rust-version = "1.89"
+# Only `txf` is a binary; src/bin holds no program to install.
+autobins = false
 keywords = ["text", "dsl", "pipeline", "text-processing", "transform"]
 categories = ["text-processing", "command-line-utilities"]
 # Only what builds the crate and documents it: benchmarks, data sets, scripts
@@ -78,3 +80,4 @@ required-features = ["test_access"]
 
 [package.metadata.docs.rs]
 features = ["bytecode", "watchers", "buffered", "cli"]
+rustdoc-args = ["--cfg", "docsrs"]

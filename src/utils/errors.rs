@@ -1,3 +1,5 @@
+//! [`TextForgeError`], its [`TextForgeErrorCode`] and the [`ErrorManager`]
+//! that collects errors during processing.
 use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::Display;

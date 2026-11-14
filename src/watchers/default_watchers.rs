@@ -1,3 +1,6 @@
+//! Ready-made watchers: lengths, deltas and character counts of the current
+//! text. Each takes a [`WatcherContext`] and returns the
+//! value as a string.
 // watchers/default_watchers.rs
 use std::collections::HashSet;
 

@@ -1,3 +1,15 @@
+//! The public API: register pipelines, build them in Rust and run them.
+//!
+//! - [`processor::TextForgeProcessor`] owns registered pipelines and runs them
+//!   ([`processor::TextForgeProcessorMethods`]).
+//! - [`TextForgeBuilderMethods`] holds one method per instruction; a
+//!   [`builder::TextForgeBuilder`] (from
+//!   [`TextForgeProcessor::create_pipeline`](processor::TextForgeProcessor::create_pipeline))
+//!   collects them and registers the pipeline on [`build`](builder::TextForgeBuilder::build).
+//! - [`block_builder`], [`conditional_builder`] and [`ReplaceMapBuilder`] build
+//!   blocks, conditionals and replacement maps inside a builder.
+//! - [`profile`] chooses memory use and safety [`Limits`]; [`portable`] is the
+//!   owned, language-neutral surface used by the bindings.
 #[cfg(feature = "buffered")]
 mod text_buffer;
 #[cfg(feature = "buffered")]

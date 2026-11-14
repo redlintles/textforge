@@ -1,3 +1,11 @@
+//! Every instruction of the language, one module per mnemonic.
+//!
+//! [`transforms`] change the text; [`instructions`] control the run
+//! (variables, blocks, loops, sections, joins). Each module holds one struct
+//! that implements [`InstructionMethods`]; the struct's documentation gives the
+//! syntax and an example. Pipelines usually reach them through the builder
+//! ([`TextForgeBuilderMethods`](crate::api::TextForgeBuilderMethods)) or the
+//! text format rather than by constructing them directly.
 use std::borrow::Cow;
 
 use crate::context::execution_context::GlobalExecutionContext;

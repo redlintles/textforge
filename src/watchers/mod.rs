@@ -1,3 +1,12 @@
+//! Watchers (`watchers` feature): functions that observe a run step by step
+//! and build a JSON report, without changing the result.
+//!
+//! Register functions in a [`WatcherList`], schedule them with an
+//! [`ExecutionWindows`], and run a pipeline with
+//! [`process_all_with_watchers`](crate::api::processor::TextForgeProcessorMethods::process_all_with_watchers).
+//! Each function receives a [`WatcherContext`] (the text before and after the
+//! step, and the instruction) and returns a string for the report.
+//! [`default_watchers`] has ready-made statistics.
 use serde::{Serialize, Serializer, ser::SerializeSeq};
 use std::{
     collections::{BTreeMap, HashMap},

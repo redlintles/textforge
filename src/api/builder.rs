@@ -1,3 +1,6 @@
+//! [`TextForgeBuilder`]: collects instructions in Rust and registers them as a
+//! pipeline. The instruction methods come from
+//! [`TextForgeBuilderMethods`].
 use crate::{
     api::{TextForgeBlockMethods, TextForgeBuilderMethods, TextForgeConditionalMethods},
     parser::resolve_var::TokenWrapper,

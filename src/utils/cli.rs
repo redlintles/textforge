@@ -1,3 +1,5 @@
+//! Helpers of the `txf` program: chunked reading and profile resolution
+//! (`.txfrc`, flags). Only with the `cli` feature.
 use std::borrow::Cow;
 
 use crate::{

@@ -1,3 +1,5 @@
+//! Control instructions: variables, blocks, conditionals, loops, sections,
+//! replacement maps, pipeline joins and `end`.
 pub mod blk;
 pub mod cblk;
 pub mod end;

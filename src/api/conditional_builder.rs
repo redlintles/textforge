@@ -1,3 +1,5 @@
+//! Builders for conditional instructions (`ifdc`): the instructions run when
+//! the text contains a given value.
 use super::builder::tree::Node;
 use crate::{
     api::TextForgeBuilderMethods, parser::params::TextForgeParamTypes,
