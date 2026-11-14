@@ -1,6 +1,6 @@
 # File instructions
 
-`ppjn` runs a pipeline from another file. `wtf`, `apf` and `inf` let a
+`ppjn` runs a pipeline from another file. `wtf`, `apf`, `ppf` and `inf` let a
 pipeline write its current text to a file, or read text from files, in the
 middle of processing.
 
@@ -32,7 +32,7 @@ Builder: `pipeline_join(path)`. Portable: `InstructionSpec` `ppjn` with one
 
 ## Reading and writing files
 
-The paths of `wtf`, `apf` and `inf` are **data**:
+The paths of `wtf`, `apf`, `ppf` and `inf` are **data**:
 they may use `{{ }}` and `[[ ]]` interpolation and are resolved when the
 instruction runs. A relative path is relative to the process working
 directory. Files are read with the same helper as `process_file`
@@ -43,14 +43,16 @@ UTF-8 are distinct `TextForgeError`s that name the path.
 | --- | --- | --- | --- |
 | `wtf` | `wtf {file};` | Write the current text to `file`; the text is unchanged | `write_to_file(path)` |
 | `apf` | `apf {file};` | Append the contents of `file` to the end of the text | `append_file(path)` |
+| `ppf` | `ppf {file};` | Prepend the contents of `file` to the beginning of the text | `prepend_file(path)` |
 | `inf` | `inf {file} {index};` | Insert the contents of `file` after the character at `index` (base 0) | `insert_file(path, index)` |
 
-Opcodes: `wtf` 0x55, `apf` 0x56, `inf` 0x57. Portable plans use the same
+Opcodes: `wtf` 0x55, `apf` 0x56, `inf` 0x57, `ppf` 0x59. Portable plans use the same
 mnemonics with `Argument::Text` paths and an `Argument::Number` index.
 
 ```text
 tbs;
 wtf 'out/{{__PIPELINE_NAME__}}-trimmed.txt';   // save an intermediate state
+ppf 'templates/header.txt';
 apf 'templates/footer.txt';
 inf 'templates/signature.txt' 0;
 ```
@@ -81,13 +83,20 @@ copying it; otherwise the text's own buffer grows when it is owned. With
 `buffered`, a spooled document stays on disk. The file is read every time the
 instruction runs (inside `iter 100 times`, a hundred times).
 
+## `ppf` (prepend file)
+
+Reads the whole file and puts it before the text: the file's buffer becomes
+the output, so the text is copied once. An empty file returns the text without
+copying it. With `buffered`, a spooled document stays on disk. Like `apf`, the
+file is read every time the instruction runs.
+
 ## `inf` (insert file)
 
 Uses **exactly** the index rules of `ins` (the two share one function): the
 contents go after the character at `index`, counting Unicode scalar values from
 0; an index equal to the character count appends; a larger index is an
 `IndexOutOfRange` error. Like `ins`, it cannot insert before the first
-character; use `apf` for the end. The file is read before the index is
+character; use `ppf` for the beginning and `apf` for the end. The file is read before the index is
 checked, so a file error is reported first.
 
 Inside `onln`, `onck` and `onlni`, `inf`'s index is relative to the section,

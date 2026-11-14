@@ -1,4 +1,4 @@
-//! `wtf`, `apf` and `inf` through the DSL, the processor's modes, persistence
+//! `wtf`, `apf`, `ppf` and `inf` through the DSL, the processor's modes, persistence
 //! and batches.
 #![cfg(feature = "test_access")]
 
@@ -252,4 +252,55 @@ fn builders_and_portable_plans_match_the_text_form() {
         .unwrap();
     assert_eq!(portable.process_all(&id, "ab").unwrap(), "a!b!");
     assert_eq!(std::fs::read_to_string(&out).unwrap(), "ab");
+}
+
+#[test]
+fn ppf_prepends_through_the_dsl_builder_portable_bytecode_and_sections() {
+    let directory = tempfile::tempdir().unwrap();
+    let head = directory.path().join("head.txt");
+    std::fs::write(&head, "» ").unwrap();
+    let head_text = head.to_string_lossy().into_owned();
+
+    let mut processor = TextForgeProcessor::new();
+    let dsl = register(
+        &mut processor,
+        &[format!("ppf {};", quoted(&head)), "tua;".into()],
+    );
+    assert_eq!(processor.process_all(&dsl, "olá").unwrap(), "» OLÁ");
+    let sections = register(
+        &mut processor,
+        &[format!("onln 2 apply ppf {};", quoted(&head))],
+    );
+    assert_eq!(
+        processor.process_all(&sections, "a\nb\nc").unwrap(),
+        "a\n» b\nc"
+    );
+
+    let built = processor
+        .create_pipeline()
+        .prepend_file(head_text.as_str())
+        .unwrap()
+        .append_file(head_text.as_str())
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(processor.process_all(&built, "x").unwrap(), "» x» ");
+
+    #[cfg(feature = "bytecode")]
+    {
+        let bytecode = directory.path().join("p.textforgebc");
+        std::fs::write(&bytecode, "").unwrap();
+        processor.write_to_bytecode_file(&dsl, &bytecode).unwrap();
+        let loaded = processor.read_from_bytecode_file(&bytecode).unwrap();
+        assert_eq!(processor.process_all(&loaded, "olá").unwrap(), "» OLÁ");
+    }
+
+    let mut portable = PortableProcessor::new();
+    let id = portable
+        .add_transform(vec![InstructionSpec::new(
+            "ppf".into(),
+            vec![Argument::Text(head_text)],
+        )])
+        .unwrap();
+    assert_eq!(portable.process_all(&id, "x").unwrap(), "» x");
 }

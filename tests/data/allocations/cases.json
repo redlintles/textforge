@@ -526,6 +526,12 @@
     ]
   },
   {
+    "name": "ppf",
+    "lines": [
+      "ppf tests/data/allocations/piece.txt;"
+    ]
+  },
+  {
     "name": "inf",
     "lines": [
       "inf tests/data/allocations/piece.txt 2;"

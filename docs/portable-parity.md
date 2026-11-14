@@ -207,11 +207,11 @@ binding provides explicit typed methods matching the Rust names and delegates
 through this portable representation. No line-specific domain validation belongs
 in an adapter.
 
-## File instructions (unreleased)
+## File instructions
 
-Rust `pipeline_join(path)`, `write_to_file(path)`, `append_file(path)` and
-`insert_file(path, index)` map to `InstructionSpec` mnemonics `ppjn`, `wtf`,
-`apf` and `inf`, with
+Rust `pipeline_join(path)`, `write_to_file(path)`, `append_file(path)`,
+`prepend_file(path)` and `insert_file(path, index)` map to `InstructionSpec`
+mnemonics `ppjn`, `wtf`, `apf`, `ppf` and `inf`, with
 `Argument::Text` paths and an `Argument::Number` (or `Variable`) index. No new
 portable type or method is needed: the joined pipeline `ppjn` carries is
 implied by the instruction, so descriptions and snapshots hold only the path,

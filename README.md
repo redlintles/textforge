@@ -152,6 +152,7 @@ prints the effective profile. See [execution profiles](docs/execution-profiles.m
 | `ppjn` | Run a whole pipeline from another file in a new context (loaded once, embedded in bytecode) | `<pipeline file>` |
 | `wtf` | Write the current text to a file (atomically) and keep it unchanged | `<file>` |
 | `apf` | Append the contents of a UTF-8 file | `<file>` |
+| `ppf` | Prepend the contents of a UTF-8 file | `<file>` |
 | `inf` | Insert the contents of a UTF-8 file after the character at `index` (like `ins`) | `<file> <index>` |
 
 Paths accept `{{ }}`/`[[ ]]` interpolation. See [file instructions](docs/file-instructions.md).
@@ -324,7 +325,7 @@ examples/, scripts/             — Benchmark/probe programs and reproducible be
 ## Roadmap
 
 **Done**
-- [x] Core library with 88 instructions
+- [x] Core library with 89 instructions
 - [x] `.textforge` text format
 - [x] `.textforgebc` binary protocol
 - [x] `TextForgeBuilder`/`TextForgeProcessor` Rust API

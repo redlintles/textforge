@@ -2446,6 +2446,24 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// PPF — Prepend the contents of a UTF-8 file to the beginning of the text.
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// let path = std::env::temp_dir().join(format!("ppf-builder-{}.txt", std::process::id()));
+    /// std::fs::write(&path, "hello ").unwrap();
+    /// let mut processor = TextForgeProcessor::new();
+    /// let id = processor.create_pipeline().prepend_file(path.to_string_lossy().as_ref())?.build()?;
+    /// assert_eq!(processor.process_all(&id, "world")?, "hello world");
+    /// # std::fs::remove_file(&path).unwrap();
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn prepend_file(&mut self, path: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(Box::new(ppf::Ppf::default()), Some(vec![path.into()]));
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// INF — Insert the contents of a UTF-8 file after the character at
     /// `index` (base 0), with the index rules of [`insert`](Self::insert).
     ///
