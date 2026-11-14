@@ -75,7 +75,7 @@ impl InstructionMethods for Tlcw {
 
         check_vec_len(params, 1, "tlcw", "")?;
 
-        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.index = parse_args!(params, 0, Usize, "index");
         self.params = vec![self.index.into()];
 
         Ok(())

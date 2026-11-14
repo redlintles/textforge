@@ -6,10 +6,7 @@ use crate::{
     parse_args,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{
-        errors::{TextForgeError, TextForgeErrorCode},
-        validations::check_vec_len,
-    },
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 #[cfg(feature = "test_access")]
@@ -77,17 +74,12 @@ impl InstructionMethods for Emj {
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "emj", "")?;
-        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
+        let pattern_payload = parse_args!(params, 0, String, "pattern");
 
-        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
-            TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
-                "emj",
-                pattern_payload.clone(),
-            )
-        })?;
+        self.pattern = Regex::new(&pattern_payload)
+            .map_err(|error| crate::utils::errors::regex_error("emj", &pattern_payload, error))?;
 
-        self.separator = parse_args!(params, 1, String, "separator should be of type String");
+        self.separator = parse_args!(params, 1, String, "separator");
         self.params = vec![
             self.pattern.to_string().into(),
             self.separator.clone().into(),

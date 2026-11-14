@@ -79,8 +79,8 @@ impl InstructionMethods for Inf {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
         check_vec_len(params, 2, "inf", "")?;
-        self.path = parse_args!(params, 0, String, "Path should be of string type");
-        self.index = parse_args!(params, 1, Usize, "Index should be of usize type");
+        self.path = parse_args!(params, 0, String, "path");
+        self.index = parse_args!(params, 1, Usize, "index");
         self.params = vec![self.path.clone().into(), self.index.into()];
         Ok(())
     }

@@ -106,7 +106,7 @@ mod tests {
         let got = t.transform(input.into(), Some(&mut ctx));
 
         let expected = Err(TextForgeError::new(
-            TextForgeErrorCode::TextParsingError("Failed parsing URL string".into()),
+            TextForgeErrorCode::TextParsingError("the text is not valid URL encoding: a `%` must be followed by two hexadecimal digits, and the decoded bytes must be UTF-8".into()),
             "urld",
             input.to_string(),
         ));

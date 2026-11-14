@@ -46,8 +46,8 @@ impl InstructionMethods for Rmape {
         .into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 1, "rmape", "Invalid parameter count")?;
-        let _name = parse_args!(params, 0, String, "Map name must be text");
+        check_vec_len(params, 1, "rmape", "")?;
+        let _name = parse_args!(params, 0, String, "map name");
         self.params = params.to_vec();
         Ok(())
     }
@@ -56,12 +56,12 @@ impl InstructionMethods for Rmape {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        check_vec_len(&self.params, 1, "rmape", "Unbound map execution")?;
+        check_vec_len(&self.params, 1, "rmape", "")?;
         let context = context.ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::RequiredContextError(
-                    "Replacement maps require a context".into(),
-                ),
+                "`rmape` needs an execution context to find the replacement map; run it in a pipeline (TextForgeProcessor) instead of calling transform() without a context".into(),
+            ),
                 "rmape",
                 "",
             )
@@ -70,7 +70,9 @@ impl InstructionMethods for Rmape {
             TextForgeParamTypes::String(name) => name.as_str(),
             _ => {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::InvalidParameters("Map name must be text".into()),
+                    TextForgeErrorCode::InvalidParameters(
+                        "the replacement map name must be text".into(),
+                    ),
                     "",
                     "",
                 ));

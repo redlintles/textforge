@@ -67,8 +67,10 @@ impl InstructionMethods for Jsonu {
         }
         let result = serde_json::from_str::<String>(input.as_ref()).map_err(|_| {
             TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to deserialize to JSON".into()),
-                "serde_json::from_str",
+                TextForgeErrorCode::TextParsingError(
+                    "the text is not a JSON string literal; `jsonu` expects a quoted, escaped string such as \"a\\nb\"".into(),
+                ),
+                "jsonu",
                 crate::utils::errors::input_excerpt(&input),
             )
         })?;

@@ -55,8 +55,10 @@ mod tests {
         let got = t.transform("a_b".into(), Some(&mut ctx));
 
         let expected = Err(TextForgeError::new(
-            TextForgeErrorCode::IndexOutOfRange("Index does not exist in the splitted vec".into()),
-            t.to_textforge_line(),
+            TextForgeErrorCode::IndexOutOfRange(
+                "piece 99 does not exist: splitting by `_` gives 2 pieces".into(),
+            ),
+            "",
             "a_b".to_string(),
         ));
 

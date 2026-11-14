@@ -6,10 +6,7 @@ use crate::{
     parser::params::TextForgeParamTypes,
     parser::resolve_var::TokenWrapper,
     tokens::InstructionMethods,
-    utils::{
-        errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
-        validations::check_vec_len,
-    },
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 #[cfg(feature = "test_access")]
@@ -65,13 +62,8 @@ impl InstructionMethods for Blk {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let context = context.ok_or_else(|| {
-            TextForgeError::new(
-                RequiredContextError("Context required for proper working!".into()),
-                std::borrow::Cow::Borrowed("val"),
-                std::borrow::Cow::Borrowed(""),
-            )
-        })?;
+        let context = context
+            .ok_or_else(|| crate::utils::errors::context_required("blk", "store the block"))?;
         context.add_to_block(&self.block_name, self.inner.clone())?;
         Ok(input)
     }
@@ -80,34 +72,19 @@ impl InstructionMethods for Blk {
         &mut self,
         params: &[crate::parser::params::TextForgeParamTypes],
     ) -> Result<(), crate::utils::errors::TextForgeError> {
-        check_vec_len(
-            params,
-            2,
-            "block assoc",
-            "param parsing error, invalid vec len",
-        )?;
+        check_vec_len(params, 2, "blk", "")?;
 
-        let block_name = parse_args!(params, 0, String, "Block name should be of string type");
+        let block_name = parse_args!(params, 0, String, "block name");
         if let TextForgeParamTypes::Token(inner) = &params[1] {
             crate::parser::structure::validate_block_child(inner)?;
         }
-        let inner = parse_args!(params, 1, Token, "Block inner should be of token type");
+        let inner = parse_args!(params, 1, Token, "instruction");
         self.block_name = block_name;
         self.inner = inner;
 
         self.params = vec![
-            TextForgeParamTypes::String(parse_args!(
-                params,
-                0,
-                String,
-                "Block name should be of string type"
-            )),
-            TextForgeParamTypes::Token(parse_args!(
-                params,
-                1,
-                Token,
-                "Block inner should be of token type"
-            )),
+            TextForgeParamTypes::String(parse_args!(params, 0, String, "block name")),
+            TextForgeParamTypes::Token(parse_args!(params, 1, Token, "instruction")),
         ];
 
         Ok(())

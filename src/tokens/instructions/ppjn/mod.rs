@@ -193,7 +193,9 @@ impl InstructionMethods for Ppjn {
             (&params[0], &params[1])
         else {
             return Err(TextForgeError::new(
-                TextForgeErrorCode::InvalidParameters("ppjn takes a path".into()),
+                TextForgeErrorCode::InvalidParameters(
+                    "`ppjn` takes the path of a pipeline file as text".into(),
+                ),
                 "ppjn",
                 "",
             ));

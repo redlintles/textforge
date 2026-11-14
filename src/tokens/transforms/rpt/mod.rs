@@ -87,7 +87,9 @@ impl InstructionMethods for Rpt {
         }
         let output_len = input.len().checked_mul(self.times).ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::ValidationError("Repeated output size overflow".into()),
+                TextForgeErrorCode::ValidationError(
+                    format!("repeating the text {} times would produce more bytes than this machine can address", self.times).into(),
+                ),
                 "rpt",
                 format!("input_bytes={}, times={}", input.len(), self.times),
             )
@@ -95,7 +97,9 @@ impl InstructionMethods for Rpt {
         let reserve = |output: &mut String, additional| {
             output.try_reserve_exact(additional).map_err(|error| {
                 TextForgeError::new(
-                    TextForgeErrorCode::ValidationError("Cannot allocate repeated output".into()),
+                    TextForgeErrorCode::ValidationError(
+                        format!("not enough memory to repeat the text {} times", self.times).into(),
+                    ),
                     "rpt",
                     error.to_string(),
                 )
@@ -132,7 +136,7 @@ impl InstructionMethods for Rpt {
 
         check_vec_len(params, 1, "rpt", "")?;
 
-        self.times = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.times = parse_args!(params, 0, Usize, "times");
         self.params = vec![self.times.into()];
 
         Ok(())

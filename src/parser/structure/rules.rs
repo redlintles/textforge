@@ -149,7 +149,7 @@ impl ValidationRule for NestingRule {
         if context.inside_block && instruction.name == "blk" {
             return Err(TextForgeError::new(
                 TextForgeErrorCode::NestedBlocksNotAllowedError(
-                    "A block cannot contain another block at any descendant depth".into(),
+                    "a block cannot contain another block, at any depth".into(),
                 ),
                 instruction.name,
                 format!("depth={}", context.depth),
@@ -158,7 +158,7 @@ impl ValidationRule for NestingRule {
         if (context.inside_block || context.inside_iteration) && instruction.name == "rmapd" {
             return Err(TextForgeError::new(
                 TextForgeErrorCode::ValidationError(
-                    "Replacement maps may only be defined globally or inside conditionals".into(),
+                    "`rmapd` can only be used at the top level of a pipeline or inside a conditional (`ifdc`)".into(),
                 ),
                 instruction.name,
                 format!("depth={}", context.depth),
@@ -171,7 +171,17 @@ impl ValidationRule for NestingRule {
         });
         if context.depth > maximum {
             return Err(TextForgeError::new(
-                TextForgeErrorCode::ValidationError("Nested token depth exceeded".into()),
+                TextForgeErrorCode::ValidationError(
+                    format!(
+                        "instructions are nested too deeply: at most {maximum} {} allowed here",
+                        if maximum == 1 {
+                            "level is"
+                        } else {
+                            "levels are"
+                        }
+                    )
+                    .into(),
+                ),
                 instruction.name,
                 format!("depth={}, max={maximum}", context.depth),
             ));
@@ -213,13 +223,21 @@ impl ValidationRule for SignatureRule {
                 .collect::<Vec<_>>();
             if expected.len() != instruction.parameters.len() {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::InvalidParameters("Parameter count mismatch".into()),
-                    instruction.name,
-                    format!(
-                        "expected={}, got={}",
-                        expected.len(),
-                        instruction.parameters.len()
+                    TextForgeErrorCode::InvalidParameters(
+                        format!(
+                            "`{}` takes {}, but {} given",
+                            instruction.name,
+                            crate::utils::errors::plural(expected.len(), "parameter"),
+                            if instruction.parameters.len() == 1 {
+                                "1 was".to_owned()
+                            } else {
+                                format!("{} were", instruction.parameters.len())
+                            }
+                        )
+                        .into(),
                     ),
+                    instruction.name,
+                    "",
                 ));
             }
             for (index, (parameter, expected)) in
@@ -247,10 +265,23 @@ impl ValidationRule for SignatureRule {
                 if !compatible {
                     return Err(TextForgeError::new(
                         TextForgeErrorCode::IncompatibleTypeError(
-                            "Literal parameter type mismatch".into(),
+                            format!(
+                                "parameter {} of `{}` must be {}",
+                                index + 1,
+                                instruction.name,
+                                match expected {
+                                    SyntaxToken::String => "text",
+                                    SyntaxToken::Usize =>
+                                        "a non-negative integer (or an expression that gives one)",
+                                    SyntaxToken::Token => "an instruction",
+                                    SyntaxToken::Pipeline => "a joined pipeline",
+                                    SyntaxToken::Literal(_) => "a keyword",
+                                }
+                            )
+                            .into(),
                         ),
                         instruction.name,
-                        format!("parameter={index}, expected={expected:?}"),
+                        "",
                     ));
                 }
             }
@@ -311,7 +342,7 @@ impl ValidationRule for JoinPathRule {
         } else {
             Err(TextForgeError::new(
                 TextForgeErrorCode::ValidationError(
-                    "ppjn takes a literal path, without {{ }} or [[ ]]".into(),
+                    "`ppjn` needs a literal path: it is loaded with the pipeline, before any variable exists, so it cannot contain {{ }} or [[ ]]".into(),
                 ),
                 instruction.name,
                 "path",

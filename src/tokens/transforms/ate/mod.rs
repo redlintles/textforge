@@ -81,11 +81,10 @@ impl InstructionMethods for Ate {
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
-        use crate::parser::params::TextForgeParamTypesJoin;
 
-        check_vec_len(params, 1, "ate", params.join(""))?;
+        check_vec_len(params, 1, "ate", "")?;
 
-        self.text = parse_args!(params, 0, String, "Text should be of string type");
+        self.text = parse_args!(params, 0, String, "text");
 
         self.params = vec![self.text.to_string().into()];
 

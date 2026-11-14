@@ -1141,6 +1141,7 @@ impl TextForgeProcessor {
                 let red_result = result.red();
                 let temp = bound
                     .transform(result, Some(context))
+                    .map_err(|error| token.locate(error))
                     .inspect_err(|error| errors.add_error(error.clone()))?;
 
                 if token.get_string_repr() == "blk" {

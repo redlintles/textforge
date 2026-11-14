@@ -54,7 +54,7 @@ impl InstructionMethods for Null {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 0, "null", "param parsing error, invalid vec len")?;
+        check_vec_len(params, 0, "null", "")?;
 
         Ok(())
     }

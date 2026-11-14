@@ -65,7 +65,9 @@ impl InstructionMethods for Urld {
                     || !bytes[i + 2].is_ascii_hexdigit()
                 {
                     return Err(TextForgeError::new(
-                        TextForgeErrorCode::TextParsingError("Failed parsing URL string".into()),
+                        TextForgeErrorCode::TextParsingError(
+                    "the text is not valid URL encoding: a `%` must be followed by two hexadecimal digits, and the decoded bytes must be UTF-8".into(),
+                ),
                         "urld",
                         crate::utils::errors::input_excerpt(&input),
                     ));
@@ -78,7 +80,9 @@ impl InstructionMethods for Urld {
 
         let result = urlencoding::decode(input.as_ref()).map_err(|_| {
             TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed parsing URL string".into()),
+                TextForgeErrorCode::TextParsingError(
+                    "the text is not valid URL encoding: a `%` must be followed by two hexadecimal digits, and the decoded bytes must be UTF-8".into(),
+                ),
                 "urld",
                 crate::utils::errors::input_excerpt(&input),
             )

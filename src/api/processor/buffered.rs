@@ -314,7 +314,9 @@ impl TextForgeProcessor {
                             });
                         }
                     };
-                    input = bound.transform_buffered(input, Some(context))?;
+                    input = bound
+                        .transform_buffered(input, Some(context))
+                        .map_err(|error| token.locate(error))?;
                     write!(log, "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
                     counter.to_string().blue(), (counter + 1).to_string().blue(),
                     "Block Declaration: ".green(), line.yellow(), name.green(),
@@ -329,7 +331,9 @@ impl TextForgeProcessor {
                     )
                     .map_err(adapter_io)?;
                     write_document(&mut input, log, "\x1b[31m")?;
-                    input = bound.transform_buffered(input, Some(context))?;
+                    input = bound
+                        .transform_buffered(input, Some(context))
+                        .map_err(|error| token.locate(error))?;
                     log.write_all(b"\nAfter: ").map_err(adapter_io)?;
                     write_document(&mut input, log, "\x1b[32m")?;
                     log.write_all(b"\n\n").map_err(adapter_io)?;

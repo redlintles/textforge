@@ -21,7 +21,7 @@ pub fn write_bytecode_to_file(
         Err(_) => {
             return Err(TextForgeError::new(
                 crate::utils::errors::TextForgeErrorCode::FileOpeningError(
-                    "Failed opening File".into(),
+                    "cannot create the bytecode file".into(),
                 ),
                 "",
                 format!("{:?}", path),
@@ -51,10 +51,10 @@ fn write_bytecode(writer: &mut impl Write, tokens: &[TokenWrapper]) -> Result<()
         Err(_) => {
             return Err(TextForgeError::new(
                 crate::utils::errors::TextForgeErrorCode::FileWritingError(
-                    "Failed writing text to textforge file".into(),
+                    "cannot write the bytecode file".into(),
                 ),
-                "Write bytecode to file",
-                "Header writing error",
+                "bytecode file",
+                "header",
             ));
         }
     }
@@ -67,9 +67,9 @@ fn write_bytecode(writer: &mut impl Write, tokens: &[TokenWrapper]) -> Result<()
             Err(_) => {
                 return Err(TextForgeError::new(
                     crate::utils::errors::TextForgeErrorCode::FileWritingError(
-                        "Failed writing text to textforge file".into(),
+                        "cannot write the bytecode file".into(),
                     ),
-                    "Write bytecode to file",
+                    "bytecode file",
                     token.to_textforge_line(),
                 ));
             }

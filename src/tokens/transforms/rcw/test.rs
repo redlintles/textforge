@@ -146,7 +146,9 @@ mod tests {
             let got = t.set_params(&params);
 
             let expected = Err(crate::utils::errors::TextForgeError::new(
-                TextForgeErrorCode::InvalidParameters("Pattern should be of string type".into()),
+                TextForgeErrorCode::InvalidParameters(
+                    "parameter 1 (`pattern`) must be text, but it is a number".into(),
+                ),
                 "",
                 "",
             ));
@@ -167,8 +169,8 @@ mod tests {
             let got = t.set_params(&params);
 
             let expected = Err(crate::utils::errors::TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
+                TextForgeErrorCode::TextParsingError("`(` is not a valid regular expression: regex parse error:\n    (\n    ^\nerror: unclosed group".into()),
+                "rcw",
                 "(".to_string(),
             ));
 

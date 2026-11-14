@@ -58,9 +58,11 @@ impl Wtf {
 
 fn write_error(error: std::io::Error) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::FileWritingError(error.to_string().into()),
+        TextForgeErrorCode::FileWritingError(
+            format!("cannot write the text to the file: {error}").into(),
+        ),
         "wtf",
-        error.to_string(),
+        "",
     )
 }
 
@@ -112,7 +114,7 @@ impl InstructionMethods for Wtf {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
         check_vec_len(params, 1, "wtf", "")?;
-        self.path = parse_args!(params, 0, String, "Path should be of string type");
+        self.path = parse_args!(params, 0, String, "path");
         self.params = vec![self.path.clone().into()];
         Ok(())
     }

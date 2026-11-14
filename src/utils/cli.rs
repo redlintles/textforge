@@ -65,8 +65,10 @@ pub fn process_input_by_chunks(
     }
     if chunk_size == 0 {
         return Err(TextForgeError::new(
-            super::errors::TextForgeErrorCode::ZeroDivisionError("chunk size == 0".into()),
-            Cow::Borrowed("process_input_by_chunks"),
+            super::errors::TextForgeErrorCode::ZeroDivisionError(
+                "the chunk size must be at least 1 character".into(),
+            ),
+            Cow::Borrowed("txf"),
             crate::utils::errors::input_excerpt(input),
         ));
     }

@@ -8,10 +8,7 @@ use regex::Regex;
 use crate::{
     context::execution_context::GlobalExecutionContext,
     tokens::InstructionMethods,
-    utils::{
-        errors::{TextForgeError, TextForgeErrorCode},
-        validations::check_vec_len,
-    },
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 use crate::parser::params::TextForgeParamTypes;
@@ -108,22 +105,12 @@ impl InstructionMethods for Raw {
 
         check_vec_len(params, 2, "raw", "")?;
 
-        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
+        let pattern_payload = parse_args!(params, 0, String, "pattern");
 
-        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
-            TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                pattern_payload.clone(),
-            )
-        })?;
+        self.pattern = Regex::new(&pattern_payload)
+            .map_err(|error| crate::utils::errors::regex_error("raw", &pattern_payload, error))?;
 
-        self.text_to_replace = parse_args!(
-            params,
-            1,
-            String,
-            "Text_to_replace should be of type String"
-        );
+        self.text_to_replace = parse_args!(params, 1, String, "replacement");
 
         self.params = vec![
             self.pattern.to_string().into(),

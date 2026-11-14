@@ -113,10 +113,10 @@ impl InstructionMethods for Onck {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 3, "onck", "param parsing error, invalid vec len")?;
-        self.start_index = parse_args!(params, 0, Usize, "First argument should be an index");
-        self.end_index = parse_args!(params, 1, Usize, "Second argument should be an index");
-        self.inner = parse_args!(params, 2, Token, "Third argument should be an instruction");
+        check_vec_len(params, 3, "onck", "")?;
+        self.start_index = parse_args!(params, 0, Usize, "start");
+        self.end_index = parse_args!(params, 1, Usize, "end");
+        self.inner = parse_args!(params, 2, Token, "instruction");
         self.params = vec![
             self.start_index.into(),
             self.end_index.into(),

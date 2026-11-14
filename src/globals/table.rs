@@ -78,11 +78,21 @@ impl TokenTable {
         &self,
         (query_source, query_target): (QuerySource, QueryTarget),
     ) -> Result<TargetValue, TextForgeError> {
+        let unknown = match &query_source {
+            QuerySource::Identifier(id) => format!(
+                "unknown instruction `{id}`; see the instruction index (docs.rs/textforge, module `tokens`)"
+            ),
+            QuerySource::Bytecode(code) => {
+                format!(
+                    "unknown opcode 0x{code:02x}; the bytecode is corrupt or from a newer TextForge"
+                )
+            }
+        };
         let err = || {
             TextForgeError::new(
-                TextForgeErrorCode::TokenNotFound("Token Not Found in mapping".into()),
-                "TOKEN_TABLE.find()",
-                "query",
+                TextForgeErrorCode::TokenNotFound(unknown.clone().into()),
+                "",
+                "",
             )
         };
 

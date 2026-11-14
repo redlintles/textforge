@@ -75,7 +75,7 @@ impl InstructionMethods for Tucw {
         use crate::parse_args;
         check_vec_len(params, 1, "tucw", "")?;
 
-        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.index = parse_args!(params, 0, Usize, "index");
         self.params = vec![self.index.into()];
 
         Ok(())

@@ -88,8 +88,8 @@ impl InstructionMethods for Padr {
 
         check_vec_len(params, 2, "padr", "")?;
 
-        self.text = parse_args!(params, 0, String, "Text_to_insert should be of String type");
-        self.max_len = parse_args!(params, 1, Usize, "Index should be of usize type");
+        self.text = parse_args!(params, 0, String, "text");
+        self.max_len = parse_args!(params, 1, Usize, "length");
         self.params = vec![self.text.to_string().into(), self.max_len.into()];
 
         Ok(())

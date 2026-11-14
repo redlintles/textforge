@@ -9,9 +9,7 @@ use crate::{
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
     utils::{
-        errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
-        expr::value_to_plain_string,
-        template::CompiledExpr,
+        errors::TextForgeError, expr::value_to_plain_string, template::CompiledExpr,
         validations::check_vec_len,
     },
 };
@@ -55,11 +53,7 @@ impl InstructionMethods for Eval {
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let context = context.ok_or_else(|| {
-            TextForgeError::new(
-                RequiredContextError("Context required for proper working!".into()),
-                std::borrow::Cow::Borrowed("val"),
-                std::borrow::Cow::Borrowed(""),
-            )
+            crate::utils::errors::context_required("eval", "read and store variables")
         })?;
 
         let reader = VarReader::new(context, CurrentText::Str(&input));
@@ -93,10 +87,10 @@ impl InstructionMethods for Eval {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 2, "eval", "param parsing error, invalid vec len")?;
+        check_vec_len(params, 2, "eval", "")?;
 
-        self.expr = parse_args!(params, 0, String, "Expr should be of type string");
-        self.target = parse_args!(params, 1, String, " should be of type string");
+        self.expr = parse_args!(params, 0, String, "expression");
+        self.target = parse_args!(params, 1, String, "variable");
         check_definable(&self.target, "eval")?;
         self.compiled = Some(Arc::new(CompiledExpr::new(&self.expr)));
 

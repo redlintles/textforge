@@ -1698,7 +1698,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"ctc 1 8;\", input: \"\" }"
     },
     "owned": false
   },
@@ -1711,7 +1711,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"ctc 1 8;\", input: \"\" }"
     },
     "owned": true
   },
@@ -1724,7 +1724,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"ctc 1 8;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -1737,7 +1737,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"ctc 1 8;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -1750,7 +1750,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"ctc 1 8;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -1763,7 +1763,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"ctc 1 8;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -1776,7 +1776,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"ctc 1 8;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -1789,7 +1789,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"ctc 1 8;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -2374,7 +2374,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"cts 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -2387,7 +2387,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"cts 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -2400,7 +2400,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -2413,7 +2413,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -2426,7 +2426,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -2439,7 +2439,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -2452,7 +2452,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -2465,7 +2465,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -2478,7 +2478,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -2491,7 +2491,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -2556,7 +2556,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -2569,7 +2569,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -2582,7 +2582,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -2595,7 +2595,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"cts 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -2634,7 +2634,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"cts 1;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -2647,7 +2647,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"cts 1;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -2660,7 +2660,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"cts 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -2673,7 +2673,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"cts 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },
@@ -2712,7 +2712,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 0 characters\"), instruction: \"dla 30;\", input: \"\" }"
     },
     "owned": false
   },
@@ -2725,7 +2725,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 0 characters\"), instruction: \"dla 30;\", input: \"\" }"
     },
     "owned": true
   },
@@ -2738,7 +2738,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dla 30;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -2751,7 +2751,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dla 30;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -2764,7 +2764,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dla 30;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -2777,7 +2777,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dla 30;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -2790,7 +2790,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dla 30;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -2803,7 +2803,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dla 30;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -2816,7 +2816,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for e\\u{301}, only indexes between 0-1 are allowed!\"), instruction: \"check_index_against_input\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 2 characters (valid indices 0 to 1)\"), instruction: \"dla 30;\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -2829,7 +2829,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for e\\u{301}, only indexes between 0-1 are allowed!\"), instruction: \"check_index_against_input\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 2 characters (valid indices 0 to 1)\"), instruction: \"dla 30;\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -2894,7 +2894,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for already_normal, only indexes between 0-13 are allowed!\"), instruction: \"check_index_against_input\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 14 characters (valid indices 0 to 13)\"), instruction: \"dla 30;\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -2907,7 +2907,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for already_normal, only indexes between 0-13 are allowed!\"), instruction: \"check_index_against_input\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 14 characters (valid indices 0 to 13)\"), instruction: \"dla 30;\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -2920,7 +2920,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for \\\"plain\\\", only indexes between 0-6 are allowed!\"), instruction: \"check_index_against_input\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 7 characters (valid indices 0 to 6)\"), instruction: \"dla 30;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -2933,7 +2933,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for \\\"plain\\\", only indexes between 0-6 are allowed!\"), instruction: \"check_index_against_input\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 7 characters (valid indices 0 to 6)\"), instruction: \"dla 30;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -2972,7 +2972,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for \\u{2003} \\t, only indexes between 0-2 are allowed!\"), instruction: \"check_index_against_input\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 3 characters (valid indices 0 to 2)\"), instruction: \"dla 30;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -2985,7 +2985,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for \\u{2003} \\t, only indexes between 0-2 are allowed!\"), instruction: \"check_index_against_input\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 3 characters (valid indices 0 to 2)\"), instruction: \"dla 30;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -2998,7 +2998,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for \\r\\n\\r\\n, only indexes between 0-3 are allowed!\"), instruction: \"check_index_against_input\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 4 characters (valid indices 0 to 3)\"), instruction: \"dla 30;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -3011,7 +3011,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for \\r\\n\\r\\n, only indexes between 0-3 are allowed!\"), instruction: \"check_index_against_input\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 4 characters (valid indices 0 to 3)\"), instruction: \"dla 30;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },
@@ -3024,7 +3024,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e, only indexes between 0-8 are allowed!\"), instruction: \"check_index_against_input\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 9 characters (valid indices 0 to 8)\"), instruction: \"dla 30;\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
     },
     "owned": false
   },
@@ -3037,7 +3037,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 30 does not exist for a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e, only indexes between 0-8 are allowed!\"), instruction: \"check_index_against_input\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 30 is out of range: the text has 9 characters (valid indices 0 to 8)\"), instruction: \"dla 30;\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
     },
     "owned": true
   },
@@ -3050,7 +3050,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 0 characters\"), instruction: \"dlb 2;\", input: \"\" }"
     },
     "owned": false
   },
@@ -3063,7 +3063,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 0 characters\"), instruction: \"dlb 2;\", input: \"\" }"
     },
     "owned": true
   },
@@ -3076,7 +3076,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlb 2;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -3089,7 +3089,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlb 2;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -3102,7 +3102,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlb 2;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -3115,7 +3115,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlb 2;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -3128,7 +3128,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlb 2;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -3141,7 +3141,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlb 2;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -3154,7 +3154,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for e\\u{301}, only indexes between 0-1 are allowed!\"), instruction: \"check_index_against_input\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 2 characters (valid indices 0 to 1)\"), instruction: \"dlb 2;\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -3167,7 +3167,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 2 does not exist for e\\u{301}, only indexes between 0-1 are allowed!\"), instruction: \"check_index_against_input\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 2 is out of range: the text has 2 characters (valid indices 0 to 1)\"), instruction: \"dlb 2;\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -3388,7 +3388,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"dlc 1 3;\", input: \"\" }"
     },
     "owned": false
   },
@@ -3401,7 +3401,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"dlc 1 3;\", input: \"\" }"
     },
     "owned": true
   },
@@ -3414,7 +3414,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlc 1 3;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -3427,7 +3427,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlc 1 3;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -3440,7 +3440,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlc 1 3;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -3453,7 +3453,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlc 1 3;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -3466,7 +3466,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlc 1 3;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -3479,7 +3479,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"dlc 1 3;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -5078,7 +5078,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"dln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dln\", input: \"\" }"
     },
     "owned": false
   },
@@ -5091,7 +5091,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"dln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dln\", input: \"\" }"
     },
     "owned": true
   },
@@ -5104,7 +5104,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"x\" }"
     },
     "owned": false
   },
@@ -5117,7 +5117,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"x\" }"
     },
     "owned": true
   },
@@ -5130,7 +5130,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"é\" }"
     },
     "owned": false
   },
@@ -5143,7 +5143,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"é\" }"
     },
     "owned": true
   },
@@ -5156,7 +5156,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -5169,7 +5169,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -5182,7 +5182,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -5195,7 +5195,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -5260,7 +5260,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -5273,7 +5273,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -5286,7 +5286,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -5299,7 +5299,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -5338,7 +5338,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -5351,7 +5351,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -5416,7 +5416,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"dlna\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlna\", input: \"\" }"
     },
     "owned": false
   },
@@ -5429,7 +5429,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"dlna\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlna\", input: \"\" }"
     },
     "owned": true
   },
@@ -5442,7 +5442,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"x\" }"
     },
     "owned": false
   },
@@ -5455,7 +5455,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"x\" }"
     },
     "owned": true
   },
@@ -5468,7 +5468,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"é\" }"
     },
     "owned": false
   },
@@ -5481,7 +5481,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"é\" }"
     },
     "owned": true
   },
@@ -5494,7 +5494,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -5507,7 +5507,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -5520,7 +5520,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -5533,7 +5533,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -5598,7 +5598,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -5611,7 +5611,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -5624,7 +5624,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -5637,7 +5637,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -5676,7 +5676,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -5689,7 +5689,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -5754,7 +5754,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"dlnb\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlnb\", input: \"\" }"
     },
     "owned": false
   },
@@ -5767,7 +5767,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"dlnb\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlnb\", input: \"\" }"
     },
     "owned": true
   },
@@ -5780,7 +5780,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"x\" }"
     },
     "owned": false
   },
@@ -5793,7 +5793,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"x\" }"
     },
     "owned": true
   },
@@ -5806,7 +5806,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"é\" }"
     },
     "owned": false
   },
@@ -5819,7 +5819,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"é\" }"
     },
     "owned": true
   },
@@ -5832,7 +5832,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -5845,7 +5845,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -5858,7 +5858,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -5871,7 +5871,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -5936,7 +5936,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -5949,7 +5949,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -5962,7 +5962,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -5975,7 +5975,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -6014,7 +6014,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -6027,7 +6027,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -6092,7 +6092,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 1 does not exist; expected 1..=0\"), instruction: \"dlni\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlni\", input: \"\" }"
     },
     "owned": false
   },
@@ -6105,7 +6105,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 1 does not exist; expected 1..=0\"), instruction: \"dlni\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlni\", input: \"\" }"
     },
     "owned": true
   },
@@ -6118,7 +6118,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"x\" }"
     },
     "owned": false
   },
@@ -6131,7 +6131,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"x\" }"
     },
     "owned": true
   },
@@ -6144,7 +6144,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"é\" }"
     },
     "owned": false
   },
@@ -6157,7 +6157,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"é\" }"
     },
     "owned": true
   },
@@ -6170,7 +6170,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -6183,7 +6183,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -6196,7 +6196,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -6209,7 +6209,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -6274,7 +6274,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -6287,7 +6287,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -6300,7 +6300,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -6313,7 +6313,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -6352,7 +6352,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -6365,7 +6365,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"dlni\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlni\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -6430,7 +6430,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 0 characters\"), instruction: \"dls 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -6443,7 +6443,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 0 characters\"), instruction: \"dls 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -6456,7 +6456,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dls 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -6469,7 +6469,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dls 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -6482,7 +6482,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dls 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -6495,7 +6495,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dls 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -6508,7 +6508,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dls 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -6521,7 +6521,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"dls 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -7782,7 +7782,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"inl\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"inl\", input: \"\" }"
     },
     "owned": false
   },
@@ -7795,7 +7795,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"inl\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"inl\", input: \"\" }"
     },
     "owned": true
   },
@@ -8120,7 +8120,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in current string, for the input , only indexes between 0-18446744073709551615 are allowed\"), instruction: \"ins 1 xy;\\n\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"cannot insert after character 1: the text has 0 characters (insert after 0 to 0; the last appends)\"), instruction: \"ins 1 xy;\\n\", input: \"\" }"
     },
     "owned": false
   },
@@ -8133,7 +8133,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in current string, for the input , only indexes between 0-18446744073709551615 are allowed\"), instruction: \"ins 1 xy;\\n\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"cannot insert after character 1: the text has 0 characters (insert after 0 to 0; the last appends)\"), instruction: \"ins 1 xy;\\n\", input: \"\" }"
     },
     "owned": true
   },
@@ -14230,7 +14230,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"rln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"rln\", input: \"\" }"
     },
     "owned": false
   },
@@ -14243,7 +14243,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=0\"), instruction: \"rln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"rln\", input: \"\" }"
     },
     "owned": true
   },
@@ -14256,7 +14256,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"x\" }"
     },
     "owned": false
   },
@@ -14269,7 +14269,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"x\" }"
     },
     "owned": true
   },
@@ -14282,7 +14282,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"é\" }"
     },
     "owned": false
   },
@@ -14295,7 +14295,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"é\" }"
     },
     "owned": true
   },
@@ -14308,7 +14308,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -14321,7 +14321,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -14334,7 +14334,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -14347,7 +14347,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -14412,7 +14412,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -14425,7 +14425,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -14438,7 +14438,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -14451,7 +14451,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -14490,7 +14490,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -14503,7 +14503,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -17298,7 +17298,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 1 does not exist; expected 1..=0\"), instruction: \"slnc\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"slnc\", input: \"\" }"
     },
     "owned": false
   },
@@ -17311,7 +17311,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 1 does not exist; expected 1..=0\"), instruction: \"slnc\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"slnc\", input: \"\" }"
     },
     "owned": true
   },
@@ -17324,7 +17324,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"x\" }"
     },
     "owned": false
   },
@@ -17337,7 +17337,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"x\" }"
     },
     "owned": true
   },
@@ -17350,7 +17350,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"é\" }"
     },
     "owned": false
   },
@@ -17363,7 +17363,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"é\" }"
     },
     "owned": true
   },
@@ -17376,7 +17376,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -17389,7 +17389,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -17402,7 +17402,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -17415,7 +17415,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -17480,7 +17480,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -17493,7 +17493,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -17506,7 +17506,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -17519,7 +17519,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -17558,7 +17558,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -17571,7 +17571,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Line 2 does not exist; expected 1..=1\"), instruction: \"slnc\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"slnc\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -17636,7 +17636,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 0, but the text has 0 characters\"), instruction: \"slt 0 40;\", input: \"\" }"
     },
     "owned": false
   },
@@ -17649,7 +17649,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 0, but the text has 0 characters\"), instruction: \"slt 0 40;\", input: \"\" }"
     },
     "owned": true
   },
@@ -18312,7 +18312,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -18325,7 +18325,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -18338,7 +18338,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -18351,7 +18351,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -18364,7 +18364,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -18377,7 +18377,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -18390,7 +18390,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -18403,7 +18403,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -18416,7 +18416,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -18429,7 +18429,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -18494,7 +18494,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -18507,7 +18507,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -18520,7 +18520,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -18533,7 +18533,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -18598,7 +18598,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -18611,7 +18611,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },
@@ -18624,7 +18624,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
     },
     "owned": false
   },
@@ -18637,7 +18637,7 @@
     },
     "input": "a\u000bb\fcd e",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index does not exist in the splitted vec\"), instruction: \"sslt   1;\\n\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"piece 1 does not exist: splitting by ` ` gives 1 piece\"), instruction: \"sslt ' ' 1;\", input: \"a\\u{b}b\\u{c}c\\u{85}d\\u{2029}e\" }"
     },
     "owned": true
   },
@@ -19326,7 +19326,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"tlcc 1 8;\", input: \"\" }"
     },
     "owned": false
   },
@@ -19339,7 +19339,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"tlcc 1 8;\", input: \"\" }"
     },
     "owned": true
   },
@@ -19352,7 +19352,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcc 1 8;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -19365,7 +19365,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcc 1 8;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -19378,7 +19378,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcc 1 8;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -19391,7 +19391,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcc 1 8;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -19404,7 +19404,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcc 1 8;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -19417,7 +19417,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcc 1 8;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -19664,7 +19664,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 0 characters\"), instruction: \"tlcs 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -19677,7 +19677,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 0 characters\"), instruction: \"tlcs 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -19690,7 +19690,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcs 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -19703,7 +19703,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcs 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -19716,7 +19716,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcs 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -19729,7 +19729,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcs 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -19742,7 +19742,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcs 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -19755,7 +19755,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tlcs 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -20002,7 +20002,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tlcw 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -20015,7 +20015,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tlcw 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -20028,7 +20028,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -20041,7 +20041,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -20054,7 +20054,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -20067,7 +20067,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -20080,7 +20080,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -20093,7 +20093,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -20106,7 +20106,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -20119,7 +20119,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -20184,7 +20184,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -20197,7 +20197,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -20210,7 +20210,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -20223,7 +20223,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tlcw 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -20262,7 +20262,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tlcw 1;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -20275,7 +20275,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tlcw 1;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -20288,7 +20288,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tlcw 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -20301,7 +20301,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tlcw 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },
@@ -21354,7 +21354,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"tucc 1 8;\", input: \"\" }"
     },
     "owned": false
   },
@@ -21367,7 +21367,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 0 characters\"), instruction: \"tucc 1 8;\", input: \"\" }"
     },
     "owned": true
   },
@@ -21380,7 +21380,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucc 1 8;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -21393,7 +21393,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucc 1 8;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -21406,7 +21406,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucc 1 8;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -21419,7 +21419,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucc 1 8;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -21432,7 +21432,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucc 1 8;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -21445,7 +21445,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Start index does not exist in current string!\"), instruction: \"check_chunk_bound_indexes\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"the range starts at character 1, but the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucc 1 8;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -21692,7 +21692,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 0 characters\"), instruction: \"tucs 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -21705,7 +21705,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for , only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 0 characters\"), instruction: \"tucs 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -21718,7 +21718,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucs 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -21731,7 +21731,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for x, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucs 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -21744,7 +21744,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucs 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -21757,7 +21757,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for é, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucs 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -21770,7 +21770,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucs 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -21783,7 +21783,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Index 1 does not exist for 🍌, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_input\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"character index 1 is out of range: the text has 1 character (valid indices 0 to 0)\"), instruction: \"tucs 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -22030,7 +22030,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tucw 1;\", input: \"\" }"
     },
     "owned": false
   },
@@ -22043,7 +22043,7 @@
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tucw 1;\", input: \"\" }"
     },
     "owned": true
   },
@@ -22056,7 +22056,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"x\" }"
     },
     "owned": false
   },
@@ -22069,7 +22069,7 @@
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"x\" }"
     },
     "owned": true
   },
@@ -22082,7 +22082,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"é\" }"
     },
     "owned": false
   },
@@ -22095,7 +22095,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"é\" }"
     },
     "owned": true
   },
@@ -22108,7 +22108,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"🍌\" }"
     },
     "owned": false
   },
@@ -22121,7 +22121,7 @@
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"🍌\" }"
     },
     "owned": true
   },
@@ -22134,7 +22134,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
@@ -22147,7 +22147,7 @@
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
@@ -22212,7 +22212,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"already_normal\" }"
     },
     "owned": false
   },
@@ -22225,7 +22225,7 @@
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"already_normal\" }"
     },
     "owned": true
   },
@@ -22238,7 +22238,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
@@ -22251,7 +22251,7 @@
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Word index 1 does not exist for input, only indexes between 0-0 are allowed!\"), instruction: \"check_index_against_words\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has 1 word (valid indices 0 to 0)\"), instruction: \"tucw 1;\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
@@ -22290,7 +22290,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tucw 1;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -22303,7 +22303,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tucw 1;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -22316,7 +22316,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tucw 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -22329,7 +22329,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"Input has no words\"), instruction: \"check_index_against_words\", input: \"\\r\\n\\r\\n\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 1 is out of range: the text has no words\"), instruction: \"tucw 1;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },

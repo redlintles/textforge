@@ -58,8 +58,8 @@ impl InstructionMethods for Joinln {
         format!("{};\n", parts.join(" ")).into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 1, "joinln", "Invalid line instruction arity")?;
-        let separator = crate::parse_args!(params, 0, String, "Expected String");
+        check_vec_len(params, 1, "joinln", "")?;
+        let separator = crate::parse_args!(params, 0, String, "separator");
         self.separator = separator;
 
         self.params = params.to_vec();

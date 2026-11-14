@@ -84,7 +84,7 @@ fn read_exact<const N: usize>(
     let mut buf = [0u8; N];
     reader.read_exact(&mut buf).map_err(|e| {
         TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+            TextForgeErrorCode::BytecodeParsingError("the bytecode ended unexpectedly; the file is corrupt or was not written by TextForge".into()),
             ctx,
             e.to_string(),
         )
@@ -101,7 +101,7 @@ fn ensure_available(
     let remaining = reader.remaining().map_err(|error| {
         TextForgeError::new(
             TextForgeErrorCode::BytecodeParsingError(
-                "Cannot determine remaining bytecode size".into(),
+                "cannot determine the size of the bytecode file".into(),
             ),
             ctx,
             error.to_string(),
@@ -110,7 +110,7 @@ fn ensure_available(
     if len > remaining {
         return Err(TextForgeError::new(
             TextForgeErrorCode::BytecodeParsingError(
-                "Declared size exceeds remaining bytecode".into(),
+                format!("a record declares {len} bytes, but only {remaining} remain; the file is truncated or corrupt").into(),
             ),
             ctx,
             format!("declared={len}, remaining={remaining}"),
@@ -124,7 +124,9 @@ fn byte_buffer(len: usize, ctx: &'static str) -> Result<Vec<u8>, TextForgeError>
     let mut buffer = Vec::new();
     buffer.try_reserve_exact(len).map_err(|error| {
         TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Cannot allocate bytecode buffer".into()),
+            TextForgeErrorCode::BytecodeParsingError(
+                "not enough memory for a bytecode record".into(),
+            ),
             ctx,
             error.to_string(),
         )
@@ -142,7 +144,7 @@ fn read_vec(
     buf.resize(len, 0);
     reader.read_exact(&mut buf).map_err(|e| {
         TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Failed Reading Bytecode".into()),
+            TextForgeErrorCode::BytecodeParsingError("the bytecode ended unexpectedly; the file is corrupt or was not written by TextForge".into()),
             ctx,
             e.to_string(),
         )
@@ -152,14 +154,16 @@ fn read_vec(
 
 /// Skip compatible instruction padding without allocating a padding-sized buffer.
 fn skip_bytes(reader: &mut impl Source, len: u64) -> Result<(), TextForgeError> {
-    const CONTEXT: &str = "read_bytecode_from_file(skip)";
+    const CONTEXT: &str = "bytecode instruction";
     ensure_available(reader, len, CONTEXT)?;
     reader
         .stream_position()
         .and_then(|position| reader.seek(SeekFrom::Start(position + len)))
         .map_err(|error| {
             TextForgeError::new(
-                TextForgeErrorCode::BytecodeParsingError("Failed skipping bytecode padding".into()),
+                TextForgeErrorCode::BytecodeParsingError(
+                    "cannot skip the padding of a bytecode record".into(),
+                ),
                 CONTEXT,
                 error.to_string(),
             )
@@ -174,7 +178,7 @@ fn utf8_string(bytes: &[u8], ctx: &'static str) -> Result<String, TextForgeError
         .map_err(|e| {
             TextForgeError::new(
                 TextForgeErrorCode::BytecodeParamParsingError(
-                    "Failed parsing bytes to UTF8 string".into(),
+                    "a text parameter in the bytecode is not valid UTF-8".into(),
                 ),
                 ctx,
                 e.to_string(),
@@ -190,8 +194,8 @@ fn decode_param_record_to_valtype(
 ) -> Result<ValType, TextForgeError> {
     if param_record.len() < 8 {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Param record too small".into()),
-            "decode_param_record_to_valtype",
+            TextForgeErrorCode::BytecodeParsingError("a parameter record is shorter than its header; the file is corrupt or was not written by TextForge".into()),
+            "bytecode parameter",
             format!("len={}", param_record.len()),
         ));
     }
@@ -212,8 +216,8 @@ fn decode_param_record_to_valtype(
     let remaining = param_record.len().saturating_sub(8);
     if payload_size > remaining {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Payload exceeds remaining".into()),
-            "decode_param_record_to_valtype",
+            TextForgeErrorCode::BytecodeParsingError("a parameter declares more bytes than its record holds; the file is corrupt or was not written by TextForge".into()),
+            "bytecode parameter",
             format!("payload_size={}, remaining={}", payload_size, remaining),
         ));
     }
@@ -222,16 +226,16 @@ fn decode_param_record_to_valtype(
 
     match type_code {
         PARAM_STRING => {
-            let s = utf8_string(payload, "decode_param_record_to_valtype(PARAM_STRING)")?;
+            let s = utf8_string(payload, "bytecode parameter")?;
             Ok(ValType::Literal(TextForgeParamTypes::String(s)))
         }
         PARAM_USIZE => {
             if payload.len() != 8 {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParamParsingError(
-                        "Invalid usize payload size".into(),
+                        "a number parameter must be 8 bytes long; the file is corrupt or was not written by TextForge".into(),
                     ),
-                    "decode_param_record_to_valtype(PARAM_USIZE)",
+                    "bytecode parameter",
                     format!("len={}", payload.len()),
                 ));
             }
@@ -242,7 +246,7 @@ fn decode_param_record_to_valtype(
             )))
         }
         PARAM_VARREF => {
-            let name = utf8_string(payload, "decode_param_record_to_valtype(PARAM_VARREF)")?;
+            let name = utf8_string(payload, "bytecode parameter")?;
             Ok(ValType::VarRef(name))
         }
         PARAM_TOKEN => {
@@ -255,14 +259,14 @@ fn decode_param_record_to_valtype(
             let full_len = usize::try_from(total).map_err(|error| {
                 TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
-                        "Token parameter size overflow".into(),
+                        "a nested instruction is too large to read on this machine".into(),
                     ),
-                    "decode_param_record_to_valtype(PARAM_TOKEN)",
+                    "bytecode parameter",
                     error.to_string(),
                 )
             })?;
             let mut full_param =
-                byte_buffer(full_len, "decode_param_record_to_valtype(PARAM_TOKEN)")?;
+                byte_buffer(full_len, "bytecode parameter")?;
             full_param.extend_from_slice(&total.to_be_bytes());
             full_param.extend_from_slice(&PARAM_TOKEN.to_be_bytes());
             full_param.extend_from_slice(&(payload.len() as u32).to_be_bytes());
@@ -275,9 +279,9 @@ fn decode_param_record_to_valtype(
                 }
                 _ => Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
-                        "Expected Token wrapper from PARAM_TOKEN".into(),
+                        "internal error: a nested-instruction parameter did not decode to an instruction".into(),
                     ),
-                    "decode_param_record_to_valtype(PARAM_TOKEN)",
+                    "bytecode parameter",
                     "",
                 )),
             }
@@ -287,9 +291,9 @@ fn decode_param_record_to_valtype(
         ))),
         _ => Err(TextForgeError::new(
             TextForgeErrorCode::BytecodeParamNotRecognized(
-                format!("Param Bytecode Not Recognized 0x{:X}", type_code).into(),
+                format!("unknown parameter type 0x{type_code:02X} (known types: 0x01 text, 0x02 number, 0x03 instruction, 0x04 variable, 0x05 joined pipeline)").into(),
             ),
-            "decode_param_record_to_valtype",
+            "bytecode parameter",
             "",
         )),
     }
@@ -300,8 +304,8 @@ pub fn read_bytecode_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextFor
 
     let file = OpenOptions::new().read(true).open(path).map_err(|_| {
         TextForgeError::new(
-            TextForgeErrorCode::FileOpeningError("Failed opening File".into()),
-            "bytecode reader",
+            TextForgeErrorCode::FileOpeningError("cannot open the bytecode file".into()),
+            "bytecode file",
             format!("{:?}", path),
         )
     })?;
@@ -326,8 +330,8 @@ fn read_file(
         let mut file = file;
         file.read_to_end(&mut bytes).map_err(|_| {
             TextForgeError::new(
-                TextForgeErrorCode::FileOpeningError("Failed reading File".into()),
-                "bytecode reader",
+                TextForgeErrorCode::FileOpeningError("cannot read the bytecode file".into()),
+                "bytecode file",
                 format!("{:?}", path),
             )
         })?;
@@ -348,35 +352,31 @@ pub(crate) fn read_bytecode_from_bytes(bytes: &[u8]) -> Result<Vec<TokenWrapper>
 fn read_pipeline(reader: &mut impl Source) -> Result<Vec<TokenWrapper>, TextForgeError> {
     // --- header ---
     let expected_magic_number: [u8; 8] = [38, 235, 245, 8, 244, 137, 1, 179];
-    let magic_number = read_exact::<8>(reader, "read_bytecode_from_file(magic)")?;
+    let magic_number = read_exact::<8>(reader, "bytecode header")?;
     if magic_number != expected_magic_number {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::FileReadingError("Incompatible Magic Number with ATP".into()),
-            "bytecode reader",
+            TextForgeErrorCode::FileReadingError("this is not a TextForge bytecode file: it does not start with the TextForge magic number".into()),
+            "bytecode file",
             "",
         ));
     }
 
-    let protocol_version_bytes = read_exact::<8>(reader, "read_bytecode_from_file(protocol)")?;
+    let protocol_version_bytes = read_exact::<8>(reader, "bytecode header")?;
     let protocol_version = u64::from_be_bytes(protocol_version_bytes);
     if protocol_version != 1 {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Unsupported protocol version".into()),
-            "read_bytecode_from_file",
+            TextForgeErrorCode::BytecodeParsingError(format!("unsupported bytecode protocol version {protocol_version}; this version of TextForge reads version 1").into()),
+            "bytecode file",
             protocol_version.to_string(),
         ));
     }
 
-    let instruction_count_bytes = read_exact::<4>(reader, "read_bytecode_from_file(instr_count)")?;
+    let instruction_count_bytes = read_exact::<4>(reader, "bytecode header")?;
     let instruction_count = u32::from_be_bytes(instruction_count_bytes);
 
     // Even a parameterless instruction needs size(8), opcode(4), count(1).
     // Validate plausibility without reserving memory from an untrusted count.
-    ensure_available(
-        reader,
-        u64::from(instruction_count) * 13,
-        "read_bytecode_from_file(instr_count)",
-    )?;
+    ensure_available(reader, u64::from(instruction_count) * 13, "bytecode header")?;
     read_instructions(reader, instruction_count)
 }
 
@@ -392,11 +392,16 @@ pub(crate) fn decode_pipeline_payload(
     payload: &[u8],
 ) -> Result<crate::parser::joins::JoinState, TextForgeError> {
     use crate::parser::joins::{JoinState, JoinedPipeline, MAX_JOIN_DEPTH};
-    const CONTEXT: &str = "decode_pipeline_payload";
+    const CONTEXT: &str = "bytecode ppjn pipeline";
     let depth = EMBEDDED_DEPTH.with(Cell::get);
     if depth >= MAX_JOIN_DEPTH {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Embedded ppjn nesting too deep".into()),
+            TextForgeErrorCode::BytecodeParsingError(
+                format!(
+                    "pipelines joined with ppjn are nested more than {MAX_JOIN_DEPTH} levels deep"
+                )
+                .into(),
+            ),
             CONTEXT,
             format!("max={MAX_JOIN_DEPTH}"),
         ));
@@ -409,7 +414,7 @@ pub(crate) fn decode_pipeline_payload(
     let tokens = tokens?;
     if reader.remaining().unwrap_or(0) != 0 {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::BytecodeParsingError("Trailing bytes in embedded ppjn".into()),
+            TextForgeErrorCode::BytecodeParsingError("an embedded ppjn pipeline has extra bytes after its last instruction; the file is corrupt or was not written by TextForge".into()),
             CONTEXT,
             "",
         ));
@@ -429,43 +434,38 @@ fn read_instructions(
     // --- body ---
     for _ in 0..instruction_count {
         // instruction_total_size (u64)
-        let instruction_total_size_bytes =
-            read_exact::<8>(reader, "read_bytecode_from_file(instr_total)")?;
+        let instruction_total_size_bytes = read_exact::<8>(reader, "bytecode instruction")?;
         let instruction_total_size = u64::from_be_bytes(instruction_total_size_bytes);
 
         // mínimo interno = opcode(4) + param_count(1) = 5
         if instruction_total_size < 5 {
             return Err(TextForgeError::new(
-                TextForgeErrorCode::BytecodeParsingError("Invalid instruction_total_size".into()),
-                "read_bytecode_from_file",
+                TextForgeErrorCode::BytecodeParsingError("an instruction record declares an impossible size; the file is corrupt or was not written by TextForge".into()),
+                "bytecode file",
                 format!("instruction_total_size={}", instruction_total_size),
             ));
         }
 
-        ensure_available(
-            reader,
-            instruction_total_size,
-            "read_bytecode_from_file(instr_total)",
-        )?;
+        ensure_available(reader, instruction_total_size, "bytecode instruction")?;
 
         // bytes consumidos dentro da instrução (sem contar os 8 do total_size)
         let mut consumed_in_instruction: u64 = 0;
 
         // opcode (u32)
-        let opcode_bytes = read_exact::<4>(reader, "read_bytecode_from_file(opcode)")?;
+        let opcode_bytes = read_exact::<4>(reader, "bytecode instruction")?;
         let opcode = u32::from_be_bytes(opcode_bytes);
         consumed_in_instruction += 4;
 
         if opcode == 0 {
             return Err(TextForgeError::new(
-                TextForgeErrorCode::BytecodeParsingError("Invalid instruction opcode (0)".into()),
-                "read_bytecode_from_file",
+                TextForgeErrorCode::BytecodeParsingError("an instruction has opcode 0, which no instruction uses; the file is corrupt or was not written by TextForge".into()),
+                "bytecode file",
                 "opcode=0".to_string(),
             ));
         }
 
         // param_count (u8)
-        let param_count_bytes = read_exact::<1>(reader, "read_bytecode_from_file(param_count)")?;
+        let param_count_bytes = read_exact::<1>(reader, "bytecode instruction")?;
         let param_count = param_count_bytes[0] as usize;
         consumed_in_instruction += 1;
 
@@ -489,9 +489,9 @@ fn read_instructions(
         if param_count < min_required || param_count > max_allowed {
             return Err(TextForgeError::new(
                 TextForgeErrorCode::BytecodeParsingError(
-                    "Invalid param count for instruction".into(),
+                    "an instruction has the wrong number of parameters for its opcode".into(),
                 ),
-                "read_bytecode_from_file",
+                "bytecode file",
                 format!(
                     "opcode=0x{:x} got={} expected=[min={}, max={}]",
                     opcode, param_count, min_required, max_allowed
@@ -505,15 +505,14 @@ fn read_instructions(
 
         for param_i in 0..param_count {
             // Param total size (u64)
-            let param_total_size_bytes =
-                read_exact::<8>(reader, "read_bytecode_from_file(param_total)")?;
+            let param_total_size_bytes = read_exact::<8>(reader, "bytecode instruction")?;
             let param_total_size = u64::from_be_bytes(param_total_size_bytes);
             consumed_in_instruction += 8;
 
             if param_total_size < 8 {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::BytecodeParsingError("Invalid param_total_size".into()),
-                    "read_bytecode_from_file",
+                    TextForgeErrorCode::BytecodeParsingError("a parameter record declares an impossible size; the file is corrupt or was not written by TextForge".into()),
+                    "bytecode file",
                     format!("param_total_size={}", param_total_size),
                 ));
             }
@@ -523,30 +522,28 @@ fn read_instructions(
             if record_size > instruction_total_size.saturating_sub(consumed_in_instruction) {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
-                        "Parameter exceeds instruction size".into(),
+                        "a parameter is larger than the instruction that contains it; the file is corrupt or was not written by TextForge".into(),
                     ),
-                    "read_bytecode_from_file(param_record)",
+                    "bytecode instruction",
                     format!("param_total_size={param_total_size}"),
                 ));
             }
             let param_record_len = usize::try_from(record_size).map_err(|error| {
                 TextForgeError::new(
-                    TextForgeErrorCode::BytecodeParsingError("Parameter size overflow".into()),
-                    "read_bytecode_from_file(param_record)",
+                    TextForgeErrorCode::BytecodeParsingError(
+                        "a parameter is too large to read on this machine".into(),
+                    ),
+                    "bytecode instruction",
                     error.to_string(),
                 )
             })?;
-            let param_record = read_vec(
-                reader,
-                param_record_len,
-                "read_bytecode_from_file(param_record)",
-            )?;
+            let param_record = read_vec(reader, param_record_len, "bytecode instruction")?;
             consumed_in_instruction += param_record_len as u64;
 
             if param_record.len() < 4 {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::BytecodeParsingError("Param record too short".into()),
-                    "read_bytecode_from_file",
+                    TextForgeErrorCode::BytecodeParsingError("a parameter record is shorter than its header; the file is corrupt or was not written by TextForge".into()),
+                    "bytecode file",
                     format!("opcode=0x{:x} param_index={}", opcode, param_i),
                 ));
             }
@@ -560,9 +557,9 @@ fn read_instructions(
             let actual_pt = param_type_from_code(type_code).ok_or_else(|| {
                 TextForgeError::new(
                     TextForgeErrorCode::BytecodeParamNotRecognized(
-                        "Param Bytecode Not Recognized".into(),
+                        "unknown parameter type (known types: 0x01 text, 0x02 number, 0x03 instruction, 0x04 variable, 0x05 joined pipeline)".into(),
                     ),
-                    "read_bytecode_from_file",
+                    "bytecode file",
                     format!("type_code=0x{:x}", type_code),
                 )
             })?;
@@ -586,8 +583,10 @@ fn read_instructions(
                 }
 
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::BytecodeParsingError("Param type mismatch".into()),
-                    "read_bytecode_from_file",
+                    TextForgeErrorCode::BytecodeParsingError(
+                        "a parameter has the wrong type for its instruction".into(),
+                    ),
+                    "bytecode file",
                     format!(
                         "opcode=0x{:x} param={} got={:?}(0x{:x}) expected={:?}",
                         opcode, param_i, actual_pt, type_code, expected_pt
@@ -598,9 +597,9 @@ fn read_instructions(
             if expected_i >= expected.len() {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
-                        "Too many params (schema overflow)".into(),
+                        "an instruction has more parameters than its opcode accepts".into(),
                     ),
-                    "read_bytecode_from_file",
+                    "bytecode file",
                     format!("opcode=0x{:x} param_index={}", opcode, param_i),
                 ));
             }
@@ -610,8 +609,10 @@ fn read_instructions(
                 && matches!(&vt, ValType::Literal(TextForgeParamTypes::String(text)) if !is_numeric_template(text))
             {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::BytecodeParsingError("Param type mismatch".into()),
-                    "read_bytecode_from_file",
+                    TextForgeErrorCode::BytecodeParsingError(
+                        "a parameter has the wrong type for its instruction".into(),
+                    ),
+                    "bytecode file",
                     format!("opcode=0x{opcode:x} param={param_i} got=String expected=Usize"),
                 ));
             }
@@ -626,9 +627,9 @@ fn read_instructions(
             } else {
                 return Err(TextForgeError::new(
                     TextForgeErrorCode::BytecodeParsingError(
-                        "Instruction size mismatch (over-read)".into(),
+                        "the parameters of an instruction do not match its declared size; the file is corrupt or was not written by TextForge".into(),
                     ),
-                    "read_bytecode_from_file",
+                    "bytecode file",
                     format!(
                         "opcode=0x{:x} consumed={} expected={}",
                         opcode, consumed_in_instruction, instruction_total_size
@@ -648,8 +649,10 @@ fn read_instructions(
         // Grow only for records actually decoded and report reservation failures.
         result.try_reserve(1).map_err(|error| {
             TextForgeError::new(
-                TextForgeErrorCode::BytecodeParsingError("Cannot allocate instruction list".into()),
-                "read_bytecode_from_file(instr_count)",
+                TextForgeErrorCode::BytecodeParsingError(
+                    "not enough memory for the number of instructions the file declares".into(),
+                ),
+                "bytecode header",
                 error.to_string(),
             )
         })?;
@@ -686,7 +689,7 @@ mod tests {
             error.error_code,
             TextForgeErrorCode::BytecodeParsingError(_)
         ));
-        assert_eq!(error.instruction, "read_bytecode_from_file(instr_count)");
+        assert_eq!(error.instruction, "bytecode header");
     }
 
     #[test]

@@ -105,7 +105,9 @@ mod tests {
 
         // parse_args! retorna InvalidParameters com a msg do callsite
         let expected = Err(crate::utils::errors::TextForgeError::new(
-            TextForgeErrorCode::InvalidParameters("Text_to_insert should be of String type".into()),
+            TextForgeErrorCode::InvalidParameters(
+                "parameter 1 (`text`) must be text, but it is a number".into(),
+            ),
             "",
             "",
         ));
@@ -198,7 +200,7 @@ mod tests {
 
             let expected = Err(crate::utils::errors::TextForgeError::new(
                 TextForgeErrorCode::InvalidParameters(
-                    "Text_to_insert should be of String type".into(),
+                    "parameter 1 (`text`) must be text, but it is a number".into(),
                 ),
                 "",
                 "",

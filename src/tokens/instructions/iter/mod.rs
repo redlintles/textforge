@@ -97,9 +97,9 @@ impl InstructionMethods for Iter {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let context = context.ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::RequiredContextError(
-                    "Context required for iter instruction".into(),
-                ),
+                            TextForgeErrorCode::RequiredContextError(
+                "`iter` needs an execution context to keep __COUNTER__; run it in a pipeline (TextForgeProcessor) instead of calling transform() without a context".into(),
+            ),
                 "iter",
                 "",
             )
@@ -131,14 +131,9 @@ impl InstructionMethods for Iter {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 2, "iter", "param parsing error, invalid vec len")?;
-        self.times = parse_args!(params, 0, Usize, "First argument should be of type usize");
-        self.inner = parse_args!(
-            params,
-            1,
-            Token,
-            "Second argument should be of type instruction"
-        );
+        check_vec_len(params, 2, "iter", "")?;
+        self.times = parse_args!(params, 0, Usize, "times");
+        self.inner = parse_args!(params, 1, Token, "instruction");
         self.params = vec![self.times.into(), self.inner.clone().into()];
 
         Ok(())

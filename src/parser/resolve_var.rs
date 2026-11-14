@@ -351,19 +351,43 @@ impl TokenWrapper {
         context: &GlobalExecutionContext,
         text: CurrentText,
     ) -> Result<Box<dyn InstructionMethods>, TextForgeError> {
-        let params = ValType::resolve_variables(
-            self.token.as_ref(),
-            &self.params,
-            self.compiled.as_deref(),
-            context,
-            text,
-        )?;
-        let mut token = self.token.clone();
-        token.set_params(&params)?;
-        Ok(token)
+        let bind = || {
+            let params = ValType::resolve_variables(
+                self.token.as_ref(),
+                &self.params,
+                self.compiled.as_deref(),
+                context,
+                text,
+            )?;
+            let mut token = self.token.clone();
+            token.set_params(&params)?;
+            Ok(token)
+        };
+        bind().map_err(|error| self.locate(error))
+    }
+
+    /// Name this instruction in an error that does not say where it happened:
+    /// its source line (`dls 9;`), or its mnemonic when it has no text form.
+    pub(crate) fn locate(&self, mut error: TextForgeError) -> TextForgeError {
+        if error.instruction.is_empty() {
+            error.instruction = match self.to_text_line_unresolved() {
+                Ok(line) => line.trim_end().to_owned().into(),
+                Err(_) => self.get_string_repr().into(),
+            };
+        }
+        error
     }
 
     pub fn apply_token<'a>(
+        &self,
+        input: Cow<'a, str>,
+        context: &mut GlobalExecutionContext,
+    ) -> Result<Cow<'a, str>, TextForgeError> {
+        self.apply_unlocated(input, context)
+            .map_err(|error| self.locate(error))
+    }
+
+    fn apply_unlocated<'a>(
         &self,
         input: Cow<'a, str>,
         context: &mut GlobalExecutionContext,
@@ -437,7 +461,9 @@ impl TokenWrapper {
         let before = input.chars().count();
         // Bind once so the reported line shows the values actually executed.
         let bound = self.bind_for_debug(context, CurrentText::Str(&input))?;
-        let output = bound.transform(input, Some(context))?;
+        let output = bound
+            .transform(input, Some(context))
+            .map_err(|error| self.locate(error))?;
         if let Some(trace) = context.trace_mut() {
             let line = bound.to_textforge_line();
             trace.step(mark, Some((&line, before, output.chars().count())));
@@ -447,6 +473,16 @@ impl TokenWrapper {
 
     #[cfg(feature = "buffered")]
     pub(crate) fn apply_buffered(
+        &self,
+        input: crate::api::TextBuffer,
+        context: &mut GlobalExecutionContext,
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+        self.apply_buffered_unlocated(input, context)
+            .map_err(|error| self.locate(error))
+    }
+
+    #[cfg(feature = "buffered")]
+    fn apply_buffered_unlocated(
         &self,
         mut input: crate::api::TextBuffer,
         context: &mut GlobalExecutionContext,
@@ -512,8 +548,14 @@ impl TokenWrapper {
                 TargetValue::Syntax(syntax) => syntax,
                 _ => {
                     return Err(TextForgeError::new(
-                        TextForgeErrorCode::SerializationError("Missing instruction syntax".into()),
-                        "to_text_line_unresolved",
+                        TextForgeErrorCode::SerializationError(
+                            format!(
+                                "internal error: `{}` has no registered syntax",
+                                wrapper.get_string_repr()
+                            )
+                            .into(),
+                        ),
+                        "",
                         wrapper.get_string_repr(),
                     ));
                 }
@@ -533,9 +575,13 @@ impl TokenWrapper {
                 let parameter = parameters.next().ok_or_else(|| {
                     TextForgeError::new(
                         TextForgeErrorCode::SerializationError(
-                            "Missing instruction parameter".into(),
+                            format!(
+                                "`{}` has fewer parameters than its syntax needs",
+                                wrapper.get_string_repr()
+                            )
+                            .into(),
                         ),
-                        "to_text_line_unresolved",
+                        "",
                         wrapper.get_string_repr(),
                     )
                 })?;
@@ -543,9 +589,9 @@ impl TokenWrapper {
                     ValType::Literal(TextForgeParamTypes::Pipeline(_)) => {
                         return Err(TextForgeError::new(
                             TextForgeErrorCode::SerializationError(
-                                "Joined pipeline in a text position".into(),
+                                "internal error: a joined pipeline is where its syntax expects text".into(),
                             ),
-                            "to_text_line_unresolved",
+                            "",
                             wrapper.get_string_repr(),
                         ));
                     }
@@ -553,9 +599,10 @@ impl TokenWrapper {
                         output.pop().ok_or_else(|| {
                             TextForgeError::new(
                                 TextForgeErrorCode::SerializationError(
-                                    "Missing nested instruction".into(),
+                                    "internal error: the nested instruction was not serialized"
+                                        .into(),
                                 ),
-                                "to_text_line_unresolved",
+                                "",
                                 wrapper.get_string_repr(),
                             )
                         })?
@@ -566,9 +613,9 @@ impl TokenWrapper {
                         if !VAR_REF_RE.is_match(&reference) {
                             return Err(TextForgeError::new(
                                 TextForgeErrorCode::SerializationError(
-                                    "Variable name is not representable in text syntax; use bytecode export".into(),
+                                    format!("the variable name `{name}` cannot be written in the text format (a name is a letter or `_` followed by letters, digits or `_`); save the pipeline as bytecode instead").into(),
                                 ),
-                                "to_text_line_unresolved", name.clone(),
+                                "", name.clone(),
                             ));
                         }
                         shell_words::quote(&reference).into_owned()
@@ -577,9 +624,9 @@ impl TokenWrapper {
                         if value.contains(['\n', '\r']) {
                             return Err(TextForgeError::new(
                                 TextForgeErrorCode::SerializationError(
-                                    "Text pipeline parameters cannot contain line breaks; use bytecode export for multiline values".into(),
+                                    "a text parameter contains a line break, which the one-instruction-per-line text format cannot hold; save the pipeline as bytecode to keep multi-line values".into(),
                                 ),
-                                "to_text_line_unresolved", wrapper.get_string_repr(),
+                                "", wrapper.get_string_repr(),
                             ));
                         }
                         shell_words::quote(value).into_owned()
@@ -591,8 +638,10 @@ impl TokenWrapper {
         }
         let text = output.pop().ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::SerializationError("Missing root instruction".into()),
-                "to_text_line_unresolved",
+                TextForgeErrorCode::SerializationError(
+                    "internal error: the instruction produced no text".into(),
+                ),
+                "",
                 "",
             )
         })?;
@@ -631,8 +680,11 @@ impl TokenWrapper {
         // context-aware parameter writer keeps its existing resolved semantics.
         let count = u8::try_from(unresolved_params.len()).map_err(|_| {
             TextForgeError::new(
-                TextForgeErrorCode::BytecodeParsingError("Parameter count exceeds u8".into()),
-                "to_bytecode_unresolved",
+                TextForgeErrorCode::BytecodeParsingError(
+                    "an instruction with more than 255 parameters cannot be saved as bytecode"
+                        .into(),
+                ),
+                "bytecode",
                 "",
             )
         })?;
@@ -646,6 +698,17 @@ impl TokenWrapper {
         result.extend_from_slice(&(body.len() as u64).to_be_bytes());
         result.extend_from_slice(&body);
         Ok(result)
+    }
+}
+
+/// What a parameter slot needs, for error messages.
+fn describe_syntax(token: SyntaxToken) -> &'static str {
+    match token {
+        SyntaxToken::String => "text",
+        SyntaxToken::Usize => "a non-negative integer",
+        SyntaxToken::Token => "an instruction",
+        SyntaxToken::Pipeline => "a joined pipeline",
+        SyntaxToken::Literal(_) => "a keyword",
     }
 }
 
@@ -684,12 +747,11 @@ impl ValType {
                     TextForgeError::new(
                         TextForgeErrorCode::IncompatibleTypeError(
                             format!(
-                                "'{}' contém \"{}\", que não é um número válido",
-                                context_label, s
+                                "`{context_label}` gives \"{s}\", but this parameter needs a non-negative integer"
                             )
                             .into(),
                         ),
-                        "resolve_variables()",
+                        "",
                         "",
                     )
                 }),
@@ -703,12 +765,12 @@ impl ValType {
             (_, expected) => Err(TextForgeError::new(
                 TextForgeErrorCode::IncompatibleTypeError(
                     format!(
-                        "'{}' não pode ser usado como {:?} aqui",
-                        context_label, expected
+                        "`{context_label}` cannot be used here: this parameter needs {}",
+                        describe_syntax(expected)
                     )
                     .into(),
                 ),
-                "resolve_variables()",
+                "",
                 "",
             )),
         }
@@ -743,14 +805,21 @@ impl ValType {
 
         if values.len() != expected_params.len() {
             return Err(TextForgeError::new(
-                TextForgeErrorCode::InvalidParameters("Param count mismatch".into()),
-                "resolve_variables",
-                format!(
-                    "token={}, expected={}, got={}",
-                    t.get_string_repr(),
-                    expected_params.len(),
-                    values.len()
+                TextForgeErrorCode::InvalidParameters(
+                    format!(
+                        "`{}` takes {}, but {} given",
+                        t.get_string_repr(),
+                        crate::utils::errors::plural(expected_params.len(), "parameter"),
+                        if values.len() == 1 {
+                            "1 was".to_owned()
+                        } else {
+                            format!("{} were", values.len())
+                        }
+                    )
+                    .into(),
                 ),
+                "",
+                "",
             ));
         }
         Self::bind(values, expected_params, &reader, render, &mut result)?;
@@ -812,9 +881,15 @@ impl ValType {
                     _ => {
                         return Err(TextForgeError::new(
                             TextForgeErrorCode::IncompatibleTypeError(
-                                "Literal type and required param type are different".into(),
+                                format!(
+                                    "parameter {} must be {}, but it is {}",
+                                    i + 1,
+                                    describe_syntax(expected_params[i]),
+                                    literal.kind_name()
+                                )
+                                .into(),
                             ),
-                            "resolve_variables()",
+                            "",
                             "",
                         ));
                     }

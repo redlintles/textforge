@@ -13,9 +13,9 @@ pub fn string_to_usize(chunk: &str) -> Result<usize, TextForgeError> {
             let str_chunk = chunk.to_string();
             Err(TextForgeError::new(
                 super::errors::TextForgeErrorCode::TextParsingError(
-                    "String to usize Parsing failed".into(),
+                    format!("`{str_chunk}` is not a non-negative integer").into(),
                 ),
-                Cow::Owned(str_chunk),
+                Cow::Borrowed(""),
                 chunk.to_string(),
             ))
         }
@@ -46,7 +46,7 @@ pub(crate) fn reserve_padding(
     let error = |detail: String| {
         TextForgeError::new(
             super::errors::TextForgeErrorCode::ValidationError(
-                "Cannot allocate padded output".into(),
+                "the padded text is too large to allocate".into(),
             ),
             instruction,
             detail,
@@ -91,8 +91,14 @@ pub fn get_safe_utf8_char_index(index: usize, input: &str) -> Result<usize, Text
         .map(|(i, _)| i)
         .ok_or_else(|| {
             TextForgeError::new(
-                super::errors::TextForgeErrorCode::IndexOutOfRange("".into()),
-                Cow::Borrowed("Get safe utf-8 char index"),
+                super::errors::TextForgeErrorCode::IndexOutOfRange(
+                    format!(
+                        "character index {index} is out of range: the text has {}",
+                        crate::utils::errors::plural(input.chars().count(), "character")
+                    )
+                    .into(),
+                ),
+                Cow::Borrowed(""),
                 crate::utils::errors::input_excerpt(input),
             )
         })

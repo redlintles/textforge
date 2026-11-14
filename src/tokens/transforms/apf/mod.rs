@@ -92,7 +92,7 @@ impl InstructionMethods for Apf {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::parse_args;
         check_vec_len(params, 1, "apf", "")?;
-        self.path = parse_args!(params, 0, String, "Path should be of string type");
+        self.path = parse_args!(params, 0, String, "path");
         self.params = vec![self.path.clone().into()];
         Ok(())
     }

@@ -60,9 +60,7 @@ impl InstructionMethods for Cfw {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        use crate::parser::params::TextForgeParamTypesJoin;
-
-        check_vec_len(params, 0, "cfw", params.join(""))?;
+        check_vec_len(params, 0, "cfw", "")?;
         Ok(())
     }
     #[cfg(feature = "bytecode")]

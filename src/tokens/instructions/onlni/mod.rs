@@ -115,10 +115,10 @@ impl InstructionMethods for Onlni {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 3, "onlni", "param parsing error, invalid vec len")?;
-        self.start_line = parse_args!(params, 0, Usize, "First argument should be a line number");
-        self.end_line = parse_args!(params, 1, Usize, "Second argument should be a line number");
-        self.inner = parse_args!(params, 2, Token, "Third argument should be an instruction");
+        check_vec_len(params, 3, "onlni", "")?;
+        self.start_line = parse_args!(params, 0, Usize, "start");
+        self.end_line = parse_args!(params, 1, Usize, "end");
+        self.inner = parse_args!(params, 2, Token, "instruction");
         self.params = vec![
             self.start_line.into(),
             self.end_line.into(),

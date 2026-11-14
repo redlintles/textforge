@@ -72,9 +72,8 @@ impl InstructionMethods for Ins {
 
         check_vec_len(params, 2, "ins", "")?;
 
-        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
-        self.text_to_insert =
-            parse_args!(params, 1, String, "Text_to_insert should be of String type");
+        self.index = parse_args!(params, 0, Usize, "index");
+        self.text_to_insert = parse_args!(params, 1, String, "text");
 
         self.params = vec![self.index.into(), self.text_to_insert.to_string().into()];
 
@@ -112,9 +111,9 @@ pub(crate) fn insert_after_char<'a>(
             TextForgeError::new(
                 TextForgeErrorCode::IndexOutOfRange(
                     format!(
-                        "Index does not exist in current string, for the input {}, only indexes between 0-{} are allowed",
-                        crate::utils::errors::input_excerpt(&input),
-                        input.chars().count().wrapping_sub(1)
+                        "cannot insert after character {index}: the text has {} (insert after 0 to {}; the last appends)",
+                        crate::utils::errors::plural(input.chars().count(), "character"),
+                        input.chars().count()
                     ).into()
                 ),
                 instruction(),

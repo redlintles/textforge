@@ -58,10 +58,13 @@ pub(crate) fn char_section(
     if start > end {
         return Err(TextForgeError::new(
             TextForgeErrorCode::InvalidIndex(
-                "Start index must not be greater than end index".into(),
+                format!(
+                    "the section starts at character {start} but ends at {end}; write it as start..=end with start <= end"
+                )
+                .into(),
             ),
             name,
-            format!("Start Index: {start}, End Index: {end}"),
+            format!("start={start}, end={end}"),
         ));
     }
     let mut characters = input.char_indices();
@@ -69,8 +72,8 @@ pub(crate) fn char_section(
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
                 format!(
-                    "Start index {start} does not exist; the text has {} characters",
-                    input.chars().count()
+                    "the section starts at character {start}, but the text has {}",
+                    crate::utils::errors::plural(input.chars().count(), "character")
                 )
                 .into(),
             ),
@@ -141,7 +144,9 @@ pub(crate) fn apply_to_section<'a>(
 
 fn internal(name: &'static str) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::InvalidParameters("Line section could not be located".into()),
+        TextForgeErrorCode::InvalidParameters(
+            "internal error: the line section was checked but could not be located; please report this".into(),
+        ),
         name,
         "",
     )

@@ -52,10 +52,12 @@ impl InstructionMethods for Jsone {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let result = serde_json::to_string(input.as_ref()).map_err(|_| {
+        let result = serde_json::to_string(input.as_ref()).map_err(|error| {
             TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to serialize to JSON".into()),
-                "serde_json::to_string".to_string(),
+                TextForgeErrorCode::TextParsingError(
+                    format!("the text could not be escaped as a JSON string: {error}").into(),
+                ),
+                "jsone",
                 crate::utils::errors::input_excerpt(&input),
             )
         })?;

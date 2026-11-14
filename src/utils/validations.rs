@@ -9,33 +9,45 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
     // canonicalize() exige que o path exista; isso é ok aqui porque queremos validar um arquivo real.
     let path = path.canonicalize().map_err(|e| {
         TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Path canonicalization failed".into()),
-            Cow::Borrowed("canonicalize"),
-            format!("{:?} - {}", path, e),
+            TextForgeErrorCode::ValidationError(
+                format!("cannot open the pipeline file {}: {e}", path.display()).into(),
+            ),
+            Cow::Borrowed(""),
+            path.display().to_string(),
         )
     })?;
 
     // Extensão
     let file_ext = path.extension().and_then(|x| x.to_str()).ok_or_else(|| {
         TextForgeError::new(
-            TextForgeErrorCode::ValidationError("No file extension found".into()),
-            Cow::Borrowed("check_file_path"),
+            TextForgeErrorCode::ValidationError(
+                "a pipeline file needs an extension: .textforge or .tft for text, .textforgebc or .tfb for bytecode".into(),
+            ),
+            Cow::Borrowed(""),
             path.to_string_lossy().to_string(),
         )
     })?;
 
     if ext.is_some() && file_ext != parsed_ext {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Wrong file extension".into()),
-            Cow::Borrowed("check_file_path"),
+            TextForgeErrorCode::ValidationError(
+                format!("expected a `.{parsed_ext}` file, but the extension is `.{file_ext}`")
+                    .into(),
+            ),
+            Cow::Borrowed(""),
             path.to_string_lossy().to_string(),
         ));
     }
 
     if ext.is_none() && !allowed_extensions.contains(&file_ext) {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Wrong file extension".into()),
-            Cow::Borrowed("check_file_path"),
+            TextForgeErrorCode::ValidationError(
+                format!(
+                    "`.{file_ext}` is not a pipeline extension; use .textforge or .tft for text, .textforgebc or .tfb for bytecode"
+                )
+                .into(),
+            ),
+            Cow::Borrowed(""),
             path.to_string_lossy().to_string(),
         ));
     }
@@ -43,24 +55,28 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
     // Diretório pai (redundante depois do canonicalize, mas mantém a intenção explícita)
     let parent = path.parent().ok_or_else(|| {
         TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Path has no parent directory".into()),
-            Cow::Borrowed("check_file_path"),
+            TextForgeErrorCode::ValidationError("the pipeline path has no parent directory".into()),
+            Cow::Borrowed(""),
             path.to_string_lossy().to_string(),
         )
     })?;
 
     if !parent.exists() {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Parent directory does not exist".into()),
-            Cow::Borrowed("check_file_path"),
+            TextForgeErrorCode::ValidationError(
+                "the directory of the pipeline file does not exist".into(),
+            ),
+            Cow::Borrowed(""),
             parent.to_string_lossy().to_string(),
         ));
     }
 
     if path.is_dir() {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError("Path is a directory, not a file".into()),
-            Cow::Borrowed("check_file_path"),
+            TextForgeErrorCode::ValidationError(
+                "the pipeline path is a directory, not a file".into(),
+            ),
+            Cow::Borrowed(""),
             path.to_string_lossy().to_string(),
         ));
     }
@@ -88,22 +104,29 @@ pub fn check_chunk_bound_indexes(
     {
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
-                "Start index does not exist in current string!".into(),
+                format!(
+                    "the range starts at character {start_index}, but the text has {}{}",
+                    crate::utils::errors::plural(total, "character"),
+                    valid_indices(total)
+                )
+                .into(),
             ),
-            Cow::Borrowed("check_chunk_bound_indexes"),
+            Cow::Borrowed(""),
             crate::utils::errors::input_excerpt(text),
         ));
     }
 
     // regra estrutural (independente do texto); intervalo inclusivo
     if start_index > end_index {
-        let fmt_err = format!("check_chunk_bound_indexes {} {};", start_index, end_index);
         return Err(TextForgeError::new(
             TextForgeErrorCode::InvalidIndex(
-                "Start index must not be greater than end index".into(),
+                format!(
+                    "the range start ({start_index}) is after its end ({end_index}); ranges are written start..=end with start <= end"
+                )
+                .into(),
             ),
-            Cow::Owned(fmt_err),
-            format!("Start Index: {}, End Index: {}", start_index, end_index),
+            Cow::Borrowed(""),
+            format!("start={start_index}, end={end_index}"),
         ));
     }
 
@@ -113,14 +136,27 @@ pub fn check_chunk_bound_indexes(
     {
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
-                "End index does not exist in current string!".into(),
+                format!(
+                    "the range ends at character {end_index}, but the text has {}{}",
+                    crate::utils::errors::plural(total, "character"),
+                    valid_indices(total)
+                )
+                .into(),
             ),
-            Cow::Borrowed("check_chunk_bound_indexes"),
+            Cow::Borrowed(""),
             crate::utils::errors::input_excerpt(text),
         ));
     }
 
     Ok(())
+}
+
+/// `" (valid indices 0 to n-1)"`, or nothing when there is no valid index.
+fn valid_indices(count: usize) -> String {
+    match count {
+        0 => String::new(),
+        count => format!(" (valid indices 0 to {})", count - 1),
+    }
 }
 
 pub fn check_index_against_input(index: usize, input: &str) -> Result<(), TextForgeError> {
@@ -129,14 +165,13 @@ pub fn check_index_against_input(index: usize, input: &str) -> Result<(), TextFo
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
                 format!(
-                    "Index {} does not exist for {}, only indexes between 0-{} are allowed!",
-                    index,
-                    crate::utils::errors::input_excerpt(input),
-                    character_count.saturating_sub(1)
+                    "character index {index} is out of range: the text has {}{}",
+                    crate::utils::errors::plural(character_count, "character"),
+                    valid_indices(character_count)
                 )
                 .into(),
             ),
-            Cow::Borrowed("check_index_against_input"),
+            Cow::Borrowed(""),
             crate::utils::errors::input_excerpt(input),
         ));
     }
@@ -149,26 +184,27 @@ pub fn check_index_against_words(index: usize, input: &str) -> Result<(), TextFo
 
     if word_count == 0 {
         return Err(TextForgeError::new(
-            TextForgeErrorCode::IndexOutOfRange("Input has no words".into()),
-            Cow::Borrowed("check_index_against_words"),
+            TextForgeErrorCode::IndexOutOfRange(
+                format!("word index {index} is out of range: the text has no words").into(),
+            ),
+            Cow::Borrowed(""),
             crate::utils::errors::input_excerpt(input),
         ));
     }
 
     if !(0..word_count).contains(&index) {
-        return Err(
-            TextForgeError::new(
-                TextForgeErrorCode::IndexOutOfRange(
-                    format!(
-                        "Word index {} does not exist for input, only indexes between 0-{} are allowed!",
-                        index,
-                        word_count.saturating_sub(1)
-                    ).into()
-                ),
-                Cow::Borrowed("check_index_against_words"),
-                crate::utils::errors::input_excerpt(input)
-            )
-        );
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::IndexOutOfRange(
+                format!(
+                    "word index {index} is out of range: the text has {} (valid indices 0 to {})",
+                    crate::utils::errors::plural(word_count, "word"),
+                    word_count - 1
+                )
+                .into(),
+            ),
+            Cow::Borrowed(""),
+            crate::utils::errors::input_excerpt(input),
+        ));
     }
 
     Ok(())
@@ -183,16 +219,21 @@ pub fn check_vec_len<T>(
     if v.len() == expected_len {
         Ok(())
     } else {
+        let ctx = ctx.into();
         Err(TextForgeError::new(
             TextForgeErrorCode::InvalidArgumentNumber(
                 format!(
-                    "Only {} arguments are allowed for this instruction, passed {}",
-                    expected_len,
-                    v.len()
+                    "`{ctx}` takes {}, but {} given",
+                    crate::utils::errors::plural(expected_len, "parameter"),
+                    if v.len() == 1 {
+                        "1 was".to_owned()
+                    } else {
+                        format!("{} were", v.len())
+                    }
                 )
                 .into(),
             ),
-            ctx.into(),
+            ctx,
             payload.into(),
         ))
     }
@@ -242,9 +283,9 @@ mod tests {
 
             // Não assumo a estrutura interna do TextForgeError, então valido por mensagem
             assert!(
-                msg.contains("Only 3 arguments are allowed") || msg.contains("Only 3 arguments")
+                msg.contains("`check_vec_len` takes 3 parameters, but 2 were given"),
+                "{msg}"
             );
-            assert!(msg.contains("passed 2") || msg.contains("passed 2"));
         }
 
         #[test]
@@ -299,9 +340,9 @@ mod tests {
                 let err = result.unwrap_err();
                 let msg = format!("{err}");
                 assert!(
-                    msg.contains("Only 1 arguments are allowed") || msg.contains("Only 1 argument")
+                    msg.contains("`check_vec_len(bytecode)` takes 1 parameter, but 2 were given"),
+                    "{msg}"
                 );
-                assert!(msg.contains("passed 2") || msg.contains("passed 2"));
             }
         }
     }

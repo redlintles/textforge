@@ -19,7 +19,7 @@ pub fn write_to_file(path: &Path, tokens: &[TokenWrapper]) -> Result<(), TextFor
         .map_err(|_| {
             TextForgeError::new(
                 crate::utils::errors::TextForgeErrorCode::FileOpeningError(
-                    "Failed opening File".into(),
+                    "cannot create the pipeline file".into(),
                 ),
                 "",
                 format!("{:?}", path),
@@ -41,7 +41,7 @@ pub fn write_to_file(path: &Path, tokens: &[TokenWrapper]) -> Result<(), TextFor
         true => Ok(()),
         false => Err(TextForgeError::new(
             crate::utils::errors::TextForgeErrorCode::FileWritingError(
-                "Failed writing text to textforge file".into(),
+                "cannot write the pipeline file".into(),
             ),
             "",
             "",

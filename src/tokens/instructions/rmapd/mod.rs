@@ -52,13 +52,15 @@ impl InstructionMethods for Rmapd {
         }
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 3, "rmapd", "Invalid parameter count")?;
-        let _name = parse_args!(params, 0, String, "Map name must be text");
-        let pattern = parse_args!(params, 1, String, "Pattern must be text");
-        let _replacement = parse_args!(params, 2, String, "Replacement must be text");
+        check_vec_len(params, 3, "rmapd", "")?;
+        let _name = parse_args!(params, 0, String, "map name");
+        let pattern = parse_args!(params, 1, String, "pattern");
+        let _replacement = parse_args!(params, 2, String, "replacement");
         let mut cache = self.cache.lock().map_err(|_| {
             TextForgeError::new(
-                TextForgeErrorCode::GenericError("Regex cache lock poisoned".into()),
+                TextForgeErrorCode::GenericError(
+                "internal error: the regular expression cache is unusable because another thread panicked while using it".into(),
+            ),
                 "rmapd",
                 "cache",
             )
@@ -66,13 +68,10 @@ impl InstructionMethods for Rmapd {
         let regex = if let Some(regex) = cache.get(&pattern) {
             regex.clone()
         } else {
-            let regex = std::sync::Arc::new(regex::Regex::new(&pattern).map_err(|error| {
-                TextForgeError::new(
-                    TextForgeErrorCode::TextParsingError(error.to_string().into()),
-                    "rmapd",
-                    pattern.clone(),
-                )
-            })?);
+            let regex =
+                std::sync::Arc::new(regex::Regex::new(&pattern).map_err(|error| {
+                    crate::utils::errors::regex_error("rmapd", &pattern, error)
+                })?);
             // Bound memory for interpolated patterns; constants retain their prepared regex.
             if cache.len() >= 64 {
                 cache.clear();
@@ -89,12 +88,12 @@ impl InstructionMethods for Rmapd {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        check_vec_len(&self.params, 3, "rmapd", "Unbound replacement rule")?;
+        check_vec_len(&self.params, 3, "rmapd", "")?;
         let context = context.ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::RequiredContextError(
-                    "Replacement maps require a context".into(),
-                ),
+                "`rmapd` needs an execution context to store the replacement map; run it in a pipeline (TextForgeProcessor) instead of calling transform() without a context".into(),
+            ),
                 "rmapd",
                 "",
             )
@@ -103,16 +102,20 @@ impl InstructionMethods for Rmapd {
             TextForgeParamTypes::String(name) => name.as_str(),
             _ => {
                 return Err(TextForgeError::new(
-                    TextForgeErrorCode::InvalidParameters("Map name must be text".into()),
+                    TextForgeErrorCode::InvalidParameters(
+                        "the replacement map name must be text".into(),
+                    ),
                     "",
                     "",
                 ));
             }
         };
-        let replacement = parse_args!(&self.params, 2, String, "Replacement must be text");
+        let replacement = parse_args!(&self.params, 2, String, "replacement");
         let regex = self.compiled.as_ref().ok_or_else(|| {
             TextForgeError::new(
-                TextForgeErrorCode::InvalidParameters("Unbound replacement rule".into()),
+                TextForgeErrorCode::InvalidParameters(
+                    "the replacement rule has no pattern yet: its parameters were never set".into(),
+                ),
                 "rmapd",
                 name.to_owned(),
             )

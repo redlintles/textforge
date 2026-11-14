@@ -7,6 +7,46 @@ use std::fmt::Display;
 // Colored formatting (presentation only)
 use colored::{Color, Colorize};
 
+/// The error of an instruction run without an execution context (for example
+/// through `InstructionMethods::transform(input, None)`): `purpose` says what
+/// the context is needed for.
+pub(crate) fn context_required(instruction: &'static str, purpose: &str) -> TextForgeError {
+    TextForgeError::new(
+        TextForgeErrorCode::RequiredContextError(
+            format!(
+                "`{instruction}` needs an execution context to {purpose}; run it in a pipeline (TextForgeProcessor) instead of calling transform() without a context"
+            )
+            .into(),
+        ),
+        instruction,
+        "",
+    )
+}
+
+/// The error for a pattern that is not a valid regular expression.
+pub(crate) fn regex_error(
+    instruction: &'static str,
+    pattern: &str,
+    error: impl Display,
+) -> TextForgeError {
+    TextForgeError::new(
+        TextForgeErrorCode::TextParsingError(
+            format!("`{pattern}` is not a valid regular expression: {error}").into(),
+        ),
+        instruction,
+        pattern.to_owned(),
+    )
+}
+
+/// `count` followed by `word`, in the plural unless `count` is 1.
+pub(crate) fn plural(count: usize, word: &str) -> String {
+    if count == 1 {
+        format!("1 {word}")
+    } else {
+        format!("{count} {word}s")
+    }
+}
+
 /// Characters of the processed text an error keeps in its `input` field.
 pub const INPUT_EXCERPT_CHARS: usize = 80;
 
@@ -54,21 +94,24 @@ impl Error for TextForgeError {}
 
 impl Display for TextForgeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Presentation only. No semantic changes.
-        let title = "Erro".bold().red();
-        let instr_label = "Instruction:".bold().cyan();
-        let input_label = "Input:".bold().dimmed();
-
-        write!(
-            f,
-            "{}\n{}\n{} {}\n{} {}",
-            title,
-            self.error_code,
-            instr_label,
-            self.instruction.as_ref().cyan(),
-            input_label,
-            self.input.as_ref().dimmed()
-        )?;
+        // Presentation only: `error[code]: message`, then where and on what.
+        write!(f, "{}", self.error_code)?;
+        if !self.instruction.is_empty() {
+            write!(
+                f,
+                "\n  {} {}",
+                "in:".bold().cyan(),
+                self.instruction.as_ref().cyan()
+            )?;
+        }
+        if !self.input.is_empty() {
+            write!(
+                f,
+                "\n  {} {}",
+                "input:".bold().dimmed(),
+                self.input.as_ref().dimmed()
+            )?;
+        }
         Ok(())
     }
 }
@@ -243,14 +286,10 @@ impl Display for TextForgeErrorCode {
         // Use severity to color the code/message, but keep raw values available via getters.
         let severity = self.severity_color();
 
-        let code_label = "Código:".bold().red();
-        let msg_label = "Mensagem:".bold().yellow();
-
-        let code_val = self.get_error_code().to_string().color(severity).bold();
-        let msg_val = self.message().as_ref().color(severity);
-
-        write!(f, "{} {}\n{} {}", code_label, code_val, msg_label, msg_val)?;
-        Ok(())
+        let label = format!("error[{}]", self.get_error_code())
+            .color(severity)
+            .bold();
+        write!(f, "{}: {}", label, self.message())
     }
 }
 
@@ -378,13 +417,12 @@ pub fn token_array_not_found(identifier: &str) -> impl Fn() -> TextForgeError {
         TextForgeError::new(
             TextForgeErrorCode::TokenArrayNotFound(
                 format!(
-                    "Token array not found, is {} a valid identifier for this processor?",
-                    identifier
+                    "no pipeline is registered with the id `{identifier}`; use the id returned when the pipeline was registered"
                 )
                 .into(),
             ),
-            Cow::Borrowed("get identifier"),
-            Cow::Borrowed(""),
+            Cow::Borrowed("processor"),
+            Cow::Owned(identifier.to_owned()),
         )
     }
 }
@@ -426,29 +464,22 @@ mod tests {
         disable_colors();
 
         let err = TextForgeError::new(
-            TextForgeErrorCode::InvalidIndex(Cow::Borrowed("index inválido")),
+            TextForgeErrorCode::InvalidIndex(Cow::Borrowed("invalid index")),
             "dlc",
             "banana",
         );
 
-        let s = format!("{err}");
-
-        // Título e seções
-        assert!(s.contains("Erro"));
-        assert!(s.contains("Código:"));
-        assert!(s.contains("Mensagem:"));
-        assert!(s.contains("Instruction:"));
-        assert!(s.contains("Input:"));
-
-        // Conteúdo
-        assert!(s.contains("dlc"));
-        assert!(s.contains("banana"));
-
-        // Bug clássico de formatação
-        assert!(
-            !s.contains("\n,Input"),
-            "Não deve existir '\\n,Input' no Display"
+        assert_eq!(
+            format!("{err}"),
+            "error[13]: invalid index\n  in: dlc\n  input: banana"
         );
+    }
+
+    #[test]
+    fn display_omits_empty_sections() {
+        disable_colors();
+        let err = TextForgeError::new(TextForgeErrorCode::GenericError("oops".into()), "", "");
+        assert_eq!(format!("{err}"), "error[27]: oops");
     }
 
     // ============================================================
@@ -469,14 +500,7 @@ mod tests {
         let code = TextForgeErrorCode::FileNotFound(Cow::Borrowed("missing file"));
         let s = format!("{code}");
 
-        assert!(s.contains("Código:"));
-        assert!(s.contains("Mensagem:"));
-        // FileNotFound => 1
-        assert!(
-            s.contains("1"),
-            "Display deve conter o código numérico esperado (1)"
-        );
-        assert!(s.contains("missing file"));
+        assert_eq!(s, "error[1]: missing file");
     }
 
     #[test]
@@ -806,15 +830,15 @@ mod tests {
         let e2 = f();
 
         assert_eq!(e1, e2);
-        assert_eq!(e1.instruction, Cow::Borrowed("get identifier"));
-        assert_eq!(e1.input, Cow::Borrowed(""));
+        assert_eq!(e1.instruction, Cow::Borrowed("processor"));
+        assert_eq!(e1.input, Cow::Borrowed("abc"));
 
         match &e1.error_code {
             TextForgeErrorCode::TokenArrayNotFound(m) => {
-                assert!(m.contains("Token array not found"));
+                assert!(m.contains("no pipeline is registered"));
                 assert!(m.contains("abc"));
             }
-            _ => panic!("Esperado TokenArrayNotFound"),
+            _ => panic!("expected TokenArrayNotFound"),
         }
     }
 }

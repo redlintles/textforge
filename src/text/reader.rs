@@ -19,32 +19,39 @@ pub fn read_from_text(token_string: &str) -> Result<TokenWrapper, TextForgeError
     if line.is_empty() || line.starts_with("//") {
         return Ok(TokenWrapper::default());
     }
-    let chunks = match shell_words::split(line.trim_end().strip_suffix(";").ok_or_else(|| {
+    parse_line(line).map_err(|mut error| {
+        if error.instruction.is_empty() {
+            error.instruction = line.to_owned().into();
+        }
+        error
+    })
+}
+
+/// Parse one non-empty, non-comment line; errors name no instruction, so the
+/// caller can name the line.
+fn parse_line(line: &str) -> Result<TokenWrapper, TextForgeError> {
+    let body = line.trim_end().strip_suffix(';').ok_or_else(|| {
+        TextForgeError::new(
+            TextForgeErrorCode::TextParsingError("an instruction must end with `;`".into()),
+            "",
+            "",
+        )
+    })?;
+    let chunks = shell_words::split(body).map_err(|_| {
         TextForgeError::new(
             TextForgeErrorCode::TextParsingError(
-                "An ATP Parsing error ocurred: Error splitting file line".into(),
+                "a quoted parameter is not closed: check the quotes on this line".into(),
             ),
-            "shell words split",
-            token_string.to_string(),
+            "",
+            "",
         )
-    })?) {
-        Ok(x) => x,
-        Err(_) => {
-            return Err(TextForgeError::new(
-                TextForgeErrorCode::TextParsingError(
-                    "An ATP Parsing error ocurred: Error splitting file line".into(),
-                ),
-                "shell words split",
-                token_string.to_string(),
-            ));
-        }
-    };
+    })?;
 
     let identifier = chunks.first().ok_or_else(|| {
         TextForgeError::new(
-            TextForgeErrorCode::TextParsingError("Missing instruction name".into()),
-            "read_from_text",
-            token_string.to_string(),
+            TextForgeErrorCode::TextParsingError("the line has no instruction".into()),
+            "",
+            "",
         )
     })?;
 
@@ -86,32 +93,40 @@ pub fn read_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextForgeError> 
         Err(_) => {
             return Err(TextForgeError::new(
                 crate::utils::errors::TextForgeErrorCode::FileOpeningError(
-                    "Failed opening File".into(),
+                    "cannot open the pipeline file".into(),
                 ),
                 "",
-                format!("{:?}", path),
+                path.display().to_string(),
             ));
         }
     };
 
     let reader = BufReader::new(file);
 
-    for line in reader.lines() {
+    for (index, line) in reader.lines().enumerate() {
         match line {
             Ok(l) => {
                 let trimmed = l.trim();
                 if trimmed.is_empty() || trimmed.starts_with("//") {
                     continue;
                 }
-                result.push(read_from_text(&l)?);
+                result.push(read_from_text(&l).map_err(|mut error| {
+                    error.instruction =
+                        format!("{}:{} › {}", path.display(), index + 1, error.instruction).into();
+                    error
+                })?);
             }
-            Err(_) => {
+            Err(error) => {
                 return Err(TextForgeError::new(
                     crate::utils::errors::TextForgeErrorCode::FileReadingError(
-                        "Failed reading file line".into(),
+                        format!(
+                            "cannot read line {} of the pipeline file: {error}",
+                            index + 1
+                        )
+                        .into(),
                     ),
                     "",
-                    "",
+                    path.display().to_string(),
                 ));
             }
         }

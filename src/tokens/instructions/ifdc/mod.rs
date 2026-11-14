@@ -93,17 +93,15 @@ impl InstructionMethods for Ifdc {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         use crate::{parse_args, utils::validations::check_vec_len};
 
-        use crate::parser::params::TextForgeParamTypesJoin;
+        check_vec_len(params, 2, "ifdc", "")?;
 
-        check_vec_len(params, 2, "ifdc", params.join(""))?;
+        self.text = parse_args!(params, 0, String, "text");
 
-        self.text = parse_args!(params, 0, String, "");
-
-        self.inner = parse_args!(params, 1, Token, "");
+        self.inner = parse_args!(params, 1, Token, "instruction");
 
         self.params = vec![
-            TextForgeParamTypes::String(parse_args!(params, 0, String, "")),
-            TextForgeParamTypes::Token(parse_args!(params, 1, Token, "")),
+            TextForgeParamTypes::String(parse_args!(params, 0, String, "text")),
+            TextForgeParamTypes::Token(parse_args!(params, 1, Token, "instruction")),
         ];
 
         Ok(())

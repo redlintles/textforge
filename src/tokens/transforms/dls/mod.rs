@@ -70,9 +70,14 @@ impl InstructionMethods for Dls {
         let (start, ch) = input.char_indices().nth(self.index).ok_or_else(|| {
             TextForgeError::new(
                 crate::utils::errors::TextForgeErrorCode::IndexOutOfRange(
-                    "Invalid character index".into(),
+                    format!(
+                        "character index {} is out of range: the text has {}",
+                        self.index,
+                        crate::utils::errors::plural(input.chars().count(), "character")
+                    )
+                    .into(),
                 ),
-                "dls",
+                "",
                 crate::utils::errors::input_excerpt(&input),
             )
         })?;
@@ -88,7 +93,7 @@ impl InstructionMethods for Dls {
 
         check_vec_len(params, 1, "dls", "")?;
 
-        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.index = parse_args!(params, 0, Usize, "index");
         self.params = vec![self.index.into()];
 
         Ok(())

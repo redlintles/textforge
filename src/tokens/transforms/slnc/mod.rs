@@ -64,8 +64,8 @@ impl InstructionMethods for Slnc {
         format!("{};\n", parts.join(" ")).into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 2, "slnc", "Invalid line instruction arity")?;
-        let start_line = crate::parse_args!(params, 0, Usize, "Expected Usize");
+        check_vec_len(params, 2, "slnc", "")?;
+        let start_line = crate::parse_args!(params, 0, Usize, "start");
         if start_line == 0 {
             return Err(crate::utils::lines::invalid(
                 "slnc",
@@ -73,7 +73,7 @@ impl InstructionMethods for Slnc {
                 "0",
             ));
         }
-        let end_line = crate::parse_args!(params, 1, Usize, "Expected Usize");
+        let end_line = crate::parse_args!(params, 1, Usize, "end");
         if end_line == 0 {
             return Err(crate::utils::lines::invalid(
                 "slnc",

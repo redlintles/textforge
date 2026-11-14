@@ -49,7 +49,18 @@ pub(crate) fn check_line(
     if line == 0 || line > count {
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
-                format!("Line {line} does not exist; expected 1..={count}").into(),
+                match count {
+                    0 => format!("line {line} does not exist: the text is empty"),
+                    _ if line == 0 => format!(
+                        "line numbers start at 1, but line 0 was given (the text has {})",
+                        crate::utils::errors::plural(count, "line")
+                    ),
+                    _ => format!(
+                        "line {line} does not exist: the text has {} (valid lines 1 to {count})",
+                        crate::utils::errors::plural(count, "line")
+                    ),
+                }
+                .into(),
             ),
             name,
             crate::utils::errors::input_excerpt(input),
@@ -68,7 +79,13 @@ pub(crate) fn check_range(
     check_line(start, count, name, input)?;
     check_line(end, count, name, input)?;
     if start > end {
-        return Err(invalid(name, "Line range must be ascending", input));
+        return Err(invalid(
+            name,
+            &format!(
+                "the line range starts at {start} but ends at {end}; write it as start..=end with start <= end"
+            ),
+            input,
+        ));
     }
     Ok(())
 }

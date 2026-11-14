@@ -7,10 +7,7 @@ use crate::{
     parse_args,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{
-        errors::{TextForgeError, TextForgeErrorCode},
-        validations::check_vec_len,
-    },
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 #[cfg(feature = "test_access")]
@@ -82,16 +79,11 @@ impl InstructionMethods for Rmp {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 1, "rmp", "param parsing error, invalid vec len")?;
-        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
+        check_vec_len(params, 1, "rmp", "")?;
+        let pattern_payload = parse_args!(params, 0, String, "pattern");
 
-        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
-            TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                pattern_payload.clone(),
-            )
-        })?;
+        self.pattern = Regex::new(&pattern_payload)
+            .map_err(|error| crate::utils::errors::regex_error("rmp", &pattern_payload, error))?;
 
         self.params = vec![self.pattern.to_string().into()];
         Ok(())

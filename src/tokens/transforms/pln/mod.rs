@@ -58,8 +58,8 @@ impl InstructionMethods for Pln {
         format!("{};\n", parts.join(" ")).into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 1, "pln", "Invalid line instruction arity")?;
-        let text = crate::parse_args!(params, 0, String, "Expected String");
+        check_vec_len(params, 1, "pln", "")?;
+        let text = crate::parse_args!(params, 0, String, "text");
         if text.chars().any(crate::utils::lines::is_break) {
             return Err(invalid("pln", "Expected a single line", &text));
         }

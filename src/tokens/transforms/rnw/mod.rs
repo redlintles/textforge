@@ -10,10 +10,7 @@ use crate::{
 
 use regex::Regex;
 
-use crate::{
-    tokens::InstructionMethods,
-    utils::errors::{TextForgeError, TextForgeErrorCode},
-};
+use crate::{tokens::InstructionMethods, utils::errors::TextForgeError};
 
 use crate::parser::params::TextForgeParamTypes;
 /// `rnw {pattern} {text} {n};` — Replace the `n`th match.
@@ -123,24 +120,14 @@ impl InstructionMethods for Rnw {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 3, "rnw", "")?;
 
-        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
+        let pattern_payload = parse_args!(params, 0, String, "pattern");
 
-        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
-            TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                pattern_payload.clone(),
-            )
-        })?;
+        self.pattern = Regex::new(&pattern_payload)
+            .map_err(|error| crate::utils::errors::regex_error("rnw", &pattern_payload, error))?;
 
-        self.text_to_replace = parse_args!(
-            params,
-            1,
-            String,
-            "Text_to_replace should be of type String"
-        );
+        self.text_to_replace = parse_args!(params, 1, String, "replacement");
 
-        self.index = parse_args!(params, 2, Usize, "Index should be of type Usize");
+        self.index = parse_args!(params, 2, Usize, "index");
 
         self.params = vec![
             self.pattern.to_string().into(),

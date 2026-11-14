@@ -8,10 +8,7 @@ use crate::{
     parse_args,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{
-        errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
-        validations::check_vec_len,
-    },
+    utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
 #[cfg(feature = "test_access")]
@@ -62,13 +59,8 @@ impl InstructionMethods for Var {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let context = context.ok_or_else(|| {
-            TextForgeError::new(
-                RequiredContextError("Context required for proper working!".into()),
-                std::borrow::Cow::Borrowed("var"),
-                std::borrow::Cow::Borrowed(""),
-            )
-        })?;
+        let context = context
+            .ok_or_else(|| crate::utils::errors::context_required("var", "store the variable"))?;
         let value = match &self.var_value {
             TextForgeParamTypes::VarRef(name) => VarReader::new(context, CurrentText::Str(&input))
                 .value(name)?
@@ -91,9 +83,9 @@ impl InstructionMethods for Var {
         &mut self,
         params: &[crate::parser::params::TextForgeParamTypes],
     ) -> Result<(), crate::utils::errors::TextForgeError> {
-        check_vec_len(params, 2, "var", "param parsing error, invalid vec len")?;
+        check_vec_len(params, 2, "var", "")?;
 
-        self.var_name = parse_args!(params, 0, String, "Val name should be of string type");
+        self.var_name = parse_args!(params, 0, String, "name");
         check_definable(&self.var_name, "var")?;
         self.var_value = params[1].clone();
 

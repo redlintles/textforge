@@ -84,7 +84,7 @@ impl InstructionMethods for Rtl {
 
         check_vec_len(params, 1, "rtl", "")?;
 
-        self.times = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.times = parse_args!(params, 0, Usize, "times");
         self.params = vec![self.times.into()];
 
         Ok(())

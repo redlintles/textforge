@@ -62,8 +62,8 @@ impl InstructionMethods for Dlnb {
         format!("{};\n", parts.join(" ")).into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 1, "dlnb", "Invalid line instruction arity")?;
-        let line = crate::parse_args!(params, 0, Usize, "Expected Usize");
+        check_vec_len(params, 1, "dlnb", "")?;
+        let line = crate::parse_args!(params, 0, Usize, "line");
         if line == 0 {
             return Err(crate::utils::lines::invalid(
                 "dlnb",

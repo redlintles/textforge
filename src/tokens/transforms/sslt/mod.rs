@@ -43,9 +43,11 @@ impl Sslt {
     pub fn new(pattern: &str, index: usize) -> Result<Self, TextForgeError> {
         let pattern = Regex::new(pattern).map_err(|e| {
             TextForgeError::new(
-                TextForgeErrorCode::TextParsingError(e.to_string().into()),
-                "",
-                "",
+                TextForgeErrorCode::TextParsingError(
+                    format!("`{pattern}` is not a valid regular expression: {e}").into(),
+                ),
+                "sslt",
+                pattern.to_owned(),
             )
         })?;
         Ok(Sslt {
@@ -89,9 +91,18 @@ impl InstructionMethods for Sslt {
             .ok_or_else(|| {
                 TextForgeError::new(
                     TextForgeErrorCode::IndexOutOfRange(
-                        "Index does not exist in the splitted vec".into(),
+                        format!(
+                            "piece {} does not exist: splitting by `{}` gives {}",
+                            self.index,
+                            self.pattern.as_str(),
+                            crate::utils::errors::plural(
+                                self.pattern.split(&input).count(),
+                                "piece"
+                            )
+                        )
+                        .into(),
                     ),
-                    self.to_textforge_line(),
+                    "",
                     crate::utils::errors::input_excerpt(&input),
                 )
             })?;
@@ -108,17 +119,12 @@ impl InstructionMethods for Sslt {
 
         check_vec_len(params, 2, "sslt", "")?;
 
-        let pattern_payload = parse_args!(params, 0, String, "Pattern should be of string type");
+        let pattern_payload = parse_args!(params, 0, String, "pattern");
 
-        self.pattern = Regex::new(&pattern_payload).map_err(|_| {
-            TextForgeError::new(
-                TextForgeErrorCode::TextParsingError("Failed to create regex".into()),
-                "sslt",
-                pattern_payload.clone(),
-            )
-        })?;
+        self.pattern = Regex::new(&pattern_payload)
+            .map_err(|error| crate::utils::errors::regex_error("sslt", &pattern_payload, error))?;
 
-        self.index = parse_args!(params, 1, Usize, "Index should be of type Usize");
+        self.index = parse_args!(params, 1, Usize, "index");
 
         self.params = vec![self.pattern.to_string().into(), self.index.into()];
 

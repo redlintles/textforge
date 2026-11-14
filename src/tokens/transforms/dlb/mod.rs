@@ -69,13 +69,13 @@ impl InstructionMethods for Dlb {
         Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
                 format!(
-                    "Supported indexes 0-{}, entered index {}",
-                    input.chars().count().saturating_sub(1),
-                    self.index
+                    "character index {} is out of range: the text has {}",
+                    self.index,
+                    crate::utils::errors::plural(input.chars().count(), "character")
                 )
                 .into(),
             ),
-            self.to_textforge_line(),
+            "",
             crate::utils::errors::input_excerpt(&input),
         ))
     }
@@ -87,7 +87,7 @@ impl InstructionMethods for Dlb {
 
         check_vec_len(params, 1, "dlb", "")?;
 
-        self.index = parse_args!(params, 0, Usize, "Index should be of usize type");
+        self.index = parse_args!(params, 0, Usize, "index");
         self.params = vec![self.index.into()];
 
         Ok(())

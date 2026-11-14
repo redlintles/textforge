@@ -446,7 +446,7 @@ fn builder_methods_work_inside_blocks() {
         .unwrap()
         .build()
         .unwrap_err();
-    assert!(format!("{error:?}").contains("Nested token depth exceeded"));
+    assert!(format!("{error:?}").contains("nested too deeply"));
 }
 
 #[test]
@@ -579,7 +579,7 @@ fn bytecode_depth_limits_match_the_text_parser() {
     assert!(
         bytecode_load(root)
             .unwrap_err()
-            .contains("Nested token depth exceeded")
+            .contains("nested too deeply")
     );
 
     // A block payload cannot be another block, in bytecode as in text.
@@ -593,6 +593,6 @@ fn bytecode_depth_limits_match_the_text_parser() {
     assert!(
         bytecode_load(inner_block)
             .unwrap_err()
-            .contains("A block cannot contain another block")
+            .contains("a block cannot contain another block")
     );
 }

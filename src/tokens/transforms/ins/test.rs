@@ -150,9 +150,11 @@ mod tests {
 
         let got = t.set_params(&params);
 
-        // primeiro parse_args! falha com "Index should be of usize type"
+        // primeiro parse_args! falha com "parameter 1 (`index`) must be a non-negative integer, but it is text"
         let expected = Err(crate::utils::errors::TextForgeError::new(
-            TextForgeErrorCode::InvalidParameters("Index should be of usize type".into()),
+            TextForgeErrorCode::InvalidParameters(
+                "parameter 1 (`index`) must be a non-negative integer, but it is text".into(),
+            ),
             "",
             "",
         ));

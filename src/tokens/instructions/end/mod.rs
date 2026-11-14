@@ -62,11 +62,11 @@ impl InstructionMethods for End {
         context
             .ok_or_else(|| {
                 TextForgeError::new(
-                    crate::utils::errors::TextForgeErrorCode::RequiredContextError(
-                        "Context required for end instruction".into(),
-                    ),
-                    "end",
-                    crate::utils::errors::input_excerpt(&input),
+                                crate::utils::errors::TextForgeErrorCode::RequiredContextError(
+                "`end` needs an execution context to stop the pipeline; run it in a pipeline (TextForgeProcessor) instead of calling transform() without a context".into(),
+            ),
+            "end",
+            "",
                 )
             })?
             .halt();
@@ -75,7 +75,7 @@ impl InstructionMethods for End {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 0, "End", "param parsing error, invalid vec len")?;
+        check_vec_len(params, 0, "end", "")?;
 
         Ok(())
     }

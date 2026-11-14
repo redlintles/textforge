@@ -8,11 +8,7 @@ use crate::{
     parse_args,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
-    utils::{
-        apply::run_tokens,
-        errors::{TextForgeError, TextForgeErrorCode::RequiredContextError},
-        validations::check_vec_len,
-    },
+    utils::{apply::run_tokens, errors::TextForgeError, validations::check_vec_len},
 };
 
 #[cfg(feature = "test_access")]
@@ -59,11 +55,7 @@ impl InstructionMethods for Cblk {
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let context = context.ok_or_else(|| {
-            TextForgeError::new(
-                RequiredContextError("Context required for proper working!".into()),
-                std::borrow::Cow::Borrowed("val"),
-                std::borrow::Cow::Borrowed(""),
-            )
+            crate::utils::errors::context_required("cblk", "find the block it runs")
         })?;
         let tokens = context.take_block(&self.block_name)?;
         let result = within(
@@ -95,14 +87,9 @@ impl InstructionMethods for Cblk {
         &mut self,
         params: &[crate::parser::params::TextForgeParamTypes],
     ) -> Result<(), crate::utils::errors::TextForgeError> {
-        check_vec_len(
-            params,
-            1,
-            "call block",
-            "param parsing error, invalid vec len",
-        )?;
+        check_vec_len(params, 1, "cblk", "")?;
 
-        self.block_name = parse_args!(params, 0, String, "Block name should be of string type");
+        self.block_name = parse_args!(params, 0, String, "block name");
         self.params = vec![self.block_name.to_string().into()];
         Ok(())
     }

@@ -50,7 +50,7 @@ impl InstructionMethods for Revln {
         format!("{};\n", parts.join(" ")).into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 0, "revln", "Invalid line instruction arity")?;
+        check_vec_len(params, 0, "revln", "")?;
 
         self.params = params.to_vec();
         Ok(())

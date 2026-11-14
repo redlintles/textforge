@@ -125,7 +125,9 @@ fn link_token(
             ValType::Literal(TextForgeParamTypes::Pipeline(state @ JoinState::Unloaded)) => {
                 let path = path.as_deref().ok_or_else(|| {
                     error(
-                        TextForgeErrorCode::ValidationError("ppjn needs a literal path".into()),
+                        TextForgeErrorCode::ValidationError(
+                            "`ppjn` needs the path of a pipeline file".into(),
+                        ),
                         String::new(),
                     )
                 })?;
@@ -146,7 +148,9 @@ pub(crate) fn load(
     let file = base.join(path);
     let canonical = file.canonicalize().map_err(|e| {
         error(
-            TextForgeErrorCode::FileNotFound(e.to_string().into()),
+            TextForgeErrorCode::FileNotFound(
+                format!("cannot find the joined pipeline file: {e}").into(),
+            ),
             file.display().to_string(),
         )
     })?;
@@ -157,21 +161,28 @@ pub(crate) fn load(
             .map(|path| path.display().to_string())
             .collect();
         return Err(error(
-            TextForgeErrorCode::ValidationError("ppjn cycle".into()),
+            TextForgeErrorCode::ValidationError(
+                "the pipelines joined with ppjn form a cycle (each file is listed in the input, in join order)".into(),
+            ),
             names.join(" → "),
         ));
     }
     if chain.len() >= MAX_JOIN_DEPTH {
         return Err(error(
             TextForgeErrorCode::ValidationError(
-                format!("ppjn nesting deeper than {MAX_JOIN_DEPTH}").into(),
+                format!(
+                    "pipelines joined with ppjn are nested more than {MAX_JOIN_DEPTH} levels deep"
+                )
+                .into(),
             ),
             canonical.display().to_string(),
         ));
     }
     let bytes = std::fs::read(&canonical).map_err(|e| {
         error(
-            TextForgeErrorCode::FileReadingError(e.to_string().into()),
+            TextForgeErrorCode::FileReadingError(
+                format!("cannot read the joined pipeline file: {e}").into(),
+            ),
             canonical.display().to_string(),
         )
     })?;
@@ -206,7 +217,7 @@ fn read_bytecode(bytes: &[u8], _: &Path) -> Result<Vec<TokenWrapper>, TextForgeE
 fn read_bytecode(_: &[u8], path: &Path) -> Result<Vec<TokenWrapper>, TextForgeError> {
     Err(error(
         TextForgeErrorCode::ValidationError(
-            "ppjn: this is a bytecode pipeline; enable the `bytecode` feature".into(),
+            "the joined file is a bytecode pipeline; build TextForge with the `bytecode` feature to join it".into(),
         ),
         path.display().to_string(),
     ))

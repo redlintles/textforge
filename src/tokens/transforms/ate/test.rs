@@ -96,7 +96,9 @@ mod tests {
         let got = t.set_params(&params);
 
         let expected = Err(TextForgeError::new(
-            TextForgeErrorCode::InvalidParameters("Text should be of string type".into()),
+            TextForgeErrorCode::InvalidParameters(
+                "parameter 1 (`text`) must be text, but it is a number".into(),
+            ),
             "",
             "",
         ));

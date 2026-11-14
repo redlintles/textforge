@@ -60,8 +60,8 @@ impl InstructionMethods for Klm {
         format!("{};\n", parts.join(" ")).into()
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 1, "klm", "Invalid line instruction arity")?;
-        let pattern = crate::parse_args!(params, 0, String, "Expected String");
+        check_vec_len(params, 1, "klm", "")?;
+        let pattern = crate::parse_args!(params, 0, String, "pattern");
         // A valid regex may contain interpolation-like text, such as POSIX
         // character classes. Compile it before treating failed patterns as
         // unresolved pipeline parameters.
@@ -69,13 +69,7 @@ impl InstructionMethods for Klm {
             Ok(regex) => Some(regex),
             Err(_) if pattern.contains("{{") || pattern.contains("[[") => None,
             Err(error) => {
-                return Err(TextForgeError::new(
-                    crate::utils::errors::TextForgeErrorCode::TextParsingError(
-                        error.to_string().into(),
-                    ),
-                    "klm",
-                    pattern.clone(),
-                ));
+                return Err(crate::utils::errors::regex_error("klm", &pattern, error));
             }
         };
         self.pattern = pattern;
@@ -89,10 +83,13 @@ impl InstructionMethods for Klm {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let pattern = self
-            .regex
-            .as_ref()
-            .ok_or_else(|| invalid("klm", "Unresolved regex", &self.pattern))?;
+        let pattern = self.regex.as_ref().ok_or_else(|| {
+            invalid(
+                "klm",
+                "the regular expression was never compiled: the parameters were not set",
+                &self.pattern,
+            )
+        })?;
         Ok(crate::utils::allocation::filter_lines(input, |text| {
             pattern.is_match(text)
         }))

@@ -104,9 +104,9 @@ impl InstructionMethods for Onln {
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
-        check_vec_len(params, 2, "onln", "param parsing error, invalid vec len")?;
-        self.line = parse_args!(params, 0, Usize, "First argument should be a line number");
-        self.inner = parse_args!(params, 1, Token, "Second argument should be an instruction");
+        check_vec_len(params, 2, "onln", "")?;
+        self.line = parse_args!(params, 0, Usize, "line");
+        self.inner = parse_args!(params, 1, Token, "instruction");
         self.params = vec![
             self.line.into(),
             TextForgeParamTypes::Token(self.inner.clone()),

@@ -90,9 +90,9 @@ mod tests {
 
         let expected = Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
-                "Index is out of range for the desired string".into(),
+                "character index 2 is out of range: the text has 3 characters".into(),
             ),
-            t.to_textforge_line(),
+            "",
             input.to_string(),
         ));
 
@@ -129,7 +129,9 @@ mod tests {
         let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
-            TextForgeErrorCode::InvalidParameters("Index should be of usize type".into()),
+            TextForgeErrorCode::InvalidParameters(
+                "parameter 1 (`index`) must be a non-negative integer, but it is text".into(),
+            ),
             "",
             "",
         ));

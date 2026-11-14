@@ -85,13 +85,14 @@ impl InstructionMethods for Dlc {
                 TextForgeError::new(
                     TextForgeErrorCode::IndexOutOfRange(
                         format!(
-                            "Invalid Index for this specific input, supported indexes 0-{}, entered index {}",
-                            input.chars().count().saturating_sub(1),
-                            self.start_index
-                        ).into()
+                            "the range starts at character {}, but the text has {}",
+                            self.start_index,
+                            crate::utils::errors::plural(input.chars().count(), "character")
+                        )
+                        .into(),
                     ),
-                    self.to_textforge_line(),
-                    crate::utils::errors::input_excerpt(&input)
+                    "",
+                    crate::utils::errors::input_excerpt(&input),
                 )
             })?;
 
@@ -117,8 +118,8 @@ impl InstructionMethods for Dlc {
 
         check_vec_len(params, 2, "dlc", "")?;
 
-        self.start_index = parse_args!(params, 0, Usize, "Index should be of usize type");
-        self.end_index = parse_args!(params, 1, Usize, "Index should be of usize type");
+        self.start_index = parse_args!(params, 0, Usize, "start");
+        self.end_index = parse_args!(params, 1, Usize, "end");
         self.params = vec![self.start_index.into(), self.end_index.into()];
 
         Ok(())
