@@ -1,9 +1,59 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 (2026-11-14)
+
+Upgrade notes: the breaking changes are listed first, then the behavior
+changes an existing pipeline may notice. Everything else is additive.
+
+### Breaking changes
+
+- The `txf` command-line program and `utils::cli` are behind the new `cli`
+  feature, so the library no longer depends on `clap`. Install the program with
+  `cargo install textforge --features cli` (add `bytecode` for `.textforgebc`).
+- `TextForgeBuilderMethods::define_replace_map(name, configure)` takes a closure
+  that fills a scoped `ReplaceMapBuilder` (`map.add_replace(a, b)?.end()`)
+  instead of one `(name, pattern, replacement)` rule. One-rule definitions use
+  `add_replace_rule(name, pattern, replacement)`.
+- `GlobalContextMethods::get_all_vars` was removed: expressions now read only
+  the variables they use. Read single variables with `get_var`.
+- `SyntaxToken` and `TextForgeParamTypes` have a new `Pipeline` variant (the
+  pipeline joined by `ppjn`) and are now `#[non_exhaustive]`: matches on them
+  need a wildcard arm, and future variants will not be breaking.
+- The Cargo features `rand` and `random-string` were removed (they only enabled
+  unused test dependencies).
+- Minimum supported Rust version: 1.89 (`rust-version`).
+
+### Behavior changes
+
+- Safety limits: `rpt`, `padl` and `padr` fail above `max_generated_bytes`
+  (2 GiB) and `iter` above `max_iterations` (10,000,000), instead of running
+  out of memory. Both are configurable or `"unlimited"` (see Added).
+- `tucw`, `tlcw`, `cts` and `ctr` keep the original separators between words
+  (they used to rejoin the text with single spaces, joining lines).
+- Inclusive character and word ranges accept `start == end`; `tucc`/`tlcc`
+  clamp an end past the text; `dlc` on empty text is an `IndexOutOfRange` error.
+- `end` inside a block or an iteration stops the rest of that block or loop,
+  and halts runs with watchers.
+- `iter` iteration `i` sees `__COUNTER__ == i` (it saw `0, 0, 1, …`).
+- `{{__COUNTER__}}`, `{{line_no}}` and other names with `_` interpolate (their
+  delimiters used to be dropped and the bare name printed).
+- `var`, `val`, `mutv` and `eval … in` reject the five built-in names
+  (`__PIPELINE_NAME__`, `__TEXTFORGE_VERSION__`, `__INPUT_FILE__`,
+  `__LEN_CHARS__`, `__LINES__`).
+- Bytecode files follow the text parser's nesting limits.
+- Index and parsing errors keep an excerpt of the processed text in their
+  `input` field instead of the whole document (see Fixed).
 
 ### Added
 
+- `ppf {file};` (prepend file, opcode 0x59) puts the contents of a UTF-8 file at
+  the beginning of the text, the counterpart of `apf`. Builder method
+  `prepend_file`; portable `InstructionSpec` `ppf`. With `buffered`, spooled
+  documents stay on disk. See [file instructions](docs/file-instructions.md).
+- `cli` feature (see Breaking changes) and complete package metadata:
+  `rust-version`, keywords, categories and docs.rs features.
+- `utils::errors::input_excerpt` and `INPUT_EXCERPT_CHARS`, the excerpt errors
+  use for large texts.
 - Safety limits for instructions that multiply work: `rpt`, `padl` and `padr`
   fail when their output would exceed `max_generated_bytes` (default 2 GiB),
   and `iter` when its count exceeds `max_iterations` (default 10,000,000),
@@ -71,6 +121,11 @@
 
 ### Fixed
 
+- Index errors (lines, sections, characters, words, `ins`/`inf`, `dls`, `dla`,
+  `dlb`, `dlc`, `sslt`) and the parsing errors of `jsone`, `jsonu` and `urld`
+  copied the whole processed text into the error, and some into the message: on
+  a 100 MB document one error used 100 MB more. They now keep up to 80
+  characters followed by `… [N bytes]`; shorter texts appear whole, as before.
 - `tucs` uppercased the wrong character (or none) when a multibyte character
   came before the index: it compared byte offsets with the character index.
 - `slt` and `ctc` rejected an end index equal to the character count while
@@ -115,6 +170,9 @@
 
 ### Changed
 
+- The published package holds only the library sources, the `.txfrc` schema,
+  README, changelog and license (`include` in `Cargo.toml`): 1.4 MiB instead of
+  204.8 MiB of benchmark data, logs and scripts.
 - Engine performance: parameter templates and `[[ ]]` expressions are compiled
   once per registered pipeline (constant expressions are evaluated once),
   expressions are evaluated against a small read-only context, the context

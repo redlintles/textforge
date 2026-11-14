@@ -61,6 +61,9 @@ let unlimited = ExecutionProfile { limits: Limits::unlimited(), ..profile };
 
 ## `.txfrc`
 
+The `txf` program is built with the `cli` feature
+(`cargo install textforge --features cli`).
+
 JSON read **only by the `txf` CLI**. The library and bindings never read
 configuration files on their own; `ExecutionProfile::from_rc_file(path)` and
 `RcFile` exist for callers that choose to. Schema: [`txfrc.schema.json`](txfrc.schema.json)

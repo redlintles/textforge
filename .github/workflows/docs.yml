@@ -22,7 +22,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build documentation
-        run: cargo doc --no-deps
+        # Same features as docs.rs (package.metadata.docs.rs in Cargo.toml).
+        run: cargo doc --no-deps --features bytecode,watchers,buffered,cli
 
       - name: Create index page
         run: |
@@ -34,10 +35,10 @@ jobs:
             <head>
               <meta charset="UTF-8">
               <meta http-equiv="refresh" content="0; url=$CRATE_NAME/">
-              <title>Advanced Text Processor Documentation</title>
+              <title>TextForge Documentation</title>
             </head>
             <body>
-              <a href="$CRATE_NAME/">Advanced Text Processor Documentation</a>
+              <a href="$CRATE_NAME/">TextForge Documentation</a>
             </body>
           </html>
           EOF

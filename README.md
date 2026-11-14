@@ -90,7 +90,7 @@ Add it from crates.io (Rust 1.89 or newer):
 
 ```toml
 [dependencies]
-textforge = "0.2.0"
+textforge = "0.3.0"
 ```
 
 Use the builder API through a `TextForgeProcessor`:
@@ -338,8 +338,8 @@ examples/, scripts/             — Benchmark/probe programs and reproducible be
 - [x] `.textforgebc` binary protocol
 - [x] `TextForgeBuilder`/`TextForgeProcessor` Rust API
 - [x] Control flow: blocks (`blk`/`cblk`), conditionals (`ifdc`), variables (`val`)
-- [x] Section instructions (`onln`, `onck`, `onlni`), expressions in numeric parameters and a nested debug trace (unreleased)
-- [x] Static context and built-in variables, file instructions (`wtf`, `apf`, `inf`), pipeline join (`ppjn`) and execution profiles with `.txfrc` (unreleased)
+- [x] Section instructions (`onln`, `onck`, `onlni`), expressions in numeric parameters and a nested debug trace (0.3.0)
+- [x] Static context and built-in variables, file instructions (`wtf`, `apf`, `ppf`, `inf`), pipeline join (`ppjn`), execution profiles with `.txfrc`, safety limits and a faster engine (0.3.0)
 - [x] Batch processing over multiple files, in parallel (`rayon`)
 - [x] Optional pipeline observability (`watchers` feature, JSON reports)
 - [x] Buffered processing (`buffered` feature)
@@ -413,9 +413,22 @@ assert_eq!(processor.process_all(&id, "é\n\né\n🍌").unwrap(), "é | 🍌");
 ```
 
 See the [line semantics and complete instruction list](docs/lines.md) and the
-[0.2.0 changelog](changelog.md). Bindings are versioned separately: Python
+[changelog](changelog.md). Bindings are versioned separately: Python
 `textforgers` 0.1.3 (in preparation) and Node.js `textforge-node` 0.1.0 (unreleased).
 
+
+## 0.3.0 release
+
+0.3.0 adds section instructions (`onln`, `onck`, `onlni`), file instructions
+(`wtf`, `apf`, `ppf`, `inf`), pipeline joins (`ppjn`), built-in variables,
+execution profiles with `.txfrc` and safety limits for `rpt`, `padl`, `padr` and
+`iter`. Parameter templates and expressions are compiled once per pipeline
+(up to 64× faster parameter binding, see the
+[engine benchmark](docs/benchmarks/engine/README.md)). It has breaking changes:
+the `txf` program is behind the `cli` feature, `define_replace_map` takes a
+closure, and some instructions changed behavior. Read the upgrade notes at the
+top of the [changelog](changelog.md) and the
+[release notes](docs/release-0.3.0.md).
 
 ## 0.2.0 release and performance
 

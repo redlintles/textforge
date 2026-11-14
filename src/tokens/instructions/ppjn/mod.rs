@@ -29,8 +29,8 @@ use crate::{
 /// The path is a literal, resolved against the directory of the file that
 /// contains `ppjn` (or the working directory). The file, text or bytecode
 /// (recognized by its first bytes), is loaded once with the outer pipeline,
-/// never while it runs; cycles and nesting deeper than
-/// [`MAX_JOIN_DEPTH`](crate::parser::joins::MAX_JOIN_DEPTH) are errors.
+/// never while it runs; cycles and nesting deeper than 16 joins
+/// (`MAX_JOIN_DEPTH`) are errors.
 /// Bytecode embeds the joined pipeline. See `docs/file-instructions.md`.
 ///
 /// # Example

@@ -218,7 +218,7 @@ implied by the instruction, so descriptions and snapshots hold only the path,
 and `register` loads it (a missing file is a persistence error). `tests/file_instructions.rs` checks portable
 plans against the builder and the text form. See [file instructions](file-instructions.md).
 
-## Section instructions (unreleased)
+## Section instructions (0.3.0)
 
 Rust `on_line(n, inner)`, `on_chunk(start, end, inner)` and
 `on_line_interval(start, end, inner)` map to `InstructionSpec` mnemonics `onln`,
