@@ -90,6 +90,8 @@
 //! and the [portable API](https://github.com/redlintles/textforge/blob/main/docs/portable-api.md).
 #![forbid(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+// `test_access` is for the test suite: do not badge items with it on docs.rs.
+#![cfg_attr(docsrs, doc(auto_cfg(hide(feature, values("test_access")))))]
 #![cfg_attr(not(feature = "test_access"), warn(missing_docs))]
 
 #[cfg(not(feature = "test_access"))]
