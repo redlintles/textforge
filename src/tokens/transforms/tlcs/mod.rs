@@ -36,6 +36,7 @@ pub struct Tlcs {
 }
 
 impl Tlcs {
+    /// Builds `tlcs {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Tlcs {
             index,

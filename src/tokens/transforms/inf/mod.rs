@@ -27,9 +27,9 @@ use crate::{
 /// use textforge::tokens::{InstructionMethods, transforms::inf::Inf};
 ///
 /// let path = std::env::temp_dir().join(format!("inf-doc-{}.txt", std::process::id()));
-/// std::fs::write(&path, " laranja").unwrap();
+/// std::fs::write(&path, " orange").unwrap();
 /// let token = Inf::new(&path.to_string_lossy(), 1);
-/// assert_eq!(token.transform("banana".into(), None).unwrap(), "ba laranjanana");
+/// assert_eq!(token.transform("banana".into(), None).unwrap(), "ba orangenana");
 /// # std::fs::remove_file(&path).unwrap();
 /// ```
 #[derive(Clone, Default)]
@@ -40,6 +40,7 @@ pub struct Inf {
 }
 
 impl Inf {
+    /// Builds `inf {file} {index};` with the given parameters.
     pub fn new(path: &str, index: usize) -> Self {
         Inf {
             path: path.to_owned(),

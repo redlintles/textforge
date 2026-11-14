@@ -33,12 +33,17 @@ use crate::{
 ///
 #[derive(Clone, Default)]
 pub struct Ctr {
+    /// First character or word of the inclusive range.
     pub start_index: usize,
+    /// Last character or word of the inclusive range.
     pub end_index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Ctr {
+    /// Builds `ctr {start} {end};` with the given parameters.
+    ///
+    /// Fails if the parameters are invalid (for a range, if `start > end`).
     pub fn new(start_index: usize, end_index: usize) -> Result<Self, TextForgeError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Ctr {

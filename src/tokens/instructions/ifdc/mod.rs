@@ -26,9 +26,9 @@ use crate::parser::params::TextForgeParamTypes;
 ///
 /// let token = Ifdc::new(
 ///     "xy",
-///     (Box::new(Atb::new("laranja")) as Box<dyn InstructionMethods>).into()
+///     (Box::new(Atb::new("orange")) as Box<dyn InstructionMethods>).into()
 /// );
-/// assert_eq!(token.transform("larryxy".into(), None).unwrap().to_string(), "laranjalarryxy"); // Adds laranja to the beginning
+/// assert_eq!(token.transform("larryxy".into(), None).unwrap().to_string(), "orangelarryxy"); // Adds orange to the beginning
 /// assert_eq!(token.transform("banana".into(), None).unwrap().to_string(), "banana"); // Does nothing
 ///
 /// ```
@@ -40,6 +40,7 @@ pub struct Ifdc {
 }
 
 impl Ifdc {
+    /// Builds `ifdc {text} do {instruction};` with the given parameters.
     pub fn new(text: &str, inner: TokenWrapper) -> Self {
         Ifdc {
             text: text.to_string(),

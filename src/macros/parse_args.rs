@@ -1,3 +1,6 @@
+/// Reads parameter `index` of a parameter slice as the given variant
+/// (`String`, `Usize`, …), or returns an `InvalidParameters` error with the message.
+/// For `set_params` implementations.
 #[macro_export]
 macro_rules! parse_args {
     ($params:expr, $idx:expr, String, $msg:expr) => {{

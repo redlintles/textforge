@@ -30,15 +30,17 @@ pub mod test;
 /// ```rust
 /// use textforge::tokens::{InstructionMethods, transforms::emj::Emj};
 ///
-/// let token = Emj::new("laranja", ",").unwrap();
+/// let token = Emj::new("orange", ",").unwrap();
 ///
 /// assert_eq!(
-///     token.transform("banana laranja banana laranja".into(),None).unwrap().to_string(),
-///     "laranja,laranja");
+///     token.transform("banana orange banana orange".into(),None).unwrap().to_string(),
+///     "orange,orange");
 /// ```
 #[derive(Clone, Debug)]
 pub struct Emj {
+    /// The regular expression to match.
     pub pattern: Regex,
+    /// Text placed between the kept matches.
     pub separator: String,
     params: Vec<TextForgeParamTypes>,
 }

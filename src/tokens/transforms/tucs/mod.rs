@@ -36,6 +36,7 @@ pub struct Tucs {
 }
 
 impl Tucs {
+    /// Builds `tucs {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Tucs {
             index,

@@ -143,24 +143,19 @@ pub fn value_to_plain_string(value: &Value) -> String {
     }
 }
 
-/// Expande `{{var}}` e `[[expr]]` embutidos em `input`.
+/// Expands the `{{var}}` and `[[expr]]` markers in `input`.
 ///
-/// - `{{nome}}` → valor da variável `nome` no contexto.
-/// - `[[expr]]` → resultado do evalexpr via `expr()`.
-/// - Um delimitador precedido de `\` (`\{{`, `\}}`, `\[[`, `\]]`) imprime o
-///   delimitador literalmente e consome o `\` — não dispara interpolação.
-///   O `\` só tem esse efeito colado imediatamente num desses quatro pares;
-///   em qualquer outro lugar (`\n`, um `\` avulso, `\{` de chave única) ele
-///   não é tratado como escape e passa direto, sem significado especial.
-/// - Qualquer `{{`, `}}`, `[[` ou `]]` que não feche um marcador válido
-///   (nome começando com dígito, sem fechamento, etc.) é removido da saída
-///   — a menos que tenha sido escapado, caso em que aparece literalmente.
-///   Pra imprimir `{{nome}}` por completo, escape as DUAS pontas:
-///   `\{{nome\}}`. Escapar só uma ponta deixa a outra "solta" — e ela
-///   também é removida, por não formar marcador completo sozinha.
-/// - Nada é re-escaneado: o valor resolvido de uma variável ou expressão
-///   nunca volta a ser interpolado, mesmo que contenha `{{`/`[[` por
-///   coincidência — evita loop em variáveis que se referenciam entre si.
+/// - `{{name}}` becomes the value of the variable `name`.
+/// - `[[expr]]` becomes the result of the expression.
+/// - A delimiter preceded by `\` (`\{{`, `\}}`, `\[[`, `\]]`) is printed
+///   literally and the `\` is dropped. Elsewhere (`\n`, a lone `\`, `\{`) a
+///   backslash has no special meaning.
+/// - A `{{`, `}}`, `[[` or `]]` that does not close a valid marker (a name
+///   starting with a digit, a missing end…) is removed, unless escaped. To
+///   print `{{name}}` literally, escape both ends: `\{{name\}}`; escaping one
+///   end leaves the other unmatched, and it is removed.
+/// - Nothing is scanned twice: a value that happens to contain `{{` or `[[` is
+///   not interpolated again, so variables that refer to each other cannot loop.
 ///
 /// Built-in variables that describe the current text (`__LINES__`,
 /// `__LEN_CHARS__`) need a running instruction and fail here.
@@ -212,10 +207,9 @@ pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String
     out.push_str(&input[last_end..]);
     Ok(out)
 }
-/// Avalia uma expressão evalexpr contra as variáveis do contexto atual e
-/// devolve o resultado como texto plano — sem as aspas literais que o
-/// Display do evalexpr adiciona em Value::String. Usado pela instruction
-/// `eval` e pela interpolação `[[expr]]` em strings do pipeline.
+/// Evaluates an expression against the current variables and returns the
+/// result as plain text (strings without the quotes evalexpr's `Display` adds).
+/// `eval` and `[[ ]]` interpolation use the same evaluation.
 pub fn expr(expression: &str, context: &GlobalExecutionContext) -> Result<String, TextForgeError> {
     let result = evaluate(expression, context, "api::expr")?;
     Ok(value_to_plain_string(&result))

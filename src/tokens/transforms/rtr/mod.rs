@@ -26,11 +26,13 @@ use crate::parser::params::TextForgeParamTypes;
 /// ```
 #[derive(Clone, Default)]
 pub struct Rtr {
+    /// How many times to repeat or rotate.
     pub times: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Rtr {
+    /// Builds `rtr {times};` with the given parameters.
     pub fn new(times: usize) -> Rtr {
         Rtr {
             times,

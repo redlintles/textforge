@@ -22,7 +22,7 @@ use crate::parser::params::TextForgeParamTypes;
 ///
 /// let token = Urle::default();
 ///
-/// assert_eq!(token.transform("banana laranja".into(),None).unwrap().to_string(), "banana%20laranja");
+/// assert_eq!(token.transform("banana orange".into(),None).unwrap().to_string(), "banana%20orange");
 /// ```
 ///
 #[derive(Clone, Default)]

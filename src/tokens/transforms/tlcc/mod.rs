@@ -36,6 +36,9 @@ pub struct Tlcc {
 }
 
 impl Tlcc {
+    /// Builds `tlcc {start} {end};` with the given parameters.
+    ///
+    /// Fails if the parameters are invalid (for a range, if `start > end`).
     pub fn new(start_index: usize, end_index: usize) -> Result<Self, TextForgeError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Tlcc {

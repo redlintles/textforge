@@ -21,17 +21,22 @@ use crate::parser::params::TextForgeParamTypes;
 ///
 /// let token = Dlc::new(1,5).unwrap();
 ///
-/// assert_eq!(token.transform("bananalaranjacheiadecanja".into(),None).unwrap().to_string(), "blaranjacheiadecanja")
+/// assert_eq!(token.transform("bananaorangefullofjam".into(),None).unwrap().to_string(), "borangefullofjam")
 ///
 /// ```
 #[derive(Clone, Default)]
 pub struct Dlc {
+    /// First character or word of the inclusive range.
     pub start_index: usize,
+    /// Last character or word of the inclusive range.
     pub end_index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Dlc {
+    /// Builds `dlc {start} {end};` with the given parameters.
+    ///
+    /// Fails if the parameters are invalid (for a range, if `start > end`).
     pub fn new(start_index: usize, end_index: usize) -> Result<Self, TextForgeError> {
         check_chunk_bound_indexes(start_index, end_index, None)?;
         Ok(Dlc {

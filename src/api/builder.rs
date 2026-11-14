@@ -29,6 +29,8 @@ pub struct TextForgeBuilder<'ap> {
 }
 
 impl<'ap> TextForgeBuilder<'ap> {
+    /// A builder that registers its pipeline in `processor`; usually obtained with
+    /// [`TextForgeProcessor::create_pipeline`].
     pub fn new(processor: &'ap mut TextForgeProcessor) -> TextForgeBuilder<'ap> {
         TextForgeBuilder {
             nodes: Vec::new(),

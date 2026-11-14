@@ -43,6 +43,7 @@ pub struct Onlni {
 }
 
 impl Onlni {
+    /// Builds `onlni {start} {end} apply {instruction};` with the given parameters.
     pub fn new(start_line: usize, end_line: usize, inner: TokenWrapper) -> Self {
         Onlni {
             start_line,

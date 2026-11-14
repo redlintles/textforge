@@ -1,3 +1,5 @@
+/// Serializes an opcode and its parameters as one bytecode instruction record.
+/// For `to_bytecode` implementations.
 #[macro_export]
 macro_rules! to_bytecode {
     // 1) Forma antiga: lista literal

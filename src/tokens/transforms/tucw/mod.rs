@@ -23,7 +23,7 @@ use crate::{
 ///
 /// let token = Tucw::new(1);
 ///
-/// assert_eq!(token.transform("banana laranja cheia de canja".into(),None).unwrap().to_string(), "banana LARANJA cheia de canja");
+/// assert_eq!(token.transform("banana orange full of jam".into(),None).unwrap().to_string(), "banana ORANGE full of jam");
 ///
 /// ```
 #[derive(Clone, Default)]
@@ -33,6 +33,7 @@ pub struct Tucw {
 }
 
 impl Tucw {
+    /// Builds `tucw {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Tucw {
             index,

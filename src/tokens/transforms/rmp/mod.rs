@@ -24,6 +24,9 @@ pub struct Rmp {
 }
 
 impl Rmp {
+    /// Builds `rmp {pattern};` with the given parameters.
+    ///
+    /// Fails with the regex error message if `pattern` is not a valid regular expression.
     pub fn new(pattern: &str) -> Result<Self, String> {
         let pattern = Regex::new(pattern).map_err(|x| x.to_string())?;
         Ok(Rmp {

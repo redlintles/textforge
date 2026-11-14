@@ -20,6 +20,7 @@ fn process_run(
     }
 }
 
+/// Runs a pipeline on the whole input at once.
 pub fn process_input_single_chunk(
     processor: &mut TextForgeProcessor,
     identifier: &str,
@@ -32,6 +33,7 @@ pub fn process_input_single_chunk(
     process_run(processor, identifier, input, debug)
 }
 
+/// Runs a pipeline on each line of the input.
 pub fn process_input_line_by_line(
     processor: &mut TextForgeProcessor,
     identifier: &str,
@@ -50,6 +52,7 @@ pub fn process_input_line_by_line(
     Ok(text_vec.join("\n"))
 }
 
+/// Runs a pipeline on consecutive chunks of the input.
 pub fn process_input_by_chunks(
     processor: &mut TextForgeProcessor,
     identifier: &str,
@@ -223,11 +226,17 @@ pub struct ProfileOptions {
 /// The effective profile and the origin of each value.
 #[derive(Clone, Debug)]
 pub struct ResolvedProfile {
+    /// The resulting profile.
     pub profile: crate::api::ExecutionProfile,
+    /// The preset it starts from.
     pub preset: String,
+    /// Where the preset came from.
     pub preset_source: ProfileSource,
+    /// Where the spool threshold came from.
     pub spool_threshold_source: ProfileSource,
+    /// Where the generated-bytes limit came from.
     pub max_generated_bytes_source: ProfileSource,
+    /// Where the iteration limit came from.
     pub max_iterations_source: ProfileSource,
 }
 

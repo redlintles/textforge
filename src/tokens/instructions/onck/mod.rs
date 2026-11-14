@@ -41,6 +41,7 @@ pub struct Onck {
 }
 
 impl Onck {
+    /// Builds `onck {start} {end} apply {instruction};` with the given parameters.
     pub fn new(start_index: usize, end_index: usize, inner: TokenWrapper) -> Self {
         Onck {
             start_index,

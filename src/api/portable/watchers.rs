@@ -18,9 +18,13 @@ use crate::{
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Observation {
+    /// The text after the step.
     pub current: String,
+    /// The text before the step.
     pub before: String,
+    /// The text after the next step, or `None` for the last one.
     pub after: Option<String>,
+    /// The step's instruction, as text.
     pub instruction: String,
 }
 
@@ -48,6 +52,7 @@ impl From<WatcherContext> for Observation {
 /// # }
 /// ```
 pub trait Observer {
+    /// Returns the value to record for this step, or an error message.
     fn observe(&self, context: Observation) -> Result<String, String>;
 }
 
@@ -76,9 +81,11 @@ pub struct Observers {
 }
 
 impl Observers {
+    /// No observers.
     pub fn new() -> Self {
         Self::default()
     }
+    /// Registers (or replaces) the observer called `name`.
     pub fn set(&mut self, name: String, observer: Box<dyn Observer>) {
         let context_name = name.clone();
         self.core.set_owned_watcher(name, move |context| {
@@ -91,6 +98,7 @@ impl Observers {
             })
         });
     }
+    /// Registers a built-in metric (see [`builtin_names`](Self::builtin_names)) as `name`.
     pub fn set_builtin(&mut self, name: String, metric: &str) -> Result<(), BindingError> {
         let callback = BUILTINS
             .iter()
@@ -107,20 +115,24 @@ impl Observers {
             .set_owned_watcher(name, move |context| Ok(callback(context)));
         Ok(())
     }
+    /// The names of the built-in metrics.
     pub fn builtin_names() -> Vec<String> {
         BUILTINS
             .iter()
             .map(|(name, _)| (*name).to_string())
             .collect()
     }
+    /// Runs observer `name` after every step.
     pub fn schedule_all(&mut self, name: &str) -> Result<(), BindingError> {
         self.core
             .schedule_owned_watcher(name, ExecutionWindows::All)
             .map_err(execution)
     }
+    /// Clears the report and keeps the observers.
     pub fn reset(&mut self) {
         self.core.reset();
     }
+    /// Runs the scheduled observers on one observation.
     pub fn run(&mut self, observation: Observation) -> Result<(), BindingError> {
         self.core
             .run_watchers(WatcherContext::new(
@@ -131,12 +143,14 @@ impl Observers {
             ))
             .map_err(watcher_error)
     }
+    /// Writes the report as JSON.
     pub fn write_report(&self, path: &FilePath) -> Result<(), BindingError> {
         self.core.to_json(path.as_path()).map_err(persistence)
     }
 }
 
 impl PortableProcessor {
+    /// Runs a pipeline with `observers` and writes their report.
     pub fn process_all_with_watchers(
         &mut self,
         id: &str,

@@ -17,9 +17,11 @@ use std::path::{Path, PathBuf};
 pub struct FilePath(pub(super) PathBuf);
 
 impl FilePath {
+    /// A path from UTF-8 text.
     pub fn from_text(path: String) -> Self {
         Self(path.into())
     }
+    /// A path from the bytes of a Unix path (may be non-UTF-8).
     pub fn from_native_bytes(bytes: Vec<u8>) -> Result<Self, BindingError> {
         #[cfg(unix)]
         {
@@ -32,6 +34,7 @@ impl FilePath {
             Err(unsupported("Unix byte paths"))
         }
     }
+    /// A path from Windows UTF-16 units.
     pub fn from_windows_wide(wide: Vec<u16>) -> Result<Self, BindingError> {
         #[cfg(windows)]
         {
@@ -44,9 +47,11 @@ impl FilePath {
             Err(unsupported("Windows wide paths"))
         }
     }
+    /// The path as text, or `None` if it is not valid UTF-8.
     pub fn to_text(&self) -> Option<String> {
         self.0.to_str().map(str::to_owned)
     }
+    /// The path as Unix bytes.
     pub fn to_native_bytes(&self) -> Result<Vec<u8>, BindingError> {
         #[cfg(unix)]
         {
@@ -58,6 +63,7 @@ impl FilePath {
             Err(unsupported("Unix byte paths"))
         }
     }
+    /// The path as Windows UTF-16 units.
     pub fn to_windows_wide(&self) -> Result<Vec<u16>, BindingError> {
         #[cfg(windows)]
         {

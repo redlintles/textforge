@@ -30,12 +30,15 @@ use crate::parser::params::TextForgeParamTypes;
 /// ```
 #[derive(Clone, Default)]
 pub struct Padr {
+    /// The text to add or insert.
     pub text: String,
+    /// Length, in characters, of the padded result.
     pub max_len: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Padr {
+    /// Builds `padr {text} {length};` with the given parameters.
     pub fn new(text: &str, max_len: usize) -> Self {
         Padr {
             text: text.to_string(),

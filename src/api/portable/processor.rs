@@ -17,11 +17,15 @@ use std::{borrow::Cow, collections::BTreeSet};
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Features {
+    /// Built with the `bytecode` feature.
     pub bytecode: bool,
+    /// Built with the `watchers` feature.
     pub watchers: bool,
+    /// Built with the `buffered` feature.
     pub buffered: bool,
 }
 
+/// The features this copy of TextForge was built with.
 pub fn features() -> Features {
     Features {
         bytecode: cfg!(feature = "bytecode"),
@@ -39,8 +43,11 @@ pub fn features() -> Features {
 /// ```
 #[derive(Clone, Debug)]
 pub struct FileTask {
+    /// File to read.
     pub input: FilePath,
+    /// Registered pipeline to run.
     pub pipeline_id: String,
+    /// File to write the result to.
     pub output: FilePath,
 }
 
@@ -93,12 +100,15 @@ pub struct PortableProcessor {
 }
 
 impl PortableProcessor {
+    /// An empty processor.
     pub fn new() -> Self {
         Self::default()
     }
+    /// An empty plan, to be filled and registered with [`register`](Self::register).
     pub fn create_pipeline(&self) -> PipelinePlan {
         PipelinePlan::new()
     }
+    /// Validates `plan` and registers it; returns the pipeline id.
     pub fn register(&mut self, plan: &PipelinePlan) -> Result<String, BindingError> {
         let mut tokens = validate_and_lower(&plan.nodes).map_err(validation)?;
         crate::parser::joins::link(&mut tokens, std::path::Path::new("."), &[])
@@ -118,17 +128,21 @@ impl PortableProcessor {
         }
         self.register(&plan)
     }
+    /// Removes a registered pipeline.
     pub fn remove_transform(&mut self, id: &str) -> Result<(), BindingError> {
         self.core.remove_transform(id).map_err(execution)?;
         self.ids.remove(id);
         Ok(())
     }
+    /// Whether `id` names a registered pipeline.
     pub fn transform_exists(&self, id: &str) -> bool {
         self.core.transform_exists(id)
     }
+    /// The ids of the registered pipelines.
     pub fn list_transforms(&self) -> Vec<String> {
         self.ids.iter().cloned().collect()
     }
+    /// Prints the registered pipelines.
     pub fn show_transforms(&self) {
         self.core.show_transforms();
     }
@@ -141,6 +155,7 @@ impl PortableProcessor {
             .map(|token| instruction::describe(token).map_err(conversion))
             .collect()
     }
+    /// The pipeline's instructions in text form, one line each.
     pub fn get_text_transform_vec(&self, id: &str) -> Result<Vec<String>, BindingError> {
         self.core.get_text_transform_vec(id).map_err(execution)
     }
@@ -163,12 +178,14 @@ impl PortableProcessor {
             .map(str::to_owned)
             .map_err(execution)
     }
+    /// Registers a copy of a pipeline; returns the new id.
     pub fn clone_pipeline(&mut self, id: &str) -> Result<String, BindingError> {
         let tokens = self.core.get_transform_vec(id).map_err(execution)?;
         let id = self.core.add_transform(tokens);
         self.ids.insert(id.clone());
         Ok(id)
     }
+    /// Reads and registers a `.textforge` file; returns the pipeline id.
     pub fn get_pipeline_from_file(&mut self, path: &FilePath) -> Result<String, BindingError> {
         let id = self
             .core
@@ -177,6 +194,7 @@ impl PortableProcessor {
         self.ids.insert(id.clone());
         Ok(id)
     }
+    /// Writes a pipeline to a `.textforge` file.
     pub fn write_pipeline_to_file(
         &mut self,
         id: &str,
@@ -186,6 +204,7 @@ impl PortableProcessor {
             .write_pipeline_to_file(id, path.as_path())
             .map_err(persistence)
     }
+    /// Reads and registers a `.textforgebc` file (`bytecode` feature).
     #[cfg(feature = "bytecode")]
     pub fn read_from_bytecode_file(&mut self, path: &FilePath) -> Result<String, BindingError> {
         let id = self
@@ -195,6 +214,7 @@ impl PortableProcessor {
         self.ids.insert(id.clone());
         Ok(id)
     }
+    /// Writes a pipeline to a `.textforgebc` file (`bytecode` feature).
     #[cfg(feature = "bytecode")]
     pub fn write_to_bytecode_file(
         &mut self,
@@ -205,15 +225,18 @@ impl PortableProcessor {
             .write_to_bytecode_file(id, path.as_path())
             .map_err(persistence)
     }
+    /// Runs a pipeline on `input` without recording errors in the processor.
     pub fn run_transform(&self, id: &str, input: &str) -> Result<String, BindingError> {
         self.core
             .run_transform(id, Cow::Borrowed(input))
             .map(Cow::into_owned)
             .map_err(execution)
     }
+    /// Runs a pipeline on `input`.
     pub fn process_all(&mut self, id: &str, input: &str) -> Result<String, BindingError> {
         self.core.process_all(id, input).map_err(execution)
     }
+    /// Runs one instruction on `input` without registering a pipeline.
     pub fn process_single(
         &mut self,
         instruction: InstructionSpec,
@@ -222,6 +245,7 @@ impl PortableProcessor {
         let token = instruction::convert(&instruction).map_err(conversion)?;
         self.core.process_single(token, input).map_err(execution)
     }
+    /// Runs a pipeline and returns the result; prints a step-by-step trace.
     pub fn process_all_with_debug(
         &mut self,
         id: &str,
@@ -231,6 +255,7 @@ impl PortableProcessor {
             .process_all_with_debug(id, input)
             .map_err(execution)
     }
+    /// Runs one instruction and prints the step.
     pub fn process_single_with_debug(
         &mut self,
         instruction: InstructionSpec,
@@ -241,6 +266,7 @@ impl PortableProcessor {
             .process_single_with_debug(token, input)
             .map_err(execution)
     }
+    /// Runs a pipeline on a file and writes the result to another file.
     pub fn process_file(
         &mut self,
         id: &str,
@@ -251,6 +277,7 @@ impl PortableProcessor {
             .process_file(id, input.as_path(), output.as_path())
             .map_err(execution)
     }
+    /// Runs each task in parallel; one result per task, in order.
     pub fn process_batch(&self, tasks: Vec<FileTask>) -> Vec<Result<(), BindingError>> {
         self.core
             .process_batch(
@@ -269,6 +296,7 @@ impl PortableProcessor {
             .map(|result| result.map_err(execution))
             .collect()
     }
+    /// Like [`process_batch`](Self::process_batch), on the threads of `pool`.
     pub fn process_batch_in_pool(
         &self,
         pool: &BatchPool,

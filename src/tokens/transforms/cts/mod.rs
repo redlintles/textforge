@@ -32,11 +32,13 @@ use crate::parser::params::TextForgeParamTypes;
 
 #[derive(Clone, Default)]
 pub struct Cts {
+    /// The index the instruction applies to.
     pub index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Cts {
+    /// Builds `cts {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Cts {
             index,

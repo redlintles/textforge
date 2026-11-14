@@ -33,6 +33,7 @@ const GIB: u64 = 1024 * MIB;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ExecutionProfile {
+    /// Size, in bytes, above which buffered processing keeps a document on disk.
     pub spool_threshold: usize,
     /// Safety limits for instructions that multiply work (see [`Limits`]).
     pub limits: Limits,
@@ -227,7 +228,9 @@ pub struct RcFile {
 /// `Some(None)` when it is set to `"unlimited"`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct LimitOverrides {
+    /// Override of the generated-bytes limit: `Some(None)` removes the limit.
     pub max_generated_bytes: Option<Option<u64>>,
+    /// Override of the iteration limit: `Some(None)` removes the limit.
     pub max_iterations: Option<Option<u64>>,
 }
 

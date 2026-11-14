@@ -33,9 +33,17 @@ use crate::tokens::{InstructionMethods, instructions::*, transforms::*};
 use crate::utils::errors::TextForgeError;
 
 // Helper for referencing variables in code
+/// A reference to the variable `var_name`, for builder parameters that should
+/// read a variable at run time instead of a literal (like `{{var_name}}` in text).
 pub fn get_var(var_name: &str) -> ValType {
     ValType::VarRef(var_name.to_string())
 }
+/// One method per instruction, shared by every builder.
+///
+/// Each method appends the instruction to the pipeline being built and returns
+/// the builder, so calls chain. Parameters accept literals or [`get_var`]
+/// references. Errors are reported when the instruction is added (invalid
+/// literal parameters, nesting rules) or when it runs.
 pub trait TextForgeBuilderMethods: Sized {
     /// UNORM - Unicode normalization
     ///
@@ -128,6 +136,8 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// Appends an already built instruction. Builders implement this; the other
+    /// methods are written in terms of it.
     fn push_token(&mut self, t: impl Into<TokenWrapper>) -> Result<(), TextForgeError>;
 
     /// APL — Append one logical line, preserving the final-terminator convention.
@@ -1818,10 +1828,10 @@ pub trait TextForgeBuilderMethods: Sized {
     ///     TextForgeBuilderMethods,
     /// };
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = TextForgeBuilder::new(&mut processor).insert(1, " laranja").unwrap().build().unwrap();
+    /// let id = TextForgeBuilder::new(&mut processor).insert(1, " orange").unwrap().build().unwrap();
     /// let input = "banana";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("ba laranjanana".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("ba orangenana".to_string()));
     /// ```
     fn insert(
         &mut self,
@@ -1854,9 +1864,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).to_lowercase_word(1).unwrap().build().unwrap();
-    /// let input = "BANANA LARANJA CHEIA DE CANJA";
+    /// let input = "BANANA ORANGE FULL OF JAM";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("BANANA laranja CHEIA DE CANJA".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("BANANA orange FULL OF JAM".to_string()));
     /// ```
     fn to_lowercase_word(
         &mut self,
@@ -1884,9 +1894,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).to_uppercase_word(1).unwrap().build().unwrap();
-    /// let input = "banana laranja cheia de canja";
+    /// let input = "banana orange full of jam";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("banana LARANJA cheia de canja".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("banana ORANGE full of jam".to_string()));
     /// ```
     fn to_uppercase_word(
         &mut self,
@@ -1916,9 +1926,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).join_to_kebab_case().unwrap().build().unwrap();
-    /// let input = "banana laranja cheia de canja";
+    /// let input = "banana orange full of jam";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("banana-laranja-cheia-de-canja".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("banana-orange-full-of-jam".to_string()));
     ///
     ///
     fn join_to_kebab_case(&mut self) -> Result<&mut Self, TextForgeError> {
@@ -1945,9 +1955,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).join_to_snake_case().unwrap().build().unwrap();
-    /// let input = "banana laranja cheia de canja";
+    /// let input = "banana orange full of jam";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("banana_laranja_cheia_de_canja".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("banana_orange_full_of_jam".to_string()));
     ///
     fn join_to_snake_case(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(jsnc::Jsnc::default());
@@ -1973,9 +1983,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).join_to_camel_case().unwrap().build().unwrap();
-    /// let input = "banana laranja cheia de canja";
+    /// let input = "banana orange full of jam";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("bananaLaranjaCheiaDeCanja".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("bananaOrangeFullOfJam".to_string()));
     /// ```
     fn join_to_camel_case(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(jcmc::Jcmc::default());
@@ -2001,9 +2011,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).join_to_pascal_case().unwrap().build().unwrap();
-    /// let input = "banana laranja cheia de canja";
+    /// let input = "banana orange full of jam";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("BananaLaranjaCheiaDeCanja".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("BananaOrangeFullOfJam".to_string()));
     /// ```
     fn join_to_pascal_case(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(jpsc::Jpsc::default());
@@ -2092,9 +2102,9 @@ pub trait TextForgeBuilderMethods: Sized {
     /// };
     /// let mut processor = TextForgeProcessor::new();
     /// let id = TextForgeBuilder::new(&mut processor).remove_whitespace().unwrap().build().unwrap();
-    /// let input = "banana laranja cheia de canja";
+    /// let input = "banana orange full of jam";
     ///
-    /// assert_eq!(processor.process_all(&id,&input), Ok("bananalaranjacheiadecanja".to_string()));
+    /// assert_eq!(processor.process_all(&id,&input), Ok("bananaorangefullofjam".to_string()));
     /// ```
     fn remove_whitespace(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok: Box<dyn InstructionMethods> = Box::new(rmws::Rmws::default());
@@ -2250,6 +2260,7 @@ pub trait TextForgeBuilderMethods: Sized {
         self.push_token(tok)?;
         Ok(self)
     }
+    /// MUTV — Change the mutable variable `var_name` (`mutv {name} = {value};`).
     fn mut_var(
         &mut self,
         var_name: impl Into<ValType>,
@@ -2273,6 +2284,8 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// EVAL — Evaluate `expr` and store the result in `var_name`
+    /// (`eval {expression} in {name};`).
     fn eval(
         &mut self,
         expr: impl Into<ValType>,
@@ -2287,6 +2300,8 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// ITER — Run `inner` `times` times (`iter {times} times {instruction};`);
+    /// `__COUNTER__` holds the iteration, from 0.
     fn iter(
         &mut self,
         times: impl Into<ValType>,
@@ -2502,12 +2517,14 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// RMP — Remove every match of the regular expression `pattern`.
     fn remove_pattern(&mut self, pattern: impl Into<ValType>) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(rmp::Rmp::default()), Some(vec![pattern.into()]));
 
         self.push_token(tok)?;
         Ok(self)
     }
+    /// END — Stop the pipeline here (inside a block or loop, stop that block or loop).
     fn end(&mut self) -> Result<&mut Self, TextForgeError> {
         let tok = TokenWrapper::new(Box::new(end::End::default()), Some(vec![]));
 
@@ -2516,7 +2533,9 @@ pub trait TextForgeBuilderMethods: Sized {
     }
 }
 
+/// Conditionals for builders: instructions that run only when the text contains a value.
 pub trait TextForgeConditionalMethods: TextForgeBuilderMethods {
+    /// IFDC — Each instruction added in `f` runs only if the text contains `value`.
     fn if_do_contains_each<F>(&mut self, value: &str, f: F) -> Result<&mut Self, TextForgeError>
     where
         F: FnOnce(&mut ConditionalBuilderEach) -> Result<(), TextForgeError>,
@@ -2537,7 +2556,9 @@ pub trait TextForgeConditionalMethods: TextForgeBuilderMethods {
     }
 }
 
+/// Blocks for builders: named groups of instructions defined once and run later.
 pub trait TextForgeBlockMethods: TextForgeBuilderMethods {
+    /// BLK — Add the instructions built in `f` to block `block_name`.
     fn block_assoc<F>(
         &mut self,
         block_name: &'static str,
@@ -2558,6 +2579,7 @@ pub trait TextForgeBlockMethods: TextForgeBuilderMethods {
         Ok(self)
     }
 
+    /// CBLK — Run the instructions of block `block_name`.
     fn call_block(&mut self, block_name: &'static str) -> Result<&mut Self, TextForgeError> {
         let mut t: Box<dyn InstructionMethods> = Box::new(cblk::Cblk::default());
 

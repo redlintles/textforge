@@ -24,6 +24,7 @@ pub struct BlockBuilder {
 }
 
 impl BlockBuilder {
+    /// An empty body for block `block_name`.
     pub fn new(block_name: &'static str) -> Self {
         BlockBuilder {
             block_name,

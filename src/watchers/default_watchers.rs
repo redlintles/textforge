@@ -6,48 +6,58 @@ use std::collections::HashSet;
 
 use crate::watchers::WatcherContext;
 
+/// Length of the current text in bytes.
 pub fn current_len_bytes(ctx: WatcherContext) -> String {
     ctx.current.len().to_string()
 }
 
+/// Length of the current text in characters.
 pub fn current_len_chars(ctx: WatcherContext) -> String {
     ctx.current.chars().count().to_string()
 }
 
+/// Change in bytes made by the step.
 pub fn byte_delta(ctx: WatcherContext) -> String {
     let before = ctx.before.len() as i64;
     let after = ctx.current.len() as i64;
     (after - before).to_string()
 }
 
+/// Change in characters made by the step.
 pub fn char_delta(ctx: WatcherContext) -> String {
     let before = ctx.before.chars().count() as i64;
     let after = ctx.current.chars().count() as i64;
     (after - before).to_string()
 }
 
+/// Number of words of the current text.
 pub fn word_count(ctx: WatcherContext) -> String {
     ctx.current.split_whitespace().count().to_string()
 }
 
+/// Change in the number of words made by the step.
 pub fn word_count_delta(ctx: WatcherContext) -> String {
     let before = ctx.before.split_whitespace().count() as i64;
     let after = ctx.current.split_whitespace().count() as i64;
     (after - before).to_string()
 }
 
+/// Number of lines of the current text.
 pub fn line_count(ctx: WatcherContext) -> String {
     ctx.current.lines().count().to_string()
 }
 
+/// Whether the current text is empty (`true` or `false`).
 pub fn is_empty(ctx: WatcherContext) -> String {
     ctx.current.is_empty().to_string()
 }
 
+/// Whether the step left the text unchanged.
 pub fn is_unchanged(ctx: WatcherContext) -> String {
     (ctx.before == ctx.current).to_string()
 }
 
+/// Number of whitespace characters.
 pub fn whitespace_count(ctx: WatcherContext) -> String {
     ctx.current
         .chars()
@@ -58,6 +68,7 @@ pub fn whitespace_count(ctx: WatcherContext) -> String {
 
 // is_numeric() cobre dígitos unicode além de ASCII; troque por is_ascii_digit()
 // se você quiser um watcher estritamente ASCII.
+/// Number of digits.
 pub fn digit_count(ctx: WatcherContext) -> String {
     ctx.current
         .chars()
@@ -66,6 +77,7 @@ pub fn digit_count(ctx: WatcherContext) -> String {
         .to_string()
 }
 
+/// Number of letters.
 pub fn alpha_count(ctx: WatcherContext) -> String {
     ctx.current
         .chars()
@@ -74,6 +86,7 @@ pub fn alpha_count(ctx: WatcherContext) -> String {
         .to_string()
 }
 
+/// Number of uppercase letters.
 pub fn uppercase_count(ctx: WatcherContext) -> String {
     ctx.current
         .chars()
@@ -82,6 +95,7 @@ pub fn uppercase_count(ctx: WatcherContext) -> String {
         .to_string()
 }
 
+/// Number of lowercase letters.
 pub fn lowercase_count(ctx: WatcherContext) -> String {
     ctx.current
         .chars()
@@ -90,6 +104,7 @@ pub fn lowercase_count(ctx: WatcherContext) -> String {
         .to_string()
 }
 
+/// Number of distinct characters.
 pub fn unique_char_count(ctx: WatcherContext) -> String {
     let set: HashSet<char> = ctx.current.chars().collect();
     set.len().to_string()

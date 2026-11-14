@@ -1,3 +1,5 @@
+//! `txf`, the TextForge command-line program: runs a `.textforge` or
+//! `.textforgebc` pipeline on a file or standard input (`cli` feature).
 use clap::{Arg, ArgAction, Command, value_parser};
 use std::{
     borrow::Cow,
@@ -187,10 +189,10 @@ fn process_by_mode(
     }
 }
 
-/// Carrega o pipeline de `file` no modo pedido e devolve (id, processor).
-/// Modo 'b' só existe quando o binário é compilado com `--features bytecode`;
-/// sem o feature, escolher 'b' falha em runtime com uma mensagem clara, em
-/// vez de o binário inteiro deixar de compilar sem esse feature ligado.
+/// Loads the pipeline in `file` in the requested mode and returns its id and the
+/// processor. Mode `b` (bytecode) needs the `bytecode` feature; without it,
+/// choosing `b` fails at run time with a clear message instead of the program
+/// failing to build.
 fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor), TextForgeError> {
     match mode {
         "b" => {

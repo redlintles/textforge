@@ -28,7 +28,7 @@ use crate::parser::params::TextForgeParamTypes;
 ///
 /// let token = Jkbc::default();
 ///
-/// assert_eq!(token.transform("banana laranja cheia de canja".into(),None).unwrap().to_string(), "banana-laranja-cheia-de-canja");
+/// assert_eq!(token.transform("banana orange full of jam".into(),None).unwrap().to_string(), "banana-orange-full-of-jam");
 /// ```
 ///
 #[derive(Clone, Default)]

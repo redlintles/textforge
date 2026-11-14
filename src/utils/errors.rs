@@ -28,6 +28,8 @@ pub fn input_excerpt(text: &str) -> String {
     }
 }
 
+/// Collects the errors reported while a processor works; it can also print
+/// them or panic on the first one.
 #[derive(Default, Clone)]
 pub struct ErrorManager {
     panic_with_error: bool,
@@ -35,10 +37,16 @@ pub struct ErrorManager {
     error_vec: Vec<TextForgeError>,
 }
 
+/// An error: what went wrong ([`TextForgeErrorCode`]), where (the instruction or
+/// stage) and on what (a parameter, a path or an excerpt of the text).
 #[derive(Clone, Debug, PartialEq)]
 pub struct TextForgeError {
+    /// What went wrong, with a message.
     pub error_code: TextForgeErrorCode,
+    /// The instruction or stage that reported the error.
     pub instruction: Cow<'static, str>,
+    /// What the error is about: a parameter, a path or an excerpt of the text
+    /// (see [`input_excerpt`]).
     pub input: Cow<'static, str>,
 }
 
@@ -66,6 +74,7 @@ impl Display for TextForgeError {
 }
 
 impl TextForgeError {
+    /// Builds an error from its code, the reporting instruction and its input.
     pub fn new<I, T>(error_code: TextForgeErrorCode, instruction: I, input: T) -> Self
     where
         I: Into<Cow<'static, str>>,
@@ -79,19 +88,23 @@ impl TextForgeError {
     }
 
     // Cheap helpers (do not change public fields; just convenience)
+    /// The reporting instruction, as `&str`.
     pub fn instruction_str(&self) -> &str {
         self.instruction.as_ref()
     }
+    /// The input, as `&str`.
     pub fn input_str(&self) -> &str {
         self.input.as_ref()
     }
 }
 
 impl ErrorManager {
+    /// Panic on the next error added.
     pub fn will_panic(&mut self, val: bool) {
         self.panic_with_error = val;
     }
 
+    /// Print each error added (and enable colored output).
     pub fn will_log(&mut self, val: bool) {
         self.show_warnings = val;
 
@@ -99,10 +112,12 @@ impl ErrorManager {
         colored::control::set_override(val);
     }
 
+    /// Records an error.
     pub fn add_error(&mut self, err: TextForgeError) {
         self.error_vec.push(err);
     }
 
+    /// Whether any error was recorded.
     pub fn has_errors(&self) -> bool {
         !self.error_vec.is_empty()
     }
@@ -157,37 +172,69 @@ impl ErrorManager {
     }
 }
 
+/// The kind of an error, each with a message.
+/// [`get_error_code`](Self::get_error_code) gives its stable number.
 #[derive(Clone, Debug, PartialEq)]
 pub enum TextForgeErrorCode {
+    /// A file does not exist.
     FileNotFound(Cow<'static, str>),
+    /// A bytecode parameter has an unknown type.
     BytecodeParamNotRecognized(Cow<'static, str>),
+    /// An unknown instruction mnemonic or opcode.
     TokenNotFound(Cow<'static, str>),
+    /// An unknown pipeline identifier.
     TokenArrayNotFound(Cow<'static, str>),
+    /// `cblk` names a block that was not defined.
     BlockNotFound(Cow<'static, str>),
+    /// A variable that was not defined.
     VariableNotFound(Cow<'static, str>),
+    /// An attempt to change a variable defined with `val`.
     NonMutableVariableError(Cow<'static, str>),
+    /// A file could not be read.
     FileReadingError(Cow<'static, str>),
+    /// A file could not be written.
     FileWritingError(Cow<'static, str>),
+    /// A file could not be opened.
     FileOpeningError(Cow<'static, str>),
+    /// A bytecode file or record is missing.
     BytecodeNotFound(Cow<'static, str>),
+    /// A `.textforge` line could not be parsed.
     TextParsingError(Cow<'static, str>),
+    /// A bytecode file is malformed.
     BytecodeParsingError(Cow<'static, str>),
+    /// A bytecode parameter is malformed.
     BytecodeParamParsingError(Cow<'static, str>),
+    /// An index that is not valid for the instruction.
     InvalidIndex(Cow<'static, str>),
+    /// An index or line past the end of the text.
     IndexOutOfRange(Cow<'static, str>),
+    /// Operands an operation cannot use.
     InvalidOperands(Cow<'static, str>),
+    /// Parameters an instruction cannot use.
     InvalidParameters(Cow<'static, str>),
+    /// A rule was broken: a reserved name, a nesting limit, a safety limit, and so on.
     ValidationError(Cow<'static, str>),
+    /// The wrong number of parameters.
     InvalidArgumentNumber(Cow<'static, str>),
+    /// A division by zero.
     ZeroDivisionError(Cow<'static, str>),
+    /// A value could not be converted to the expected type.
     TryIntoFailError(Cow<'static, str>),
+    /// A value of the wrong type for a parameter.
     IncompatibleTypeError(Cow<'static, str>),
+    /// An instruction that needs an execution context ran without one.
     RequiredContextError(Cow<'static, str>),
+    /// An unknown watcher name.
     WatcherNotFoundError(Cow<'static, str>),
+    /// A pipeline or report could not be serialized.
     SerializationError(Cow<'static, str>),
+    /// Any other error.
     GenericError(Cow<'static, str>),
+    /// A block defined inside a block.
     NestedBlocksNotAllowedError(Cow<'static, str>),
+    /// Bytes that are not valid UTF-8.
     InvalidUtf8Error(Cow<'static, str>),
+    /// An expression that cannot be parsed or evaluated.
     InvalidExprError(Cow<'static, str>),
 }
 
@@ -208,6 +255,7 @@ impl Display for TextForgeErrorCode {
 }
 
 impl TextForgeErrorCode {
+    /// The stable number of this kind of error (1–30).
     pub fn get_error_code(&self) -> u16 {
         match self {
             Self::FileNotFound(_) => 1u16,
@@ -323,6 +371,7 @@ impl TextForgeErrorCode {
     }
 }
 
+/// The error for an unknown pipeline identifier, built when the closure is called.
 pub fn token_array_not_found(identifier: &str) -> impl Fn() -> TextForgeError {
     // Built only when called: lookups that succeed format nothing.
     move || {

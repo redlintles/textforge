@@ -54,10 +54,9 @@ fn param_type_from_code(code: u32) -> Option<SyntaxToken> {
     }
 }
 
-/// Compatibilidade bytecode vs schema:
-/// - VarRef (0x04) precisa ser compatível com o tipo esperado do parâmetro.
-///   Como VarRef é "referência", ele deve ser aceito quando o schema espera String/Usize/Token.
-///   A checagem fina acontece depois, em runtime, na resolve_variables().
+/// Whether a parameter of type `actual` may fill a slot that expects `expected`.
+/// A variable reference (0x04) is accepted wherever a string, number or
+/// instruction is expected; its value is checked when it is resolved at run time.
 fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: u32) -> bool {
     match (expected, actual, type_code) {
         // Tipos diretos
@@ -77,7 +76,7 @@ fn bytecode_compatible(expected: &SyntaxToken, actual: &SyntaxToken, type_code: 
     }
 }
 
-/// Lê exatamente N bytes do reader com erro bem formado.
+/// Reads exactly `N` bytes, reporting a truncated file as a bytecode error.
 fn read_exact<const N: usize>(
     reader: &mut impl Source,
     ctx: &'static str,
@@ -168,7 +167,7 @@ fn skip_bytes(reader: &mut impl Source, len: u64) -> Result<(), TextForgeError> 
     Ok(())
 }
 
-/// Converte bytes UTF-8 em String com erro padronizado.
+/// Decodes UTF-8 bytes, reporting invalid UTF-8 as a parameter error.
 fn utf8_string(bytes: &[u8], ctx: &'static str) -> Result<String, TextForgeError> {
     std::str::from_utf8(bytes)
         .map(|s| s.to_string())
@@ -183,8 +182,8 @@ fn utf8_string(bytes: &[u8], ctx: &'static str) -> Result<String, TextForgeError
         })
 }
 
-/// Decodifica um "param record" (já sem o u64 total_size externo),
-/// retornando um ValType (Literal ou VarRef).
+/// Decodes one parameter record (without its outer `u64` size) into a literal
+/// or a variable reference.
 fn decode_param_record_to_valtype(
     param_record: &[u8],
     opcode: u32,

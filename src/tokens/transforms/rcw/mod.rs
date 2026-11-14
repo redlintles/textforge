@@ -35,13 +35,19 @@ use crate::utils::validations::check_vec_len;
 ///
 #[derive(Clone, Debug)]
 pub struct Rcw {
+    /// The regular expression to match.
     pub pattern: Regex,
+    /// How many matches to replace.
     pub count: usize,
+    /// The replacement text (`$1` refers to a capture group).
     pub text_to_replace: String,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Rcw {
+    /// Builds `rcw {pattern} {text} {count};` with the given parameters.
+    ///
+    /// Fails with the regex error message if `pattern` is not a valid regular expression.
     pub fn new(pattern: &str, text_to_replace: &str, count: usize) -> Result<Self, String> {
         let pattern = Regex::new(pattern).map_err(|x| x.to_string())?;
         Ok(Rcw {

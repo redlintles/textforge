@@ -22,9 +22,9 @@ use crate::{
 /// ```rust
 /// use textforge::tokens::{InstructionMethods, transforms::ins::Ins};
 ///
-/// let token = Ins::new(2,"laranja");
+/// let token = Ins::new(2,"orange");
 ///
-/// assert_eq!(token.transform("banana".into(),None).unwrap().to_string(), "banlaranjaana");
+/// assert_eq!(token.transform("banana".into(),None).unwrap().to_string(), "banorangeana");
 /// ```
 #[derive(Clone, Default)]
 pub struct Ins {
@@ -34,6 +34,7 @@ pub struct Ins {
 }
 
 impl Ins {
+    /// Builds `ins {index} {text};` with the given parameters.
     pub fn new(index: usize, text_to_insert: &str) -> Self {
         Ins {
             index,

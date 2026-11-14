@@ -31,16 +31,22 @@ use shared_statistics::{SharedMetric, Statistics};
 
 use std::sync::Arc;
 
+/// What a watcher sees after a step: the text before and after it, the output
+/// of the next step when known, and the instruction.
 #[derive(Clone, Debug)]
 pub struct WatcherContext {
+    /// The text after the step.
     pub current: Arc<str>,
+    /// The text before the step.
     pub before: Arc<str>,
+    /// The text after the next step, or `None` for the last one.
     pub after: Option<Arc<str>>,
+    /// The step's instruction, as text.
     pub instruction: Arc<str>,
 }
 
 impl WatcherContext {
-    /// Constrói um `WatcherContext` a partir de seus quatro campos.
+    /// Builds a `WatcherContext` from its four fields.
     ///
     /// # Examples
     ///
@@ -74,35 +80,30 @@ impl WatcherContext {
     }
 }
 
-/// Decide quando os watchers de uma [`WatcherList`] são executados em
-/// relação às instruções do pipeline.
-///
-/// Atualmente só `All` (todo passo) está implementado; as demais
-/// variantes planejadas ficam comentadas até terem uma execução real
-/// em [`WatcherList::run_watchers`].
+/// When the watchers of a [`WatcherList`] run, relative to the pipeline's
+/// instructions. Only `All` (every step) exists in this version.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExecutionWindows {
-    /// O watcher roda em toda instrução do pipeline.
+    /// The watcher runs after every instruction of the pipeline.
     All = 0,
     // Every(usize),
     // After(usize),
     // Before(usize),
 }
 
-/// Registro de watchers e agenda de execução para um pipeline ATP.
+/// The watchers of a run, when they run, and the report they produce.
 ///
-/// Um `WatcherList` guarda três coisas separadas:
-/// - `watchers`: funções nomeadas que recebem um [`WatcherContext`] e
-///   retornam uma `String` (via [`set_watcher`](WatcherList::set_watcher));
-/// - `schedule`: em quais momentos cada watcher registrado deve rodar
-///   (via [`schedule_watcher`](WatcherList::schedule_watcher));
-/// - `result`: o relatório acumulado, indexado por número do passo do
-///   pipeline (populado por [`run_watchers`](WatcherList::run_watchers),
-///   exportável via [`to_json`](WatcherList::to_json)).
+/// A `WatcherList` holds three things:
+/// - **watchers**: named functions that take a [`WatcherContext`] and return a
+///   `String` ([`set_watcher`](WatcherList::set_watcher));
+/// - **schedule**: when each registered watcher runs
+///   ([`schedule_watcher`](WatcherList::schedule_watcher));
+/// - **report**: the results, one entry per pipeline step
+///   ([`run_watchers`](WatcherList::run_watchers) fills it and
+///   [`to_json`](WatcherList::to_json) writes it).
 ///
-/// `watchers` e `schedule` sobrevivem a [`reset`](WatcherList::reset) —
-/// só `result` e `counter` são limpos — pra permitir reusar a mesma
-/// instância em múltiplas execuções do pipeline sem reregistrar tudo.
+/// [`reset`](WatcherList::reset) clears only the report, so the same list can
+/// observe several runs without registering its watchers again.
 ///
 /// # Examples
 ///
@@ -135,7 +136,7 @@ pub struct WatcherList {
 }
 
 impl WatcherList {
-    /// Cria uma `WatcherList` vazia. Alias de [`Default::default`].
+    /// An empty `WatcherList` (same as [`Default::default`]).
     pub fn new() -> Self {
         Self::default()
     }
@@ -144,9 +145,8 @@ impl WatcherList {
     /// At most 256 empty maps with capacity for at most 128 entries are retained. Result-value
     /// strings are dropped; unusually large outer vectors are released.
     ///
-    /// Watchers registrados e o agendamento (`watchers`/`schedule`) **não**
-    /// são afetados — a instância continua pronta pra rodar outro pipeline
-    /// sem precisar reregistrar nada.
+    /// Registered watchers and their schedule are kept, so the list is ready to
+    /// observe another run.
     ///
     /// # Examples
     ///
@@ -161,7 +161,7 @@ impl WatcherList {
     /// watchers.run_watchers(ctx)?;
     ///
     /// watchers.reset();
-    /// // "len" continua registrado e agendado após o reset.
+    /// // "len" is still registered and scheduled after the reset.
     /// let ctx2 = WatcherContext::new("abc", "", None::<&str>, "noop");
     /// watchers.run_watchers(ctx2)?;
     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
@@ -179,13 +179,11 @@ impl WatcherList {
         }
     }
 
-    /// Registra (ou substitui) um watcher sob `watcher_name`.
+    /// Registers (or replaces) the watcher called `watcher_name`.
     ///
-    /// Registrar um watcher **não** o agenda pra rodar — é preciso chamar
-    /// [`schedule_watcher`](WatcherList::schedule_watcher) separadamente.
-    /// Chamar `set_watcher` de novo com um nome já usado substitui a
-    /// função anterior silenciosamente; o agendamento existente pra esse
-    /// nome (se houver) não é afetado.
+    /// Registering does **not** schedule it: call
+    /// [`schedule_watcher`](WatcherList::schedule_watcher) as well. Registering
+    /// a name again replaces the function and keeps its schedule.
     ///
     /// # Examples
     ///
@@ -237,12 +235,12 @@ impl WatcherList {
         }
     }
 
-    /// Agenda um watcher já registrado pra rodar segundo `when`.
+    /// Schedules a registered watcher to run at `when`.
     ///
     /// # Errors
     ///
-    /// Retorna `Err` se `watcher_name` não corresponder a nenhum watcher
-    /// registrado via [`set_watcher`](WatcherList::set_watcher).
+    /// Fails if no watcher called `watcher_name` was registered with
+    /// [`set_watcher`](WatcherList::set_watcher).
     ///
     /// # Examples
     ///
@@ -297,21 +295,17 @@ impl WatcherList {
         Ok(())
     }
 
-    /// Executa todos os watchers agendados contra `input`, armazenando
-    /// cada resultado sob o passo atual (`counter`) no relatório interno,
-    /// e então incrementa `counter`.
+    /// Runs every scheduled watcher on `input`, stores the results as the next
+    /// step of the report and advances the step counter.
     ///
-    /// Pensado pra ser chamado uma vez por instrução dentro de um loop de
-    /// processamento (ver `TextForgeProcessor::process_all_with_watchers`), na
-    /// mesma ordem em que as instruções do pipeline rodam — a correção do
-    /// relatório depende dessa ordem, já que `counter` não é derivado de
-    /// `input`, só da sequência de chamadas.
+    /// Call it once per instruction, in execution order (as
+    /// `TextForgeProcessor::process_all_with_watchers` does): the step number
+    /// comes from the order of the calls, not from `input`.
     ///
     /// # Errors
     ///
-    /// Propaga qualquer erro do watcher subjacente (hoje, apenas o caso
-    /// interno de inconsistência entre `schedule` e `watchers`, que não é
-    /// alcançável através da API pública atual).
+    /// Propagates the error of a watcher. With the public API only scheduled,
+    /// registered watchers run, so this does not happen in practice.
     ///
     /// # Examples
     ///
@@ -366,8 +360,8 @@ impl WatcherList {
         Ok(())
     }
 
-    /// Serializa o relatório acumulado como JSON formatado e escreve em
-    /// `filename`, sobrescrevendo o arquivo se já existir.
+    /// Writes the report as pretty-printed JSON to `filename`, replacing the file
+    /// if it exists.
     ///
     /// The format is `[ { "watcher_name": "value", ... }, ... ]`.
     /// Each observed step is one array entry with watcher names as keys.
@@ -378,8 +372,7 @@ impl WatcherList {
     ///
     /// # Errors
     ///
-    /// Retorna `Err` se a serialização falhar, ou se o arquivo não puder
-    /// ser aberto/escrito.
+    /// Fails if serialization fails or the file cannot be written.
     ///
     /// # Examples
     ///

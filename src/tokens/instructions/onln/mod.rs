@@ -39,6 +39,7 @@ pub struct Onln {
 }
 
 impl Onln {
+    /// Builds `onln {line} apply {instruction};` with the given parameters.
     pub fn new(line: usize, inner: TokenWrapper) -> Self {
         Onln {
             line,

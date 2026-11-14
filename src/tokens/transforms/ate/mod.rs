@@ -25,11 +25,13 @@ use crate::parser::params::TextForgeParamTypes;
 
 #[derive(Clone, Default)]
 pub struct Ate {
+    /// The text to add or insert.
     pub text: String,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Ate {
+    /// Builds `ate {text};` with the given parameters.
     pub fn new(text: &str) -> Self {
         Ate {
             text: text.to_string(),

@@ -29,12 +29,17 @@ use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 /// ```
 #[derive(Clone)]
 pub struct Sslt {
+    /// The regular expression to match.
     pub pattern: Regex,
+    /// The index the instruction applies to.
     pub index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Sslt {
+    /// Builds `sslt {pattern} {index};` with the given parameters.
+    ///
+    /// Fails if `pattern` is not a valid regular expression.
     pub fn new(pattern: &str, index: usize) -> Result<Self, TextForgeError> {
         let pattern = Regex::new(pattern).map_err(|e| {
             TextForgeError::new(

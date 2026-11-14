@@ -148,6 +148,7 @@ impl TextBuffer {
         output
     }
 
+    #[cfg_attr(not(feature = "watchers"), allow(dead_code))]
     pub(crate) fn into_shared(mut self, previous: &Arc<str>) -> Result<Arc<str>, TextForgeError> {
         match self.materialized.take() {
             Some(MaterializedText::Shared(text)) => Ok(text),

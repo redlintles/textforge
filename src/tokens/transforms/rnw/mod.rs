@@ -39,13 +39,19 @@ use crate::parser::params::TextForgeParamTypes;
 ///
 #[derive(Clone, Debug)]
 pub struct Rnw {
+    /// The regular expression to match.
     pub pattern: Regex,
+    /// The replacement text (`$1` refers to a capture group).
     pub text_to_replace: String,
+    /// Which match to replace (the first is 1).
     pub index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Rnw {
+    /// Builds `rnw {pattern} {text} {n};` with the given parameters.
+    ///
+    /// Fails with the regex error message if `pattern` is not a valid regular expression.
     pub fn new(pattern: &str, text_to_replace: &str, index: usize) -> Result<Self, String> {
         let pattern = Regex::new(pattern).map_err(|x| x.to_string())?;
         Ok(Rnw {

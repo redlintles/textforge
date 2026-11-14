@@ -226,16 +226,21 @@ pub trait InstructionMethods: InstructionMethodsClone + Send + Sync {
     /// ```
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError>;
 
+    /// The instruction's current parameters, in syntax order.
     fn get_params(&self) -> &Vec<TextForgeParamTypes>;
     /// BytecodeMethods
     #[cfg(feature = "bytecode")]
     fn to_bytecode(&self) -> Result<Vec<u8>, TextForgeError>;
 
+    /// The instruction's bytecode opcode (unique among instructions).
     #[cfg(feature = "bytecode")]
     fn get_opcode(&self) -> u32;
 }
 
+/// Clones an instruction behind a `Box<dyn InstructionMethods>`; implemented
+/// for every `Clone` instruction.
 pub trait InstructionMethodsClone {
+    /// A boxed copy of the instruction.
     fn clone_box(&self) -> Box<dyn InstructionMethods>;
 }
 

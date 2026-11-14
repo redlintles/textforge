@@ -22,16 +22,18 @@ use crate::utils::validations::{check_index_against_input, check_vec_len};
 ///
 /// let token = Dlb::new(3);
 ///
-/// assert_eq!(token.transform("banana laranja vermelha azul".into(),None).unwrap().to_string(), "ana laranja vermelha azul")
+/// assert_eq!(token.transform("banana orange vermelha azul".into(),None).unwrap().to_string(), "ana orange vermelha azul")
 ///
 /// ```
 #[derive(Clone, Default)]
 pub struct Dlb {
+    /// The index the instruction applies to.
     pub index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Dlb {
+    /// Builds `dlb {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Dlb {
             index,

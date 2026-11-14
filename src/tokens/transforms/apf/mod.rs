@@ -36,6 +36,7 @@ pub struct Apf {
 }
 
 impl Apf {
+    /// Builds `apf {file};` with the given parameters.
     pub fn new(path: &str) -> Self {
         Apf {
             path: path.to_owned(),

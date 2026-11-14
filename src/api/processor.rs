@@ -39,188 +39,71 @@ use crate::utils::errors::{
     ErrorManager, TextForgeError, TextForgeErrorCode, token_array_not_found,
 };
 
-/// TextForge Processor
+/// Registers pipelines and runs them.
 ///
-/// `TextForgeProcessor` is the main **execution engine** of TextForge (formerly ATP).
+/// A processor holds any number of pipelines, each identified by the string
+/// returned when it is registered. A pipeline is a list of instructions run in
+/// order: each one receives the output of the previous one. Pipelines are
+/// registered by building them in Rust ([`create_pipeline`](Self::create_pipeline)),
+/// by reading a `.textforge` file
+/// ([`get_pipeline_from_file`](TextForgeProcessorMethods::get_pipeline_from_file))
+/// or a `.textforgebc` file (`read_from_bytecode_file`, `bytecode` feature);
+/// however they were registered, they run the same way. All operations are in
+/// [`TextForgeProcessorMethods`].
 ///
-/// It stores multiple linear transformation pipelines (called **transforms**) identified
-/// by a `String` ID (generated with UUID). Each transform is a `Vec<TokenWrapper>`,
-/// i.e. a sequence of tokens executed from left to right.
-///
-/// # Core concepts
-///
-/// ## Transform (pipeline)
-/// A *transform* is a vector of tokens executed sequentially:
-///
-/// 1. Start with `result = input`
-/// 2. For each token in order: `result = token.transform(result)`
-/// 3. Return the final `result`
-///
-/// This matches TextForge's **linear** nature: there is no implicit nesting at runtime.
-/// Any logical grouping/abstraction lives at the builder / authoring layer.
-///
-/// A pipeline can end up registered in `self.transforms` through more than one path — built
-/// in-memory via [`create_pipeline`](Self::create_pipeline), parsed from a `.textforge` text
-/// file via [`get_pipeline_from_file`](TextForgeProcessorMethods::get_pipeline_from_file), or
-/// loaded from a `.textforgebc` bytecode file via
-/// `read_from_bytecode_file` — but once
-/// registered, every pipeline is executed the exact same way by the `process_*` methods.
-/// Reading/writing bytecode never processes input directly; it only moves pipelines in and out
-/// of `self.transforms`.
-///
-/// ## Error accumulation (WIP)
-/// `TextForgeProcessor` contains an `ErrorManager` meant to accumulate errors found during
-/// reading/writing/execution. At the moment, `ErrorManager` is still under construction;
-/// therefore, this should be treated as an internal error sink rather than a stable public
-/// diagnostics API.
+/// An [`ExecutionProfile`] ([`with_profile`](Self::with_profile)) decides the
+/// memory a run may use and the limits of work-multiplying instructions; it
+/// never changes results.
 ///
 /// # Examples
 ///
-/// ## 1) Build a pipeline through the processor, then run it
+/// Build a pipeline and run it:
 ///
-/// ```rust
+/// ```
 /// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
 /// use textforge::api::TextForgeBuilderMethods;
 ///
 /// let mut processor = TextForgeProcessor::new();
-///
-/// // Build + register a transform; `build()` returns its ID.
 /// let id = processor
 ///     .create_pipeline()
 ///     .trim_both_sides()?
 ///     .add_to_end("!")?
-///     .build().unwrap();
+///     .build()?;
 ///
-/// let out = processor.process_all(&id, "   banana   ")?;
-/// assert_eq!(out, "banana!");
+/// assert_eq!(processor.process_all(&id, "   banana   ")?, "banana!");
 /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
 /// ```
 ///
-/// ## 2) Step-by-step debug execution (SBS)
+/// See every step of a run (the result is the same as `process_all`; the trace
+/// is printed):
 ///
-/// ```rust
+/// ```
 /// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
 /// use textforge::api::TextForgeBuilderMethods;
 ///
 /// let mut processor = TextForgeProcessor::new();
-///
 /// let id = processor
 ///     .create_pipeline()
-///     .add_to_beginning("Banana")?
-///     .add_to_end("pizza")?
-///     .repeat(3)?
-///     .trim_both_sides()?
-///     .build().unwrap();
-///
-/// // Prints each step: instruction + before/after.
-/// let out = processor.process_all_with_debug(&id, "Banana Laranja cheia de canja")?;
-/// println!("{out}");
-/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
-/// ```
-///
-/// ## 3) Quick single-token execution (no pipeline registration)
-///
-/// ```rust
-/// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
-/// use textforge::tokens::InstructionMethods;
-/// use textforge::tokens::transforms::tbs;
-///
-/// let mut processor = TextForgeProcessor::new();
-///
-/// let token = (Box::new(tbs::Tbs::default()) as Box<dyn InstructionMethods>).into();
-/// let out = processor.process_single(token, "   banana   ")?;
-/// assert_eq!(out, "banana");
-/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
-/// ```
-///
-/// ## 4) Benchmark-style usage (as in your tests)
-///
-/// This mirrors the exact usage pattern shown in your suite:
-///
-/// ```rust
-/// use textforge::api::{
-///     TextForgeBuilderMethods,
-///     processor::{ TextForgeProcessor, TextForgeProcessorMethods },
-/// };
-/// use std::time::Instant;
-///
-/// # fn main() -> Result<(), textforge::utils::errors::TextForgeError> {
-/// let runs = 100;
-/// let mut total = 0.0;
-///
-/// let mut processor = TextForgeProcessor::new();
-///
-/// let id = processor
-///     .create_pipeline()
-///     .add_to_beginning("Banana")?
-///     .add_to_end("pizza")?
-///     .repeat(3)?
-///     .delete_after(20)?
-///     .delete_before(3)?
-///     .delete_chunk(0, 3)?
-///     .delete_first()?
-///     .delete_last()?
-///     .replace_all_with("a", "e")?
-///     .replace_first_with("L", "coxinha")?
-///     .replace_count_with("e", "carro", 3)?
-///     .insert(0, "Coxinha Banana")?
-///     .rotate_left(1)?
-///     .rotate_right(2)?
-///     .trim_both_sides()?
-///     .trim_left_side()?
-///     .trim_right_side()?
-///     .add_to_beginning("laranjadebananavermelha")?
-///     .select(3, 7)?
-///     .replace_count_with("a", "b", 3)?
+///     .add_to_beginning("[")?
+///     .add_to_end("]")?
 ///     .to_uppercase_all()?
-///     .to_lowercase_all()?
-///     .to_uppercase_single(3)?
-///     .to_lowercase_single(2)?
-///     .capitalize_first_word()?
-///     .capitalize_single_word(0)?
-///     .capitalize_last_word()?
-///     .capitalize_range(0, 3)?
-///     .split_select("B", 1)?
-///     .capitalize_chunk(0, 3)?
-///     .replace_last_with("b", "c")?
-///     .replace_nth_with("b", "d", 3)?
-///     .to_url_encoded()?
-///     .to_url_decoded()?
-///     .to_reverse()?
-///     .split_characters()?
-///     .to_html_escaped()?
-///     .to_html_unescaped()?
-///     .to_json_escaped()?
-///     .to_json_unescaped()?
-///     .insert(1, "banana")?
-///     .to_uppercase_chunk(1, 3)?
-///     .to_lowercase_chunk(0, 5)?
-///     .join_to_camel_case()?
-///     .join_to_kebab_case()?
-///     .join_to_pascal_case()?
-///     .join_to_snake_case()?
-///     .pad_left("xy", 12)?
-///     .pad_right("yx", 20)?
-///     .build().unwrap();
+///     .build()?;
 ///
-/// for _ in 0..runs {
-///     let start = Instant::now();
-///     let input = "Banana Laranja cheia de canja";
-///     let _ = processor.process_all(&id, input)?;
-///     total += start.elapsed().as_secs_f64();
-/// }
-///
-/// let avg = total / runs as f64;
-/// println!("Average: {avg:.6}s");
-/// # Ok(())
-/// # }
+/// assert_eq!(processor.process_all_with_debug(&id, "banana")?, "[BANANA]");
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
 /// ```
 ///
-/// # Notes
+/// Run one instruction without registering a pipeline:
 ///
-/// - `build()` registers a new transform entry inside the processor and returns its UUID.
-/// - The pipeline is **one giant vector** of tokens; execution is deterministic and ordered.
-/// - Debug methods (`*_with_debug`) only add printing; they do not change execution.
+/// ```
+/// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+/// use textforge::tokens::{InstructionMethods, transforms::tbs::Tbs};
+///
+/// let mut processor = TextForgeProcessor::new();
+/// let token = (Box::new(Tbs::default()) as Box<dyn InstructionMethods>).into();
+/// assert_eq!(processor.process_single(token, "   banana   ")?, "banana");
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+/// ```
 pub struct TextForgeProcessor {
     transforms: HashMap<String, RegisteredPipeline>,
     /// Engine resources; never changes results.

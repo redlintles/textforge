@@ -68,13 +68,12 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
     Ok(())
 }
 
-/// Valida limites de chunk com índices em *contagem de chars* (não bytes),
-/// assumindo semântica inclusiva em tokens (start..=end).
+/// Checks an inclusive character range `start..=end` (character counts, not
+/// bytes).
 ///
-/// Regras:
-/// - Exige `start_index <= end_index` (`start == end` seleciona um item)
-/// - Se `check_against` for Some(text):
-///     - exige `start_index` e `end_index` dentro de `0..text.chars().count()`
+/// - `start_index <= end_index` is required (`start == end` selects one item).
+/// - With `check_against = Some(text)`, both indices must be within
+///   `0..text.chars().count()`.
 pub fn check_chunk_bound_indexes(
     start_index: usize,
     end_index: usize,

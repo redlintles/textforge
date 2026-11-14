@@ -22,16 +22,18 @@ use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 ///
 /// let token = Dla::new(3);
 ///
-/// assert_eq!(token.transform("banana laranja vermelha azul".into(),None).unwrap().to_string(), "bana")
+/// assert_eq!(token.transform("banana orange vermelha azul".into(),None).unwrap().to_string(), "bana")
 ///
 /// ```
 #[derive(Clone, Default)]
 pub struct Dla {
+    /// The index the instruction applies to.
     pub index: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Dla {
+    /// Builds `dla {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Dla {
             index,

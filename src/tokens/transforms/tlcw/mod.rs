@@ -22,7 +22,7 @@ use crate::{
 ///
 /// let token = Tlcw::new(1);
 ///
-/// assert_eq!(token.transform("BANANA LARANJA CHEIA DE CANJA".into(),None).unwrap().to_string(), "BANANA laranja CHEIA DE CANJA");
+/// assert_eq!(token.transform("BANANA ORANGE FULL OF JAM".into(),None).unwrap().to_string(), "BANANA orange FULL OF JAM");
 ///
 /// ```
 #[derive(Clone, Default)]
@@ -32,6 +32,7 @@ pub struct Tlcw {
 }
 
 impl Tlcw {
+    /// Builds `tlcw {index};` with the given parameters.
     pub fn new(index: usize) -> Self {
         Tlcw {
             index,

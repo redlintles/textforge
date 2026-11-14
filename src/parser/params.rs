@@ -27,7 +27,8 @@ use crate::{
     },
 };
 
-/// Tipos resolvidos (sem variáveis pendentes)
+/// A resolved parameter value: text, a number, a nested instruction, a variable
+/// reference, or the pipeline joined by `ppjn`.
 #[derive(Clone)]
 #[non_exhaustive]
 pub enum TextForgeParamTypes {
@@ -146,7 +147,7 @@ impl TryFrom<TextForgeParamTypes> for TokenWrapper {
     }
 }
 
-/// Debug customizado para evitar exigir Debug em dyn InstructionMethods
+/// Written by hand so that instructions need not implement `Debug`.
 impl std::fmt::Debug for TextForgeParamTypes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -592,7 +593,7 @@ impl TextForgeParamTypes {
         Self::decode_param_payload(param_type, payload, token_depth, assoc_mode)
     }
 
-    /// Decode para tipos resolvidos (não aceita VarRef aqui como raiz)
+    /// Decodes a resolved parameter (a variable reference is not accepted here).
     fn decode_param_payload(
         param_type: u32,
         payload: Vec<u8>,
@@ -823,9 +824,8 @@ impl TextForgeParamTypes {
         }
     }
 
-    /// Decodifica um full_param (layout novo) para ValType:
-    /// - 0x04 => VarRef(String)
-    /// - outros => Literal(TextForgeParamTypes)
+    /// Decodes a full parameter record: type 0x04 becomes a variable reference,
+    /// every other type a literal.
     fn decode_full_param_as_valtype(
         full_param: &[u8],
         token_depth: u8,

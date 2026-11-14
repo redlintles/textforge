@@ -41,6 +41,7 @@ pub struct Wtf {
 }
 
 impl Wtf {
+    /// Builds `wtf {file};` with the given parameters.
     pub fn new(path: &str) -> Self {
         Wtf {
             path: path.to_owned(),

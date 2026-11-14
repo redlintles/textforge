@@ -22,6 +22,7 @@ pub struct ConditionalBuilderEach {
 }
 
 impl ConditionalBuilderEach {
+    /// A builder that wraps each added instruction in `token` (an `ifdc`) with `params`.
     pub fn new(token: Box<dyn InstructionMethods>, params: Vec<TextForgeParamTypes>) -> Self {
         ConditionalBuilderEach {
             token,

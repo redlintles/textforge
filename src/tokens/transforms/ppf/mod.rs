@@ -37,6 +37,7 @@ pub struct Ppf {
 }
 
 impl Ppf {
+    /// Builds `ppf {file};` with the given parameters.
     pub fn new(path: &str) -> Self {
         Ppf {
             path: path.to_owned(),

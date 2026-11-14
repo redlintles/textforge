@@ -26,11 +26,13 @@ use crate::utils::errors::TextForgeError;
 /// ```
 #[derive(Clone, Default)]
 pub struct Rtl {
+    /// How many times to repeat or rotate.
     pub times: usize,
     params: Vec<TextForgeParamTypes>,
 }
 
 impl Rtl {
+    /// Builds `rtl {times};` with the given parameters.
     pub fn new(times: usize) -> Rtl {
         Rtl {
             times,
