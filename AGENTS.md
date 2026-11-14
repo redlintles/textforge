@@ -333,6 +333,8 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 8. **Every new structure must be documented** with `cargo doc` comments.
 9. **Every new object needs a doctest** with a code example, placed immediately before its definition.
 
+Documentation is written in **English**: rustdoc, comments, Markdown files, commit messages and example data. Every public item is documented (`missing_docs` warns outside `test_access`, so clippy fails on gaps), and the rustdoc builds without warnings for the default and the docs.rs feature sets. New guides, notes, benchmark reports and audits are listed in `docs/README.md`.
+
 ### Performance
 
 10. **Instructions must be heavily optimized**; they may run on very large text files.
@@ -376,6 +378,7 @@ cargo test --features watchers
 cargo test --features buffered
 cargo test --features cli                # builds the txf binary
 cargo test --features test_access       # enables bytecode + watchers + buffered + cli + test helpers
+RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --features bytecode,watchers,buffered,cli
 ```
 
 Then review the documentation as described in [section 18](#18-keeping-documentation-current).

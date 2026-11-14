@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Documentation: the crate has a front page on docs.rs (overview, examples,
+  where to start, concepts, features) and every public module and item is
+  documented in English; an instruction index on the `tokens` page links every
+  mnemonic to its struct; feature-gated items carry feature badges on docs.rs.
+  Engine plumbing that users cannot call meaningfully (`utils::apply`, `expr`,
+  `regexes`, `transforms`, `validations`, `bytecode::reader`/`writer`) is hidden
+  from the index; it remains public.
+- The README is reorganized (installation, quick start, language, the complete
+  instruction reference, processing modes, features), and `docs/README.md` is
+  an index of the guides, design notes, benchmarks and audits, now all in English.
+- Only `txf` is built as a binary: the empty placeholders in `src/bin` are no
+  longer discovered (`autobins = false`).
+
 ## 0.3.0 (2026-11-14)
 
 Upgrade notes: the breaking changes are listed first, then the behavior
