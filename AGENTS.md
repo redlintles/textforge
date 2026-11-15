@@ -52,7 +52,7 @@ Key design facts:
 
 | Term | Meaning |
 |---|---|
-| **token** | In text parsing: a single word from the vector returned by `shell_words.split()`. Elsewhere: a generic reference to either an *instruction* or a *transform*. The overlap is a known source of confusion. |
+| **token** | In text parsing: a single word from the vector returned by `text::line_parser::split_line`. Elsewhere: a generic reference to either an *instruction* or a *transform*. The overlap is a known source of confusion. |
 | **opcode** | Identifies a token in the bytecode-processing context. |
 | **transform** | Instruction that modifies the text directly. |
 | **instruction** | Logical instruction (variable definitions, blocks, etc.) that does not modify text directly. |
@@ -150,6 +150,7 @@ The textual form resembles assembly, and the comparison is fair in terms of the 
 
 - One instruction per line.
 - Every instruction ends with `;`.
+- Words are split by `src/text/line_parser.rs` with shell-like quoting. Inside double quotes `\n`, `\t`, `\r` and `\0` are control characters; outside quotes they are errors; single quotes are literal; a real line break inside an instruction is an error. See `docs/text-syntax.md`.
 - Instructions run sequentially.
 - Structure: `{name} {params};`
 - Parameters can have different types. Some are pure **literals** that do not affect behavior and are **dropped during parsing** (e.g. `assoc`, `do`, `times`, `apply`).
@@ -403,7 +404,6 @@ Ask a human before doing any of the following:
 
 | Crate | Usage |
 |---|---|
-| `shell-words` | Pre-processing of pipelines in text mode. |
 | `serde`, `serde_json` | Watchers; the `jsone` and `jsonu` transforms. |
 | `regex` | Regex parsing in several transforms. |
 | `urlencoding` | `urle` and `urld` transforms. |
@@ -421,6 +421,7 @@ Ask a human before doing any of the following:
 | Crate | Usage |
 |---|---|
 | `tempfile` | Temporary files in tests (via `test_access`). |
+| `shell-words` | Reference implementation for the differential tests of `src/text/line_parser.rs` (dev-dependency). |
 
 
 ---

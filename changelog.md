@@ -18,6 +18,20 @@
 - `txf` prints the result exactly, without the former "Resultado do
   processamento:" prefix and without an added newline, so its output can be
   piped. Its help texts and read-mode errors are in English.
+- Text pipelines: inside double quotes, `\n`, `\t`, `\r` and `\0` are now the
+  newline, tab, carriage return and NUL characters, so `atb "a\nb";` inserts a
+  line break (before: a backslash and a letter). Single quotes stay literal and
+  every other escape keeps its meaning (`"\d"` still reaches a regex as `\d`).
+  Fixes #1. See `docs/text-syntax.md`.
+- `\n`, `\t`, `\r` and `\0` outside quotes, and a real line break inside an
+  instruction passed to `read_from_text`, are `TextParsingError`s instead of
+  being read as plain letters.
+
+### Fixed
+
+- Pipelines whose text parameters contain line breaks can be written back to
+  `.textforge` (`write_to_file`, bytecode to text): they are quoted with
+  escapes instead of failing with a `SerializationError`.
 
 ### Changed
 
@@ -31,6 +45,10 @@
 - The README is reorganized (installation, quick start, language, the complete
   instruction reference, processing modes, features), and `docs/README.md` is
   an index of the guides, design notes, benchmarks and audits, now all in English.
+- The text parser no longer uses `shell-words`: lines are split by
+  `text::line_parser` in one scan, about 10% faster
+  (`docs/benchmarks/line-parser`). `shell-words` is now only a dev-dependency,
+  used by the differential tests.
 - Only `txf` is built as a binary: the empty placeholders in `src/bin` are no
   longer discovered (`autobins = false`).
 

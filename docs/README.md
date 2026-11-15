@@ -11,6 +11,7 @@ How the language and the library behave.
 
 | Guide | Covers |
 |---|---|
+| [Text syntax](text-syntax.md) | Words, quotes and escapes (`"\n"`, `"\t"`) in `.textforge` lines |
 | [Logical lines](lines.md) | Line terminators, line numbers and the line instructions |
 | [Section instructions](on-instructions.md) | `onln`, `onck`, `onlni`: applying one instruction to part of the text |
 | [File instructions](file-instructions.md) | `wtf`, `apf`, `ppf`, `inf` and pipeline joins (`ppjn`) |

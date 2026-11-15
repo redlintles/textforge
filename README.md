@@ -117,6 +117,10 @@ prints the effective configuration. See
 // line: quote them when they contain spaces.
 raw 'old name' 'new name';
 
+// Inside double quotes, \n \t \r and \0 are control characters;
+// single quotes are literal. See docs/text-syntax.md.
+raw "\s+" "\n";
+
 // {{name}} reads a variable or a built-in; [[ ... ]] evaluates an expression.
 var who = 'world';
 ate ', {{who}}!';
