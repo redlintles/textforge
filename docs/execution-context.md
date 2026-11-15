@@ -67,7 +67,10 @@ use `var` there. Up to 0.3.1 a second `val` or `var` replaced a `val`.
 are integers and text: floats and booleans are not supported. A variable whose
 text is an integer is a number in an expression; any other value, including
 `2.5` and `true`, is text, so `var a = 2.5;` followed by `[[a + 1]]` is an
-error. `len(text)` counts characters, like
+error. The result of a whole expression must be an integer or text:
+`[[7 / 2.0]]` and `[[1 < 2]]` are errors. Comparisons and decimal numbers may
+still appear inside it, as in `[[if(a > 1, "yes", "no")]]`. Up to 0.3.1 a
+decimal or boolean result was written as text (`3.5`, `true`). `len(text)` counts characters, like
 `__LEN_CHARS__` and every index (up to 0.3.1 it counted bytes).
 
 ### Reserved names

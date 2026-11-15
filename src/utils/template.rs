@@ -17,8 +17,8 @@ use crate::{
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
         expr::{
-            describe_eval_error, evaluate_tree, expand_string_escapes, is_literal_brackets,
-            value_to_plain_string,
+            check_result, describe_eval_error, evaluate_tree, expand_string_escapes,
+            is_literal_brackets, value_to_plain_string,
         },
     },
 };
@@ -73,9 +73,10 @@ impl CompiledExpr {
         stage: &'static str,
     ) -> Result<Value, TextForgeError> {
         if let Some(constant) = &self.constant {
-            return constant
+            let value = constant
                 .clone()
-                .map_err(|message| self.error(&message, stage));
+                .map_err(|message| self.error(&message, stage))?;
+            return check_result(value, &self.source);
         }
         let tree = self
             .tree

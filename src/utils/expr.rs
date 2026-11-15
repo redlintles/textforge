@@ -172,7 +172,7 @@ fn describe_value(value: &Value) -> String {
     match value {
         Value::String(text) => format!("the text {text:?}"),
         Value::Int(number) => format!("the integer {number}"),
-        Value::Float(number) => format!("the decimal number {number}"),
+        Value::Float(number) => format!("the decimal number {number:?}"),
         Value::Boolean(flag) => format!("the boolean {flag}"),
         Value::Tuple(_) => "a tuple".into(),
         Value::Empty => "nothing".into(),
@@ -254,6 +254,30 @@ pub(crate) fn describe_eval_error(error: &evalexpr::EvalexprError) -> String {
         ),
         other => other.to_string(),
     }
+}
+
+/// The result of a whole expression must be a TextForge value: an integer or
+/// text. Decimal numbers, booleans, tuples and empty results are errors; up to
+/// 0.3.1 they became text (`[[7 / 2.0]]` gave `3.5`, `[[1 < 2]]` gave `true`),
+/// although TextForge has neither floats nor booleans. Comparisons and decimal
+/// numbers may still appear inside an expression, for example in `if(…)`.
+pub(crate) fn check_result(value: Value, expression: &str) -> Result<Value, TextForgeError> {
+    let hint = match &value {
+        Value::Int(_) | Value::String(_) => return Ok(value),
+        Value::Float(_) => "; use integers, for example `7 / 2` gives 3",
+        Value::Boolean(_) => {
+            "; to choose a value from a condition, write `if(a > 1, \"yes\", \"no\")`"
+        }
+        Value::Tuple(_) | Value::Empty => "",
+    };
+    Err(TextForgeError::new(
+        InvalidExprError(Cow::from(format!(
+            "the expression gives {}, but TextForge values are integers and text{hint}",
+            describe_value(&value)
+        ))),
+        "",
+        expression.to_string(),
+    ))
 }
 
 /// Converts an evalexpr result back into a plain string, without the
@@ -426,5 +450,8 @@ pub(crate) fn evaluate_tree(
             Err(error) => return Err(error),
         }
     }
-    tree.eval_with_context(&eval_ctx).map_err(invalid)
+    check_result(
+        tree.eval_with_context(&eval_ctx).map_err(invalid)?,
+        expression,
+    )
 }

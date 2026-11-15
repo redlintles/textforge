@@ -399,3 +399,38 @@ fn a_val_cannot_be_defined_again() {
         assert_eq!(processor.process_all(&id, "x").unwrap(), "x");
     }
 }
+
+// --- Expression results ----------------------------------------------------
+
+/// Before: `[[7 / 2.0]]` gave `3.5` and `[[1 < 2]]` gave `true`, although
+/// TextForge values are integers and text.
+#[test]
+fn expressions_give_integers_or_text() {
+    for line in [
+        "ate '[[7 / 2.0]]';",
+        "ate '[[1.5 * 2]]';",
+        "ate '[[1 < 2]]';",
+        "ate '[[true]]';",
+        "ate '[[(1, 2)]]';",
+        "eval '2.5' in v;",
+        "eval '1 == 1' in v;",
+    ] {
+        assert!(
+            matches!(
+                run(&[line], ""),
+                Err(TextForgeErrorCode::InvalidExprError(_))
+            ),
+            "{line}"
+        );
+    }
+    let Err(TextForgeErrorCode::InvalidExprError(message)) = run(&["ate '[[1.5 * 2]]';"], "")
+    else {
+        panic!("expected an expression error");
+    };
+    assert!(message.contains("decimal number 3.0"), "{message}");
+    // Comparisons and decimals may still be used inside an expression.
+    assert_eq!(ok(&[r#"ate '[[if(2 > 1, "yes", "no")]]';"#], ""), "yes");
+    assert_eq!(ok(&["ate '[[7 / 2]]';"], ""), "3");
+    assert_eq!(ok(&["ate '[[if(1.5 > 1, 1, 0)]]';"], ""), "1");
+    assert_eq!(ok(&["eval '6 * 7' in v;", "ate {{v}};"], ""), "42");
+}

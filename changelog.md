@@ -51,6 +51,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `txf --debug` prints only the trace; the final text is the last step's
   `After:`. Before, the result was printed again after the trace. With
   `--output` the result is still written to the file.
+- The result of an expression in `[[ ]]` or `eval` must be an integer or
+  text: `[[7 / 2.0]]` and `[[1 < 2]]` are `InvalidExprError`s instead of
+  writing `3.5` and `true`, since TextForge has neither floats nor booleans.
+  Comparisons and decimals still work inside an expression
+  (`[[if(a > 1, "yes", "no")]]`).
 - A variable defined with `val` cannot be defined again with `val` or `var`
   (`NonMutableVariableError`); before, the second definition replaced it, so
   `val` only stopped `mutv` and `eval … in`. Variables have no scopes: a `val`
