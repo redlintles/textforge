@@ -1,5 +1,110 @@
 # Changelog
 
+## Unreleased
+
+Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
+
+### Behavior changes
+
+- **Interpolation delimiters are no longer deleted.** `{{`, `}}`, `[[` and `]]`
+  that form no variable read or expression stay in the text, so
+  `ate '{"a":{"b":1}}';` writes the whole JSON (before: `{"a":{"b":1`) and
+  regex classes work unescaped (`raw '[[:alpha:]]' x;`, `raw '[0-9[:alpha:]]' x;`,
+  `raw '[[a-b]c]' x;`). `{{…}}` whose content is not a variable name
+  (`{{user.name}}`, `{{ name }}`) and `[[…]]` that is empty or starts with `:`
+  are kept as written. Pipelines that relied on stray delimiters disappearing
+  must remove them from the parameter. See `docs/text-syntax.md`.
+- An expression may contain a line break (`"[[\"a\nb\"]]"`); before, it was not
+  recognized and its source text was written, quotes included.
+- `var`, `val`, `mutv` and `eval … in` reject names that are not identifiers
+  (`a-b`, `1a`, `ção`) with a `ValidationError`. Such variables could be
+  defined but never read.
+- `len(text)` in `[[ ]]` and `eval` counts characters, like `__LEN_CHARS__`
+  and every index (before: bytes, so `len("ação")` was 6).
+- `end` inside a block (`cblk`) or a loop (`iter`) stops that block or loop
+  only, as the documentation said; the pipeline continues after it. Before,
+  it stopped the whole pipeline. At the top level, and inside `ifdc` or `on*`
+  at the top level, `end` still stops the pipeline.
+- Line ranges clamp an end past the last line, like character and word
+  ranges: `dlni 2 99;`, `slnc 2 99;` and `onlni 2 99 apply …;` reach the last
+  line instead of failing. The start must still exist.
+- `ins` and `inf` with index `0` insert at the start of the text; before, they
+  inserted after the first character, so the start could not be reached. The
+  other indices are unchanged (`ins 1` is still after the second character),
+  which leaves no index for the position between the first and second
+  characters.
+- `rlw` and `rnw` expand the replacement like `raw`, `rfw` and `rcw`: `$1` and
+  `${name}` insert capture groups and `$$` is a literal `$`. Before, they
+  inserted the replacement as written, although their documentation said `$1`
+  referred to a capture group. A pipeline that writes a literal `$` with
+  `rlw` or `rnw` must now write `$$`.
+- `jcmc` lowercases the first letter of the result: `Hello World` becomes
+  `helloWorld` (before: `HelloWorld`).
+- `txf`:
+  - an empty input still runs the pipeline (`atb`, `apl`, `ppf` produce text
+    from nothing); before, the result was always empty;
+  - `--read-mode line` keeps every line break as it was; before, `\r\n`
+    became `\n` and the final line break was lost. Errors name the input line;
+  - errors are printed on stderr as `error[N]: message` with the instruction
+    and the input, instead of a Rust debug structure, and the exit code is 1.
+
+### Added
+
+- Comments after an instruction (`ate x; // note`, `ate x; # note`) and
+  whole-line `#` comments. Lines that already ended with `;` are parsed as
+  before.
+- `txf --chomp`: process the input without its final line break and put it
+  back on the result.
+- `utils::cli::split_final_newline`.
+- `docs/indices-and-ranges.md`: bases, out-of-range rules and their
+  exceptions, argument order, regex patterns and `$` in replacement text.
+
+### Fixed
+
+- `.tft` and `.tfb` are accepted wherever `.textforge` and `.textforgebc` are
+  (`txf`, `read_from_bytecode_file`); they were documented but rejected.
+- A pipeline file that starts with a UTF-8 byte order mark is read correctly
+  (before: "unknown instruction `\u{feff}atb`").
+- Variable errors name the right instructions: changing a `val` says it was
+  defined with `val` and suggests `var`; a missing variable suggests `var`
+  (or `val`), not `mutv`.
+- The "nested too deeply" error at the top level says how to nest one more
+  level with a block.
+
+### Not changed (documented instead)
+
+- Replacing leaves the text unchanged when nothing matches, `rnw` included
+  (a match number is not an index).
+- The order of arguments differs between `ins` and `inf`; `ppjn` resolves
+  paths from the pipeline file and the file instructions from the working
+  directory. Changing any of these breaks
+  existing pipelines. They are described in `docs/indices-and-ranges.md`.
+
+## Unreleased
+
+### Behavior changes
+
+- Text pipelines: spaces inside an unquoted expression no longer split it, so
+  `onln [[__COUNTER__ + 1]] apply tbs;` works without quotes (before: the line
+  was split at each space and failed). A `[[` with no closing `]]` later on
+  the line is still ordinary text; variable templates (`{{name}}`) take no
+  spaces and are unchanged. See
+  `docs/text-syntax.md`.
+
+### Added
+
+- `txfg`, the TextForge game (`game` feature,
+  `cargo install textforge --features game`): matches of rounds, each a JSON
+  game file with a start text, a goal text, the allowed instructions, a
+  pipeline size limit and a reference answer. The player builds the pipeline
+  at a prompt with `!what`, `!undo`, `!reset`, `!show_answer` and other
+  commands; rounds score 0-100 from the instructions used and the time taken.
+  Thirty built-in games, difficulty selection (`-d`), round count (`-r`), game
+  directories (`--pool`), validation and a 0-10 difficulty rating
+  (`--check`, `--list`) and JSON results (`--save-result`). See `docs/txfg.md`.
+- `scripts/instruction_index.py` also writes the game's instruction catalog
+  (`src/bin/txfg/catalog.rs`); `tests/instruction_index.rs` checks it.
+
 ## 0.3.1 (2026-11-15)
 
 ### Behavior changes
