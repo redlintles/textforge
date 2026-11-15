@@ -26,3 +26,21 @@ of ordinary characters as slices instead of pushing them one character at a time
 The new pipeline reads the text once per instruction (split 0.44 s, filter
 0.24 s measured separately) and, unlike the workaround, does not depend on the
 other words being lowercase ASCII.
+
+## Expressions with spaces (after 0.3.1)
+
+`split_line` keeps the spaces of an unquoted `[[ ... ]]` in one word. The scan
+that finds the end of a run of ordinary characters also notes whether it holds
+a bracket; only such runs are scanned again for `[[`/`]]`. Same benchmark,
+`main` and the change built side by side on the same machine (a different
+machine from the table above, so compare within this table only):
+
+| Run | `split_line`, `main` | `split_line`, with expressions | `shell_words::split` |
+|---|---|---|---|
+| 1 | 81.1 ns/line | 83.6 ns/line | 84.1 ns/line |
+| 2 | 76.6 ns/line | 82.4 ns/line | 84.0 ns/line |
+| 3 | 83.0 ns/line | 82.9 ns/line | 84.2 ns/line |
+
+About 3% slower on average (80.2 to 83.0 ns/line), within the run-to-run
+spread; a pipeline is parsed once, when it is loaded. A first version that
+rescanned every run was about 12% slower.

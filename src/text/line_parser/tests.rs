@@ -13,10 +13,20 @@ fn assert_parse_error(line: &str) {
     );
 }
 
+/// True when an expression (`[[ ]]`) of `line` holds a space or a tab.
+fn has_spaced_interpolation(line: &str) -> bool {
+    line.match_indices("[[").any(|(at, _)| {
+        let rest = &line[at + 2..];
+        rest.find("]]")
+            .is_some_and(|end| rest[..end].contains([' ', '\t']))
+    })
+}
+
 /// True when `line` uses none of the rules that changed from shell_words:
-/// control escapes (`\n`, `\t`, `\r`, `\0` after a backslash) and real line breaks.
+/// control escapes (`\n`, `\t`, `\r`, `\0` after a backslash), real line
+/// breaks and spaces inside expressions.
 fn uses_only_legacy_rules(line: &str) -> bool {
-    if line.contains(['\n', '\r']) {
+    if line.contains(['\n', '\r']) || has_spaced_interpolation(line) {
         return false;
     }
     let bytes = line.as_bytes();
@@ -220,6 +230,32 @@ fn empty_words_comments_and_unicode() {
     assert_eq!(words(r#"atb "é\n🦀""#), vec!["atb", "é\n🦀"]);
     assert!(words("").is_empty());
     assert!(words("   ").is_empty());
+}
+
+#[test]
+fn interpolations_keep_their_spaces() {
+    assert_eq!(
+        words("onln [[__COUNTER__ + 1]] apply tbs"),
+        vec!["onln", "[[__COUNTER__ + 1]]", "apply", "tbs"]
+    );
+    // Templates take no spaces: `{{ name }}` is still three words.
+    assert_eq!(words("ate {{ name }}"), vec!["ate", "{{", "name", "}}"]);
+    assert_eq!(
+        words("ate x[[ a +\tb ]]y z"),
+        vec!["ate", "x[[ a +\tb ]]y", "z"]
+    );
+    assert_eq!(
+        words("dlc [[ {{a}} + 1 ]] [[2 * 2]]"),
+        vec!["dlc", "[[ {{a}} + 1 ]]", "[[2 * 2]]"]
+    );
+    // Quotes inside an interpolation are read as before.
+    assert_eq!(words(r#"ate [[ "a b" ]]"#), vec!["ate", "[[ a b ]]"]);
+    // Without a closing pair, `[[` is ordinary text.
+    assert_eq!(words("ate [[ a"), vec!["ate", "[[", "a"]);
+    assert_eq!(words("ate ]] [[ a"), vec!["ate", "]]", "[[", "a"]);
+    // Quoted brackets do not open an interpolation.
+    assert_eq!(words("ate '[[' a ]]"), vec!["ate", "[[", "a", "]]"]);
+    assert_eq!(words("ate [[ é 🦀 ]] #c"), vec!["ate", "[[ é 🦀 ]]"]);
 }
 
 #[test]

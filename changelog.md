@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Behavior changes
+
+- Text pipelines: spaces inside an unquoted expression no longer split it, so
+  `onln [[__COUNTER__ + 1]] apply tbs;` works without quotes (before: the line
+  was split at each space and failed). A `[[` with no closing `]]` later on
+  the line is still ordinary text; variable templates (`{{name}}`) take no
+  spaces and are unchanged. See
+  `docs/text-syntax.md`.
+
 ### Added
 
 - `txfg`, the TextForge game (`game` feature,

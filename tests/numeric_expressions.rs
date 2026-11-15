@@ -57,6 +57,32 @@ fn per_line_iteration_with_an_expression() {
 }
 
 #[test]
+fn unquoted_expressions_may_contain_spaces() {
+    let output = run(
+        &[
+            "blk each assoc iter 3 times onln [[__COUNTER__ + 1]] apply tbs;",
+            "cblk each;",
+        ],
+        " a \n b \n c \n d ",
+    )
+    .unwrap();
+    assert_eq!(output, "a\nb\nc\n d ");
+    assert_eq!(run(&["dlc [[ 1 ]] [[2 * 2]];"], "abcdef").unwrap(), "af");
+    assert_eq!(
+        run(&["val n = 2;", "dla [[ n + 1 ]];"], "abcdef").unwrap(),
+        "abcd"
+    );
+    // Written back to text, the parameter is quoted and reads the same.
+    let mut processor = TextForgeProcessor::new();
+    let id = register(&mut processor, &["val n = 1;", "onln [[n + 1]] apply tua;"]);
+    assert_eq!(
+        processor.get_text_transform_vec(&id).unwrap()[1],
+        "onln '[[n + 1]]' apply tua;\n"
+    );
+    assert_eq!(processor.process_all(&id, "a\nb").unwrap(), "a\nB");
+}
+
+#[test]
 fn numeric_parameters_accept_expressions_and_mixed_templates() {
     assert_eq!(
         run(&["val n = 2;", "dla [[n+1]];"], "abcdef").unwrap(),
