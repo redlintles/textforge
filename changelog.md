@@ -19,7 +19,7 @@
   pipeline size limit and a reference answer. The player builds the pipeline
   at a prompt with `!what`, `!undo`, `!reset`, `!show_answer` and other
   commands; rounds score 0-100 from the instructions used and the time taken.
-  Ten built-in games, difficulty selection (`-d`), round count (`-r`), game
+  Thirty built-in games, difficulty selection (`-d`), round count (`-r`), game
   directories (`--pool`), validation and a 0-10 difficulty rating
   (`--check`, `--list`) and JSON results (`--save-result`). See `docs/txfg.md`.
 - `scripts/instruction_index.py` also writes the game's instruction catalog

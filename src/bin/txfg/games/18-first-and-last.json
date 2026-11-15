@@ -1,0 +1,20 @@
+{
+  "id": "builtin/first-and-last",
+  "name": "First and Last",
+  "description": "Capitalize words at the edges.",
+  "difficulty": 3,
+  "start": "keep the edges",
+  "goal": "Keep the Edges",
+  "allowed_instructions": [
+    "cfw",
+    "clw",
+    "cts",
+    "tua",
+    "tucs"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "cfw;",
+    "clw;"
+  ]
+}

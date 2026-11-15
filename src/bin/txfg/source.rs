@@ -66,6 +66,68 @@ const BUILTIN: &[(&str, &str)] = &[
         "10-key-values.json",
         include_str!("games/10-key-values.json"),
     ),
+    ("11-shout.json", include_str!("games/11-shout.json")),
+    ("12-wrap-it.json", include_str!("games/12-wrap-it.json")),
+    ("13-backwards.json", include_str!("games/13-backwards.json")),
+    ("14-rotate.json", include_str!("games/14-rotate.json")),
+    (
+        "15-camel-case.json",
+        include_str!("games/15-camel-case.json"),
+    ),
+    (
+        "16-constant-case.json",
+        include_str!("games/16-constant-case.json"),
+    ),
+    (
+        "17-pad-the-number.json",
+        include_str!("games/17-pad-the-number.json"),
+    ),
+    (
+        "18-first-and-last.json",
+        include_str!("games/18-first-and-last.json"),
+    ),
+    (
+        "19-middle-cut.json",
+        include_str!("games/19-middle-cut.json"),
+    ),
+    ("20-slice.json", include_str!("games/20-slice.json")),
+    (
+        "21-squash-spaces.json",
+        include_str!("games/21-squash-spaces.json"),
+    ),
+    (
+        "22-second-word.json",
+        include_str!("games/22-second-word.json"),
+    ),
+    (
+        "23-csv-to-lines.json",
+        include_str!("games/23-csv-to-lines.json"),
+    ),
+    (
+        "24-second-match.json",
+        include_str!("games/24-second-match.json"),
+    ),
+    ("25-html-safe.json", include_str!("games/25-html-safe.json")),
+    (
+        "26-extract-emails.json",
+        include_str!("games/26-extract-emails.json"),
+    ),
+    (
+        "27-only-when-warned.json",
+        include_str!("games/27-only-when-warned.json"),
+    ),
+    (
+        "28-error-summary.json",
+        include_str!("games/28-error-summary.json"),
+    ),
+    (
+        "29-swap-words.json",
+        include_str!("games/29-swap-words.json"),
+    ),
+    (
+        "30-number-the-lines.json",
+        include_str!("games/30-number-the-lines.json"),
+    ),
 ];
 
 impl GameSource for Builtin {

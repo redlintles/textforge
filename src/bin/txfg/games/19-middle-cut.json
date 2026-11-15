@@ -1,0 +1,21 @@
+{
+  "id": "builtin/middle-cut",
+  "name": "Middle Cut",
+  "description": "Delete a range of characters. Character indexes start at 0.",
+  "difficulty": 3,
+  "start": "abcdefgh",
+  "goal": "abgh",
+  "allowed_instructions": [
+    "dlc",
+    "dls",
+    "dla",
+    "dlb",
+    "slt",
+    "dlf",
+    "dll"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "dlc 2 5;"
+  ]
+}

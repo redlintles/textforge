@@ -23,7 +23,8 @@ enum Quote {
 }
 
 /// Splits `line` at every `;` outside quotes. Each instruction keeps its `;`,
-/// and a last instruction written without one gets it.
+/// and a last instruction written without one gets it. The game accepts one
+/// instruction per line; this finds out how many a line holds.
 pub fn split_instructions(line: &str) -> Vec<String> {
     let mut instructions = Vec::new();
     let mut current = String::new();
@@ -60,17 +61,38 @@ pub fn split_instructions(line: &str) -> Vec<String> {
 }
 
 /// Splits one instruction (with or without its `;`) into words. As in the
-/// text syntax, spaces outside quotes always separate words, inside `[[ ]]` too.
+/// text syntax, spaces outside quotes separate words, except inside an
+/// expression (`[[ ... ]]`) closed later on the line.
 pub fn split_words(instruction: &str) -> Vec<Word> {
     let body = instruction.trim();
     let body = body.strip_suffix(';').unwrap_or(body);
     let mut words = Vec::new();
     let mut word: Option<Word> = None;
     let mut quote = Quote::None;
-    let mut chars = body.chars();
-    while let Some(c) = chars.next() {
+    let mut depth = 0usize;
+    let mut chars = body.char_indices().peekable();
+    while let Some((at, c)) = chars.next() {
+        if quote == Quote::None {
+            let pair = chars.peek().map(|(_, next)| *next) == Some(c);
+            if pair && c == '[' {
+                if depth > 0 || body[at + 2..].contains("]]") {
+                    depth += 1;
+                }
+                let current = word.get_or_insert_with(|| Word {
+                    text: String::new(),
+                    quoted: false,
+                });
+                current.text.push(c);
+                current.text.push(c);
+                chars.next();
+                continue;
+            }
+            if pair && c == ']' && depth > 0 {
+                depth -= 1;
+            }
+        }
         match (quote, c) {
-            (Quote::None, c) if c.is_whitespace() => {
+            (Quote::None, c) if c.is_whitespace() && depth == 0 => {
                 if let Some(done) = word.take() {
                     words.push(done);
                 }
@@ -93,13 +115,13 @@ pub fn split_words(instruction: &str) -> Vec<Word> {
             }
             (Quote::Single, '\'') | (Quote::Double, '"') => quote = Quote::None,
             (Quote::None, '\\') => {
-                if let Some(next) = chars.next() {
+                if let Some((_, next)) = chars.next() {
                     current.text.push(next);
                 }
             }
             (Quote::Double, '\\') => {
                 current.text.push('\\');
-                if let Some(next) = chars.next() {
+                if let Some((_, next)) = chars.next() {
                     current.text.push(next);
                 }
             }
@@ -146,9 +168,14 @@ mod tests {
         assert_eq!(texts(&split_words("raw 'é' \"🙂\";")), ["raw", "é", "🙂"]);
         assert_eq!(texts(&split_words("ate \"\";")), ["ate", ""]);
         assert_eq!(
-            texts(&split_words("onln [[__COUNTER__+1]] apply tua")),
-            ["onln", "[[__COUNTER__+1]]", "apply", "tua"]
+            texts(&split_words("onln [[__COUNTER__ + 1]] apply tua")),
+            ["onln", "[[__COUNTER__ + 1]]", "apply", "tua"]
         );
+        assert_eq!(
+            texts(&split_words("ate {{ a }};")),
+            ["ate", "{{", "a", "}}"]
+        );
+        assert_eq!(texts(&split_words("ate [[ a")), ["ate", "[[", "a"]);
         assert!(split_words(";").is_empty());
     }
 }

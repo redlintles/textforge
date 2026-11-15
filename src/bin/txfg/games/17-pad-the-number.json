@@ -1,0 +1,19 @@
+{
+  "id": "builtin/pad-the-number",
+  "name": "Pad the Number",
+  "description": "Fixed-width numbers need leading zeros.",
+  "difficulty": 3,
+  "start": "42",
+  "goal": "00042",
+  "allowed_instructions": [
+    "padl",
+    "padr",
+    "atb",
+    "rpt",
+    "ate"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "padl \"0\" 5;"
+  ]
+}

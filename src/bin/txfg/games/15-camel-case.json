@@ -1,0 +1,20 @@
+{
+  "id": "builtin/camel-case",
+  "name": "Camel Case",
+  "description": "Programmers join words in many ways.",
+  "difficulty": 2,
+  "start": "user first name",
+  "goal": "userFirstName",
+  "allowed_instructions": [
+    "jcmc",
+    "jpsc",
+    "jsnc",
+    "jkbc",
+    "tla",
+    "tua"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "jcmc;"
+  ]
+}

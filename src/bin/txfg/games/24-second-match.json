@@ -1,0 +1,19 @@
+{
+  "id": "builtin/second-match",
+  "name": "Only the Second",
+  "description": "Replace just one of the matches. Matches are counted from 0.",
+  "difficulty": 5,
+  "start": "a-b-c-d",
+  "goal": "a-b+c-d",
+  "allowed_instructions": [
+    "rnw",
+    "rfw",
+    "rlw",
+    "raw",
+    "rcw"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "rnw \"-\" \"+\" 1;"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "builtin/second-word",
+  "name": "The Second Word",
+  "description": "Split the text and keep one piece. Pieces are counted from 0.",
+  "difficulty": 4,
+  "start": "alpha beta gamma",
+  "goal": "beta",
+  "allowed_instructions": [
+    "sslt",
+    "slt",
+    "dlb",
+    "dla",
+    "rmp",
+    "emj"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "sslt \" \" 1;"
+  ]
+}

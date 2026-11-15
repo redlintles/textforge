@@ -1,0 +1,23 @@
+{
+  "id": "builtin/number-the-lines",
+  "name": "Number the Lines",
+  "description": "Expressions like [[__COUNTER__ + 1]] work in text too. A line holds one level of nesting, so the loop body goes in a block.",
+  "difficulty": 10,
+  "start": "apples\nbread\nmilk",
+  "goal": "1. apples\n2. bread\n3. milk",
+  "allowed_instructions": [
+    "iter",
+    "blk",
+    "cblk",
+    "onln",
+    "atb",
+    "ate",
+    "pln",
+    "inl"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "blk number assoc onln [[__COUNTER__ + 1]] apply atb \"[[__COUNTER__ + 1]]. \";",
+    "iter 3 times cblk number;"
+  ]
+}

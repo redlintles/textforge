@@ -1,0 +1,21 @@
+{
+  "id": "builtin/only-when-warned",
+  "name": "Only When Warned",
+  "description": "ifdc {text} do {instruction} runs an instruction only when the text contains something.",
+  "difficulty": 6,
+  "start": "warning: low disk",
+  "goal": "[!] WARNING: LOW DISK",
+  "allowed_instructions": [
+    "ifdc",
+    "atb",
+    "ate",
+    "tua",
+    "tla",
+    "raw"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "ifdc \"warning\" do atb \"[!] \";",
+    "tua;"
+  ]
+}

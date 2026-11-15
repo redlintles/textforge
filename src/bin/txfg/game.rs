@@ -424,7 +424,7 @@ mod tests {
 
     #[test]
     fn shapes_count_names_keywords_and_arguments() {
-        let s = shape("iter 3 times onln [[__COUNTER__+1]] apply tucs 0;");
+        let s = shape("iter 3 times onln [[__COUNTER__ + 1]] apply tucs 0;");
         assert_eq!(s.names, ["iter", "onln", "tucs"]);
         assert_eq!((s.keywords, s.arguments), (2, 3));
         let s = shape("ate \"times\";");

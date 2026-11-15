@@ -1,0 +1,20 @@
+{
+  "id": "builtin/extract-emails",
+  "name": "Extract Emails",
+  "description": "Keep only what matches a pattern, joined by a separator.",
+  "difficulty": 6,
+  "start": "Contact ana@x.io or bob@y.com today",
+  "goal": "ana@x.io,bob@y.com",
+  "allowed_instructions": [
+    "emj",
+    "klm",
+    "rmp",
+    "raw",
+    "sslt",
+    "joinln"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "emj \"[\\w.]+@[\\w.]+\" \",\";"
+  ]
+}

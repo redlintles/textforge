@@ -44,8 +44,8 @@ impl Clock for SystemClock {
 
 /// Text of `!help`.
 pub const HELP: &str = "\
-Type instructions to build your pipeline (several per line are fine, `;` is optional
-at the end of a line). The whole pipeline runs on the start text after each one.
+Type one instruction per line to build your pipeline (the final `;` is optional).
+The whole pipeline runs on the start text after each one.
 
   !what [name]   what an allowed instruction does (no name: list them all)
   !undo          remove the last instruction
@@ -232,7 +232,20 @@ pub fn play_round<R: BufRead, W: Write, C: Clock>(
             continue;
         }
 
-        for instruction in split_instructions(typed) {
+        let instructions = split_instructions(typed);
+        if instructions.len() > 1 {
+            writeln!(
+                out,
+                "{}",
+                format!(
+                    "One instruction per line: this line has {}. Type them one at a time.",
+                    instructions.len()
+                )
+                .yellow()
+            )?;
+            continue;
+        }
+        for instruction in instructions {
             if state.pipeline.len() >= game.allowed_pipeline_max_size {
                 writeln!(
                     out,
@@ -340,7 +353,7 @@ mod tests {
 
     #[test]
     fn solves_a_round() {
-        let (end, out) = play("tbs\nate \" fruit!\"; tua\n");
+        let (end, out) = play("tbs\nate \" fruit!\";\ntua\n");
         assert!(end.result.solved && !end.quit, "{out}");
         assert_eq!(end.result.score, 100);
         assert_eq!(end.result.pipeline, ["tbs;", "ate \" fruit!\";", "tua;"]);
@@ -369,11 +382,21 @@ mod tests {
     #[test]
     fn undo_reset_and_answer() {
         let (end, out) =
-            play("tua\n!undo\n!undo\ntbs\n!reset\n!show_answer\ntbs; ate \" fruit!\"; tua\n");
+            play("tua\n!undo\n!undo\ntbs\n!reset\n!show_answer\ntbs\nate \" fruit!\"\ntua\n");
         assert!(out.contains("already empty"), "{out}");
         assert!(out.contains("Pipeline cleared"), "{out}");
         assert!(end.result.solved && end.result.revealed);
         assert_eq!(end.result.score, 0);
+    }
+
+    #[test]
+    fn one_instruction_per_line() {
+        let (end, out) = play("tbs; tua\ntbs;;\nate \"a;b\"\n");
+        assert!(
+            out.contains("One instruction per line: this line has 2"),
+            "{out}"
+        );
+        assert_eq!(end.result.pipeline, ["tbs;", "ate \"a;b\";"], "{out}");
     }
 
     #[test]
