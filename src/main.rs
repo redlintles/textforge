@@ -12,7 +12,7 @@ use textforge::{
     utils::{
         cli::{
             ProfileOptions, process_input_by_chunks, process_input_line_by_line,
-            process_input_single_chunk, resolve_profile,
+            process_input_single_chunk, resolve_profile, split_final_newline,
         },
         errors::{TextForgeError, TextForgeErrorCode},
         validations::check_file_path,
@@ -163,6 +163,15 @@ fn build_cli() -> Command {
                 )
         )
         .arg(
+            Arg::new("chomp")
+                .long("chomp")
+                .required(false)
+                .action(ArgAction::SetTrue)
+                .help(
+                    "Set the final line break of the input aside and put it back on the result, so instructions such as dll and ate work on the last visible character"
+                )
+        )
+        .arg(
             Arg::new("debug")
                 .short('d')
                 .long("debug")
@@ -226,7 +235,20 @@ fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor)
     }
 }
 
-fn main() -> Result<(), TextForgeError> {
+/// Runs the program and prints an error the way a person reads it
+/// (`error[12]: message`, then the instruction and the input) on standard
+/// error. Before 0.3.2 the error was printed as a Rust debug structure.
+fn main() -> std::process::ExitCode {
+    match run() {
+        Ok(()) => std::process::ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("{error}");
+            std::process::ExitCode::FAILURE
+        }
+    }
+}
+
+fn run() -> Result<(), TextForgeError> {
     let matches = build_cli().get_matches();
     let profile = resolve_profile(&profile_options(&matches), Path::new("."))?;
     if matches.subcommand_matches("config").is_some() {
@@ -297,7 +319,13 @@ fn main() -> Result<(), TextForgeError> {
 
     let (id, mut processor) = load_pipeline(textforge_mode.as_str(), file)?;
     processor.set_profile(profile.profile);
-    let result = process_by_mode(read_mode, &id, &data, *debug, &mut processor)?;
+    let chomp = matches.get_flag("chomp") && *read_mode != ReadMode::Line;
+    let (body, final_newline) = match chomp {
+        true => split_final_newline(&data),
+        false => (data.as_str(), ""),
+    };
+    let mut result = process_by_mode(read_mode, &id, body, *debug, &mut processor)?;
+    result.push_str(final_newline);
 
     match output {
         Some(p) => {

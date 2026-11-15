@@ -27,10 +27,31 @@ pub fn process_input_single_chunk(
     input: &str,
     debug: bool,
 ) -> Result<String, TextForgeError> {
-    if input.is_empty() {
-        return Ok(String::new());
-    }
+    // An empty input still runs the pipeline: `atb`, `apl`, `ppf` and others
+    // produce text from nothing. Before 0.3.2 it returned an empty result.
     process_run(processor, identifier, input, debug)
+}
+
+/// `input` without its final line break (`\n` or `\r\n`), and that line break.
+///
+/// Files usually end with a line break, which is a character like any other to
+/// the instructions: `dll` would delete it and `ate` would write after it.
+/// `txf --chomp` sets it aside with this function and puts it back on the
+/// result.
+///
+/// ```
+/// use textforge::utils::cli::split_final_newline;
+///
+/// assert_eq!(split_final_newline("abc\r\n"), ("abc", "\r\n"));
+/// assert_eq!(split_final_newline("a\n\n"), ("a\n", "\n"));
+/// assert_eq!(split_final_newline("abc"), ("abc", ""));
+/// ```
+pub fn split_final_newline(input: &str) -> (&str, &str) {
+    let body = match input.strip_suffix('\n') {
+        Some(body) => body.strip_suffix('\r').unwrap_or(body),
+        None => input,
+    };
+    input.split_at(body.len())
 }
 
 /// Runs a pipeline on each line of the input.
@@ -40,16 +61,20 @@ pub fn process_input_line_by_line(
     input: &str,
     debug: bool,
 ) -> Result<String, TextForgeError> {
-    if input.is_empty() {
-        return Ok(String::new());
+    // Each line is processed without its line break (`\n` or `\r\n`), which is
+    // written back as it was. Before 0.3.2 every line break became `\n` and the
+    // final one was lost.
+    let mut output = String::with_capacity(input.len());
+    for (index, line) in input.split_inclusive('\n').enumerate() {
+        let (content, line_break) = split_final_newline(line);
+        let processed = process_run(processor, identifier, content, debug).map_err(|mut e| {
+            e.instruction = format!("input line {} › {}", index + 1, e.instruction).into();
+            e
+        })?;
+        output.push_str(&processed);
+        output.push_str(line_break);
     }
-    let mut text_vec = input.lines().map(|x| x.to_string()).collect::<Vec<_>>();
-
-    for line in text_vec.iter_mut() {
-        *line = process_run(processor, identifier, line, debug)?;
-    }
-
-    Ok(text_vec.join("\n"))
+    Ok(output)
 }
 
 /// Runs a pipeline on consecutive chunks of the input.
@@ -122,8 +147,6 @@ mod cli_tests {
             let expected_output = "bcolbxilbnhlbal".to_string();
             let result = process_input_by_chunks(&mut processor, &id, input, 2, true)?;
 
-            println!("Resultado: {}", result);
-
             assert_eq!(result, expected_output, "It works correctly");
             Ok(())
         }
@@ -149,9 +172,66 @@ mod cli_tests {
             let expected_output = "bcoxinhal\nblaranjal".to_string();
             let result = process_input_line_by_line(&mut processor, &id, input, true)?;
 
-            println!("Resultado: {}", result);
-
             assert_eq!(result, expected_output, "It works correctly");
+            Ok(())
+        }
+    }
+
+    mod regression_tests {
+        use crate::{
+            api::{TextForgeBuilderMethods, processor::TextForgeProcessor},
+            utils::{
+                cli::{process_input_line_by_line, process_input_single_chunk},
+                errors::TextForgeError,
+            },
+        };
+
+        /// Before 0.3.2 an empty input skipped the pipeline.
+        #[test]
+        fn an_empty_input_still_runs_the_pipeline() -> Result<(), TextForgeError> {
+            let mut processor = TextForgeProcessor::new();
+            let id = processor.create_pipeline().add_to_beginning("X")?.build()?;
+            assert_eq!(
+                process_input_single_chunk(&mut processor, &id, "", false)?,
+                "X"
+            );
+            assert_eq!(
+                process_input_line_by_line(&mut processor, &id, "", false)?,
+                ""
+            );
+            Ok(())
+        }
+
+        /// Before 0.3.2 line mode turned `\r\n` into `\n` and dropped the last
+        /// line break.
+        #[test]
+        fn line_mode_keeps_every_line_break() -> Result<(), TextForgeError> {
+            let mut processor = TextForgeProcessor::new();
+            let id = processor.create_pipeline().add_to_beginning("X")?.build()?;
+            for (input, expected) in [
+                ("a\r\nb\r\n", "Xa\r\nXb\r\n"),
+                ("a\nb", "Xa\nXb"),
+                ("a\n\nb\n", "Xa\nX\nXb\n"),
+                ("a\r\nb\n", "Xa\r\nXb\n"),
+            ] {
+                assert_eq!(
+                    process_input_line_by_line(&mut processor, &id, input, false)?,
+                    expected
+                );
+            }
+            Ok(())
+        }
+
+        #[test]
+        fn line_mode_errors_name_the_input_line() -> Result<(), TextForgeError> {
+            let mut processor = TextForgeProcessor::new();
+            let id = processor.create_pipeline().delete_single(2)?.build()?;
+            let error =
+                process_input_line_by_line(&mut processor, &id, "abc\nab\n", false).unwrap_err();
+            assert!(
+                error.instruction.starts_with("input line 2 › "),
+                "{error:?}"
+            );
             Ok(())
         }
     }
@@ -175,8 +255,6 @@ mod cli_tests {
             let input = "coxinha";
             let expected_output = "bcoxinhal".to_string();
             let result = process_input_single_chunk(&mut processor, &id, input, true)?;
-
-            println!("Resultado: {}", result);
 
             assert_eq!(result, expected_output, "It works correctly");
             Ok(())

@@ -28,10 +28,19 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
         )
     })?;
 
-    if ext.is_some() && file_ext != parsed_ext {
+    // Each format has a short alias: `.tft` for `.textforge`, `.tfb` for
+    // `.textforgebc`. Asking for a format accepts both of its extensions.
+    let alias = match parsed_ext {
+        "textforge" => "tft",
+        "tft" => "textforge",
+        "textforgebc" => "tfb",
+        "tfb" => "textforgebc",
+        other => other,
+    };
+    if ext.is_some() && file_ext != parsed_ext && file_ext != alias {
         return Err(TextForgeError::new(
             TextForgeErrorCode::ValidationError(
-                format!("expected a `.{parsed_ext}` file, but the extension is `.{file_ext}`")
+                format!("expected a `.{parsed_ext}` or `.{alias}` file, but the extension is `.{file_ext}`")
                     .into(),
             ),
             Cow::Borrowed(""),
