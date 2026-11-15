@@ -31,21 +31,30 @@ pub struct GlobalFunctions {
 }
 
 impl GlobalFunctions {
-    /// Whether no function is registered (always true in this version).
+    /// Whether no function is registered (always true in this version; the
+    /// core's own `len` is not a registered function).
     pub fn is_empty(&self) -> bool {
         true
     }
 
-    /// Call the registered function `identifier`, or `None` when there is no
-    /// such function (evalexpr then tries its own built-ins). Nothing is
-    /// registered yet; this is the single point where functions will enter
-    /// evaluation.
+    /// Call the function `identifier`, or `None` when TextForge does not
+    /// define it (evalexpr then tries its own built-ins). This is the single
+    /// point where functions enter evaluation.
+    ///
+    /// `len` of a text is defined here so that it counts characters (Unicode
+    /// scalar values), like `__LEN_CHARS__` and every index of the language;
+    /// evalexpr's own `len` counts bytes. `len` of a tuple is left to evalexpr.
     pub(crate) fn call(
         &self,
-        _identifier: &str,
-        _argument: &evalexpr::Value,
+        identifier: &str,
+        argument: &evalexpr::Value,
     ) -> Option<evalexpr::EvalexprResult<evalexpr::Value>> {
-        None
+        match (identifier, argument) {
+            ("len", evalexpr::Value::String(text)) => {
+                Some(Ok(evalexpr::Value::Int(text.chars().count() as i64)))
+            }
+            _ => None,
+        }
     }
 }
 

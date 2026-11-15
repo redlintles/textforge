@@ -431,7 +431,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
         self.variables.get(var_id).ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::VariableNotFound(
-                    format!("no variable is named `{var_id}`; define it with `var` (or `mutv`) before using it").into(),
+                    format!("no variable is named `{var_id}`; define it with `var` or `val` before using it").into(),
                 ),
                 "",
                 var_id.to_string(),
@@ -444,7 +444,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
             TextForgeError::new(
                 TextForgeErrorCode::VariableNotFound(
                     format!(
-                        "no variable is named `{var_id}`; define it with `mutv` before changing it"
+                        "no variable is named `{var_id}`; define it with `var` before changing it"
                     )
                     .into(),
                 ),
@@ -457,7 +457,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
         } else {
             Err(TextForgeError::new(
                 TextForgeErrorCode::NonMutableVariableError(
-                    format!("the variable `{var_id}` cannot be changed: it was defined with `var`; define it with `mutv` to make it mutable").into(),
+                    format!("the variable `{var_id}` cannot be changed: it was defined with `val`; define it with `var` to make it mutable").into(),
                 ),
                 "",
                 var_id.to_string(),

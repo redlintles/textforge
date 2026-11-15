@@ -50,18 +50,45 @@ impl Builtin {
     }
 }
 
-/// Reject a DSL definition (`var`, `val`, `mutv`, `eval … in`) of a built-in name.
+/// Reject a DSL definition (`var`, `val`, `mutv`, `eval … in`) of a built-in
+/// name or of a name `{{ }}` and `[[ ]]` cannot read.
+///
+/// A name is an ASCII identifier: letters, digits and `_`, not starting with a
+/// digit. Before 0.3.2 any word was accepted (`a-b`, `1a`, `ção`), but such a
+/// variable could never be read. A name that is itself a template
+/// (`{{prefix}}_total`) is checked when the instruction runs.
 pub(crate) fn check_definable(name: &str, instruction: &'static str) -> Result<(), TextForgeError> {
-    match Builtin::from_name(name) {
-        Some(builtin) => Err(TextForgeError::new(
+    if let Some(builtin) = Builtin::from_name(name) {
+        return Err(TextForgeError::new(
             TextForgeErrorCode::ValidationError(
                 format!("`{}` is a read-only built-in variable", builtin.name()).into(),
             ),
             instruction,
             name.to_owned(),
-        )),
-        None => Ok(()),
+        ));
     }
+    if crate::utils::expr::is_numeric_template(name) || is_identifier(name) {
+        return Ok(());
+    }
+    Err(TextForgeError::new(
+        TextForgeErrorCode::ValidationError(
+            format!(
+                "`{name}` is not a valid variable name: use letters, digits and `_`, and do not start with a digit"
+            )
+            .into(),
+        ),
+        instruction,
+        name.to_owned(),
+    ))
+}
+
+/// Whether `name` is an ASCII identifier, the only names `{{name}}` reads.
+fn is_identifier(name: &str) -> bool {
+    let mut bytes = name.bytes();
+    bytes
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic() || first == b'_')
+        && bytes.all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
 }
 
 #[cfg(test)]
