@@ -1,0 +1,24 @@
+{
+  "id": "builtin/error-summary",
+  "name": "Error Summary",
+  "description": "Filter the lines of a log, clean them and join them.",
+  "difficulty": 7,
+  "start": "INFO start\nERROR disk\nINFO ok\nERROR net",
+  "goal": "disk, net",
+  "allowed_instructions": [
+    "klm",
+    "dlm",
+    "raw",
+    "rmp",
+    "joinln",
+    "nln",
+    "sslt",
+    "tla"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "klm \"^ERROR\";",
+    "raw \"ERROR \" \"\";",
+    "joinln \", \";"
+  ]
+}

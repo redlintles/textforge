@@ -1,0 +1,19 @@
+{
+  "id": "builtin/rotate",
+  "name": "Rotate",
+  "description": "Rotating moves characters from one end to the other.",
+  "difficulty": 2,
+  "start": "worldhello",
+  "goal": "helloworld",
+  "allowed_instructions": [
+    "rtl",
+    "rtr",
+    "rev",
+    "dlc",
+    "ate"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "rtl 5;"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "builtin/key-values",
+  "name": "Key Values",
+  "description": "Keep the values, drop the keys, join and shout. (?m) makes ^ and $ match at every line.",
+  "difficulty": 9,
+  "start": "name=Alice\nage=30\ncity=Rio",
+  "goal": "ALICE;30;RIO",
+  "allowed_instructions": ["raw", "rfw", "rmp", "joinln", "nln", "tua", "tla", "sslt", "klm", "dlm", "slnc", "emj"],
+  "allowed_pipeline_max_size": 3,
+  "answer": ["raw \"(?m)^[^=]+=\" \"\";", "joinln \";\";", "tua;"]
+}

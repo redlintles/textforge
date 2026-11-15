@@ -1,0 +1,11 @@
+{
+  "id": "builtin/trim-the-edges",
+  "name": "Trim the Edges",
+  "description": "Delete characters from both ends. Whitespace trimming will not help here.",
+  "difficulty": 2,
+  "start": "xx[core]xx",
+  "goal": "core",
+  "allowed_instructions": ["dlf", "dll", "rev", "tbs", "dls"],
+  "allowed_pipeline_max_size": 8,
+  "answer": ["dlf;", "dlf;", "dlf;", "dll;", "dll;", "dll;"]
+}

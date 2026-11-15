@@ -1,0 +1,20 @@
+{
+  "id": "builtin/slice",
+  "name": "Slice",
+  "description": "Keep only the part you need.",
+  "difficulty": 4,
+  "start": "id:12345;",
+  "goal": "12345",
+  "allowed_instructions": [
+    "slt",
+    "dlb",
+    "dla",
+    "dlf",
+    "dll",
+    "sslt"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "slt 3 7;"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "builtin/backwards",
+  "name": "Backwards",
+  "description": "Some words hide other words.",
+  "difficulty": 1,
+  "start": "stressed",
+  "goal": "desserts",
+  "allowed_instructions": [
+    "rev",
+    "rtl",
+    "rtr",
+    "tua",
+    "splc"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "rev;"
+  ]
+}

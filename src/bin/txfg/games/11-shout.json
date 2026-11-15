@@ -1,0 +1,20 @@
+{
+  "id": "builtin/shout",
+  "name": "Shout",
+  "description": "Uppercase, then add to the end.",
+  "difficulty": 1,
+  "start": "loud",
+  "goal": "LOUD!!!",
+  "allowed_instructions": [
+    "tua",
+    "tla",
+    "ate",
+    "atb",
+    "rev"
+  ],
+  "allowed_pipeline_max_size": 4,
+  "answer": [
+    "tua;",
+    "ate \"!!!\";"
+  ]
+}

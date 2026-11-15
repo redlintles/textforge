@@ -1,0 +1,22 @@
+{
+  "id": "builtin/swap-words",
+  "name": "Swap Words",
+  "description": "Two replacements in a row cascade: the second sees the result of the first. A replacement map (rmapd, then rmape) applies all its rules in one pass.",
+  "difficulty": 8,
+  "start": "cat dog cat",
+  "goal": "dog cat dog",
+  "allowed_instructions": [
+    "rmapd",
+    "rmape",
+    "raw",
+    "rfw",
+    "rlw",
+    "rev"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "rmapd swap add \"cat\" \"dog\";",
+    "rmapd swap add \"dog\" \"cat\";",
+    "rmape swap;"
+  ]
+}

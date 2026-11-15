@@ -1,0 +1,21 @@
+{
+  "id": "builtin/constant-case",
+  "name": "Constant Case",
+  "description": "Constants are often written in SCREAMING_SNAKE_CASE.",
+  "difficulty": 3,
+  "start": "max retry count",
+  "goal": "MAX_RETRY_COUNT",
+  "allowed_instructions": [
+    "jsnc",
+    "jkbc",
+    "jcmc",
+    "tua",
+    "tla",
+    "raw"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "jsnc;",
+    "tua;"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "builtin/squash-spaces",
+  "name": "Squash Spaces",
+  "description": "Regular expressions can match runs of characters: \" +\" is one or more spaces.",
+  "difficulty": 4,
+  "start": "too    many     spaces   here",
+  "goal": "too many spaces here",
+  "allowed_instructions": [
+    "raw",
+    "rmws",
+    "tbs",
+    "rmp",
+    "rfw"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "raw \" +\" \" \";"
+  ]
+}

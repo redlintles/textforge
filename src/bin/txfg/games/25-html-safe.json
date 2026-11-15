@@ -1,0 +1,19 @@
+{
+  "id": "builtin/html-safe",
+  "name": "HTML Safe",
+  "description": "Text shown in a web page needs its special characters escaped.",
+  "difficulty": 3,
+  "start": "Tom & Jerry <3",
+  "goal": "Tom &amp; Jerry &lt;3",
+  "allowed_instructions": [
+    "htmle",
+    "htmlu",
+    "urle",
+    "jsone",
+    "rev"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "htmle;"
+  ]
+}

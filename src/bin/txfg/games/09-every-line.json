@@ -1,0 +1,11 @@
+{
+  "id": "builtin/every-line",
+  "name": "Every Line",
+  "description": "Loops and blocks. iter {times} times {instruction} repeats one instruction, and __COUNTER__ counts the turns from 0. onln {line} apply {instruction} works on one line (lines start at 1). A line holds only one level of nesting, so put the inner part in a block: blk {name} assoc {instruction}, then cblk {name}.",
+  "difficulty": 8,
+  "start": "one\ntwo\nthree",
+  "goal": "One\nTwo\nThree",
+  "allowed_instructions": ["iter", "blk", "cblk", "onln", "tucs", "tua", "cfw", "rln"],
+  "allowed_pipeline_max_size": 2,
+  "answer": ["blk up assoc onln [[__COUNTER__ + 1]] apply tucs 0;", "iter 3 times cblk up;"]
+}

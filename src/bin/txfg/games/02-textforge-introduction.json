@@ -1,0 +1,11 @@
+{
+  "id": "builtin/textforge-introduction",
+  "name": "Textforge Introduction",
+  "description": "The goal of this game is to help the player to learn the basics of TextForge: trimming, appending and case.",
+  "difficulty": 3,
+  "start": " banana    ",
+  "goal": "BANANA FRUIT!",
+  "allowed_instructions": ["tbs", "trs", "tls", "ate", "tua"],
+  "allowed_pipeline_max_size": 10,
+  "answer": ["tbs;", "ate \" fruit!\";", "tua;"]
+}

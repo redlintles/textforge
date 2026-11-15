@@ -1,0 +1,11 @@
+{
+  "id": "builtin/first-steps",
+  "name": "First Steps",
+  "description": "Type one instruction and watch the text change. Try !what to see what each instruction does.",
+  "difficulty": 0,
+  "start": "hello",
+  "goal": "HELLO",
+  "allowed_instructions": ["tua", "tla", "rev"],
+  "allowed_pipeline_max_size": 5,
+  "answer": ["tua;"]
+}

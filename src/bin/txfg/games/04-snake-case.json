@@ -1,0 +1,11 @@
+{
+  "id": "builtin/snake-case",
+  "name": "Snake Case",
+  "description": "Regular expressions replace text: raw {pattern} {text} replaces every match.",
+  "difficulty": 3,
+  "start": "Hello World Example",
+  "goal": "hello_world_example",
+  "allowed_instructions": ["raw", "rfw", "tla", "tua", "rev"],
+  "allowed_pipeline_max_size": 4,
+  "answer": ["tla;", "raw \" \" \"_\";"]
+}

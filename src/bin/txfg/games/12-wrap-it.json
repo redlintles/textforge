@@ -1,0 +1,20 @@
+{
+  "id": "builtin/wrap-it",
+  "name": "Wrap It",
+  "description": "Add text to the beginning and to the end.",
+  "difficulty": 1,
+  "start": "core",
+  "goal": "[core]",
+  "allowed_instructions": [
+    "atb",
+    "ate",
+    "ins",
+    "padl",
+    "padr"
+  ],
+  "allowed_pipeline_max_size": 3,
+  "answer": [
+    "atb \"[\";",
+    "ate \"]\";"
+  ]
+}

@@ -59,3 +59,12 @@ fn every_instruction_module_is_described() {
     ));
     assert_lists_each_once("module lists", found);
 }
+
+#[test]
+fn game_catalog_lists_every_instruction() {
+    let text = include_str!("../src/bin/txfg/catalog.rs");
+    assert_lists_each_once(
+        "src/bin/txfg/catalog.rs",
+        listed(text, r#"(?m)^    Entry \{ name: "([a-z]+)""#),
+    );
+}

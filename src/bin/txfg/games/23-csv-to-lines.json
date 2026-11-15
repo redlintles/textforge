@@ -1,0 +1,19 @@
+{
+  "id": "builtin/csv-to-lines",
+  "name": "CSV to Lines",
+  "description": "Inside double quotes, \\n is a line break.",
+  "difficulty": 4,
+  "start": "red,green,blue",
+  "goal": "red\ngreen\nblue",
+  "allowed_instructions": [
+    "raw",
+    "rfw",
+    "rmp",
+    "joinln",
+    "splc"
+  ],
+  "allowed_pipeline_max_size": 2,
+  "answer": [
+    "raw \",\" \"\\n\";"
+  ]
+}

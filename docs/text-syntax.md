@@ -17,6 +17,13 @@ inside double quotes.
 | `#` at the start of a word | comment to the end of the line (quote it to use it: `raw "#" x;`) | literal | literal |
 | a real line break | **error** | **error** | **error** |
 
+Spaces inside an expression written outside quotes, `[[ ... ]]`, do not
+separate words: `onln [[__COUNTER__ + 1]] apply tbs;` has four words, the same
+as `onln '[[__COUNTER__ + 1]]' apply tbs;`. This applies only when the closing
+`]]` is on the same line; a lone `[[` is ordinary text, as before. Quotes and
+escapes inside the expression follow the rules above. Variable templates
+(`{{name}}`) take no spaces and are not grouped.
+
 ```textforge
 atb "banana\nlaranja";     // adds "banana", a newline and "laranja"
 raw " " "\t";              // spaces become tabs
@@ -99,6 +106,9 @@ changed:
   `\n` became `n`).
 - A real line break inside an instruction passed to `read_from_text` is an
   error; reading a file already failed on it.
+- After 0.3.1: spaces inside an unquoted `[[ ]]` stay in the word (before:
+  they split it, and such lines failed to parse). The differential tests skip
+  lines with spaced expressions.
 
 Benchmark: `scripts/benchmark_line_parser.py` (results in
 [benchmarks/line-parser](benchmarks/line-parser/README.md)).

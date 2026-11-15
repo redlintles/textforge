@@ -1,0 +1,11 @@
+{
+  "id": "builtin/unique-lines",
+  "name": "Unique Lines",
+  "description": "Line instructions: remove repeated lines, then reorder them.",
+  "difficulty": 5,
+  "start": "b\na\nb\nc\na",
+  "goal": "c\na\nb\n",
+  "allowed_instructions": ["uniqln", "revln", "dle", "dln", "slnc", "joinln", "nln"],
+  "allowed_pipeline_max_size": 3,
+  "answer": ["uniqln;", "revln;"]
+}

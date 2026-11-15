@@ -12,6 +12,11 @@
 //! | `#` at the start of a word | comment until the end of the line | literal | literal |
 //! | a real line break | error | error | error |
 //!
+//! Spaces inside an expression (`[[ ... ]]`) written outside quotes do not
+//! separate words, so `onln [[__COUNTER__ + 1]] apply tbs` has four words. A
+//! `[[` without a closing `]]` later on the line is ordinary text. Variable
+//! templates (`{{name}}`) take no spaces and are not grouped.
+//!
 //! An instruction is one line: a real line break anywhere is an error, and so
 //! is `\n` outside double quotes, which a reader would take as one.
 
@@ -54,10 +59,16 @@ pub fn split_line(line: &str) -> Result<Vec<String>, TextForgeError> {
     let mut word = String::new();
     // True once the current word has started, so `""` yields an empty word.
     let mut in_word = false;
+    // Open expressions (`[[`) outside quotes: spaces stay in the word.
+    let mut depth = 0usize;
     let mut i = 0;
 
     while i < bytes.len() {
         match bytes[i] {
+            b' ' | b'\t' if depth > 0 => {
+                word.push(char::from(bytes[i]));
+                i += 1;
+            }
             b' ' | b'\t' => {
                 if in_word {
                     words.push(std::mem::take(&mut word));
@@ -81,12 +92,25 @@ pub fn split_line(line: &str) -> Result<Vec<String>, TextForgeError> {
             }
             _ => {
                 in_word = true;
-                let end = bytes[i..]
-                    .iter()
-                    .position(|b| matches!(b, b' ' | b'\t' | b'\n' | b'\r' | b'\'' | b'"' | b'\\'))
-                    .map_or(bytes.len(), |offset| i + offset);
+                // One scan finds the end of the run and whether it holds a
+                // bracket, so runs without one cost nothing more.
+                let mut end = bytes.len();
+                let mut brackets = false;
+                for (offset, &b) in bytes[i..].iter().enumerate() {
+                    match b {
+                        b' ' | b'\t' | b'\n' | b'\r' | b'\'' | b'"' | b'\\' => {
+                            end = i + offset;
+                            break;
+                        }
+                        b'[' | b']' => brackets = true,
+                        _ => {}
+                    }
+                }
                 // `end` stops at an ASCII byte, so it is a char boundary.
                 word.push_str(&line[i..end]);
+                if brackets {
+                    depth = interpolation_depth(line, i, end, depth);
+                }
                 i = end;
             }
         }
@@ -96,6 +120,30 @@ pub fn split_line(line: &str) -> Result<Vec<String>, TextForgeError> {
         words.push(word);
     }
     Ok(words)
+}
+
+/// The expression depth after the unquoted run `line[start..end]`, starting
+/// from `depth`. At depth 0, `[[` opens only when `]]` follows later on the
+/// line, so a lone `[[` keeps its old meaning.
+fn interpolation_depth(line: &str, start: usize, end: usize, mut depth: usize) -> usize {
+    let bytes = line.as_bytes();
+    let mut i = start;
+    while i + 1 < end {
+        match (bytes[i], bytes[i + 1]) {
+            (b'[', b'[') => {
+                if depth > 0 || line[i + 2..].contains("]]") {
+                    depth += 1;
+                }
+                i += 2;
+            }
+            (b']', b']') if depth > 0 => {
+                depth -= 1;
+                i += 2;
+            }
+            _ => i += 1,
+        }
+    }
+    depth
 }
 
 /// Copies a single-quoted run starting at `start` (after the opening quote)
