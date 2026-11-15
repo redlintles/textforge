@@ -110,6 +110,13 @@ Without `--output` the result goes to stdout. `--profile`, `--spool-threshold`,
 prints the effective configuration. See
 [execution profiles](docs/execution-profiles.md).
 
+### Learning by playing
+
+`txfg` (`cargo install textforge --features game`) is a small game: each round
+asks you to turn a start text into a goal text with a limited set of
+instructions, and scores how short and how fast your pipeline was. Rounds are
+JSON files, so you can write your own. See [the `txfg` game](docs/txfg.md).
+
 ## The language
 
 ```textforge
@@ -318,6 +325,7 @@ changes the output. Pipelines can be saved and loaded as text
 | `watchers` | Watchers and JSON execution reports |
 | `buffered` | Buffered processing (`process_*_buffered`, `TextBuffer`); pulls in `tempfile` |
 | `cli` | The `txf` program; pulls in `clap` |
+| `game` | The `txfg` game; pulls in `clap` |
 
 No feature is enabled by default. `test_access` exposes internals for the test
 suite and is not meant for users.

@@ -1,0 +1,11 @@
+{
+  "id": "builtin/digits-only",
+  "name": "Digits Only",
+  "description": "One well-chosen regular expression is worth many deletions.",
+  "difficulty": 6,
+  "start": "  phone: (11) 98765-4321  ",
+  "goal": "11987654321",
+  "allowed_instructions": ["rmp", "raw", "tbs", "dlb", "dla", "sslt", "dlf", "dll"],
+  "allowed_pipeline_max_size": 2,
+  "answer": ["rmp \"[^0-9]\";"]
+}

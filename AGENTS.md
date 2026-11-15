@@ -76,7 +76,8 @@ Key design facts:
 | `src/api/portable` | Language-neutral intermediate API consumed by bindings (see [section 17](#17-bindings)). |
 | `src/bindings/{language}` | Independent binding repositories (`python`, `node`), excluded from the Cargo workspace and ignored by this repository's Git. |
 | `src/main.rs` | The `txf` CLI entry point. |
-| `src/bin` | Placeholder binaries (`atp-shell`, `atp-game`) for a planned REPL shell and an educational CLI game; no behavior yet. |
+| `src/bin/txfg` | The `txfg` game (`game` feature): rounds described by JSON files, a prompt, scores. See `docs/txfg.md`. |
+| `src/bin` | Also placeholder binaries (`atp-shell`, `atp-game`), not built (`autobins = false`). |
 | `src/bytecode` | Bytecode compilation. Only present under the `bytecode` feature. |
 | `src/context` | The execution context, the read-only static context (`static_context.rs`: pipeline name, core version, input file, global-function registry), built-in variables and the single variable lookup (`builtins.rs`), and the debug trace (`debug_trace.rs`). See `docs/execution-context.md`. |
 | `src/globals` | The lookup map the engine uses to decide which instruction to call for a given token. **Must be updated whenever an instruction is added.** |
@@ -276,7 +277,8 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 | `bytecode` | Enables bytecode compilation code. |
 | `buffered` | Enables buffered (spool-backed) processing; pulls in `tempfile`. |
 | `cli` | Builds the `txf` binary (`required-features`) and exposes `utils::cli`; pulls in `clap`. |
-| `test_access` | Enables **all** features (bytecode + watchers + buffered + cli + test helpers). **Use only in tests.** |
+| `game` | Builds the `txfg` game (`src/bin/txfg`, `required-features`); pulls in `clap`. Dependencies only the game needs go behind this feature. |
+| `test_access` | Enables **all** features (bytecode + watchers + buffered + cli + game + test helpers). **Use only in tests.** |
 
 ---
 
@@ -374,7 +376,8 @@ cargo test --features bytecode
 cargo test --features watchers
 cargo test --features buffered
 cargo test --features cli                # builds the txf binary
-cargo test --features test_access       # enables bytecode + watchers + buffered + cli + test helpers
+cargo test --features game               # builds and tests the txfg game
+cargo test --features test_access       # enables bytecode + watchers + buffered + cli + game + test helpers
 RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --features bytecode,watchers,buffered,cli
 ```
 
@@ -406,7 +409,7 @@ Ask a human before doing any of the following:
 | `html-escape` | `htmle` and `htmlu` transforms. |
 | `uuid` | Identifying transforms in the processor. |
 | `colored` | Debug-mode output. |
-| `clap` | Optional; CLI construction (`cli` feature). |
+| `clap` | Optional; CLI construction (`cli` and `game` features). |
 | `rayon` | Parallelism in `process_batch`. |
 | `evalexpr` | Resolving math expressions in `[[ ... ]]` interpolation. |
 | `unicode-normalization` | The `unorm` transform (NFC, NFD, NFKC, NFKD). |

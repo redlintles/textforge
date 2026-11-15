@@ -1,0 +1,11 @@
+{
+  "id": "builtin/mirror",
+  "name": "Mirror",
+  "description": "Some instructions change only part of the text: onck {start} {end} apply {instruction}. Character indexes start at 0.",
+  "difficulty": 5,
+  "start": "abc",
+  "goal": "abccba",
+  "allowed_instructions": ["rpt", "rev", "onck", "rtl", "rtr", "dlc", "ate"],
+  "allowed_pipeline_max_size": 3,
+  "answer": ["rpt 2;", "onck 3 5 apply rev;"]
+}

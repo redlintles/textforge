@@ -8,7 +8,7 @@ repository = "https://github.com/redlintles/textforge"
 documentation = "https://docs.rs/textforge"
 readme = "README.md"
 rust-version = "1.89"
-# Only `txf` is a binary; src/bin holds no program to install.
+# Binaries are listed below (`txf`, `txfg`); the placeholders in src/bin are not programs.
 autobins = false
 keywords = ["text", "dsl", "pipeline", "text-processing", "transform"]
 categories = ["text-processing", "command-line-utilities"]
@@ -16,6 +16,7 @@ categories = ["text-processing", "command-line-utilities"]
 # and bindings stay in the repository.
 include = [
   "/src/**/*.rs",
+  "/src/bin/txfg/games/*.json",
   "!/src/bindings/**",
   "/docs/txfrc.schema.json",
   "/README.md",
@@ -53,13 +54,20 @@ watchers = []
 buffered = ["tempfile"]
 # The `txf` command-line program and its helpers (`utils::cli`).
 cli = ["dep:clap"]
+# The `txfg` game (src/bin/txfg). Dependencies only the game needs go here.
+game = ["dep:clap"]
 
-test_access = ["default", "bytecode", "buffered", "tempfile", "watchers", "cli"]
+test_access = ["default", "bytecode", "buffered", "tempfile", "watchers", "cli", "game"]
 
 [[bin]]
 name = "txf"
 path = "src/main.rs"
 required-features = ["cli"]
+
+[[bin]]
+name = "txfg"
+path = "src/bin/txfg/main.rs"
+required-features = ["game"]
 
 
 [workspace]

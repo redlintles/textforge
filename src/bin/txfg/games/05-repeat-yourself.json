@@ -1,0 +1,11 @@
+{
+  "id": "builtin/repeat-yourself",
+  "name": "Repeat Yourself",
+  "description": "Repeating text is easy; the separators are the puzzle.",
+  "difficulty": 4,
+  "start": "item",
+  "goal": "item-item-item",
+  "allowed_instructions": ["rpt", "ate", "atb", "dll", "dlf", "rev"],
+  "allowed_pipeline_max_size": 4,
+  "answer": ["ate \"-\";", "rpt 3;", "dll;"]
+}

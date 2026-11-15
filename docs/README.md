@@ -22,6 +22,7 @@ How the language and the library behave.
 | [Debug output](debug-output.md) | The step-by-step trace of `process_all_with_debug` |
 | [Portable API](portable-api.md) | The owned, language-neutral API the bindings use |
 | [Portable API parity](portable-parity.md) | How each Rust method maps to the portable API |
+| [The `txfg` game](txfg.md) | Playing, game files, scoring and the difficulty rating |
 | [Bindings: Python](python-bindings.md) · [Node.js](node-bindings.md) | Where the bindings live and how they are versioned |
 
 ## Releases

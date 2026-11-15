@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `txfg`, the TextForge game (`game` feature,
+  `cargo install textforge --features game`): matches of rounds, each a JSON
+  game file with a start text, a goal text, the allowed instructions, a
+  pipeline size limit and a reference answer. The player builds the pipeline
+  at a prompt with `!what`, `!undo`, `!reset`, `!show_answer` and other
+  commands; rounds score 0-100 from the instructions used and the time taken.
+  Ten built-in games, difficulty selection (`-d`), round count (`-r`), game
+  directories (`--pool`), validation and a 0-10 difficulty rating
+  (`--check`, `--list`) and JSON results (`--save-result`). See `docs/txfg.md`.
+- `scripts/instruction_index.py` also writes the game's instruction catalog
+  (`src/bin/txfg/catalog.rs`); `tests/instruction_index.rs` checks it.
+
 ## 0.3.1 (2026-11-15)
 
 ### Behavior changes
