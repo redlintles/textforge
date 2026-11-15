@@ -81,6 +81,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - Variable errors name the right instructions: changing a `val` says it was
   defined with `val` and suggests `var`; a missing variable suggests `var`
   (or `val`), not `mutv`.
+- Errors from `[[ ]]` and `eval` name the instruction (`in: ate '[[a + 1]]';`)
+  instead of the internal labels `api::expr` and `eval.transform`, and explain
+  the problem in TextForge's terms (for example "`+` cannot be applied to text
+  and an integer", "the variable `b` does not exist") instead of evalexpr's
+  messages. Error codes are unchanged.
 - The "nested too deeply" error at the top level says how to nest one more
   level with a block.
 

@@ -132,6 +132,95 @@ pub(crate) fn is_literal_brackets(content: &str) -> bool {
     content.trim().is_empty() || content.starts_with(':')
 }
 
+/// How a value is named in error messages.
+fn describe_value(value: &Value) -> String {
+    match value {
+        Value::String(text) => format!("the text {text:?}"),
+        Value::Int(number) => format!("the integer {number}"),
+        Value::Float(number) => format!("the decimal number {number}"),
+        Value::Boolean(flag) => format!("the boolean {flag}"),
+        Value::Tuple(_) => "a tuple".into(),
+        Value::Empty => "nothing".into(),
+    }
+}
+
+fn describe_type(kind: &evalexpr::ValueType) -> &'static str {
+    match kind {
+        evalexpr::ValueType::String => "text",
+        evalexpr::ValueType::Int => "an integer",
+        evalexpr::ValueType::Float => "a decimal number",
+        evalexpr::ValueType::Boolean => "a boolean",
+        evalexpr::ValueType::Tuple => "a tuple",
+        evalexpr::ValueType::Empty => "nothing",
+    }
+}
+
+/// Note added where a type mismatch may come from a variable that is text.
+const TYPES_NOTE: &str = "TextForge values are integers and text; a variable whose value is not an integer (`2.5`, `true`) is text";
+
+/// An evalexpr error in TextForge's terms. Up to 0.3.1 evalexpr's own message
+/// was shown ("The operator Add was called with a wrong combination of types:
+/// [String, Int]").
+pub(crate) fn describe_eval_error(error: &evalexpr::EvalexprError) -> String {
+    use evalexpr::EvalexprError as E;
+    match error {
+        E::WrongTypeCombination { operator, actual } => {
+            let types: Vec<_> = actual.iter().map(describe_type).collect();
+            format!(
+                "`{}` cannot be applied to {}; {TYPES_NOTE}",
+                operator.to_string().trim(),
+                types.join(" and ")
+            )
+        }
+        E::ExpectedInt { actual } | E::ExpectedNumber { actual } => {
+            format!(
+                "an integer is needed here, but this is {}; {TYPES_NOTE}",
+                describe_value(actual)
+            )
+        }
+        E::ExpectedString { actual } => {
+            format!(
+                "text is needed here, but this is {}",
+                describe_value(actual)
+            )
+        }
+        E::ExpectedNumberOrString { actual } => format!(
+            "an integer or text is needed here, but this is {}",
+            describe_value(actual)
+        ),
+        E::ExpectedBoolean { actual } => format!(
+            "a condition (such as `a > 1`) is needed here, but this is {}; {TYPES_NOTE}",
+            describe_value(actual)
+        ),
+        E::VariableIdentifierNotFound(name) => {
+            format!(
+                "the variable `{name}` does not exist: define it with `var` or `val` before using it"
+            )
+        }
+        E::FunctionIdentifierNotFound(name) => format!("there is no function named `{name}`"),
+        E::UnmatchedLBrace => "a `(` is never closed".into(),
+        E::UnmatchedRBrace => "a `)` has no matching `(`".into(),
+        E::UnmatchedDoubleQuote => {
+            "a text in double quotes is never closed: a `\"` is missing".into()
+        }
+        E::DivisionError { dividend, divisor } | E::ModulationError { dividend, divisor } => {
+            format!(
+                "cannot divide {} by {}",
+                describe_value(dividend),
+                describe_value(divisor)
+            )
+        }
+        E::AdditionError { .. }
+        | E::SubtractionError { .. }
+        | E::MultiplicationError { .. }
+        | E::NegationError { .. } => "the result is too large for an integer".into(),
+        E::IllegalEscapeSequence(sequence) => format!(
+            "`{sequence}` is not a valid escape in a quoted text inside an expression (valid: `\\\"`, `\\\\`)"
+        ),
+        other => other.to_string(),
+    }
+}
+
 /// Converts an evalexpr result back into a plain string, without the
 /// formatting evalexpr's own `Display` impl adds (e.g. wrapping strings in
 /// literal quotes, since that impl is meant to print back valid expression
@@ -209,7 +298,7 @@ pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String
             if is_literal_brackets(expr_src.as_str()) {
                 out.push_str(m.as_str());
             } else {
-                let result = evaluate_with(expr_src.as_str(), reader, "api::expr")?;
+                let result = evaluate_with(expr_src.as_str(), reader, "")?;
                 out.push_str(&value_to_plain_string(&result));
             }
         } else {
@@ -228,7 +317,7 @@ pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String
 /// result as plain text (strings without the quotes evalexpr's `Display` adds).
 /// `eval` and `[[ ]]` interpolation use the same evaluation.
 pub fn expr(expression: &str, context: &GlobalExecutionContext) -> Result<String, TextForgeError> {
-    let result = evaluate(expression, context, "api::expr")?;
+    let result = evaluate(expression, context, "")?;
     Ok(value_to_plain_string(&result))
 }
 
@@ -259,7 +348,7 @@ pub(crate) fn evaluate_with(
 ) -> Result<Value, TextForgeError> {
     let invalid = |e: evalexpr::EvalexprError| {
         TextForgeError::new(
-            TextForgeErrorCode::InvalidExprError(Cow::from(e.to_string())),
+            TextForgeErrorCode::InvalidExprError(Cow::from(describe_eval_error(&e))),
             Cow::from(stage),
             Cow::from(expression.to_string()),
         )
@@ -277,7 +366,7 @@ pub(crate) fn evaluate_tree(
 ) -> Result<Value, TextForgeError> {
     let invalid = |e: evalexpr::EvalexprError| {
         TextForgeError::new(
-            TextForgeErrorCode::InvalidExprError(Cow::from(e.to_string())),
+            TextForgeErrorCode::InvalidExprError(Cow::from(describe_eval_error(&e))),
             Cow::from(stage),
             Cow::from(expression.to_string()),
         )

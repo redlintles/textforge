@@ -5,7 +5,7 @@
 use textforge::{
     api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
     text::reader::read_from_text,
-    utils::errors::TextForgeErrorCode,
+    utils::errors::{TextForgeError, TextForgeErrorCode},
 };
 
 fn run(lines: &[&str], input: &str) -> Result<String, TextForgeErrorCode> {
@@ -303,4 +303,37 @@ fn inf_takes_the_index_first_like_ins() {
     assert_eq!(ok(&["ins 1 '+';"], "abc"), "ab+c");
     // The old order is a parsing error, not a silent misread.
     assert!(run(&[format!("inf '{path}' 1;").as_str()], "abc").is_err());
+}
+
+// --- Expression errors ------------------------------------------------------
+
+/// Before: errors from `[[ ]]` and `eval` were labelled `api::expr` or
+/// `eval.transform` and carried evalexpr's message ("The operator Add was
+/// called with a wrong combination of types: [String, Int]").
+#[test]
+fn expression_errors_name_the_instruction_and_explain_the_problem() {
+    let error = |lines: &[&str]| -> TextForgeError {
+        let mut processor = TextForgeProcessor::new();
+        let id =
+            processor.add_transform(lines.iter().map(|l| read_from_text(l).unwrap()).collect());
+        processor.process_all(&id, "x").unwrap_err()
+    };
+    let e = error(&["var a = 2.5;", "ate '[[a + 1]]';"]);
+    assert_eq!(e.instruction, "ate '[[a + 1]]';");
+    let message = format!("{:?}", e.error_code);
+    assert!(
+        message.contains("`+` cannot be applied to text and an integer"),
+        "{message}"
+    );
+    assert!(!message.contains("Add was called"), "{message}");
+
+    let e = error(&["eval 'missing + 1' in y;"]);
+    assert_eq!(e.instruction, "eval 'missing + 1' in y;");
+    assert!(format!("{:?}", e.error_code).contains("`missing` does not exist"));
+
+    let e = error(&["ate '[[(1 + 2]]';"]);
+    assert!(format!("{:?}", e.error_code).contains("`(` is never closed"));
+    for e in [error(&["ate '[[1 / 0]]';"]), error(&["ate '[[b]]';"])] {
+        assert!(!e.instruction.contains("api::expr") && !e.instruction.contains("eval.transform"));
+    }
 }
