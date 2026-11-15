@@ -179,7 +179,7 @@ fn build_cli() -> Command {
                 .value_name("debug")
                 .action(ArgAction::SetTrue)
                 .help(
-                    "Print the text after each instruction (default: off)"
+                    "Print only the step-by-step trace of the run instead of the result; with --output the result is still written to the file (default: off)"
                 )
         )
 }
@@ -354,6 +354,10 @@ fn run() -> Result<(), TextForgeError> {
                 )
             })?;
         }
+        // With --debug the trace already went to stdout and ends with the
+        // final text, so the result is not printed a second time after it.
+        // Before 0.3.2 the result followed the trace on the same stream.
+        None if *debug => {}
         None => {
             print!("{result}");
         }
