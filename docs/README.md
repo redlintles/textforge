@@ -27,7 +27,7 @@ How the language and the library behave.
 ## Releases
 
 - [Changelog](../changelog.md), with upgrade notes for each release.
-- [0.3.0 release notes](release-0.3.0.md) · [0.2.0 release notes](release-0.2.0.md)
+- [0.3.1 release notes](release-0.3.1.md) · [0.3.0 release notes](release-0.3.0.md) · [0.2.0 release notes](release-0.2.0.md)
 - [API migration in 0.2.0](api-migration.md)
 
 ## Design notes
