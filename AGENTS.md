@@ -355,9 +355,12 @@ Documentation is written in **English**: rustdoc, comments, Markdown files, comm
 19. **Work-multiplying instructions are limited by default.** Instructions whose output or work grows with a parameter (`rpt`, `padl`, `padr`, `iter`) check generous default limits (`Limits`: `max_generated_bytes`, `max_iterations`) and fail with an error instead of exhausting memory, CPU or disk. The user decides: limits can be raised or set to `unlimited` in `ExecutionProfile`, `.txfrc` and `txf` flags. A new instruction of this kind uses the same limits; a profile or limit never changes the text produced, it can only make a run fail.
 20. **Errors never carry the whole document.** When an error refers to the processed text, its `input` field and message use `utils::errors::input_excerpt`, not a copy of the text, which may be hundreds of megabytes.
 
+21. **End indices are clamped to the text.** When an instruction receives an end index (or any index that closes a range) greater than the length of the text it operates on, it corrects the index to that length instead of failing. The length is measured in the unit the index counts (characters, words, lines) and, for the `on*` family, refers to the section the instruction receives. Example: `dlc 0 9999;` on a 5-character text behaves as `dlc 0 5;`. Clamping only applies to the end of a range: an invalid start, an inverted range and empty text where a position is required remain errors (see rule 18).
+22. **All indices are zero-based.** Every instruction counts characters, words, lines and positions from `0`, with no exceptions per family. A new instruction never introduces a one-based index.
+
 ### Change verification
 
-21. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
+23. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
 
 ---
 
