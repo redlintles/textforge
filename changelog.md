@@ -43,6 +43,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   A pipeline in the old order fails to parse, and bytecode with `inf` written
   by 0.3.1 fails to load with "a parameter has the wrong type"; write the
   pipeline in the new order and compile it again.
+- Relative paths of `wtf`, `apf`, `ppf` and `inf` start from the directory of
+  the pipeline file, like `ppjn` (in a joined pipeline, from the joined
+  file's directory). Before, they started from the working directory, so the
+  same pipeline read or wrote different files depending on where it was run.
+  Pipelines built in code still use the working directory.
 - `txf --debug` prints only the trace; the final text is the last step's
   `After:`. Before, the result was printed again after the trace. With
   `--output` the result is still written to the file.
@@ -82,10 +87,7 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 ### Not changed (documented instead)
 
 - Replacing leaves the text unchanged when nothing matches, `rnw` included
-  (a match number is not an index).
-- `ppjn` resolves paths from the pipeline file and the file instructions from
-  the working directory. Changing any of these breaks
-  existing pipelines. They are described in `docs/indices-and-ranges.md`.
+  (a match number is not an index). See `docs/indices-and-ranges.md`.
 
 ## 0.3.1 (2026-11-15)
 

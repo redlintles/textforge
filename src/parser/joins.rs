@@ -32,6 +32,9 @@ pub struct JoinedPipeline {
     tokens: Vec<TokenWrapper>,
     /// Source line (1-based) of each instruction; its position for bytecode.
     lines: Vec<usize>,
+    /// Directory of the joined file, where relative paths of its file
+    /// instructions start; `None` when embedded in bytecode.
+    directory: Option<Arc<Path>>,
 }
 
 impl JoinedPipeline {
@@ -43,11 +46,17 @@ impl JoinedPipeline {
             origin: String::new(),
             tokens: prepared(tokens),
             lines,
+            directory: None,
         }
     }
 
     pub(crate) fn tokens(&self) -> &[TokenWrapper] {
         &self.tokens
+    }
+
+    /// Directory of the joined file (`None` when embedded in bytecode).
+    pub(crate) fn directory(&self) -> Option<&Arc<Path>> {
+        self.directory.as_ref()
     }
 
     pub(crate) fn origin(&self) -> &str {
@@ -205,6 +214,7 @@ pub(crate) fn load(
         origin,
         tokens: prepared(tokens),
         lines,
+        directory: Some(Arc::from(directory)),
     }))
 }
 

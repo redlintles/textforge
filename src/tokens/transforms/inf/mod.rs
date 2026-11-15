@@ -1,10 +1,10 @@
 #[cfg(feature = "test_access")]
 pub mod test;
 
-use std::{borrow::Cow, path::Path};
+use std::borrow::Cow;
 
 use crate::{
-    api::processor::file_io::read_utf8_file,
+    api::processor::file_io::{read_utf8_file, resolve_path},
     context::execution_context::GlobalExecutionContext,
     parser::params::TextForgeParamTypes,
     tokens::{InstructionMethods, transforms::ins::insert_after_char},
@@ -19,8 +19,9 @@ use crate::{
 /// 0); an index equal to the character count appends; a larger one is an
 /// error. Up to 0.3.1 the order was `inf {file} {index}`. The file is read first, so a file error is
 /// reported before an index error. The path may use
-/// `{{ }}`/`[[ ]]` interpolation; a relative path is relative to the working
-/// directory. See `docs/file-instructions.md`.
+/// `{{ }}`/`[[ ]]` interpolation; a relative path is resolved from the
+/// directory of the pipeline file (the working directory for pipelines built
+/// in code). See `docs/file-instructions.md`.
 ///
 /// # Example
 ///
@@ -71,9 +72,9 @@ impl InstructionMethods for Inf {
     fn transform<'a>(
         &self,
         input: Cow<'a, str>,
-        _: Option<&mut GlobalExecutionContext>,
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let inserted = read_utf8_file(Path::new(&self.path), "")?;
+        let inserted = read_utf8_file(&resolve_path(&self.path, context.as_deref()), "")?;
         insert_after_char(input, self.index, &inserted, || self.to_textforge_line())
     }
 

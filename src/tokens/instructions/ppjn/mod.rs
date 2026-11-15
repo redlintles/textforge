@@ -93,15 +93,26 @@ impl Ppjn {
 
 /// A fresh context sharing only the outer static context, and the debug trace
 /// while the joined pipeline runs.
-fn joined_context(outer: &mut Option<&mut GlobalExecutionContext>) -> GlobalExecutionContext {
+///
+/// Relative paths of the file instructions in the joined pipeline start from
+/// the joined file's directory; for a pipeline embedded in bytecode, from the
+/// outer pipeline's.
+fn joined_context(
+    outer: &mut Option<&mut GlobalExecutionContext>,
+    pipeline: &JoinedPipeline,
+) -> GlobalExecutionContext {
     let mut inner = match outer {
         Some(outer) => {
             let mut inner = GlobalExecutionContext::with_static(outer.shared_static());
             inner.set_limits(outer.limits());
+            inner.set_base_dir(outer.base_dir().cloned());
             inner
         }
         None => GlobalExecutionContext::new(),
     };
+    if let Some(directory) = pipeline.directory() {
+        inner.set_base_dir(Some(Arc::clone(directory)));
+    }
     if let Some(trace) = outer.as_mut().and_then(|outer| outer.take_trace()) {
         inner.put_trace(trace);
     }
@@ -138,7 +149,7 @@ impl InstructionMethods for Ppjn {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let pipeline = self.joined()?;
         let origin = self.origin(&pipeline);
-        let mut inner = joined_context(&mut context);
+        let mut inner = joined_context(&mut context, &pipeline);
         let result = within(
             &mut inner,
             |_| format!("ppjn {origin}  ({} instructions)", pipeline.tokens().len()),
@@ -174,7 +185,7 @@ impl InstructionMethods for Ppjn {
         }
         let pipeline = self.joined()?;
         let origin = self.origin(&pipeline);
-        let mut inner = joined_context(&mut context);
+        let mut inner = joined_context(&mut context, &pipeline);
         run_tokens(
             pipeline.tokens(),
             input,

@@ -1,10 +1,10 @@
 #[cfg(feature = "test_access")]
 pub mod test;
 
-use std::{borrow::Cow, io::Write, path::Path};
+use std::{borrow::Cow, io::Write};
 
 use crate::{
-    api::processor::file_io::write_atomically,
+    api::processor::file_io::{resolve_path, write_atomically},
     context::execution_context::GlobalExecutionContext,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
@@ -21,7 +21,7 @@ use crate::{
 /// atomically (written to a temporary file in the same directory, then renamed):
 /// on failure the previous file is untouched. Missing directories are not
 /// created. The path may use `{{ }}`/`[[ ]]` interpolation; a relative path is
-/// relative to the working directory. See `docs/file-instructions.md`.
+/// resolved from the directory of the pipeline file (the working directory for pipelines built in code). See `docs/file-instructions.md`.
 ///
 /// # Example
 ///
@@ -88,7 +88,7 @@ impl InstructionMethods for Wtf {
         input: Cow<'a, str>,
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        write_atomically(Path::new(&self.path), "", |file| {
+        write_atomically(&resolve_path(&self.path, context.as_deref()), "", |file| {
             file.write_all(input.as_bytes()).map_err(write_error)
         })?;
         self.written(input.len() as u64, context);
@@ -103,7 +103,7 @@ impl InstructionMethods for Wtf {
         context: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
         let mut bytes = 0;
-        write_atomically(Path::new(&self.path), "", |file| {
+        write_atomically(&resolve_path(&self.path, context.as_deref()), "", |file| {
             bytes = input.copy_to(file)?;
             Ok(())
         })?;

@@ -154,7 +154,7 @@ The textual form resembles assembly, and the comparison is fair in terms of the 
 - Some instructions take one **nested instruction** as a parameter (`blk`, `ifdc`, `iter`, `onln`, `onck`, `onlni`). `ppjn` instead carries a whole joined pipeline, as an implicit parameter with no text form (`TextForgeParamTypes::Pipeline`, `SyntaxToken::Pipeline`). The root allows one nested level; a `blk` payload allows three (`MAX_DEPTH_NORMAL`/`MAX_DEPTH_ASSOC_PAYLOAD` in `src/parser/params.rs`).
 - **Section instructions** (`onln`, `onck`, `onlni`) give the nested instruction only part of the text, so its indices are relative to that part. Lines are base 1, characters base 0. See `docs/on-instructions.md`.
 - **`ppjn {pipeline};`** runs a pipeline from another file in a new execution context (only the static context is shared; `end` is local). Its path is a literal, loaded with the outer pipeline (`src/parser/joins.rs`), relative to the file that contains it; cycles and nesting beyond `MAX_JOIN_DEPTH` are errors. Bytecode embeds the joined pipeline. See `docs/file-instructions.md`.
-- **File instructions** (`wtf`, `apf`, `ppf`, `inf`) write the current text to a file (atomically, through `write_atomically` in `src/api/processor/file_io.rs`) or read UTF-8 files into it (`read_utf8_file`). Their paths are data: interpolated at execution time and relative to the working directory. `inf {index} {file}` shares `ins {index} {text}`'s argument order and index rules (`insert_after_char`). See `docs/file-instructions.md`.
+- **File instructions** (`wtf`, `apf`, `ppf`, `inf`) write the current text to a file (atomically, through `write_atomically` in `src/api/processor/file_io.rs`) or read UTF-8 files into it (`read_utf8_file`). Their paths are data: interpolated at execution time and, when relative, resolved from the directory of the pipeline file (`resolve_path`; Golden Rule 25), or from the working directory for pipelines built in code. `inf {index} {file}` shares `ins {index} {text}`'s argument order and index rules (`insert_after_char`). See `docs/file-instructions.md`.
 
 **Naming convention**
 
@@ -365,9 +365,11 @@ Documentation is written in **English**: rustdoc, comments, Markdown files, comm
 
 24. **Indices are character indices.** Every index an instruction receives counts Unicode scalar values (`char`s), never bytes, and instructions convert it to a byte offset internally (rule 3). The only exception is an instruction that manipulates bytes explicitly, and its name and documentation must say so. Line and word indices follow the same logic: they count lines and words, not bytes.
 
+25. **File paths are relative to the pipeline file.** A relative path in a pipeline (`wtf`, `apf`, `ppf`, `inf`, `ppjn`) starts from the directory of the file that contains the instruction, never from the working directory, so a pipeline gives the same result wherever it is run from (after a `cd`, from a script, from a scheduler). In a pipeline joined with `ppjn`, paths start from the joined file's directory. Only pipelines with no file (builder, portable plans, `add_transform`) use the working directory. Absolute paths are used as they are. A new instruction that opens files resolves its paths through `resolve_path` in `src/api/processor/file_io.rs`.
+
 ### Change verification
 
-25. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
+26. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
 
 ---
 

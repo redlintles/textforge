@@ -34,8 +34,14 @@ Builder: `pipeline_join(path)`. Portable: `InstructionSpec` `ppjn` with one
 
 The paths of `wtf`, `apf`, `ppf` and `inf` are **data**:
 they may use `{{ }}` and `[[ ]]` interpolation and are resolved when the
-instruction runs. A relative path is relative to the process working
-directory. Files are read with the same helper as `process_file`
+instruction runs. A relative path starts from the **directory of the
+pipeline file** that contains the instruction, like `ppjn`, so the pipeline
+behaves the same whatever directory it is run from. In a pipeline joined with
+`ppjn`, relative paths start from the joined file's directory (for bytecode
+with an embedded join, from the outer bytecode file's). Absolute paths are
+used as they are. Pipelines that come from no file (builder, portable plans,
+`add_transform`, `read_from_text`) use the working directory. Up to 0.3.1,
+these four instructions always used the working directory. Files are read with the same helper as `process_file`
 (`read_utf8_file`): no `mmap`, no `unsafe`, and opening, reading and invalid
 UTF-8 are distinct `TextForgeError`s that name the path.
 
