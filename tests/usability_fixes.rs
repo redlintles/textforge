@@ -368,3 +368,34 @@ fn quoted_texts_in_expressions_accept_control_escapes() {
         "{message}"
     );
 }
+
+// --- `val` ------------------------------------------------------------------
+
+/// Before: a second `val` or `var` with the same name replaced a `val`, so
+/// `val` only stopped `mutv` and `eval … in`.
+#[test]
+fn a_val_cannot_be_defined_again() {
+    for second in [
+        "val a = 2;",
+        "var a = 2;",
+        "mutv a = 2;",
+        "eval '1 + 1' in a;",
+    ] {
+        assert!(
+            matches!(
+                run(&["val a = 1;", second], ""),
+                Err(TextForgeErrorCode::NonMutableVariableError(_))
+            ),
+            "{second}"
+        );
+    }
+    // A `var` can be defined again, and so can a name never used by `val`.
+    assert_eq!(ok(&["var a = 1;", "var a = 2;", "ate {{a}};"], ""), "2");
+    assert_eq!(ok(&["var a = 1;", "val a = 2;", "ate {{a}};"], ""), "2");
+    // Each run starts with a fresh context, so a `val` does not leak.
+    let mut processor = TextForgeProcessor::new();
+    let id = processor.add_transform(vec![read_from_text("val a = 1;").unwrap()]);
+    for _ in 0..2 {
+        assert_eq!(processor.process_all(&id, "x").unwrap(), "x");
+    }
+}

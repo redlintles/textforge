@@ -68,6 +68,7 @@ impl InstructionMethods for Val {
             other => VarValues::try_from(other.clone())?,
         };
 
+        context.check_not_immutable(&self.val_name)?;
         context.add_var(
             &self.val_name,
             VarEntry {

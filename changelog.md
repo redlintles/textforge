@@ -51,6 +51,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `txf --debug` prints only the trace; the final text is the last step's
   `After:`. Before, the result was printed again after the trace. With
   `--output` the result is still written to the file.
+- A variable defined with `val` cannot be defined again with `val` or `var`
+  (`NonMutableVariableError`); before, the second definition replaced it, so
+  `val` only stopped `mutv` and `eval … in`. Variables have no scopes: a `val`
+  inside `iter`, or in a block run more than once, now fails from the second
+  time and must be a `var`.
 - `rev` keeps `\r\n` line breaks in order: `ab\r\ncd` becomes `dc\r\nba`
   (before: `dc\n\rba`, which is not a Windows line break).
 - `jcmc` and `jpsc` lowercase each word before capitalizing it, like `jkbc`

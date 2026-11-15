@@ -55,8 +55,11 @@ A variable name is a letter or `_` followed by letters, digits or `_`
 `ValidationError` (`var a-b = 1;`, `var 1a = 1;`); up to 0.3.1 they accepted
 it, but `{{a-b}}` could never read it.
 
-Defining a name that already exists replaces it, also when it was a `val`:
-`val` only prevents `mutv` and `eval … in` from changing the value.
+Defining a name again with `var` or `val` replaces it, unless it was defined
+with `val`: a `val` cannot be defined again, changed with `mutv` or written by
+`eval … in` (`NonMutableVariableError`). Variables have no scopes, so a `val`
+inside `iter`, or in a block run more than once, fails from the second time;
+use `var` there. Up to 0.3.1 a second `val` or `var` replaced a `val`.
 
 ### Expressions
 

@@ -210,10 +210,9 @@ mod tests {
     }
 
     #[test]
-    fn transform_redeclaring_existing_name_overwrites_it() {
-        // add_var inserts unconditionally, so `var` on a name already
-        // used by a `val` (immutable) simply overwrites it
-        // and the new entry is mutable.
+    fn transform_cannot_redefine_a_val() {
+        // Up to 0.3.1 `var` over a `val` replaced it, so `val` was not
+        // immutable at all. It is now an error and the value is kept.
         let mut ctx = GlobalExecutionContext::new();
         ctx.add_var(
             "n",
@@ -231,10 +230,29 @@ mod tests {
         ])
         .unwrap();
 
-        t.transform("input".into(), Some(&mut ctx)).unwrap();
+        let error = t.transform("input".into(), Some(&mut ctx)).unwrap_err();
+        assert!(matches!(
+            error.error_code,
+            TextForgeErrorCode::NonMutableVariableError(_)
+        ));
 
         let n = ctx.get_var("n").unwrap();
-        assert!(matches!(&n.value, VarValues::String(s) if s == "new"));
-        assert!(n.mutable);
+        assert!(matches!(&n.value, VarValues::String(s) if s == "old"));
+        assert!(!n.mutable);
+    }
+
+    #[test]
+    fn transform_redefining_a_var_replaces_it() {
+        let mut ctx = GlobalExecutionContext::new();
+        for value in ["old", "new"] {
+            let mut t = Var::default();
+            t.set_params(&[
+                TextForgeParamTypes::String("n".to_string()),
+                TextForgeParamTypes::String(value.to_string()),
+            ])
+            .unwrap();
+            t.transform("input".into(), Some(&mut ctx)).unwrap();
+        }
+        assert!(matches!(&ctx.get_var("n").unwrap().value, VarValues::String(s) if s == "new"));
     }
 }

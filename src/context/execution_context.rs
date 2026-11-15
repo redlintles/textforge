@@ -267,6 +267,22 @@ impl GlobalExecutionContext {
         }
     }
 
+    /// Fail when `name` was defined with `val`: a `val` cannot be defined
+    /// again, by `val` or `var`. Up to 0.3.1 a second definition replaced it,
+    /// so `val` only stopped `mutv` and `eval … in`.
+    pub(crate) fn check_not_immutable(&self, name: &str) -> Result<(), TextForgeError> {
+        match self.variables.get(name) {
+            Some(entry) if !entry.mutable => Err(TextForgeError::new(
+                TextForgeErrorCode::NonMutableVariableError(
+                    format!("the variable `{name}` cannot be defined again: it was defined with `val`; define it with `var` where it is first defined to make it mutable").into(),
+                ),
+                "",
+                name.to_owned(),
+            )),
+            _ => Ok(()),
+        }
+    }
+
     /// Set the directory relative paths of `wtf`, `apf`, `ppf` and `inf`
     /// start from: the directory of the pipeline file.
     pub(crate) fn set_base_dir(&mut self, base_dir: Option<Arc<Path>>) {
@@ -474,7 +490,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
         } else {
             Err(TextForgeError::new(
                 TextForgeErrorCode::NonMutableVariableError(
-                    format!("the variable `{var_id}` cannot be changed: it was defined with `val`; define it with `var` to make it mutable").into(),
+                    format!("the variable `{var_id}` cannot be changed: it was defined with `val`; define it with `var` where it is first defined to make it mutable").into(),
                 ),
                 "",
                 var_id.to_string(),
