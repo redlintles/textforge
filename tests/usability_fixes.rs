@@ -255,3 +255,37 @@ fn index_zero_inserts_at_the_start_of_the_text() {
     let line = format!("inf '{}' 0;", piece.display());
     assert_eq!(ok(&[line.as_str()], "ab"), "+ab");
 }
+
+// --- Replacement templates --------------------------------------------------
+
+/// Before: `rlw` and `rnw` inserted the replacement as written, so `$1` was
+/// literal there while `raw`, `rfw` and `rcw` inserted the capture group.
+#[test]
+fn every_replace_instruction_expands_capture_groups() {
+    let input = "a1 b2 c3";
+    for (line, expected) in [
+        ("raw '(\\w)(\\d)' '$2$1';", "1a 2b 3c"),
+        ("rfw '(\\w)(\\d)' '$2$1';", "1a b2 c3"),
+        ("rcw '(\\w)(\\d)' '$2$1' 2;", "1a 2b c3"),
+        ("rlw '(\\w)(\\d)' '$2$1';", "a1 b2 3c"),
+        ("rnw '(\\w)(\\d)' '$2$1' 1;", "a1 2b c3"),
+        ("rlw '(?<l>\\w)(?<d>\\d)' '${d}${l}';", "a1 b2 3c"),
+        ("rnw '(?<l>\\w)(?<d>\\d)' '${d}${l}' 0;", "1a b2 c3"),
+    ] {
+        assert_eq!(ok(&[line], input), expected, "{line}");
+    }
+    // `$$` is a literal `$` in all five.
+    for line in [
+        "raw b '$$5';",
+        "rfw b '$$5';",
+        "rcw b '$$5' 1;",
+        "rlw b '$$5';",
+        "rnw b '$$5' 0;",
+    ] {
+        assert_eq!(ok(&[line], "abc"), "a$5c", "{line}");
+    }
+    // Without a match the text is unchanged.
+    for line in ["rlw z '$1';", "rnw z '$1' 0;", "rnw a '$1' 9;"] {
+        assert_eq!(ok(&[line], "abc"), "abc", "{line}");
+    }
+}

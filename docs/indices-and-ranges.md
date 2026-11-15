@@ -73,11 +73,11 @@ instruction (`klm`, `dlm`), which never see the terminator.
 
 ## `$` in replacement text
 
-The replacement of `raw`, `rfw` and `rcw` is a regex replacement template:
-`$1`, `$name` and `${name}` insert capture groups. **`rlw` and `rnw` do not
-expand it**: they insert the replacement exactly as written, so
-`rlw '(a)' '[$1]'` writes `[$1]` where `raw` writes the captured text. This
-difference is known and kept for compatibility.
+The replacement of `raw`, `rfw`, `rlw`, `rnw`, `rcw` and `rmapd` is a regex
+replacement template: `$1`, `$name` and `${name}` insert capture groups. Up to
+0.3.1, `rlw` and `rnw` inserted the replacement as written, so
+`rlw '(a)' '[$1]'` wrote `[$1]`; now it writes the captured text, as `raw`
+does.
 
 | Written | Inserts |
 |---|---|
@@ -86,6 +86,6 @@ difference is known and kept for compatibility.
 | `$5.00` | group 5 (empty when there is none), then `.00` |
 | `$1x` | the group **named** `1x` (empty); write `${1}x` |
 
-To insert a price with `raw`, `rfw` or `rcw`, write `raw price '$$5.00';`; with
-`rlw` and `rnw` write `$5.00`. The same applies when the replacement comes from
+To insert a price, write `raw price '$$5.00';`, in any of these instructions.
+The same applies when the replacement comes from
 a variable.

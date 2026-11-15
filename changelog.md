@@ -33,6 +33,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   other indices are unchanged (`ins 1` is still after the second character),
   which leaves no index for the position between the first and second
   characters.
+- `rlw` and `rnw` expand the replacement like `raw`, `rfw` and `rcw`: `$1` and
+  `${name}` insert capture groups and `$$` is a literal `$`. Before, they
+  inserted the replacement as written, although their documentation said `$1`
+  referred to a capture group. A pipeline that writes a literal `$` with
+  `rlw` or `rnw` must now write `$$`.
 - `jcmc` lowercases the first letter of the result: `Hello World` becomes
   `helloWorld` (before: `HelloWorld`).
 - `txf`:
@@ -70,10 +75,9 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 
 - Replacing leaves the text unchanged when nothing matches, `rnw` included
   (a match number is not an index).
-- The order of arguments differs between `ins` and `inf`; `$` in a replacement
-  inserts a capture group in `raw`, `rfw` and `rcw` but is literal in `rlw` and
-  `rnw`; `ppjn` resolves paths from the pipeline file and the file
-  instructions from the working directory. Changing any of these breaks
+- The order of arguments differs between `ins` and `inf`; `ppjn` resolves
+  paths from the pipeline file and the file instructions from the working
+  directory. Changing any of these breaks
   existing pipelines. They are described in `docs/indices-and-ranges.md`.
 
 ## 0.3.1 (2026-11-15)

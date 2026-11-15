@@ -15,7 +15,10 @@ use crate::{tokens::InstructionMethods, utils::errors::TextForgeError};
 use crate::parser::params::TextForgeParamTypes;
 /// `rnw {pattern} {text} {n};` — Replace the `n`th match.
 ///
-/// Replace the `nth`` ocurrency of `pattern` in `input` with `text_to_replace`
+/// Replace the `n`th occurrence (base 0) of `pattern` in `input` with
+/// `text_to_replace`. The text is unchanged when there is no match `n`. As in
+/// `raw`, the replacement is a template: `$1` and `${name}` insert capture
+/// groups, `$$` is a literal `$`.
 ///
 /// See Also:
 ///
@@ -32,13 +35,18 @@ use crate::parser::params::TextForgeParamTypes;
 /// let token = Rnw::new(&"a", "b", 2).unwrap();
 ///
 /// assert_eq!(token.transform("aaaaa".into(),None).unwrap().to_string(), "aabaa");
+///
+/// let groups = Rnw::new(&"(\\w)(\\d)", "$2$1", 1).unwrap();
+/// assert_eq!(groups.transform("a1 b2 c3".into(),None).unwrap().to_string(), "a1 2b c3");
 /// ```
 ///
 #[derive(Clone, Debug)]
 pub struct Rnw {
     /// The regular expression to match.
     pub pattern: Regex,
-    /// The replacement text (`$1` refers to a capture group).
+    /// The replacement text: a regex replacement template, where `$1` and
+    /// `${name}` insert capture groups and `$$` is a literal `$` (so a price
+    /// is written `$$5.00`; `$5.00` would insert group 5).
     pub text_to_replace: String,
     /// Which match to replace (the first is 1).
     pub index: usize,
@@ -96,23 +104,22 @@ impl InstructionMethods for Rnw {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut idx = None;
-
-        for (count, m) in self.pattern.find_iter(input.as_ref()).enumerate() {
-            if count == self.index {
-                idx = Some((m.start(), m.end()));
-                break;
-            }
-        }
-
-        if let Some((start, end)) = idx {
-            return Ok(crate::utils::allocation::replace(
-                input,
-                start..end,
-                &self.text_to_replace,
-            ));
-        }
-        Ok(input)
+        // No match number `n`: the text is returned as it is.
+        let Some(captures) = self.pattern.captures_iter(input.as_ref()).nth(self.index) else {
+            return Ok(input);
+        };
+        // The replacement is a template, as in `raw`, `rfw` and `rcw`: `$1`
+        // inserts a capture group and `$$` a literal `$`. Up to 0.3.1 it was
+        // inserted as written.
+        let range = captures.get(0).map_or(0..0, |m| m.range());
+        let mut replacement = String::new();
+        captures.expand(&self.text_to_replace, &mut replacement);
+        drop(captures);
+        Ok(crate::utils::allocation::replace(
+            input,
+            range,
+            &replacement,
+        ))
     }
     fn get_string_repr(&self) -> &'static str {
         "rnw"

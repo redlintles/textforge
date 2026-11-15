@@ -39,7 +39,9 @@ pub struct Rcw {
     pub pattern: Regex,
     /// How many matches to replace.
     pub count: usize,
-    /// The replacement text (`$1` refers to a capture group).
+    /// The replacement text: a regex replacement template, where `$1` and
+    /// `${name}` insert capture groups and `$$` is a literal `$` (so a price
+    /// is written `$$5.00`; `$5.00` would insert group 5).
     pub text_to_replace: String,
     params: Vec<TextForgeParamTypes>,
 }
