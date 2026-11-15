@@ -51,6 +51,8 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `txf --debug` prints only the trace; the final text is the last step's
   `After:`. Before, the result was printed again after the trace. With
   `--output` the result is still written to the file.
+- `rev` keeps `\r\n` line breaks in order: `ab\r\ncd` becomes `dc\r\nba`
+  (before: `dc\n\rba`, which is not a Windows line break).
 - `jcmc` lowercases the first letter of the result: `Hello World` becomes
   `helloWorld` (before: `HelloWorld`).
 - `txf`:
