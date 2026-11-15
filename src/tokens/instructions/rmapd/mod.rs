@@ -41,7 +41,9 @@ impl InstructionMethods for Rmapd {
             .params
             .iter()
             .filter_map(|p| match p {
-                TextForgeParamTypes::String(s) => Some(shell_words::quote(s).into_owned()),
+                TextForgeParamTypes::String(s) => {
+                    Some(crate::text::line_parser::quote(s).into_owned())
+                }
                 _ => None,
             })
             .collect();

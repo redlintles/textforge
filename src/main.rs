@@ -374,7 +374,7 @@ mod textforge_tests {
             let parser = build_cli();
             let c = "txf --file ./instructions.textforgebc --input ./example.txt --output output.txt --debug --mode b --read-mode line";
 
-            let arg_vec = shell_words::split(c).unwrap();
+            let arg_vec: Vec<&str> = c.split_whitespace().collect();
 
             let m = parser.try_get_matches_from(arg_vec).unwrap();
 
@@ -401,7 +401,7 @@ mod textforge_tests {
             let c =
                 "txf -f ./instructions.textforgebc -i ./example.txt -o output.txt -d -m b -r line";
 
-            let arg_vec = shell_words::split(c).unwrap();
+            let arg_vec: Vec<&str> = c.split_whitespace().collect();
 
             let m = parser.try_get_matches_from(arg_vec).unwrap();
 

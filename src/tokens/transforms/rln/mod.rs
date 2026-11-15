@@ -56,7 +56,9 @@ impl InstructionMethods for Rln {
         let mut parts = vec![self.get_string_repr().to_owned()];
         for parameter in &self.params {
             parts.push(match parameter {
-                TextForgeParamTypes::String(value) => shell_words::quote(value).into_owned(),
+                TextForgeParamTypes::String(value) => {
+                    crate::text::line_parser::quote(value).into_owned()
+                }
                 TextForgeParamTypes::Usize(value) => value.to_string(),
                 _ => String::new(),
             });

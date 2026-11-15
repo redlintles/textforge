@@ -7,6 +7,7 @@ use std::{
 use crate::{
     globals::table::{QuerySource, QueryTarget, TOKEN_TABLE, TargetValue},
     parser::{params::TextForgeParamTypes, resolve_var::TokenWrapper},
+    text::line_parser::split_line,
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
         validations::check_file_path,
@@ -37,15 +38,7 @@ fn parse_line(line: &str) -> Result<TokenWrapper, TextForgeError> {
             "",
         )
     })?;
-    let chunks = shell_words::split(body).map_err(|_| {
-        TextForgeError::new(
-            TextForgeErrorCode::TextParsingError(
-                "a quoted parameter is not closed: check the quotes on this line".into(),
-            ),
-            "",
-            "",
-        )
-    })?;
+    let chunks = split_line(body)?;
 
     let identifier = chunks.first().ok_or_else(|| {
         TextForgeError::new(

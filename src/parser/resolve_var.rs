@@ -618,18 +618,11 @@ impl TokenWrapper {
                                 "", name.clone(),
                             ));
                         }
-                        shell_words::quote(&reference).into_owned()
+                        crate::text::line_parser::quote(&reference).into_owned()
                     }
                     ValType::Literal(TextForgeParamTypes::String(value)) => {
-                        if value.contains(['\n', '\r']) {
-                            return Err(TextForgeError::new(
-                                TextForgeErrorCode::SerializationError(
-                                    "a text parameter contains a line break, which the one-instruction-per-line text format cannot hold; save the pipeline as bytecode to keep multi-line values".into(),
-                                ),
-                                "", wrapper.get_string_repr(),
-                            ));
-                        }
-                        shell_words::quote(value).into_owned()
+                        // Line breaks are written as escapes in double quotes.
+                        crate::text::line_parser::quote(value).into_owned()
                     }
                 };
                 fields.push(value);

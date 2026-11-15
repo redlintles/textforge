@@ -111,7 +111,8 @@ fn unresolved_interpolation_is_serializable_but_cannot_execute_directly() {
     for expression in ["{{form}}", "n{{suffix}}", "[[ form ]]"] {
         let token = Unorm::new(expression).unwrap();
         let line = token.to_textforge_line();
-        let words = shell_words::split(line.trim_end_matches([';', '\n'])).unwrap();
+        let words =
+            crate::text::line_parser::split_line(line.trim_end_matches([';', '\n'])).unwrap();
         assert_eq!(words, vec!["unorm", expression]);
         let error = token.transform("é".into(), None).unwrap_err();
         assert!(matches!(

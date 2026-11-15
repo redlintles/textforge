@@ -75,7 +75,7 @@ impl InstructionMethods for Unorm {
             Some(TextForgeParamTypes::String(mode)) => mode.as_str(),
             _ => "nfc",
         };
-        format!("unorm {};\n", shell_words::quote(mode)).into()
+        format!("unorm {};\n", crate::text::line_parser::quote(mode)).into()
     }
 
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
