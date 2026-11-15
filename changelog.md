@@ -28,6 +28,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - Line ranges clamp an end past the last line, like character and word
   ranges: `dlni 2 99;`, `slnc 2 99;` and `onlni 2 99 apply …;` reach the last
   line instead of failing. The start must still exist.
+- `ins` and `inf` with index `0` insert at the start of the text; before, they
+  inserted after the first character, so the start could not be reached. The
+  other indices are unchanged (`ins 1` is still after the second character),
+  which leaves no index for the position between the first and second
+  characters.
 - `jcmc` lowercases the first letter of the result: `Hello World` becomes
   `helloWorld` (before: `HelloWorld`).
 - `txf`:
@@ -63,11 +68,13 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 
 ### Not changed (documented instead)
 
-- `rnw` with a match number that does not exist leaves the text unchanged;
-  `ins`/`inf` insert after a character and cannot insert at the start; the
-  order of arguments differs between `ins` and `inf`; `$` in a replacement
-  inserts a capture group. Changing any of these breaks existing pipelines.
-  They are described in `docs/indices-and-ranges.md`.
+- Replacing leaves the text unchanged when nothing matches, `rnw` included
+  (a match number is not an index).
+- The order of arguments differs between `ins` and `inf`; `$` in a replacement
+  inserts a capture group in `raw`, `rfw` and `rcw` but is literal in `rlw` and
+  `rnw`; `ppjn` resolves paths from the pipeline file and the file
+  instructions from the working directory. Changing any of these breaks
+  existing pipelines. They are described in `docs/indices-and-ranges.md`.
 
 ## 0.3.1 (2026-11-15)
 

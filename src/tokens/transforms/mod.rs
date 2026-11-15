@@ -47,11 +47,11 @@ pub mod emj;
 pub mod htmle;
 /// `htmlu;` — Unescape HTML entities.
 pub mod htmlu;
-/// `inf {file} {index};` — Insert the contents of `file` after the character at `index`.
+/// `inf {file} {index};` — Insert the contents of `file` at the start (index 0) or after the character at `index`.
 pub mod inf;
 /// `inl {line} {text};` — Insert a line before `line` (one past the last appends).
 pub mod inl;
-/// `ins {index} {text};` — Insert `text` after the character at `index`.
+/// `ins {index} {text};` — Insert `text` at the start (index 0) or after the character at `index`.
 pub mod ins;
 /// `jcmc;` — Join the words as camelCase.
 pub mod jcmc;

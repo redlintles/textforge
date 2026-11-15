@@ -39,7 +39,7 @@ fn issue_reproductions_now_insert_control_characters() {
     assert_eq!(run(&[r#"raw "b" "\n";"#], input).unwrap(), "a \n\tc\nd\n");
     assert_eq!(run(&[r#"atb "\n";"#], input).unwrap(), "\na b\tc\nd\n");
     assert_eq!(run(&[r#"atb "\t";"#], input).unwrap(), "\ta b\tc\nd\n");
-    assert_eq!(run(&[r#"ins 0 "\n";"#], input).unwrap(), "a\n b\tc\nd\n");
+    assert_eq!(run(&[r#"ins 0 "\n";"#], input).unwrap(), "\na b\tc\nd\n");
     assert_eq!(
         run(&[r#"atb "banana\nlaranja";"#], "").unwrap(),
         "banana\nlaranja"

@@ -21,7 +21,7 @@
 //! |---|---|---|
 //! | [`atb`](transforms::atb::Atb) | `atb {text};` | Add `text` to the beginning. |
 //! | [`ate`](transforms::ate::Ate) | `ate {text};` | Add `text` to the end. |
-//! | [`ins`](transforms::ins::Ins) | `ins {index} {text};` | Insert `text` after the character at `index`. |
+//! | [`ins`](transforms::ins::Ins) | `ins {index} {text};` | Insert `text` at the start (index 0) or after the character at `index`. |
 //! | [`padl`](transforms::padl::Padl) | `padl {text} {length};` | Pad on the left with `text` up to `length` characters. |
 //! | [`padr`](transforms::padr::Padr) | `padr {text} {length};` | Pad on the right with `text` up to `length` characters. |
 //! | [`rpt`](transforms::rpt::Rpt) | `rpt {times};` | Repeat the text `times` times. |
@@ -127,7 +127,7 @@
 //! | [`wtf`](transforms::wtf::Wtf) | `wtf {file};` | Write the text to `file` and keep it unchanged. |
 //! | [`apf`](transforms::apf::Apf) | `apf {file};` | Append the contents of `file`. |
 //! | [`ppf`](transforms::ppf::Ppf) | `ppf {file};` | Prepend the contents of `file`. |
-//! | [`inf`](transforms::inf::Inf) | `inf {file} {index};` | Insert the contents of `file` after the character at `index`. |
+//! | [`inf`](transforms::inf::Inf) | `inf {file} {index};` | Insert the contents of `file` at the start (index 0) or after the character at `index`. |
 //! | [`ppjn`](instructions::ppjn::Ppjn) | `ppjn {pipeline};` | Run the pipeline in another file on the text. |
 //!
 //! ### Variables

@@ -2491,7 +2491,7 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
-    /// INF — Insert the contents of a UTF-8 file after the character at
+    /// INF — Insert the contents of a UTF-8 file at the start (index 0) or after the character at
     /// `index` (base 0), with the index rules of [`insert`](Self::insert).
     ///
     /// ```
@@ -2500,7 +2500,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// std::fs::write(&path, "-").unwrap();
     /// let mut processor = TextForgeProcessor::new();
     /// let id = processor.create_pipeline().insert_file(path.to_string_lossy().as_ref(), 0)?.build()?;
-    /// assert_eq!(processor.process_all(&id, "ab")?, "a-b");
+    /// assert_eq!(processor.process_all(&id, "ab")?, "-ab");
     /// # std::fs::remove_file(&path).unwrap();
     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
     /// ```

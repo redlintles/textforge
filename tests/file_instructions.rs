@@ -77,7 +77,7 @@ fn file_instructions_inside_sections_see_only_the_section() {
     let id = register(&mut processor, &lines);
     assert_eq!(
         processor.process_all(&id, "ab\ncd\n").unwrap(),
-        "a+b+\ncd\n"
+        "+ab+\ncd\n"
     );
     assert_eq!(std::fs::read_to_string(&section).unwrap(), "cd");
 }
@@ -97,7 +97,7 @@ fn text_and_bytecode_round_trips_keep_the_instructions() {
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
     let expected = processor.process_all(&id, "ab").unwrap();
-    assert_eq!(expected, "aébé");
+    assert_eq!(expected, "éabé");
 
     let text_path = directory.path().join("round.textforge");
     std::fs::write(&text_path, "").unwrap();
@@ -237,7 +237,7 @@ fn builders_and_portable_plans_match_the_text_form() {
         .unwrap()
         .build()
         .unwrap();
-    assert_eq!(processor.process_all(&built, "ab").unwrap(), "a!b!");
+    assert_eq!(processor.process_all(&built, "ab").unwrap(), "!ab!");
 
     let mut portable = PortableProcessor::new();
     let id = portable
@@ -250,7 +250,7 @@ fn builders_and_portable_plans_match_the_text_form() {
             ),
         ])
         .unwrap();
-    assert_eq!(portable.process_all(&id, "ab").unwrap(), "a!b!");
+    assert_eq!(portable.process_all(&id, "ab").unwrap(), "!ab!");
     assert_eq!(std::fs::read_to_string(&out).unwrap(), "ab");
 }
 

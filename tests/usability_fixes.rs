@@ -233,3 +233,25 @@ fn camel_case_starts_lowercase() {
     assert_eq!(ok(&["jcmc;"], "Hello World"), "helloWorld");
     assert_eq!(ok(&["jpsc;"], "hello world"), "HelloWorld");
 }
+
+// --- `ins` and `inf` at index 0 ---------------------------------------------
+
+/// Before: index 0 inserted after the first character, so `ins` could not
+/// write at the start of the text.
+#[test]
+fn index_zero_inserts_at_the_start_of_the_text() {
+    assert_eq!(ok(&["ins 0 X;"], "banana"), "Xbanana");
+    assert_eq!(ok(&["ins 0 X;"], ""), "X");
+    assert_eq!(ok(&["ins 0 X;"], "éa"), "Xéa");
+    // Other indices are unchanged: after the character at that position.
+    assert_eq!(ok(&["ins 1 X;"], "banana"), "baXnana");
+    assert_eq!(ok(&["ins 5 X;"], "banana"), "bananaX");
+    assert_eq!(ok(&["ins 6 X;"], "banana"), "bananaX");
+    assert!(run(&["ins 7 X;"], "banana").is_err());
+
+    let directory = tempfile::tempdir().unwrap();
+    let piece = directory.path().join("piece.txt");
+    std::fs::write(&piece, "+").unwrap();
+    let line = format!("inf '{}' 0;", piece.display());
+    assert_eq!(ok(&[line.as_str()], "ab"), "+ab");
+}

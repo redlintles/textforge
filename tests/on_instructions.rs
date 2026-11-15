@@ -177,7 +177,7 @@ fn indices_inside_are_relative_to_the_section() {
         run("onln 3 apply dlf;", "abc\ndef\nghi\n").unwrap(),
         "abc\ndef\nhi\n"
     );
-    assert_eq!(run("onln 2 apply ins 0 X;", "ab\ncd").unwrap(), "ab\ncXd");
+    assert_eq!(run("onln 2 apply ins 0 X;", "ab\ncd").unwrap(), "ab\nXcd");
     assert_eq!(run("onck 2 4 apply tucc 0 1;", "abcdef").unwrap(), "abCDef");
 }
 

@@ -11,9 +11,11 @@ use crate::{
     tokens::InstructionMethods,
     utils::errors::{TextForgeError, TextForgeErrorCode},
 };
-/// `ins {index} {text};` — Insert `text` after the character at `index`.
+/// `ins {index} {text};` — Insert `text` at the start (index 0) or after the character at `index`.
 ///
-/// Inserts `text` after `index` position in `input`
+/// Index `0` inserts `text` at the start of `input`; any other index inserts
+/// it after the character at that position (base 0). An index equal to the
+/// number of characters appends.
 ///
 /// If index does not exists in current string, `TextForgeError` is returned
 ///
@@ -25,6 +27,9 @@ use crate::{
 /// let token = Ins::new(2,"orange");
 ///
 /// assert_eq!(token.transform("banana".into(),None).unwrap().to_string(), "banorangeana");
+///
+/// let at_start = Ins::new(0,"orange");
+/// assert_eq!(at_start.transform("banana".into(),None).unwrap().to_string(), "orangebanana");
 /// ```
 #[derive(Clone, Default)]
 pub struct Ins {
@@ -97,9 +102,10 @@ impl InstructionMethods for Ins {
     }
 }
 
-/// Insert `text` after the character at `index` (base 0), as `ins` does. An
-/// index equal to the character count appends; a larger one is an error. Shared
-/// with `inf`, so both instructions follow exactly the same index rules.
+/// Insert `text` at the start of the text when `index` is 0, and after the
+/// character at `index` (base 0) otherwise, as `ins` does. An index equal to
+/// the character count appends; a larger one is an error. Shared with `inf`, so
+/// both instructions follow exactly the same index rules.
 pub(crate) fn insert_after_char<'a>(
     input: Cow<'a, str>,
     index: usize,
@@ -121,11 +127,18 @@ pub(crate) fn insert_after_char<'a>(
             )
         );
     }
-    let byte_index = input
-        .char_indices()
-        .nth(index + 1)
-        .map(|(i, _)| i)
-        .unwrap_or(input.len());
+    // Index 0 is the start of the text. Any other index inserts after the
+    // character at that position. Before 0.3.2, index 0 inserted after the
+    // first character, so the start of the text could not be reached.
+    let byte_index = if index == 0 {
+        0
+    } else {
+        input
+            .char_indices()
+            .nth(index + 1)
+            .map(|(i, _)| i)
+            .unwrap_or(input.len())
+    };
 
     Ok(crate::utils::allocation::replace(
         input,

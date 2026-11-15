@@ -40,8 +40,8 @@ mod tests {
     }
 
     #[test]
-    fn transform_index_zero_inserts_after_first_char() {
-        // index 0 -> after 'b'
+    fn transform_index_zero_inserts_at_the_start() {
+        // index 0 -> before 'b' (up to 0.3.1: after it)
         let t = Ins::new(0, "X");
         let mut ctx = GlobalExecutionContext::new();
 
@@ -49,7 +49,7 @@ mod tests {
             t.transform("banana".into(), Some(&mut ctx))
                 .unwrap()
                 .to_string(),
-            "bXanana"
+            "Xbanana"
         );
     }
 
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn transform_unicode_safe_insertion_boundary() {
         // input: "ábc" (chars: á b c)
-        // index 0 => after 'á'
+        // index 0 => at the start; index 1 => after 'b', never inside 'á'
         let t = Ins::new(0, "X");
         let mut ctx = GlobalExecutionContext::new();
 
@@ -94,7 +94,7 @@ mod tests {
             t.transform("ábc".into(), Some(&mut ctx))
                 .unwrap()
                 .to_string(),
-            "áXbc"
+            "Xábc"
         );
     }
 

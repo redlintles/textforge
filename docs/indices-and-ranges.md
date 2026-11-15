@@ -29,15 +29,22 @@ Ranges include both ends (`dlc 1 3` deletes three characters) and
 Line ranges clamp their end since 0.3.2; before, `dlni 2 99` was an error
 while `dlc 2 99` was not.
 
+### Replacing never fails for lack of a match
+
+`raw`, `rfw`, `rlw`, `rnw`, `rcw` and `rmapd` leave the text unchanged when
+nothing matches, and `rnw {pattern} {text} {n}` does the same when there is no
+match number `n`: `n` counts matches, not positions in the text, so it is not
+an index in the sense of the table above.
+
 ### Exceptions
 
-- **`rnw {pattern} {text} {n}`** leaves the text unchanged when there is no
-  match `n`, like `rfw`, `rlw` and `raw` when nothing matches. It is the one
-  single index that is not an error.
-- **`ins {index} {text}`** and **`inf {file} {index}`** insert *after* the
-  character at `index`, so they cannot insert before the first character (use
-  `atb` or `ppf`). For a text of `n` characters, `index` may be `0..=n`; both
-  `n - 1` and `n` append.
+- **`ins {index} {text}`** and **`inf {file} {index}`**: index `0` inserts at
+  the start; any other index inserts *after* the character at that position.
+  For a text of `n` characters, `index` may be `0..=n`; both `n - 1` and `n`
+  append. The position between the first and second character has no index of
+  its own (`ins 0` is before the first character, `ins 1` is after the second);
+  reach it with `rfw` and a pattern, or `onck 0 0 apply ate ...`. Up to 0.3.1,
+  `0` inserted after the first character and the start was unreachable.
 - **`inl {line} {text}`** accepts the line count plus one, which appends.
 
 ## Argument order
@@ -66,8 +73,11 @@ instruction (`klm`, `dlm`), which never see the terminator.
 
 ## `$` in replacement text
 
-The replacement of `raw`, `rfw`, `rlw`, `rnw`, `rcw` and `rmapd` is a regex
-replacement template: `$1`, `$name` and `${name}` insert capture groups.
+The replacement of `raw`, `rfw` and `rcw` is a regex replacement template:
+`$1`, `$name` and `${name}` insert capture groups. **`rlw` and `rnw` do not
+expand it**: they insert the replacement exactly as written, so
+`rlw '(a)' '[$1]'` writes `[$1]` where `raw` writes the captured text. This
+difference is known and kept for compatibility.
 
 | Written | Inserts |
 |---|---|
@@ -76,5 +86,6 @@ replacement template: `$1`, `$name` and `${name}` insert capture groups.
 | `$5.00` | group 5 (empty when there is none), then `.00` |
 | `$1x` | the group **named** `1x` (empty); write `${1}x` |
 
-To insert a price, write `raw price '$$5.00';`. The same applies when the
-replacement comes from a variable.
+To insert a price with `raw`, `rfw` or `rcw`, write `raw price '$$5.00';`; with
+`rlw` and `rnw` write `$5.00`. The same applies when the replacement comes from
+a variable.

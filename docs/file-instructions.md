@@ -44,7 +44,7 @@ UTF-8 are distinct `TextForgeError`s that name the path.
 | `wtf` | `wtf {file};` | Write the current text to `file`; the text is unchanged | `write_to_file(path)` |
 | `apf` | `apf {file};` | Append the contents of `file` to the end of the text | `append_file(path)` |
 | `ppf` | `ppf {file};` | Prepend the contents of `file` to the beginning of the text | `prepend_file(path)` |
-| `inf` | `inf {file} {index};` | Insert the contents of `file` after the character at `index` (base 0) | `insert_file(path, index)` |
+| `inf` | `inf {file} {index};` | Insert the contents of `file` at the start (index 0) or after the character at `index` (base 0) | `insert_file(path, index)` |
 
 Opcodes: `wtf` 0x55, `apf` 0x56, `inf` 0x57, `ppf` 0x59. Portable plans use the same
 mnemonics with `Argument::Text` paths and an `Argument::Number` index.
@@ -93,11 +93,12 @@ file is read every time the instruction runs.
 ## `inf` (insert file)
 
 Uses **exactly** the index rules of `ins` (the two share one function): the
-contents go after the character at `index`, counting Unicode scalar values from
-0; an index equal to the character count appends; a larger index is an
-`IndexOutOfRange` error. Like `ins`, it cannot insert before the first
-character; use `ppf` for the beginning and `apf` for the end. The file is read before the index is
-checked, so a file error is reported first.
+contents go at the start when `index` is 0 and otherwise after the character at
+`index`, counting Unicode scalar values from 0; an index equal to the character
+count appends; a larger index is an `IndexOutOfRange` error. The file is read
+before the index is checked, so a file error is reported first. Up to 0.3.1,
+index 0 inserted after the first character, so the start could only be reached
+with `ppf`.
 
 Inside `onln`, `onck` and `onlni`, `inf`'s index is relative to the section,
 and `wtf` writes only the section.
