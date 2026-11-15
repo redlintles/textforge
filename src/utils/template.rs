@@ -16,12 +16,17 @@ use crate::{
     parser::params::TextForgeParamTypes,
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
-        expr::{evaluate_tree, is_literal_brackets, value_to_plain_string},
+        expr::{
+            check_result, describe_eval_error, evaluate_tree, expand_string_escapes,
+            is_literal_brackets, value_to_plain_string,
+        },
     },
 };
 
-/// Stage label of interpolation errors (as in `interpolate_with`).
-const STAGE: &str = "api::expr";
+/// Location of interpolation errors (as in `interpolate_with`): empty, so the
+/// pipeline fills it with the source line of the instruction. Up to 0.3.1 it
+/// was the internal name `api::expr`.
+const STAGE: &str = "";
 
 /// One `[[ ]]` expression with its operator tree built in advance.
 #[derive(Debug)]
@@ -35,14 +40,15 @@ pub(crate) struct CompiledExpr {
 
 impl CompiledExpr {
     pub(crate) fn new(source: &str) -> Self {
-        let tree = evalexpr::build_operator_tree::<DefaultNumericTypes>(source)
-            .map_err(|error| error.to_string());
+        let tree =
+            evalexpr::build_operator_tree::<DefaultNumericTypes>(&expand_string_escapes(source))
+                .map_err(|error| describe_eval_error(&error));
         let constant = tree.as_ref().ok().and_then(|tree| {
             let pure = tree.iter_read_variable_identifiers().next().is_none()
                 && tree.iter_function_identifiers().next().is_none();
             pure.then(|| {
                 tree.eval_with_context(&HashMapContext::<DefaultNumericTypes>::new())
-                    .map_err(|error| error.to_string())
+                    .map_err(|error| describe_eval_error(&error))
             })
         });
         CompiledExpr {
@@ -67,9 +73,10 @@ impl CompiledExpr {
         stage: &'static str,
     ) -> Result<Value, TextForgeError> {
         if let Some(constant) = &self.constant {
-            return constant
+            let value = constant
                 .clone()
-                .map_err(|message| self.error(&message, stage));
+                .map_err(|message| self.error(&message, stage))?;
+            return check_result(value, &self.source);
         }
         let tree = self
             .tree

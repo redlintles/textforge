@@ -58,8 +58,8 @@ impl InstructionMethods for Eval {
 
         let reader = VarReader::new(context, CurrentText::Str(&input));
         let result = match &self.compiled {
-            Some(compiled) => compiled.evaluate(&reader, "eval.transform")?,
-            None => CompiledExpr::new(&self.expr).evaluate(&reader, "eval.transform")?,
+            Some(compiled) => compiled.evaluate(&reader, "")?,
+            None => CompiledExpr::new(&self.expr).evaluate(&reader, "")?,
         };
 
         match context.get_mut_var(&self.target) {

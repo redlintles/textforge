@@ -38,8 +38,36 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   inserted the replacement as written, although their documentation said `$1`
   referred to a capture group. A pipeline that writes a literal `$` with
   `rlw` or `rnw` must now write `$$`.
-- `jcmc` lowercases the first letter of the result: `Hello World` becomes
-  `helloWorld` (before: `HelloWorld`).
+- `inf` takes the index first, like `ins`: `inf {index} {file};` (before:
+  `inf {file} {index};`), and the builder method is `insert_file(index, path)`.
+  A pipeline in the old order fails to parse, and bytecode with `inf` written
+  by 0.3.1 fails to load with "a parameter has the wrong type"; write the
+  pipeline in the new order and compile it again.
+- Relative paths of `wtf`, `apf`, `ppf` and `inf` start from the directory of
+  the pipeline file, like `ppjn` (in a joined pipeline, from the joined
+  file's directory). Before, they started from the working directory, so the
+  same pipeline read or wrote different files depending on where it was run.
+  Pipelines built in code still use the working directory.
+- `txf --debug` prints only the trace; the final text is the last step's
+  `After:`. Before, the result was printed again after the trace. With
+  `--output` the result is still written to the file.
+- The result of an expression in `[[ ]]` or `eval` must be an integer or
+  text: `[[7 / 2.0]]` and `[[1 < 2]]` are `InvalidExprError`s instead of
+  writing `3.5` and `true`, since TextForge has neither floats nor booleans.
+  Comparisons and decimals still work inside an expression
+  (`[[if(a > 1, "yes", "no")]]`).
+- A variable defined with `val` cannot be defined again with `val` or `var`
+  (`NonMutableVariableError`); before, the second definition replaced it, so
+  `val` only stopped `mutv` and `eval … in`. Variables have no scopes: a `val`
+  inside `iter`, or in a block run more than once, now fails from the second
+  time and must be a `var`.
+- `rev` keeps `\r\n` line breaks in order: `ab\r\ncd` becomes `dc\r\nba`
+  (before: `dc\n\rba`, which is not a Windows line break).
+- `jcmc` and `jpsc` lowercase each word before capitalizing it, like `jkbc`
+  and `jsnc`: `HTTP server` becomes `httpServer` and `HttpServer` (before:
+  `hTTPServer` and `HTTPServer`), and `Hello World` becomes `helloWorld`
+  (before: `HelloWorld`). Mixed-case words change too: `iPhone app` becomes
+  `iphoneApp`.
 - `txf`:
   - an empty input still runs the pipeline (`atb`, `apl`, `ppf` produce text
     from nothing); before, the result was always empty;
@@ -68,17 +96,22 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - Variable errors name the right instructions: changing a `val` says it was
   defined with `val` and suggests `var`; a missing variable suggests `var`
   (or `val`), not `mutv`.
+- `\n`, `\t`, `\r` and `\0` inside a quoted text of an expression are the
+  newline, tab, carriage return and NUL characters, as in double-quoted
+  parameters: `ate '[["a\nb"]]';` writes a line break. Before, evalexpr
+  rejected them as illegal escapes.
+- Errors from `[[ ]]` and `eval` name the instruction (`in: ate '[[a + 1]]';`)
+  instead of the internal labels `api::expr` and `eval.transform`, and explain
+  the problem in TextForge's terms (for example "`+` cannot be applied to text
+  and an integer", "the variable `b` does not exist") instead of evalexpr's
+  messages. Error codes are unchanged.
 - The "nested too deeply" error at the top level says how to nest one more
   level with a block.
 
 ### Not changed (documented instead)
 
 - Replacing leaves the text unchanged when nothing matches, `rnw` included
-  (a match number is not an index).
-- The order of arguments differs between `ins` and `inf`; `ppjn` resolves
-  paths from the pipeline file and the file instructions from the working
-  directory. Changing any of these breaks
-  existing pipelines. They are described in `docs/indices-and-ranges.md`.
+  (a match number is not an index). See `docs/indices-and-ranges.md`.
 
 ## Unreleased
 

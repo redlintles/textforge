@@ -286,7 +286,7 @@ The same index, with links to each instruction's documentation, is on
 | `wtf` | `wtf {file};` | Write the text to `file` and keep it unchanged. |
 | `apf` | `apf {file};` | Append the contents of `file`. |
 | `ppf` | `ppf {file};` | Prepend the contents of `file`. |
-| `inf` | `inf {file} {index};` | Insert the contents of `file` at the start (index 0) or after the character at `index`. |
+| `inf` | `inf {index} {file};` | Insert the contents of `file` at the start (index 0) or after the character at `index`. |
 | `ppjn` | `ppjn {pipeline};` | Run the pipeline in another file on the text. |
 
 ### Variables

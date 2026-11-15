@@ -12,7 +12,7 @@ mod tests {
     };
 
     fn token(path: &Path, index: usize) -> Inf {
-        Inf::new(&path.to_string_lossy(), index)
+        Inf::new(index, &path.to_string_lossy())
     }
 
     #[test]
@@ -77,17 +77,18 @@ mod tests {
         let mut token = Inf::default();
         token
             .set_params(&[
-                TextForgeParamTypes::String("a.txt".into()),
                 TextForgeParamTypes::Usize(3),
+                TextForgeParamTypes::String("a.txt".into()),
             ])
             .unwrap();
-        assert_eq!(token.to_textforge_line(), "inf a.txt 3;\n");
+        assert_eq!(token.to_textforge_line(), "inf 3 a.txt;\n");
         assert_eq!(token.get_string_repr(), "inf");
+        // The order up to 0.3.1 (`{file} {index}`) is an error, not a guess.
         assert!(
             token
                 .set_params(&[
+                    TextForgeParamTypes::String("a.txt".into()),
                     TextForgeParamTypes::Usize(3),
-                    TextForgeParamTypes::String("a.txt".into())
                 ])
                 .is_err()
         );

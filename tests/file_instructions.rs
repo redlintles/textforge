@@ -31,7 +31,7 @@ fn a_pipeline_can_save_intermediate_states_and_read_files() {
         format!("wtf {};", quoted(&directory.path().join("trimmed.txt"))),
         "tua;".to_owned(),
         format!("apf {};", quoted(&header)),
-        format!("inf {} 2;", quoted(&header)),
+        format!("inf 2 {};", quoted(&header)),
     ];
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
@@ -71,7 +71,7 @@ fn file_instructions_inside_sections_see_only_the_section() {
     let lines = vec![
         format!("onln 2 apply wtf {};", quoted(&section)),
         format!("onln 1 apply apf {};", quoted(&piece)),
-        format!("onck 0 1 apply inf {} 0;", quoted(&piece)),
+        format!("onck 0 1 apply inf 0 {};", quoted(&piece)),
     ];
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
@@ -92,7 +92,7 @@ fn text_and_bytecode_round_trips_keep_the_instructions() {
     let lines = vec![
         format!("wtf '{}/{{{{__PIPELINE_NAME__}}}}.txt';", out.display()),
         format!("apf {};", quoted(&piece)),
-        format!("inf {} 0;", quoted(&piece)),
+        format!("inf 0 {};", quoted(&piece)),
     ];
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
@@ -137,7 +137,7 @@ fn every_processing_mode_gives_the_same_result_and_files() {
     let lines = vec![
         format!("wtf {};", quoted(&snapshot)),
         format!("apf {};", quoted(&piece)),
-        format!("inf {} 1;", quoted(&piece)),
+        format!("inf 1 {};", quoted(&piece)),
     ];
     let input = "linha 1\r\nlinha 2";
     let expected = "li[peça 🍌]nha 1\r\nlinha 2[peça 🍌]";
@@ -233,7 +233,7 @@ fn builders_and_portable_plans_match_the_text_form() {
         .unwrap()
         .append_file(piece_text.as_str())
         .unwrap()
-        .insert_file(piece_text.as_str(), 0)
+        .insert_file(0, piece_text.as_str())
         .unwrap()
         .build()
         .unwrap();
@@ -246,7 +246,7 @@ fn builders_and_portable_plans_match_the_text_form() {
             InstructionSpec::new("apf".into(), vec![Argument::Text(piece_text.clone())]),
             InstructionSpec::new(
                 "inf".into(),
-                vec![Argument::Text(piece_text), Argument::Number(0)],
+                vec![Argument::Number(0), Argument::Text(piece_text)],
             ),
         ])
         .unwrap();
@@ -303,4 +303,80 @@ fn ppf_prepends_through_the_dsl_builder_portable_bytecode_and_sections() {
         )])
         .unwrap();
     assert_eq!(portable.process_all(&id, "x").unwrap(), "» x");
+}
+
+/// Relative paths of the file instructions start from the directory of the
+/// pipeline file, not from the working directory. Before 0.3.2 they started
+/// from the working directory, unlike `ppjn`, so a pipeline broke after `cd`.
+#[test]
+fn relative_paths_start_from_the_pipeline_file() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    std::fs::create_dir_all(root.join("data")).unwrap();
+    std::fs::create_dir_all(root.join("lib/parts")).unwrap();
+    std::fs::write(root.join("data/head.txt"), "<").unwrap();
+    std::fs::write(root.join("data/tail.txt"), ">").unwrap();
+    std::fs::write(root.join("data/mid.txt"), "|").unwrap();
+    std::fs::write(root.join("lib/parts/lib.txt"), "L").unwrap();
+    // A joined pipeline reads relative to its own file.
+    std::fs::write(root.join("lib/lib.textforge"), "apf parts/lib.txt;\n").unwrap();
+    std::fs::write(
+        root.join("main.textforge"),
+        "ppf data/head.txt;\napf data/tail.txt;\ninf 1 data/mid.txt;\nppjn lib/lib.textforge;\nwtf out/result.txt;\n",
+    )
+    .unwrap();
+    std::fs::create_dir_all(root.join("out")).unwrap();
+
+    // The test's working directory is the crate root, not `root`.
+    assert_ne!(std::env::current_dir().unwrap(), root);
+    let mut processor = TextForgeProcessor::new();
+    let id = processor
+        .get_pipeline_from_file(&root.join("main.textforge"))
+        .unwrap();
+    assert_eq!(processor.process_all(&id, "ab").unwrap(), "<a|b>L");
+    assert_eq!(
+        std::fs::read_to_string(root.join("out/result.txt")).unwrap(),
+        "<a|b>L"
+    );
+
+    // Absolute paths are used as they are.
+    let absolute = root.join("data/head.txt");
+    std::fs::write(
+        root.join("abs.textforge"),
+        format!("apf {};\n", quoted(&absolute)),
+    )
+    .unwrap();
+    let id = processor
+        .get_pipeline_from_file(&root.join("abs.textforge"))
+        .unwrap();
+    assert_eq!(processor.process_all(&id, "x").unwrap(), "x<");
+}
+
+/// Pipelines built in code have no file: their relative paths start from the
+/// working directory.
+#[test]
+fn pipelines_built_in_code_resolve_from_the_working_directory() {
+    let mut processor = TextForgeProcessor::new();
+    let id = register(
+        &mut processor,
+        &["apf tests/data/allocations/piece.txt;".to_string()],
+    );
+    let expected = std::fs::read_to_string("tests/data/allocations/piece.txt").unwrap();
+    assert_eq!(processor.process_all(&id, "").unwrap(), expected);
+}
+
+/// A bytecode pipeline resolves from the directory of the bytecode file.
+#[cfg(feature = "bytecode")]
+#[test]
+fn bytecode_pipelines_resolve_from_their_file() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    std::fs::write(root.join("piece.txt"), "+").unwrap();
+    let mut processor = TextForgeProcessor::new();
+    let id = register(&mut processor, &["apf piece.txt;".to_string()]);
+    let bytecode = root.join("p.textforgebc");
+    std::fs::File::create(&bytecode).unwrap();
+    processor.write_to_bytecode_file(&id, &bytecode).unwrap();
+    let id = processor.read_from_bytecode_file(&bytecode).unwrap();
+    assert_eq!(processor.process_all(&id, "a").unwrap(), "a+");
 }

@@ -5,7 +5,7 @@
 use textforge::{
     api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
     text::reader::read_from_text,
-    utils::errors::TextForgeErrorCode,
+    utils::errors::{TextForgeError, TextForgeErrorCode},
 };
 
 fn run(lines: &[&str], input: &str) -> Result<String, TextForgeErrorCode> {
@@ -232,6 +232,12 @@ fn pipeline_files_accept_a_byte_order_mark_and_the_short_extension() {
 fn camel_case_starts_lowercase() {
     assert_eq!(ok(&["jcmc;"], "Hello World"), "helloWorld");
     assert_eq!(ok(&["jpsc;"], "hello world"), "HelloWorld");
+    // Words in capitals are not copied as they are ("hTTPServer").
+    assert_eq!(ok(&["jcmc;"], "HTTP server"), "httpServer");
+    assert_eq!(ok(&["jpsc;"], "HTTP server"), "HttpServer");
+    assert_eq!(ok(&["jpsc;"], "ÉLAN vital"), "ÉlanVital");
+    // The same rule as jkbc and jsnc, which lowercase everything.
+    assert_eq!(ok(&["jsnc;"], "HTTP server"), "http_server");
 }
 
 // --- `ins` and `inf` at index 0 ---------------------------------------------
@@ -252,7 +258,7 @@ fn index_zero_inserts_at_the_start_of_the_text() {
     let directory = tempfile::tempdir().unwrap();
     let piece = directory.path().join("piece.txt");
     std::fs::write(&piece, "+").unwrap();
-    let line = format!("inf '{}' 0;", piece.display());
+    let line = format!("inf 0 '{}';", piece.display());
     assert_eq!(ok(&[line.as_str()], "ab"), "+ab");
 }
 
@@ -288,4 +294,143 @@ fn every_replace_instruction_expands_capture_groups() {
     for line in ["rlw z '$1';", "rnw z '$1' 0;", "rnw a '$1' 9;"] {
         assert_eq!(ok(&[line], "abc"), "abc", "{line}");
     }
+}
+
+// --- `inf` argument order ---------------------------------------------------
+
+/// Before: `inf {file} {index}`, the reverse of `ins {index} {text}`.
+#[test]
+fn inf_takes_the_index_first_like_ins() {
+    let directory = tempfile::tempdir().unwrap();
+    let piece = directory.path().join("piece.txt");
+    std::fs::write(&piece, "+").unwrap();
+    let path = piece.display().to_string();
+    assert_eq!(ok(&[format!("inf 1 '{path}';").as_str()], "abc"), "ab+c");
+    assert_eq!(ok(&["ins 1 '+';"], "abc"), "ab+c");
+    // The old order is a parsing error, not a silent misread.
+    assert!(run(&[format!("inf '{path}' 1;").as_str()], "abc").is_err());
+}
+
+// --- Expression errors ------------------------------------------------------
+
+/// Before: errors from `[[ ]]` and `eval` were labelled `api::expr` or
+/// `eval.transform` and carried evalexpr's message ("The operator Add was
+/// called with a wrong combination of types: [String, Int]").
+#[test]
+fn expression_errors_name_the_instruction_and_explain_the_problem() {
+    let error = |lines: &[&str]| -> TextForgeError {
+        let mut processor = TextForgeProcessor::new();
+        let id =
+            processor.add_transform(lines.iter().map(|l| read_from_text(l).unwrap()).collect());
+        processor.process_all(&id, "x").unwrap_err()
+    };
+    let e = error(&["var a = 2.5;", "ate '[[a + 1]]';"]);
+    assert_eq!(e.instruction, "ate '[[a + 1]]';");
+    let message = format!("{:?}", e.error_code);
+    assert!(
+        message.contains("`+` cannot be applied to text and an integer"),
+        "{message}"
+    );
+    assert!(!message.contains("Add was called"), "{message}");
+
+    let e = error(&["eval 'missing + 1' in y;"]);
+    assert_eq!(e.instruction, "eval 'missing + 1' in y;");
+    assert!(format!("{:?}", e.error_code).contains("`missing` does not exist"));
+
+    let e = error(&["ate '[[(1 + 2]]';"]);
+    assert!(format!("{:?}", e.error_code).contains("`(` is never closed"));
+    for e in [error(&["ate '[[1 / 0]]';"]), error(&["ate '[[b]]';"])] {
+        assert!(!e.instruction.contains("api::expr") && !e.instruction.contains("eval.transform"));
+    }
+}
+
+/// Before: `\n` inside a quoted text of an expression was evalexpr's
+/// "Illegal escape sequence" error, although `"\n"` works in parameters.
+#[test]
+fn quoted_texts_in_expressions_accept_control_escapes() {
+    assert_eq!(ok(&[r#"ate '[["a\nb"]]';"#], ""), "a\nb");
+    assert_eq!(ok(&[r#"ate '[["a\tb\r\0"]]';"#], ""), "a\tb\r\0");
+    assert_eq!(ok(&[r#"ate '[["q\"\\"]]';"#], ""), "q\"\\");
+    assert_eq!(ok(&[r#"ate '[[len("a\nb")]]';"#], ""), "3");
+    assert_eq!(
+        ok(&[r#"eval '"a" + "\n"' in v;"#, "ate '{{v}}';"], ""),
+        "a\n"
+    );
+    // Outside quotes a backslash is not an escape.
+    assert!(run(&[r#"ate '[[1 \n 2]]';"#], "").is_err());
+    // An unknown escape is still an error, with the valid ones listed.
+    let Err(TextForgeErrorCode::InvalidExprError(message)) = run(&[r#"ate '[["a\qb"]]';"#], "")
+    else {
+        panic!("expected an expression error");
+    };
+    assert!(
+        message.contains(r"`\q`") && message.contains(r"`\n`"),
+        "{message}"
+    );
+}
+
+// --- `val` ------------------------------------------------------------------
+
+/// Before: a second `val` or `var` with the same name replaced a `val`, so
+/// `val` only stopped `mutv` and `eval … in`.
+#[test]
+fn a_val_cannot_be_defined_again() {
+    for second in [
+        "val a = 2;",
+        "var a = 2;",
+        "mutv a = 2;",
+        "eval '1 + 1' in a;",
+    ] {
+        assert!(
+            matches!(
+                run(&["val a = 1;", second], ""),
+                Err(TextForgeErrorCode::NonMutableVariableError(_))
+            ),
+            "{second}"
+        );
+    }
+    // A `var` can be defined again, and so can a name never used by `val`.
+    assert_eq!(ok(&["var a = 1;", "var a = 2;", "ate {{a}};"], ""), "2");
+    assert_eq!(ok(&["var a = 1;", "val a = 2;", "ate {{a}};"], ""), "2");
+    // Each run starts with a fresh context, so a `val` does not leak.
+    let mut processor = TextForgeProcessor::new();
+    let id = processor.add_transform(vec![read_from_text("val a = 1;").unwrap()]);
+    for _ in 0..2 {
+        assert_eq!(processor.process_all(&id, "x").unwrap(), "x");
+    }
+}
+
+// --- Expression results ----------------------------------------------------
+
+/// Before: `[[7 / 2.0]]` gave `3.5` and `[[1 < 2]]` gave `true`, although
+/// TextForge values are integers and text.
+#[test]
+fn expressions_give_integers_or_text() {
+    for line in [
+        "ate '[[7 / 2.0]]';",
+        "ate '[[1.5 * 2]]';",
+        "ate '[[1 < 2]]';",
+        "ate '[[true]]';",
+        "ate '[[(1, 2)]]';",
+        "eval '2.5' in v;",
+        "eval '1 == 1' in v;",
+    ] {
+        assert!(
+            matches!(
+                run(&[line], ""),
+                Err(TextForgeErrorCode::InvalidExprError(_))
+            ),
+            "{line}"
+        );
+    }
+    let Err(TextForgeErrorCode::InvalidExprError(message)) = run(&["ate '[[1.5 * 2]]';"], "")
+    else {
+        panic!("expected an expression error");
+    };
+    assert!(message.contains("decimal number 3.0"), "{message}");
+    // Comparisons and decimals may still be used inside an expression.
+    assert_eq!(ok(&[r#"ate '[[if(2 > 1, "yes", "no")]]';"#], ""), "yes");
+    assert_eq!(ok(&["ate '[[7 / 2]]';"], ""), "3");
+    assert_eq!(ok(&["ate '[[if(1.5 > 1, 1, 0)]]';"], ""), "1");
+    assert_eq!(ok(&["eval '6 * 7' in v;", "ate {{v}};"], ""), "42");
 }

@@ -5,6 +5,7 @@ use crate::{
         TextForgeErrorCode::{self, VariableNotFound},
     },
 };
+use std::path::Path;
 use std::{borrow::Cow, collections::HashMap, sync::Arc};
 
 use super::{
@@ -81,6 +82,9 @@ pub struct GlobalExecutionContext {
     static_ctx: Arc<StaticContext>,
     /// Limits for instructions that multiply work (from the profile).
     limits: crate::api::Limits,
+    /// Directory of the pipeline file being run, where relative paths of the
+    /// file instructions start; `None` for pipelines built in code.
+    base_dir: Option<Arc<Path>>,
 }
 
 impl Default for GlobalExecutionContext {
@@ -259,7 +263,36 @@ impl GlobalExecutionContext {
             trace: None,
             static_ctx: StaticContext::shared_default(),
             limits: crate::api::Limits::default(),
+            base_dir: None,
         }
+    }
+
+    /// Fail when `name` was defined with `val`: a `val` cannot be defined
+    /// again, by `val` or `var`. Up to 0.3.1 a second definition replaced it,
+    /// so `val` only stopped `mutv` and `eval … in`.
+    pub(crate) fn check_not_immutable(&self, name: &str) -> Result<(), TextForgeError> {
+        match self.variables.get(name) {
+            Some(entry) if !entry.mutable => Err(TextForgeError::new(
+                TextForgeErrorCode::NonMutableVariableError(
+                    format!("the variable `{name}` cannot be defined again: it was defined with `val`; define it with `var` where it is first defined to make it mutable").into(),
+                ),
+                "",
+                name.to_owned(),
+            )),
+            _ => Ok(()),
+        }
+    }
+
+    /// Set the directory relative paths of `wtf`, `apf`, `ppf` and `inf`
+    /// start from: the directory of the pipeline file.
+    pub(crate) fn set_base_dir(&mut self, base_dir: Option<Arc<Path>>) {
+        self.base_dir = base_dir;
+    }
+
+    /// The directory relative file paths start from, if the pipeline came from
+    /// a file.
+    pub(crate) fn base_dir(&self) -> Option<&Arc<Path>> {
+        self.base_dir.as_ref()
     }
 
     /// A fresh context reading the given static facts (pipeline name, input file).
@@ -457,7 +490,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
         } else {
             Err(TextForgeError::new(
                 TextForgeErrorCode::NonMutableVariableError(
-                    format!("the variable `{var_id}` cannot be changed: it was defined with `val`; define it with `var` to make it mutable").into(),
+                    format!("the variable `{var_id}` cannot be changed: it was defined with `val`; define it with `var` where it is first defined to make it mutable").into(),
                 ),
                 "",
                 var_id.to_string(),

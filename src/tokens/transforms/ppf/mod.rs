@@ -1,10 +1,10 @@
 #[cfg(feature = "test_access")]
 pub mod test;
 
-use std::{borrow::Cow, path::Path};
+use std::borrow::Cow;
 
 use crate::{
-    api::processor::file_io::read_utf8_file,
+    api::processor::file_io::{read_utf8_file, resolve_path},
     context::execution_context::GlobalExecutionContext,
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
@@ -16,7 +16,7 @@ use crate::{
 /// Inserts the contents of a UTF-8 file at the beginning of the current text,
 /// the counterpart of [`Apf`](super::apf::Apf). A missing file or invalid
 /// UTF-8 is an error. The path may use `{{ }}`/`[[ ]]` interpolation; a
-/// relative path is relative to the working directory. The file is read each
+/// relative path is resolved from the directory of the pipeline file (the working directory for pipelines built in code). The file is read each
 /// time the instruction runs. See `docs/file-instructions.md`.
 ///
 /// # Example
@@ -66,9 +66,9 @@ impl InstructionMethods for Ppf {
     fn transform<'a>(
         &self,
         input: Cow<'a, str>,
-        _: Option<&mut GlobalExecutionContext>,
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        let mut prefix = read_utf8_file(Path::new(&self.path), "")?;
+        let mut prefix = read_utf8_file(&resolve_path(&self.path, context.as_deref()), "")?;
         if prefix.is_empty() {
             return Ok(input);
         }
@@ -85,9 +85,9 @@ impl InstructionMethods for Ppf {
     fn transform_buffered(
         &self,
         input: crate::api::TextBuffer,
-        _: Option<&mut GlobalExecutionContext>,
+        context: Option<&mut GlobalExecutionContext>,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
-        let prefix = read_utf8_file(Path::new(&self.path), "")?;
+        let prefix = read_utf8_file(&resolve_path(&self.path, context.as_deref()), "")?;
         if prefix.is_empty() {
             return Ok(input);
         }

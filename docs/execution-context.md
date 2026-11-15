@@ -55,14 +55,22 @@ A variable name is a letter or `_` followed by letters, digits or `_`
 `ValidationError` (`var a-b = 1;`, `var 1a = 1;`); up to 0.3.1 they accepted
 it, but `{{a-b}}` could never read it.
 
-Defining a name that already exists replaces it, also when it was a `val`:
-`val` only prevents `mutv` and `eval … in` from changing the value.
+Defining a name again with `var` or `val` replaces it, unless it was defined
+with `val`: a `val` cannot be defined again, changed with `mutv` or written by
+`eval … in` (`NonMutableVariableError`). Variables have no scopes, so a `val`
+inside `iter`, or in a block run more than once, fails from the second time;
+use `var` there. Up to 0.3.1 a second `val` or `var` replaced a `val`.
 
 ### Expressions
 
-`[[ ]]` and `eval` use [evalexpr](https://docs.rs/evalexpr). A variable whose
+`[[ ]]` and `eval` use [evalexpr](https://docs.rs/evalexpr). TextForge values
+are integers and text: floats and booleans are not supported. A variable whose
 text is an integer is a number in an expression; any other value, including
-`2.5` and `true`, is text. `len(text)` counts characters, like
+`2.5` and `true`, is text, so `var a = 2.5;` followed by `[[a + 1]]` is an
+error. The result of a whole expression must be an integer or text:
+`[[7 / 2.0]]` and `[[1 < 2]]` are errors. Comparisons and decimal numbers may
+still appear inside it, as in `[[if(a > 1, "yes", "no")]]`. Up to 0.3.1 a
+decimal or boolean result was written as text (`3.5`, `true`). `len(text)` counts characters, like
 `__LEN_CHARS__` and every index (up to 0.3.1 it counted bytes).
 
 ### Reserved names

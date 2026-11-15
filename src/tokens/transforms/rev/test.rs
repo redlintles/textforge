@@ -122,5 +122,25 @@ mod tests {
             let param_count = bc[i] as usize;
             assert_eq!(param_count, 0);
         }
+
+        /// Before 0.3.2 `\r\n` came out as `\n\r`.
+        #[test]
+        fn crlf_line_breaks_stay_in_order() {
+            let t = Rev::default();
+            for (input, expected) in [
+                ("ab\r\ncd\r\n", "\r\ndc\r\nba"),
+                ("a\rb", "b\ra"),
+                ("\n\r", "\r\n"),
+                ("\r\n", "\r\n"),
+                ("x\r\r\ny", "y\r\n\rx"),
+                ("é\r\n🍌", "🍌\r\né"),
+            ] {
+                assert_eq!(
+                    t.transform(input.into(), None).unwrap(),
+                    expected,
+                    "{input:?}"
+                );
+            }
+        }
     }
 }

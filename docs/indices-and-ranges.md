@@ -38,7 +38,7 @@ an index in the sense of the table above.
 
 ### Exceptions
 
-- **`ins {index} {text}`** and **`inf {file} {index}`**: index `0` inserts at
+- **`ins {index} {text}`** and **`inf {index} {file}`**: index `0` inserts at
   the start; any other index inserts *after* the character at that position.
   For a text of `n` characters, `index` may be `0..=n`; both `n - 1` and `n`
   append. The position between the first and second character has no index of
@@ -54,8 +54,7 @@ the same place in every instruction:
 
 | Instruction | Order |
 |---|---|
-| `ins`, `inl`, `rln` | position, then text |
-| `inf` | file, then position |
+| `ins`, `inl`, `rln`, `inf` | position, then text or file |
 | `rnw`, `rcw`, `sslt`, `padl`, `padr` | pattern or text, then number |
 
 ## Patterns are regular expressions

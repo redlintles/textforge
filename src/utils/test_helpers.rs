@@ -181,7 +181,7 @@ pub fn build_all_tokens_pipeline_safe(
         // ========== files ==========
         .write_to_file(snapshot.as_str())?
         .append_file(piece.as_str())?
-        .insert_file(piece.as_str(), 3)?
+        .insert_file(3, piece.as_str())?
         .pipeline_join(joined.as_str())?
         .build()?;
 

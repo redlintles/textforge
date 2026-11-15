@@ -11,7 +11,8 @@ use crate::{tokens::InstructionMethods, utils::errors::TextForgeError};
 
 /// `rev;` — Reverse the characters.
 ///
-/// Reverses `input` character order
+/// Reverses `input` character order. A `\r\n` line break is kept as `\r\n`
+/// (reversed character by character it would become `\n\r`).
 ///
 /// # Example:
 ///
@@ -20,6 +21,7 @@ use crate::{tokens::InstructionMethods, utils::errors::TextForgeError};
 ///
 /// let token = Rev::default();
 /// assert_eq!(token.transform("foobar".into(),None).unwrap().to_string(), "raboof");
+/// assert_eq!(token.transform("ab\r\ncd".into(),None).unwrap().to_string(), "dc\r\nba");
 /// ``````
 #[derive(Clone, Default)]
 pub struct Rev {
@@ -49,7 +51,23 @@ impl InstructionMethods for Rev {
         if input.chars().nth(1).is_none() {
             return Ok(input);
         }
-        Ok(input.chars().rev().collect())
+        if !input.contains('\r') {
+            return Ok(input.chars().rev().collect());
+        }
+        // A `\r\n` line break stays `\r\n`: reversing it character by
+        // character gave `\n\r`, which is not a line break on Windows and left
+        // stray `\r` in the lines. Up to 0.3.1 it was reversed too.
+        let mut output = String::with_capacity(input.len());
+        let mut chars = input.chars().rev().peekable();
+        while let Some(c) = chars.next() {
+            if c == '\n' && chars.peek() == Some(&'\r') {
+                chars.next();
+                output.push_str("\r\n");
+            } else {
+                output.push(c);
+            }
+        }
+        Ok(Cow::Owned(output))
     }
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 0, "rev", "")?;

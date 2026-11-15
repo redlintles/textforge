@@ -71,6 +71,11 @@ any kind of quotes. Text that only looks like one stays as written:
 | `[[:alpha:]]`, `[[:alpha:][:digit:]]`, `[[]]` | unchanged: no expression is empty or starts with `:` |
 | `\{{name}}`, `\[[1 + 1]]` | `{{name}}`, `[[1 + 1]]`: the backslash escapes the opening |
 
+Inside an expression, a text in double quotes accepts `\n`, `\t`, `\r` and
+`\0` (the control characters), `\"` and `\\`, even when the parameter itself
+is in single quotes: `ate '[["line 1\nline 2"]]';`. Up to 0.3.1 only `\"` and
+`\\` were accepted there.
+
 Up to 0.3.1, delimiters that formed no marker were deleted, which truncated
 JSON and broke regex character classes.
 

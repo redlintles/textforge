@@ -13,6 +13,21 @@ use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 /// Read a document once, then transfer its allocation into a validated UTF-8 string.
 /// File's `read_to_end` uses size information when available; wrapping it in a
 /// BufReader would add another buffer without helping this whole-file read.
+/// The path a file instruction (`wtf`, `apf`, `ppf`, `inf`) opens: a relative
+/// `path` starts from the directory of the pipeline file being run, so the
+/// result does not depend on the working directory. Pipelines built in code,
+/// and calls without a context, use the working directory.
+pub(crate) fn resolve_path(
+    path: &str,
+    context: Option<&crate::context::execution_context::GlobalExecutionContext>,
+) -> std::path::PathBuf {
+    let path = Path::new(path);
+    match context.and_then(|context| context.base_dir()) {
+        Some(base) if path.is_relative() => base.join(path),
+        _ => path.to_path_buf(),
+    }
+}
+
 pub(crate) fn read_utf8_file(
     path: &Path,
     location: &'static str,

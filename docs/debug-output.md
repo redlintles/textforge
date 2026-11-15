@@ -1,5 +1,9 @@
 # Debug output
 
+`txf --debug` (`-d`) prints this trace on stdout instead of the result; the
+last step's `After:` is the final text. With `--output`, the result is still
+written to the file. Up to 0.3.1 the result was printed again after the trace.
+
 `process_all_with_debug` prints every top-level step (`Step: [i] => [i+1]`,
 the instruction, the text before and after). When a step runs other
 instructions inside it, a nested trace follows the step:

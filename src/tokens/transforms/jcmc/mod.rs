@@ -23,8 +23,9 @@ use crate::parser::params::TextForgeParamTypes;
 /// let token = Jcmc::default();
 ///
 /// assert_eq!(token.transform("banana orange full of jam".into(),None).unwrap().to_string(), "bananaOrangeFullOfJam");
-/// // The first letter is lowercased; the other letters of each word are kept.
+/// // Each word is lowercased, then every word but the first is capitalized.
 /// assert_eq!(token.transform("Hello World".into(),None).unwrap().to_string(), "helloWorld");
+/// assert_eq!(token.transform("HTTP server".into(),None).unwrap().to_string(), "httpServer");
 /// assert_eq!(token.transform("Élan vital".into(),None).unwrap().to_string(), "élanVital");
 /// ```
 ///
@@ -56,16 +57,13 @@ impl InstructionMethods for Jcmc {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let mut result = String::with_capacity(input.len());
         for (i, word) in input.split_whitespace().enumerate() {
+            // camelCase: the first word in lowercase, the others with only
+            // their first letter uppercase. Up to 0.3.1 the letters after
+            // the first were copied, so "HTTP server" gave "hTTPServer".
             if i == 0 {
-                // camelCase starts with a lowercase letter. Before 0.3.2 the
-                // first word was copied, so "Hello World" gave "HelloWorld".
-                let mut chars = word.chars();
-                if let Some(first) = chars.next() {
-                    result.extend(first.to_lowercase());
-                    result.push_str(chars.as_str());
-                }
+                crate::utils::allocation::lowercase_into(&mut result, word);
             } else {
-                crate::utils::allocation::capitalize_into(&mut result, word);
+                crate::utils::allocation::title_case_into(&mut result, word);
             }
         }
         Ok(result.into())

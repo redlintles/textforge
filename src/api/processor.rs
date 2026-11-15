@@ -117,6 +117,9 @@ pub struct TextForgeProcessor {
 struct RegisteredPipeline {
     tokens: Vec<TokenWrapper>,
     statics: Arc<StaticContext>,
+    /// Directory of the file the pipeline was read from; relative paths of the
+    /// file instructions start there. `None` for pipelines built in code.
+    base_dir: Option<Arc<Path>>,
 }
 
 /// Everything a [`TextForgeProcessor`] does: register, persist, inspect, remove
@@ -588,7 +591,21 @@ impl TextForgeProcessor {
         };
         let mut context = GlobalExecutionContext::with_static(statics);
         context.set_limits(limits);
+        context.set_base_dir(pipeline.base_dir.clone());
         Ok((&pipeline.tokens, context))
+    }
+
+    /// Make relative paths of the file instructions in pipeline `id` start from
+    /// the directory of `file`, the file it was read from.
+    fn set_base_dir_from_file(&mut self, id: &str, file: &Path) {
+        let directory = file
+            .canonicalize()
+            .ok()
+            .and_then(|file| file.parent().map(Path::to_path_buf))
+            .unwrap_or_else(|| file.parent().map(Path::to_path_buf).unwrap_or_default());
+        if let Some(pipeline) = self.transforms.get_mut(id) {
+            pipeline.base_dir = Some(Arc::from(directory.as_path()));
+        }
     }
 
     /// Name a pipeline loaded from `path` after the file name without extension.
@@ -675,6 +692,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
         let identifier = self.add_transform(tokens);
         self.name_after_file(&identifier, path);
+        self.set_base_dir_from_file(&identifier, path);
         Ok(identifier)
     }
 
@@ -692,8 +710,14 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         }
         let identifier = Uuid::new_v4().to_string();
         let statics = Arc::new(StaticContext::new(identifier.clone(), None));
-        self.transforms
-            .insert(identifier.clone(), RegisteredPipeline { tokens, statics });
+        self.transforms.insert(
+            identifier.clone(),
+            RegisteredPipeline {
+                tokens,
+                statics,
+                base_dir: None,
+            },
+        );
         identifier
     }
 
@@ -1105,6 +1129,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
         let identifier = self.add_transform(tokens.to_vec());
         self.name_after_file(&identifier, path);
+        self.set_base_dir_from_file(&identifier, path);
 
         Ok(identifier)
     }

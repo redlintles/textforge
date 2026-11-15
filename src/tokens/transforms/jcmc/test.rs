@@ -20,14 +20,19 @@ mod tests {
         assert_eq!(t.to_textforge_line().as_ref(), "jcmc;\n");
     }
 
-    /// Before 0.3.2 the first word was copied as it was ("HelloWorld").
+    /// Before 0.3.2 the letters after the first were copied as they were
+    /// ("HelloWorld", "hTTPServer").
     #[test]
     fn the_first_letter_is_lowercased() {
         let t = Jcmc::default();
         for (input, expected) in [
             ("Hello World", "helloWorld"),
             ("Élan vital", "élanVital"),
-            ("HTTP server", "hTTPServer"),
+            ("HTTP server", "httpServer"),
+            ("HELLO WORLD", "helloWorld"),
+            ("ÉLAN VITAL", "élanVital"),
+            ("x ΟΣ", "xΟς"),
+            ("x İ", "xİ"),
             ("already camel", "alreadyCamel"),
             ("👍 ok", "👍Ok"),
             ("", ""),
