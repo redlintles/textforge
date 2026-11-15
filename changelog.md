@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Behavior changes
+
+- Error messages are rewritten in English and describe what went wrong, the
+  offending value and, when there is one, how to fix it (for example
+  "parameter 1 (`index`) must be a non-negative integer, but it is text"
+  instead of "Index should be of usize type"). Code that matches error texts
+  must be updated; error codes are unchanged.
+- `TextForgeError`'s `Display` is now `error[N]: message`, followed by
+  `in: <instruction>` and `input: <input>` lines when those fields are set.
+- In a pipeline, an error's `instruction` field holds the source line of the
+  failing instruction (for example `ctc 1 8;`). Internal function names are no
+  longer used as labels; errors from the engine say `processor`, `txf` or
+  `txfrc`. Errors from `transform()` called directly leave the field empty.
+- `txf` prints the result exactly, without the former "Resultado do
+  processamento:" prefix and without an added newline, so its output can be
+  piped. Its help texts and read-mode errors are in English.
+
 ### Changed
 
 - Documentation: the crate has a front page on docs.rs (overview, examples,

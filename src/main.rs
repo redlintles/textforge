@@ -327,7 +327,7 @@ fn main() -> Result<(), TextForgeError> {
             })?;
         }
         None => {
-            println!("Processing result: {}", result);
+            print!("{result}");
         }
     }
 
