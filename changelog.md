@@ -81,6 +81,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - Variable errors name the right instructions: changing a `val` says it was
   defined with `val` and suggests `var`; a missing variable suggests `var`
   (or `val`), not `mutv`.
+- `\n`, `\t`, `\r` and `\0` inside a quoted text of an expression are the
+  newline, tab, carriage return and NUL characters, as in double-quoted
+  parameters: `ate '[["a\nb"]]';` writes a line break. Before, evalexpr
+  rejected them as illegal escapes.
 - Errors from `[[ ]]` and `eval` name the instruction (`in: ate '[[a + 1]]';`)
   instead of the internal labels `api::expr` and `eval.transform`, and explain
   the problem in TextForge's terms (for example "`+` cannot be applied to text

@@ -132,6 +132,41 @@ pub(crate) fn is_literal_brackets(content: &str) -> bool {
     content.trim().is_empty() || content.starts_with(':')
 }
 
+/// Turn `\n`, `\t`, `\r` and `\0` inside the double-quoted texts of an
+/// expression into the characters they name, as in double-quoted pipeline
+/// parameters. evalexpr itself accepts only `\"` and `\\`, which are kept
+/// for it, so `[["a\nb"]]` was an "illegal escape" error up to 0.3.1.
+/// Outside quotes nothing changes.
+pub(crate) fn expand_string_escapes(expression: &str) -> Cow<'_, str> {
+    if !expression.contains('\\') {
+        return Cow::Borrowed(expression);
+    }
+    let mut out = String::with_capacity(expression.len());
+    let mut in_string = false;
+    let mut chars = expression.chars();
+    while let Some(c) = chars.next() {
+        match c {
+            '"' => {
+                in_string = !in_string;
+                out.push(c);
+            }
+            '\\' if in_string => match chars.next() {
+                Some('n') => out.push('\n'),
+                Some('t') => out.push('\t'),
+                Some('r') => out.push('\r'),
+                Some('0') => out.push('\0'),
+                Some(other) => {
+                    out.push('\\');
+                    out.push(other);
+                }
+                None => out.push('\\'),
+            },
+            _ => out.push(c),
+        }
+    }
+    Cow::Owned(out)
+}
+
 /// How a value is named in error messages.
 fn describe_value(value: &Value) -> String {
     match value {
@@ -215,7 +250,7 @@ pub(crate) fn describe_eval_error(error: &evalexpr::EvalexprError) -> String {
         | E::MultiplicationError { .. }
         | E::NegationError { .. } => "the result is too large for an integer".into(),
         E::IllegalEscapeSequence(sequence) => format!(
-            "`{sequence}` is not a valid escape in a quoted text inside an expression (valid: `\\\"`, `\\\\`)"
+            "`{sequence}` is not a valid escape in a quoted text inside an expression (valid: `\\n`, `\\t`, `\\r`, `\\0`, `\\\"`, `\\\\`)"
         ),
         other => other.to_string(),
     }
@@ -353,7 +388,9 @@ pub(crate) fn evaluate_with(
             Cow::from(expression.to_string()),
         )
     };
-    let tree = evalexpr::build_operator_tree::<DefaultNumericTypes>(expression).map_err(invalid)?;
+    let tree =
+        evalexpr::build_operator_tree::<DefaultNumericTypes>(&expand_string_escapes(expression))
+            .map_err(invalid)?;
     evaluate_tree(&tree, expression, reader, stage)
 }
 

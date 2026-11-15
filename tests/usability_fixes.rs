@@ -337,3 +337,28 @@ fn expression_errors_name_the_instruction_and_explain_the_problem() {
         assert!(!e.instruction.contains("api::expr") && !e.instruction.contains("eval.transform"));
     }
 }
+
+/// Before: `\n` inside a quoted text of an expression was evalexpr's
+/// "Illegal escape sequence" error, although `"\n"` works in parameters.
+#[test]
+fn quoted_texts_in_expressions_accept_control_escapes() {
+    assert_eq!(ok(&[r#"ate '[["a\nb"]]';"#], ""), "a\nb");
+    assert_eq!(ok(&[r#"ate '[["a\tb\r\0"]]';"#], ""), "a\tb\r\0");
+    assert_eq!(ok(&[r#"ate '[["q\"\\"]]';"#], ""), "q\"\\");
+    assert_eq!(ok(&[r#"ate '[[len("a\nb")]]';"#], ""), "3");
+    assert_eq!(
+        ok(&[r#"eval '"a" + "\n"' in v;"#, "ate '{{v}}';"], ""),
+        "a\n"
+    );
+    // Outside quotes a backslash is not an escape.
+    assert!(run(&[r#"ate '[[1 \n 2]]';"#], "").is_err());
+    // An unknown escape is still an error, with the valid ones listed.
+    let Err(TextForgeErrorCode::InvalidExprError(message)) = run(&[r#"ate '[["a\qb"]]';"#], "")
+    else {
+        panic!("expected an expression error");
+    };
+    assert!(
+        message.contains(r"`\q`") && message.contains(r"`\n`"),
+        "{message}"
+    );
+}

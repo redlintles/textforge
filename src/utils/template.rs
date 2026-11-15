@@ -16,7 +16,10 @@ use crate::{
     parser::params::TextForgeParamTypes,
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
-        expr::{describe_eval_error, evaluate_tree, is_literal_brackets, value_to_plain_string},
+        expr::{
+            describe_eval_error, evaluate_tree, expand_string_escapes, is_literal_brackets,
+            value_to_plain_string,
+        },
     },
 };
 
@@ -37,8 +40,9 @@ pub(crate) struct CompiledExpr {
 
 impl CompiledExpr {
     pub(crate) fn new(source: &str) -> Self {
-        let tree = evalexpr::build_operator_tree::<DefaultNumericTypes>(source)
-            .map_err(|error| describe_eval_error(&error));
+        let tree =
+            evalexpr::build_operator_tree::<DefaultNumericTypes>(&expand_string_escapes(source))
+                .map_err(|error| describe_eval_error(&error));
         let constant = tree.as_ref().ok().and_then(|tree| {
             let pure = tree.iter_read_variable_identifiers().next().is_none()
                 && tree.iter_function_identifiers().next().is_none();
