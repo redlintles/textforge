@@ -54,13 +54,17 @@ impl Iter {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let mut result = input;
         for i in 0..self.times {
-            // `end` in the body stops the remaining iterations too.
+            // `end` in the body leaves the loop: the remaining iterations do
+            // not run.
             if context.is_halted {
                 break;
             }
             context.get_mut_var(COUNTER)?.value = VarValues::Usize(i);
             result = self.inner.apply_nested(result, context)?;
         }
+        // The loop is all `end` stops: the instruction after `iter` runs.
+        // Before 0.3.2 it stopped the whole pipeline.
+        context.is_halted = false;
         Ok(result)
     }
 }

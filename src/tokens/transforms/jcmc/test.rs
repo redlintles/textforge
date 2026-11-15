@@ -20,6 +20,26 @@ mod tests {
         assert_eq!(t.to_textforge_line().as_ref(), "jcmc;\n");
     }
 
+    /// Before 0.3.2 the first word was copied as it was ("HelloWorld").
+    #[test]
+    fn the_first_letter_is_lowercased() {
+        let t = Jcmc::default();
+        for (input, expected) in [
+            ("Hello World", "helloWorld"),
+            ("Élan vital", "élanVital"),
+            ("HTTP server", "hTTPServer"),
+            ("already camel", "alreadyCamel"),
+            ("👍 ok", "👍Ok"),
+            ("", ""),
+        ] {
+            assert_eq!(
+                t.transform(input.into(), None).unwrap(),
+                expected,
+                "{input:?}"
+            );
+        }
+    }
+
     #[test]
     fn transform_matches_doc_example() {
         let t = Jcmc::default();

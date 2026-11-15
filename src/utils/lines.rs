@@ -69,6 +69,9 @@ pub(crate) fn check_line(
     Ok(())
 }
 
+/// Validate the inclusive line range `start..=end` of a text with `count`
+/// lines: `start` must exist, `start <= end`, and an `end` past the last line
+/// means the last line.
 pub(crate) fn check_range(
     start: usize,
     end: usize,
@@ -77,7 +80,12 @@ pub(crate) fn check_range(
     input: &str,
 ) -> Result<(), TextForgeError> {
     check_line(start, count, name, input)?;
-    check_line(end, count, name, input)?;
+    // An end past the last line means the last line, as character ranges
+    // clamp an end past the last character (Golden Rule 18). Before 0.3.2 it
+    // was an error. Line 0 is never valid.
+    if end == 0 {
+        check_line(end, count, name, input)?;
+    }
     if start > end {
         return Err(invalid(
             name,

@@ -11,6 +11,19 @@ use crate::{
 pub mod test;
 
 /// `end;` — Stop the pipeline (or the current block or loop).
+///
+/// `end` stops the innermost thing that is running: the block run by `cblk`,
+/// the loop of `iter`, or, outside both, the pipeline (in a pipeline joined
+/// with `ppjn`, that pipeline only). Inside `ifdc` or an `on*` section it
+/// stops whatever contains that instruction.
+///
+/// ```text
+/// blk b assoc ate x;
+/// blk b assoc end;        // leaves the block
+/// blk b assoc ate y;      // never runs
+/// cblk b;
+/// ate z;                  // runs: "xz"
+/// ```
 #[derive(Clone, Default)]
 pub struct End {
     params: Vec<TextForgeParamTypes>,

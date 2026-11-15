@@ -23,6 +23,9 @@ use crate::parser::params::TextForgeParamTypes;
 /// let token = Jcmc::default();
 ///
 /// assert_eq!(token.transform("banana orange full of jam".into(),None).unwrap().to_string(), "bananaOrangeFullOfJam");
+/// // The first letter is lowercased; the other letters of each word are kept.
+/// assert_eq!(token.transform("Hello World".into(),None).unwrap().to_string(), "helloWorld");
+/// assert_eq!(token.transform("Élan vital".into(),None).unwrap().to_string(), "élanVital");
 /// ```
 ///
 #[derive(Clone, Default)]
@@ -54,7 +57,13 @@ impl InstructionMethods for Jcmc {
         let mut result = String::with_capacity(input.len());
         for (i, word) in input.split_whitespace().enumerate() {
             if i == 0 {
-                result.push_str(word);
+                // camelCase starts with a lowercase letter. Before 0.3.2 the
+                // first word was copied, so "Hello World" gave "HelloWorld".
+                let mut chars = word.chars();
+                if let Some(first) = chars.next() {
+                    result.extend(first.to_lowercase());
+                    result.push_str(chars.as_str());
+                }
             } else {
                 crate::utils::allocation::capitalize_into(&mut result, word);
             }

@@ -41,10 +41,11 @@ fn oracle_lines(input: &str, start: usize, end: usize) -> Option<Range<usize>> {
         position += content + terminator;
         offsets.push(position);
     }
-    if start == 0 || start > end || end > contents.len() {
+    // An end past the last line means the last line.
+    if start == 0 || start > end || start > contents.len() {
         return None;
     }
-    Some(offsets[start - 1]..contents[end - 1])
+    Some(offsets[start - 1]..contents[end.min(contents.len()) - 1])
 }
 
 fn oracle_chars(input: &str, start: usize, end: usize) -> Option<Range<usize>> {
@@ -234,7 +235,7 @@ fn invalid_sections_are_errors() {
         ("onln 1 apply tbs;", ""),
         ("onlni 2 1 apply tbs;", "a\nb"),
         ("onlni 0 1 apply tbs;", "a\nb"),
-        ("onlni 1 3 apply tbs;", "a\nb"),
+        ("onlni 3 4 apply tbs;", "a\nb"),
         ("onck 3 1 apply tbs;", "abcd"),
         ("onck 4 9 apply tbs;", "abcd"),
         ("onck 0 0 apply tbs;", ""),
@@ -242,6 +243,7 @@ fn invalid_sections_are_errors() {
         assert!(run(pipeline, input).is_err(), "{pipeline} {input:?}");
     }
     assert_eq!(run("onck 2 99 apply tua;", "abcd").unwrap(), "abCD");
+    assert_eq!(run("onlni 1 3 apply tua;", "a\nb").unwrap(), "A\nB");
 }
 
 #[test]
@@ -492,9 +494,10 @@ fn replacement_maps_cannot_be_defined_inside_on_instructions() {
 }
 
 #[test]
-fn end_stops_the_rest_of_blocks_and_iterations() {
-    // Before the fix the block kept running after `end` ("xy") and the
-    // remaining iterations and block instructions ran ("y").
+fn end_stops_the_rest_of_its_block_or_loop_only() {
+    // `end` leaves the innermost block or loop: the rest of the block ("y")
+    // and the remaining iterations do not run, and the pipeline continues
+    // after it ("z"). Up to 0.3.1 it stopped the whole pipeline.
     let mut processor = TextForgeProcessor::new();
     let id = processor.add_transform(
         [
@@ -508,7 +511,7 @@ fn end_stops_the_rest_of_blocks_and_iterations() {
         .map(|line| read_from_text(line).unwrap())
         .collect(),
     );
-    assert_eq!(processor.process_all(&id, "").unwrap(), "x");
+    assert_eq!(processor.process_all(&id, "").unwrap(), "xz");
     let id = processor.add_transform(
         [
             "blk b assoc iter 3 times ate x;",
@@ -520,7 +523,7 @@ fn end_stops_the_rest_of_blocks_and_iterations() {
         .map(|line| read_from_text(line).unwrap())
         .collect(),
     );
-    assert_eq!(processor.process_all(&id, "").unwrap(), "xxx");
+    assert_eq!(processor.process_all(&id, "").unwrap(), "xxxy");
 }
 
 fn bytecode_load(token: textforge::parser::resolve_var::TokenWrapper) -> Result<String, String> {

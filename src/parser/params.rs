@@ -372,7 +372,11 @@ impl TextForgeParamTypes {
                                     "instructions are nested too deeply: at most {} {} allowed here ({})",
                                     max_depth,
                                     if max_depth == 1 { "level is" } else { "levels are" },
-                                    if child_assoc_mode == AssocMode::AssocPayload { "inside a block" } else { "at the top level" }
+                                    if child_assoc_mode == AssocMode::AssocPayload {
+                                        "inside a block"
+                                    } else {
+                                        "at the top level; a block allows deeper nesting: `blk name assoc <instruction>;` then `cblk name;`"
+                                    }
                                 )
                                 .into(),
                             ),

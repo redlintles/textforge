@@ -71,12 +71,16 @@ impl InstructionMethods for Cblk {
             &self.block_name,
             input,
             |result, context| {
-                // Same halting rule as the root: nothing runs after `end`.
+                // Same halting rule as the root: nothing in the block runs
+                // after `end`.
                 run_tokens(&tokens, result, context, |_, token, result, context| {
                     token.apply_nested(result, context)
                 })
             },
         )?;
+        // `end` inside a block ends that block only: the instruction after
+        // `cblk` runs. Before 0.3.2 it stopped the whole pipeline.
+        context.is_halted = false;
 
         // On error the block stays taken, as before (see the cblk tests).
         context.put_block(&self.block_name, tokens);
