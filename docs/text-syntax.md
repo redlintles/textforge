@@ -14,7 +14,7 @@ inside double quotes.
 | `\n` `\t` `\r` `\0` | **error** | kept as written | newline, tab, carriage return, NUL |
 | `\\` `\"` `\$` `` \` `` | the second character | kept as written | the second character |
 | `\` + any other character | the second character | kept as written | kept as written (`"\d"` is `\d`) |
-| `#` at the start of a word | comment to the end of the line | literal | literal |
+| `#` at the start of a word | comment to the end of the line (quote it to use it: `raw "#" x;`) | literal | literal |
 | a real line break | **error** | **error** | **error** |
 
 ```textforge
@@ -32,6 +32,40 @@ These fail with a `TextParsingError` instead of producing a wrong result:
 atb banana\nlaranja;       // \n outside double quotes
 atb "banana\nlaranja;"     // the line does not end with ';' (it is inside the quotes)
 ```
+
+## Comments
+
+```textforge
+// a whole-line comment
+# also a whole-line comment
+atb "> ";      // a comment after the instruction
+ate "!";       # this form works too
+```
+
+A comment after an instruction starts after the `;` that ends it. Inside
+quotes `//` and `#` are text (`atb "// not a comment";`). Up to 0.3.1 only
+whole-line `//` comments were accepted, and a comment after the `;` failed
+with "an instruction must end with `;`".
+
+A pipeline file may start with a UTF-8 byte order mark (some editors on
+Windows add one); it is ignored.
+
+## `{{ }}` and `[[ ]]` in parameters
+
+`{{name}}` reads a variable and `[[expression]]` evaluates an expression, in
+any kind of quotes. Text that only looks like one stays as written:
+
+| Written | Result |
+|---|---|
+| `{{name}}` (a letter or `_`, then letters, digits, `_`) | the variable, or `VariableNotFound` |
+| `{{user.name}}`, `{{ name }}`, `{{1a}}`, `{{}}` | unchanged: not a variable name |
+| `{"a":{"b":1}}`, `m[i[0]]`, a lone `{{` or `]]` | unchanged |
+| `[[1 + 1]]` | `2` |
+| `[[:alpha:]]`, `[[:alpha:][:digit:]]`, `[[]]` | unchanged: no expression is empty or starts with `:` |
+| `\{{name}}`, `\[[1 + 1]]` | `{{name}}`, `[[1 + 1]]`: the backslash escapes the opening |
+
+Up to 0.3.1, delimiters that formed no marker were deleted, which truncated
+JSON and broke regex character classes.
 
 ## Regex parameters
 

@@ -104,7 +104,11 @@ let output = processor.process_all(&id, "  hello world  ")?;
 txf --file clean.textforge --input input.txt --output output.txt
 ```
 
-Without `--output` the result goes to stdout. `--profile`, `--spool-threshold`,
+Without `--output` the result goes to stdout, and without `--input` the text
+comes from stdin. `--read-mode line` runs the pipeline on each line, keeping
+every line break; `--chomp` sets the final line break of the input aside and
+puts it back on the result, so `dll` or `ate` act on the last visible
+character. Errors are printed on stderr as `error[N]: message`. `--profile`, `--spool-threshold`,
 `--max-generated-bytes` and `--max-iterations` tune resources and limits; a
 `.txfrc` file in the current directory can set them, and `txf config show`
 prints the effective configuration. See
@@ -113,9 +117,10 @@ prints the effective configuration. See
 ## The language
 
 ```textforge
-// Comments take a whole line. Parameters are split like a shell command
-// line: quote them when they contain spaces.
-raw 'old name' 'new name';
+// Comments start with // or #, on their own line or after the ';'.
+// Parameters are split like a shell command line: quote them when they
+// contain spaces.
+raw 'old name' 'new name';   // like this
 
 // Inside double quotes, \n \t \r and \0 are control characters;
 // single quotes are literal. See docs/text-syntax.md.
@@ -142,6 +147,15 @@ onln 1 apply tua;
 - Characters are Unicode scalar values and indices start at 0; line numbers
   start at 1; `\n`, `\r\n` and `\r` all end a line and are preserved
   ([line semantics](docs/lines.md)).
+- A single index that does not exist is an error; the end of a range past the
+  text means the last item. Patterns are regular expressions, and `$` in a
+  replacement inserts a capture group (`$$` is a literal `$`). See
+  [indices, ranges and replacement text](docs/indices-and-ranges.md).
+- `{{` `}}` `[[` `]]` that form no variable read or expression are ordinary
+  text, so JSON and regex classes such as `[[:alpha:]]` need no escaping; write
+  `\{{name}}` to print a marker literally ([text syntax](docs/text-syntax.md)).
+- `end` stops the innermost running block (`cblk`) or loop (`iter`); outside
+  both it stops the pipeline.
 - Built-in variables: `__PIPELINE_NAME__`, `__TEXTFORGE_VERSION__`,
   `__INPUT_FILE__`, `__LEN_CHARS__`, `__LINES__`, and `__COUNTER__` inside `iter`
   ([execution context](docs/execution-context.md)).

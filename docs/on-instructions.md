@@ -33,8 +33,9 @@ Opcodes: `onln` 0x52, `onck` 0x53, `onlni` 0x54.
 4. **`onln n` equals `onlni n n`.** Both use the same implementation
    (`src/utils/sections.rs`).
 5. **Context.** The nested instruction shares the pipeline's execution context:
-   it can read variables and call blocks, and `end` inside it halts the pipeline
-   after the `on*` instruction finishes.
+   it can read variables and call blocks, and `end` inside it stops what
+   contains the `on*` instruction (the block, the loop or the pipeline) after
+   the `on*` instruction finishes.
 
 Because the section excludes the final terminator, a filter that removes the last
 selected line leaves the terminator before it in place, exactly as the filter
@@ -52,7 +53,7 @@ All errors are `TextForgeError`; nothing panics.
 
 | Instruction | Error | Same as |
 | --- | --- | --- |
-| `onln`, `onlni` | line `0`, line past the end, reversed interval, empty document (zero lines) | `dlni`/`slnc` (identical error values) |
+| `onln`, `onlni` | line `0`, a line (or interval start) past the end, reversed interval, empty document (zero lines); an interval **end** past the last line means the last line | `dlni`/`slnc` (identical error values) |
 | `onck` | `start > end` (`InvalidIndex`), `start` outside the text (`IndexOutOfRange`), empty document | `dlc`, with the documented difference below |
 | all | an error from the nested instruction | — |
 

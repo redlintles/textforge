@@ -48,6 +48,23 @@ without loading it into memory.
 Where no text is being processed (for example `to_text_line_resolved`), the
 text-derived values fail with `RequiredContextError`.
 
+### Names
+
+A variable name is a letter or `_` followed by letters, digits or `_`
+(ASCII). `var`, `val`, `mutv` and `eval … in` reject any other name with a
+`ValidationError` (`var a-b = 1;`, `var 1a = 1;`); up to 0.3.1 they accepted
+it, but `{{a-b}}` could never read it.
+
+Defining a name that already exists replaces it, also when it was a `val`:
+`val` only prevents `mutv` and `eval … in` from changing the value.
+
+### Expressions
+
+`[[ ]]` and `eval` use [evalexpr](https://docs.rs/evalexpr). A variable whose
+text is an integer is a number in an expression; any other value, including
+`2.5` and `true`, is text. `len(text)` counts characters, like
+`__LEN_CHARS__` and every index (up to 0.3.1 it counted bytes).
+
 ### Reserved names
 
 `var`, `val`, `mutv` and `eval … in` cannot define a built-in name: it is a

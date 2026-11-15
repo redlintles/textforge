@@ -1,7 +1,9 @@
 # Logical line operations
 
 Line numbers start at **1**. Ranges include both endpoints. A missing line,
-zero index, or reversed range returns `TextForgeError`. `inl` additionally accepts
+zero index, or reversed range returns `TextForgeError`; the end of a range
+(`dlni`, `slnc`, `onlni`) may be past the last line and then means the last
+line, as in character ranges (see [indices and ranges](indices-and-ranges.md)). `inl` additionally accepts
 line count + 1 (including position 1 in empty input).
 
 An empty string contains zero lines. A trailing terminator belongs to the last
@@ -55,11 +57,12 @@ Parameters support the existing variables and interpolation rules.
 ## Interpolation and persistence
 
 Regex text still follows the DSL's existing interpolation rules. When a pattern
-contains literal `[[` or `]]` delimiters (for example a POSIX character class),
-escape those delimiter pairs in pipeline parameters. For example:
+contains `[[` or `]]` that form no expression, they are ordinary text: POSIX
+character classes and nested classes need no escaping.
 
 ```text
-klm '^\[[:alpha:\]]+$';
+klm '^[[:alpha:]]+$';
+raw '[0-9[:alpha:]]' x;
 ```
 
 Line numbers can be expressions or templates, resolved at execution time:

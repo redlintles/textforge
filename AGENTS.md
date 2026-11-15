@@ -130,7 +130,7 @@ With the `bytecode` feature, `TextForgeProcessor` also exposes `write_to_bytecod
 
 ### 5.2 As a textual DSL
 
-Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. The library never reads configuration files implicitly.
+Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. `--read-mode line` keeps every line break, `--chomp` sets the final line break of the input aside and restores it on the result, an empty input still runs the pipeline, and errors go to stderr through `Display` (`error[N]: message`). The library never reads configuration files implicitly.
 
 ### 5.3 As a bytecode generator
 
@@ -146,6 +146,7 @@ The textual form resembles assembly, and the comparison is fair in terms of the 
 
 - One instruction per line.
 - Every instruction ends with `;`.
+- Comments start with `//` or `#`: a whole line, or after the `;` that ends an instruction (`ate x; // note`; `without_trailing_comment` in `src/text/reader.rs`). A leading UTF-8 byte order mark in a pipeline file is ignored.
 - Words are split by `src/text/line_parser.rs` with shell-like quoting. Inside double quotes `\n`, `\t`, `\r` and `\0` are control characters; outside quotes they are errors; single quotes are literal; a real line break inside an instruction is an error. See `docs/text-syntax.md`.
 - Instructions run sequentially.
 - Structure: `{name} {params};`
@@ -186,9 +187,11 @@ Input `xfruitx` → output `banana fruit`.
 | `[[ 2 + 3 ]]` | Math expression interpolation | Resolved by `evalexpr`. Variables from the execution context can be referenced inside expressions. |
 | `{{name}}` | Variable interpolation | Currently **only parameter substitution** is supported. Replaced at execution time by the value of the named variable. |
 
+Text that only looks like a marker is **kept as written**: `{{`/`}}`/`[[`/`]]` that close nothing, `{{…}}` whose content is not a variable name, and `[[…]]` whose content is empty or starts with `:` (POSIX classes such as `[[:alpha:]]`). `\{{` and `\[[` escape a valid marker. Up to 0.3.1 such delimiters were deleted. Inside `[[ ]]`, `len(text)` counts characters (`GlobalFunctions::call`).
+
 **Built-in variables** are read-only: `__PIPELINE_NAME__`, `__TEXTFORGE_VERSION__`, `__INPUT_FILE__` (empty when the input is not a file), `__LEN_CHARS__` and `__LINES__`. The last two describe the text the running instruction receives (the section, inside `on*`) and are computed only when a parameter reads them. `var`/`val`/`mutv`/`eval … in` cannot define these names (`ValidationError`). All reads go through `context::builtins::VarReader`. See `docs/execution-context.md`.
 
-Variable names start with a letter or `_` and continue with letters, digits or `_` (`__COUNTER__`, `line_no`). A numeric parameter may also be written as an expression or template (`[[__COUNTER__ + 1]]`, `'{{a}}{{b}}'`): it is kept as text when parsed and must interpolate to a non-negative integer at execution time (`IncompatibleTypeError` otherwise). Plain text in a numeric position is still rejected while parsing.
+Variable names start with a letter or `_` and continue with letters, digits or `_` (`__COUNTER__`, `line_no`); `var`/`val`/`mutv`/`eval … in` reject other names (`check_definable`). A numeric parameter may also be written as an expression or template (`[[__COUNTER__ + 1]]`, `'{{a}}{{b}}'`): it is kept as text when parsed and must interpolate to a non-negative integer at execution time (`IncompatibleTypeError` otherwise). Plain text in a numeric position is still rejected while parsing.
 
 **Binding in registered pipelines.** When a pipeline is registered, instructions that opt into `InstructionMethods::supports_preparation` (every built-in does; custom instructions default to no) and whose parameters are constant are bound once. Dynamic parameters are compiled once (`src/utils/template.rs`: literal text, variable reads and `[[ ]]` trees; constant expressions are evaluated once) and rendered per run; the last dynamic binding is reused while the resolved values repeat. `interpolate_with` stays the reference semantics: any change to interpolation must change both and keep the differential test in `src/utils/template/tests.rs` passing. See `docs/prepared-pipelines-and-shared-statistics.md` and `docs/benchmarks/engine/`.
 
@@ -351,7 +354,7 @@ Documentation is written in **English**: rustdoc, comments, Markdown files, comm
 
 ### Instruction behavior
 
-18. **An instruction does only what it is expected to do.** A transform changes exactly what its name and documentation say and nothing else, so pipelines stay predictable: a word instruction keeps the original separators, an instruction never rewrites the parts of the text it does not target, and instructions of the same family share edge rules (inclusive ranges accept `start == end`; an `end` past the text is clamped in the same way; empty text where a position is required is an error).
+18. **An instruction does only what it is expected to do.** A transform changes exactly what its name and documentation say and nothing else, so pipelines stay predictable: a word instruction keeps the original separators, an instruction never rewrites the parts of the text it does not target, and instructions of the same family share edge rules (inclusive ranges accept `start == end`; an `end` past the text is clamped in the same way, for characters, words and lines; a single index that does not exist is an error; empty text where a position is required is an error). The rules and their documented exceptions (`rnw`, `ins`/`inf`) are in `docs/indices-and-ranges.md`.
 19. **Work-multiplying instructions are limited by default.** Instructions whose output or work grows with a parameter (`rpt`, `padl`, `padr`, `iter`) check generous default limits (`Limits`: `max_generated_bytes`, `max_iterations`) and fail with an error instead of exhausting memory, CPU or disk. The user decides: limits can be raised or set to `unlimited` in `ExecutionProfile`, `.txfrc` and `txf` flags. A new instruction of this kind uses the same limits; a profile or limit never changes the text produced, it can only make a run fail.
 20. **Errors never carry the whole document.** When an error refers to the processed text, its `input` field and message use `utils::errors::input_excerpt`, not a copy of the text, which may be hundreds of megabytes.
 

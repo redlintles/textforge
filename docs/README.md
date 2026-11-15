@@ -13,6 +13,7 @@ How the language and the library behave.
 |---|---|
 | [Text syntax](text-syntax.md) | Words, quotes and escapes (`"\n"`, `"\t"`) in `.textforge` lines |
 | [Logical lines](lines.md) | Line terminators, line numbers and the line instructions |
+| [Indices, ranges and replacement text](indices-and-ranges.md) | Bases, what happens out of range, argument order, regex patterns and `$` in replacements |
 | [Section instructions](on-instructions.md) | `onln`, `onck`, `onlni`: applying one instruction to part of the text |
 | [File instructions](file-instructions.md) | `wtf`, `apf`, `ppf`, `inf` and pipeline joins (`ppjn`) |
 | [Replacement maps](replace-maps.md) | `rmapd`/`rmape`: several non-cascading replacements in one pass |
