@@ -81,6 +81,38 @@ pub(crate) fn capitalize_into(output: &mut String, word: &str) {
     }
 }
 
+/// Append `word` with its first character uppercased and the rest lowercased,
+/// as `jpsc` and `jcmc` join words (`HTTP` becomes `Http`).
+pub(crate) fn title_case_into(output: &mut String, word: &str) {
+    let mut chars = word.chars();
+    let Some(first) = chars.next() else {
+        return;
+    };
+    output.extend(first.to_uppercase());
+    if word.is_ascii() {
+        lowercase_into(output, chars.as_str());
+        return;
+    }
+    // Lowercase the whole word so letters that depend on their position keep
+    // it (`ΟΣ` → `Ος`, with a final sigma), then drop the first letter's part.
+    // The first letter is never a final sigma, so the lowercase word always
+    // starts with its lowercase form.
+    let lower = word.to_lowercase();
+    let first_len: usize = first.to_lowercase().map(char::len_utf8).sum();
+    output.push_str(lower.get(first_len..).unwrap_or_default());
+}
+
+/// Append `text` lowercased.
+pub(crate) fn lowercase_into(output: &mut String, text: &str) {
+    if text.is_ascii() {
+        let start = output.len();
+        output.push_str(text);
+        output[start..].make_ascii_lowercase();
+    } else {
+        output.push_str(&text.to_lowercase());
+    }
+}
+
 /// Filter logical lines, allocating only after the first rejected line.
 pub(crate) fn filter_lines(
     input: Cow<'_, str>,

@@ -232,6 +232,12 @@ fn pipeline_files_accept_a_byte_order_mark_and_the_short_extension() {
 fn camel_case_starts_lowercase() {
     assert_eq!(ok(&["jcmc;"], "Hello World"), "helloWorld");
     assert_eq!(ok(&["jpsc;"], "hello world"), "HelloWorld");
+    // Words in capitals are not copied as they are ("hTTPServer").
+    assert_eq!(ok(&["jcmc;"], "HTTP server"), "httpServer");
+    assert_eq!(ok(&["jpsc;"], "HTTP server"), "HttpServer");
+    assert_eq!(ok(&["jpsc;"], "ÉLAN vital"), "ÉlanVital");
+    // The same rule as jkbc and jsnc, which lowercase everything.
+    assert_eq!(ok(&["jsnc;"], "HTTP server"), "http_server");
 }
 
 // --- `ins` and `inf` at index 0 ---------------------------------------------

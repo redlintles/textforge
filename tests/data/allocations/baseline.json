@@ -8588,7 +8588,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ßΟΣİBananaBananaTailEnd"
+      "ok": "ßΟςİBananaBananaTailEnd"
     },
     "owned": false
   },
@@ -8601,7 +8601,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "ßΟΣİBananaBananaTailEnd"
+      "ok": "ßΟςİBananaBananaTailEnd"
     },
     "owned": true
   },
@@ -9602,7 +9602,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "SSΟΣİBananaBananaTailEnd"
+      "ok": "SSΟςİBananaBananaTailEnd"
     },
     "owned": false
   },
@@ -9615,7 +9615,7 @@
     },
     "input": "ß ΟΣ İ banana\r\n\r\nbanana tail end",
     "outcome": {
-      "ok": "SSΟΣİBananaBananaTailEnd"
+      "ok": "SSΟςİBananaBananaTailEnd"
     },
     "owned": true
   },
