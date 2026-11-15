@@ -125,6 +125,13 @@ pub(crate) fn is_numeric_template(text: &str) -> bool {
     text.contains("[[") || text.contains("{{")
 }
 
+/// Whether the content between `[[` and `]]` is plain text rather than an
+/// expression: empty, or starting with `:` as POSIX character classes do
+/// (`[[:alpha:]]`, `[[:alpha:][:digit:]]`). No expression starts with a colon.
+pub(crate) fn is_literal_brackets(content: &str) -> bool {
+    content.trim().is_empty() || content.starts_with(':')
+}
+
 /// Converts an evalexpr result back into a plain string, without the
 /// formatting evalexpr's own `Display` impl adds (e.g. wrapping strings in
 /// literal quotes, since that impl is meant to print back valid expression
@@ -150,10 +157,15 @@ pub fn value_to_plain_string(value: &Value) -> String {
 /// - A delimiter preceded by `\` (`\{{`, `\}}`, `\[[`, `\]]`) is printed
 ///   literally and the `\` is dropped. Elsewhere (`\n`, a lone `\`, `\{`) a
 ///   backslash has no special meaning.
-/// - A `{{`, `}}`, `[[` or `]]` that does not close a valid marker (a name
-///   starting with a digit, a missing end…) is removed, unless escaped. To
-///   print `{{name}}` literally, escape both ends: `\{{name\}}`; escaping one
-///   end leaves the other unmatched, and it is removed.
+/// - A `{{`, `}}`, `[[` or `]]` that does not form a valid marker (a name
+///   that is not an identifier, a missing end…) is kept as written, so JSON
+///   (`{"a":{"b":1}}`), nested brackets (`m[i[0]]`) and regex classes
+///   (`[0-9[:alpha:]]`) pass through unchanged. Before 0.3.2 such delimiters
+///   were removed.
+/// - `[[ ]]` whose content is empty or starts with `:` is not an expression
+///   and is kept as written: no expression starts with a colon, and POSIX
+///   character classes (`[[:alpha:]]`) do.
+/// - To print a valid marker literally, escape its opening: `\{{name}}`.
 /// - Nothing is scanned twice: a value that happens to contain `{{` or `[[` is
 ///   not interpolated again, so variables that refer to each other cannot loop.
 ///
@@ -194,12 +206,17 @@ pub(crate) fn interpolate_with(input: &str, reader: &VarReader) -> Result<String
             let as_string: String = value.try_into()?;
             out.push_str(&as_string);
         } else if let Some(expr_src) = caps.name("expr") {
-            let result = evaluate_with(expr_src.as_str(), reader, "api::expr")?;
-            out.push_str(&value_to_plain_string(&result));
+            if is_literal_brackets(expr_src.as_str()) {
+                out.push_str(m.as_str());
+            } else {
+                let result = evaluate_with(expr_src.as_str(), reader, "api::expr")?;
+                out.push_str(&value_to_plain_string(&result));
+            }
+        } else {
+            // No named group matched: a `{{`, `}}`, `[[` or `]]` that is not
+            // part of a valid marker. It is ordinary text.
+            out.push_str(m.as_str());
         }
-        // No named group matched: this is the stray-delimiter fallback
-        // (an incomplete or invalid `{{`, `}}`, `[[` or `]]`): push nothing
-        // to `out`, which removes that piece.
 
         last_end = m.end();
     }

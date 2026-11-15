@@ -18,6 +18,6 @@ pub static EXPR_RE: LazyLock<Regex> =
 
 pub static INTERP_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?P<esc>\\(?:\{\{|\}\}|\[\[|\]\]))|\{\{(?P<var>[a-zA-Z_][a-zA-Z0-9_]*)\}\}|\[\[(?P<expr>.*?)\]\]|\{\{|\}\}|\[\[|\]\]"
+        r"(?s)(?P<esc>\\(?:\{\{|\}\}|\[\[|\]\]))|\{\{(?P<var>[a-zA-Z_][a-zA-Z0-9_]*)\}\}|\[\[(?P<expr>.*?)\]\]|\{\{|\}\}|\[\[|\]\]"
     ).expect("INTERP regex is a static valid pattern")
 });

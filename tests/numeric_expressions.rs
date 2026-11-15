@@ -38,8 +38,8 @@ fn variable_names_accept_underscores() {
     assert_eq!(run(&["val _x = 1;", "dla {{_x}};"], "abc").unwrap(), "ab");
     // Escaped delimiters still print literally.
     assert_eq!(run(&["ate '\\{{a_b\\}}';"], "").unwrap(), "{{a_b}}");
-    // Names still cannot start with a digit; such markers are dropped as before.
-    assert_eq!(run(&["ate '{{1a}}';"], "").unwrap(), "1a");
+    // Names still cannot start with a digit; such markers are ordinary text.
+    assert_eq!(run(&["ate '{{1a}}';"], "").unwrap(), "{{1a}}");
 }
 
 #[test]

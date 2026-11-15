@@ -16,7 +16,7 @@ use crate::{
     parser::params::TextForgeParamTypes,
     utils::{
         errors::{TextForgeError, TextForgeErrorCode},
-        expr::{evaluate_tree, value_to_plain_string},
+        expr::{evaluate_tree, is_literal_brackets, value_to_plain_string},
     },
 };
 
@@ -87,7 +87,7 @@ enum Segment {
 }
 
 /// A parameter text split into literal text, `{{var}}` reads and `[[expr]]`
-/// expressions (escapes resolved and stray delimiters removed).
+/// expressions (escapes resolved; stray delimiters are literal text).
 #[derive(Debug)]
 pub(crate) struct Template {
     segments: Vec<Segment>,
@@ -108,8 +108,8 @@ impl Template {
     /// delimiter at all, so the caller keeps using the text as it is.
     ///
     /// At each position the first matching alternative wins, as in the regex:
-    /// an escaped pair, `{{name}}`, `[[expr]]` (shortest, never across a line
-    /// break), then a stray pair, which is dropped.
+    /// an escaped pair, `{{name}}`, `[[expr]]` (shortest), then a stray pair,
+    /// which stays in the text.
     pub(crate) fn parse(input: &str) -> Option<Self> {
         if !PAIRS
             .iter()
@@ -135,47 +135,48 @@ impl Template {
                 continue;
             }
             if rest.starts_with(b"{{") {
-                flush(&mut text, start);
                 let name_len = rest[2..]
                     .iter()
                     .take_while(|byte| is_name_byte(**byte))
                     .count();
                 if name_len > 0 && is_name_start(rest[2]) && rest[2 + name_len..].starts_with(b"}}")
                 {
+                    flush(&mut text, start);
                     if !text.is_empty() {
                         segments.push(Segment::Text(std::mem::take(&mut text).into()));
                     }
                     segments.push(Segment::Var(input[i + 2..i + 2 + name_len].into()));
                     i += 4 + name_len;
+                    start = i;
                 } else {
+                    // Not a variable read: the pair is ordinary text.
                     i += 2;
                 }
-                start = i;
                 continue;
             }
             if rest.starts_with(b"[[") {
-                flush(&mut text, start);
-                let close = rest[2..]
-                    .windows(2)
-                    .position(|window| window == b"]]")
-                    .filter(|&end| !rest[2..2 + end].contains(&b'\n'));
+                let close = rest[2..].windows(2).position(|window| window == b"]]");
                 match close {
+                    Some(end) if is_literal_brackets(&input[i + 2..i + 2 + end]) => {
+                        // Empty or a POSIX class: ordinary text, both ends.
+                        i += 4 + end;
+                    }
                     Some(end) => {
+                        flush(&mut text, start);
                         if !text.is_empty() {
                             segments.push(Segment::Text(std::mem::take(&mut text).into()));
                         }
                         segments.push(Segment::Expr(CompiledExpr::new(&input[i + 2..i + 2 + end])));
                         i += 4 + end;
+                        start = i;
                     }
                     None => i += 2,
                 }
-                start = i;
                 continue;
             }
             if rest.starts_with(b"}}") || rest.starts_with(b"]]") {
-                flush(&mut text, start);
+                // A closing pair that closes nothing is ordinary text.
                 i += 2;
-                start = i;
                 continue;
             }
             i += 1;
