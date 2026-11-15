@@ -358,9 +358,11 @@ Documentation is written in **English**: rustdoc, comments, Markdown files, comm
 21. **End indices are clamped to the text.** When an instruction receives an end index (or any index that closes a range) greater than the length of the text it operates on, it corrects the index to that length instead of failing. The length is measured in the unit the index counts (characters, words, lines) and, for the `on*` family, refers to the section the instruction receives. Example: `dlc 0 9999;` on a 5-character text behaves as `dlc 0 5;`. Clamping only applies to the end of a range: an invalid start, an inverted range and empty text where a position is required remain errors (see rule 18).
 22. **All indices are zero-based.** Every instruction counts characters, words, lines and positions from `0`, with no exceptions per family. A new instruction never introduces a one-based index.
 
+23. **A start index or a single index that does not exist is an error.** Unlike an end index (rule 21), a start index, or the only index an instruction receives, is never corrected: if it points past the text it operates on (measured in the unit it counts, and for the `on*` family relative to the section), the instruction returns a `TextForgeError` with an `input_excerpt` (rule 20) instead of clamping or silently doing nothing. Example: `dlc 9999 10000;` on a 5-character text fails.
+
 ### Change verification
 
-23. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
+24. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
 
 ---
 
