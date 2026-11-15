@@ -31,7 +31,7 @@ fn a_pipeline_can_save_intermediate_states_and_read_files() {
         format!("wtf {};", quoted(&directory.path().join("trimmed.txt"))),
         "tua;".to_owned(),
         format!("apf {};", quoted(&header)),
-        format!("inf {} 2;", quoted(&header)),
+        format!("inf 2 {};", quoted(&header)),
     ];
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
@@ -71,7 +71,7 @@ fn file_instructions_inside_sections_see_only_the_section() {
     let lines = vec![
         format!("onln 2 apply wtf {};", quoted(&section)),
         format!("onln 1 apply apf {};", quoted(&piece)),
-        format!("onck 0 1 apply inf {} 0;", quoted(&piece)),
+        format!("onck 0 1 apply inf 0 {};", quoted(&piece)),
     ];
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
@@ -92,7 +92,7 @@ fn text_and_bytecode_round_trips_keep_the_instructions() {
     let lines = vec![
         format!("wtf '{}/{{{{__PIPELINE_NAME__}}}}.txt';", out.display()),
         format!("apf {};", quoted(&piece)),
-        format!("inf {} 0;", quoted(&piece)),
+        format!("inf 0 {};", quoted(&piece)),
     ];
     let mut processor = TextForgeProcessor::new();
     let id = register(&mut processor, &lines);
@@ -137,7 +137,7 @@ fn every_processing_mode_gives_the_same_result_and_files() {
     let lines = vec![
         format!("wtf {};", quoted(&snapshot)),
         format!("apf {};", quoted(&piece)),
-        format!("inf {} 1;", quoted(&piece)),
+        format!("inf 1 {};", quoted(&piece)),
     ];
     let input = "linha 1\r\nlinha 2";
     let expected = "li[peça 🍌]nha 1\r\nlinha 2[peça 🍌]";
@@ -233,7 +233,7 @@ fn builders_and_portable_plans_match_the_text_form() {
         .unwrap()
         .append_file(piece_text.as_str())
         .unwrap()
-        .insert_file(piece_text.as_str(), 0)
+        .insert_file(0, piece_text.as_str())
         .unwrap()
         .build()
         .unwrap();
@@ -246,7 +246,7 @@ fn builders_and_portable_plans_match_the_text_form() {
             InstructionSpec::new("apf".into(), vec![Argument::Text(piece_text.clone())]),
             InstructionSpec::new(
                 "inf".into(),
-                vec![Argument::Text(piece_text), Argument::Number(0)],
+                vec![Argument::Number(0), Argument::Text(piece_text)],
             ),
         ])
         .unwrap();

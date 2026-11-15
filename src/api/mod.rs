@@ -2492,26 +2492,27 @@ pub trait TextForgeBuilderMethods: Sized {
     }
 
     /// INF — Insert the contents of a UTF-8 file at the start (index 0) or after the character at
-    /// `index` (base 0), with the index rules of [`insert`](Self::insert).
+    /// `index` (base 0), with the index rules and the argument order of
+    /// [`insert`](Self::insert). Up to 0.3.1 the arguments were `(path, index)`.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
     /// let path = std::env::temp_dir().join(format!("inf-builder-{}.txt", std::process::id()));
     /// std::fs::write(&path, "-").unwrap();
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().insert_file(path.to_string_lossy().as_ref(), 0)?.build()?;
+    /// let id = processor.create_pipeline().insert_file(0, path.to_string_lossy().as_ref())?.build()?;
     /// assert_eq!(processor.process_all(&id, "ab")?, "-ab");
     /// # std::fs::remove_file(&path).unwrap();
     /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
     /// ```
     fn insert_file(
         &mut self,
-        path: impl Into<ValType>,
         index: impl Into<ValType>,
+        path: impl Into<ValType>,
     ) -> Result<&mut Self, TextForgeError> {
         let token = TokenWrapper::new(
             Box::new(inf::Inf::default()),
-            Some(vec![path.into(), index.into()]),
+            Some(vec![index.into(), path.into()]),
         );
         self.push_token(token)?;
         Ok(self)

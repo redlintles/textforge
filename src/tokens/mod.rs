@@ -127,7 +127,7 @@
 //! | [`wtf`](transforms::wtf::Wtf) | `wtf {file};` | Write the text to `file` and keep it unchanged. |
 //! | [`apf`](transforms::apf::Apf) | `apf {file};` | Append the contents of `file`. |
 //! | [`ppf`](transforms::ppf::Ppf) | `ppf {file};` | Prepend the contents of `file`. |
-//! | [`inf`](transforms::inf::Inf) | `inf {file} {index};` | Insert the contents of `file` at the start (index 0) or after the character at `index`. |
+//! | [`inf`](transforms::inf::Inf) | `inf {index} {file};` | Insert the contents of `file` at the start (index 0) or after the character at `index`. |
 //! | [`ppjn`](instructions::ppjn::Ppjn) | `ppjn {pipeline};` | Run the pipeline in another file on the text. |
 //!
 //! ### Variables

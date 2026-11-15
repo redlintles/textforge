@@ -252,7 +252,7 @@ fn index_zero_inserts_at_the_start_of_the_text() {
     let directory = tempfile::tempdir().unwrap();
     let piece = directory.path().join("piece.txt");
     std::fs::write(&piece, "+").unwrap();
-    let line = format!("inf '{}' 0;", piece.display());
+    let line = format!("inf 0 '{}';", piece.display());
     assert_eq!(ok(&[line.as_str()], "ab"), "+ab");
 }
 
@@ -288,4 +288,19 @@ fn every_replace_instruction_expands_capture_groups() {
     for line in ["rlw z '$1';", "rnw z '$1' 0;", "rnw a '$1' 9;"] {
         assert_eq!(ok(&[line], "abc"), "abc", "{line}");
     }
+}
+
+// --- `inf` argument order ---------------------------------------------------
+
+/// Before: `inf {file} {index}`, the reverse of `ins {index} {text}`.
+#[test]
+fn inf_takes_the_index_first_like_ins() {
+    let directory = tempfile::tempdir().unwrap();
+    let piece = directory.path().join("piece.txt");
+    std::fs::write(&piece, "+").unwrap();
+    let path = piece.display().to_string();
+    assert_eq!(ok(&[format!("inf 1 '{path}';").as_str()], "abc"), "ab+c");
+    assert_eq!(ok(&["ins 1 '+';"], "abc"), "ab+c");
+    // The old order is a parsing error, not a silent misread.
+    assert!(run(&[format!("inf '{path}' 1;").as_str()], "abc").is_err());
 }

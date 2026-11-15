@@ -38,6 +38,14 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   inserted the replacement as written, although their documentation said `$1`
   referred to a capture group. A pipeline that writes a literal `$` with
   `rlw` or `rnw` must now write `$$`.
+- `inf` takes the index first, like `ins`: `inf {index} {file};` (before:
+  `inf {file} {index};`), and the builder method is `insert_file(index, path)`.
+  A pipeline in the old order fails to parse, and bytecode with `inf` written
+  by 0.3.1 fails to load with "a parameter has the wrong type"; write the
+  pipeline in the new order and compile it again.
+- `txf --debug` prints only the trace; the final text is the last step's
+  `After:`. Before, the result was printed again after the trace. With
+  `--output` the result is still written to the file.
 - `jcmc` lowercases the first letter of the result: `Hello World` becomes
   `helloWorld` (before: `HelloWorld`).
 - `txf`:
@@ -75,9 +83,8 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 
 - Replacing leaves the text unchanged when nothing matches, `rnw` included
   (a match number is not an index).
-- The order of arguments differs between `ins` and `inf`; `ppjn` resolves
-  paths from the pipeline file and the file instructions from the working
-  directory. Changing any of these breaks
+- `ppjn` resolves paths from the pipeline file and the file instructions from
+  the working directory. Changing any of these breaks
   existing pipelines. They are described in `docs/indices-and-ranges.md`.
 
 ## 0.3.1 (2026-11-15)

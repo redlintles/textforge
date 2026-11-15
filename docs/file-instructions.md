@@ -44,7 +44,7 @@ UTF-8 are distinct `TextForgeError`s that name the path.
 | `wtf` | `wtf {file};` | Write the current text to `file`; the text is unchanged | `write_to_file(path)` |
 | `apf` | `apf {file};` | Append the contents of `file` to the end of the text | `append_file(path)` |
 | `ppf` | `ppf {file};` | Prepend the contents of `file` to the beginning of the text | `prepend_file(path)` |
-| `inf` | `inf {file} {index};` | Insert the contents of `file` at the start (index 0) or after the character at `index` (base 0) | `insert_file(path, index)` |
+| `inf` | `inf {index} {file};` | Insert the contents of `file` at the start (index 0) or after the character at `index` (base 0) | `insert_file(index, path)` |
 
 Opcodes: `wtf` 0x55, `apf` 0x56, `inf` 0x57, `ppf` 0x59. Portable plans use the same
 mnemonics with `Argument::Text` paths and an `Argument::Number` index.
@@ -54,7 +54,7 @@ tbs;
 wtf 'out/{{__PIPELINE_NAME__}}-trimmed.txt';   // save an intermediate state
 ppf 'templates/header.txt';
 apf 'templates/footer.txt';
-inf 'templates/signature.txt' 0;
+inf 0 'templates/signature.txt';
 ```
 
 ## `wtf` (write to file)

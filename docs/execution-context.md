@@ -60,9 +60,11 @@ Defining a name that already exists replaces it, also when it was a `val`:
 
 ### Expressions
 
-`[[ ]]` and `eval` use [evalexpr](https://docs.rs/evalexpr). A variable whose
+`[[ ]]` and `eval` use [evalexpr](https://docs.rs/evalexpr). TextForge values
+are integers and text: floats and booleans are not supported. A variable whose
 text is an integer is a number in an expression; any other value, including
-`2.5` and `true`, is text. `len(text)` counts characters, like
+`2.5` and `true`, is text, so `var a = 2.5;` followed by `[[a + 1]]` is an
+error. `len(text)` counts characters, like
 `__LEN_CHARS__` and every index (up to 0.3.1 it counted bytes).
 
 ### Reserved names
