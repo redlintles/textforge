@@ -1,6 +1,6 @@
 [package]
 name = "textforge"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 description = "A Flexible scalable DSL that allows the creation of pipelines for text processing"
 license-file = "LICENSE"
@@ -54,14 +54,7 @@ buffered = ["tempfile"]
 # The `txf` command-line program and its helpers (`utils::cli`).
 cli = ["dep:clap"]
 
-test_access = [
-  "default",
-  "bytecode",
-  "buffered",
-  "tempfile",
-  "watchers",
-  "cli",
-]
+test_access = ["default", "bytecode", "buffered", "tempfile", "watchers", "cli"]
 
 [[bin]]
 name = "txf"
