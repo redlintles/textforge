@@ -17,7 +17,7 @@ CATALOG = [
  ("Add, insert and repeat", [
   ("atb", "atb {text};", "Add `text` to the beginning."),
   ("ate", "ate {text};", "Add `text` to the end."),
-  ("ins", "ins {index} {text};", "Insert `text` after the character at `index`."),
+  ("ins", "ins {index} {text};", "Insert `text` after the character at `index` (`0` inserts at the start)."),
   ("padl", "padl {text} {length};", "Pad on the left with `text` up to `length` characters."),
   ("padr", "padr {text} {length};", "Pad on the right with `text` up to `length` characters."),
   ("rpt", "rpt {times};", "Repeat the text `times` times."),
@@ -102,7 +102,7 @@ CATALOG = [
   ("wtf", "wtf {file};", "Write the text to `file` and keep it unchanged."),
   ("apf", "apf {file};", "Append the contents of `file`."),
   ("ppf", "ppf {file};", "Prepend the contents of `file`."),
-  ("inf", "inf {file} {index};", "Insert the contents of `file` after the character at `index`."),
+  ("inf", "inf {index} {file};", "Insert the contents of `file` after the character at `index` (`0` inserts at the start)."),
   ("ppjn", "ppjn {pipeline};", "Run the pipeline in another file on the text."),
  ]),
  ("Variables", [

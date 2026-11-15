@@ -20,7 +20,7 @@ pub struct Entry {
 pub const CATALOG: &[Entry] = &[
     Entry { name: "atb", syntax: "atb {text};", effect: "Add `text` to the beginning.", group: "Add, insert and repeat" },
     Entry { name: "ate", syntax: "ate {text};", effect: "Add `text` to the end.", group: "Add, insert and repeat" },
-    Entry { name: "ins", syntax: "ins {index} {text};", effect: "Insert `text` after the character at `index`.", group: "Add, insert and repeat" },
+    Entry { name: "ins", syntax: "ins {index} {text};", effect: "Insert `text` after the character at `index` (`0` inserts at the start).", group: "Add, insert and repeat" },
     Entry { name: "padl", syntax: "padl {text} {length};", effect: "Pad on the left with `text` up to `length` characters.", group: "Add, insert and repeat" },
     Entry { name: "padr", syntax: "padr {text} {length};", effect: "Pad on the right with `text` up to `length` characters.", group: "Add, insert and repeat" },
     Entry { name: "rpt", syntax: "rpt {times};", effect: "Repeat the text `times` times.", group: "Add, insert and repeat" },
@@ -91,7 +91,7 @@ pub const CATALOG: &[Entry] = &[
     Entry { name: "wtf", syntax: "wtf {file};", effect: "Write the text to `file` and keep it unchanged.", group: "Files" },
     Entry { name: "apf", syntax: "apf {file};", effect: "Append the contents of `file`.", group: "Files" },
     Entry { name: "ppf", syntax: "ppf {file};", effect: "Prepend the contents of `file`.", group: "Files" },
-    Entry { name: "inf", syntax: "inf {file} {index};", effect: "Insert the contents of `file` after the character at `index`.", group: "Files" },
+    Entry { name: "inf", syntax: "inf {index} {file};", effect: "Insert the contents of `file` after the character at `index` (`0` inserts at the start).", group: "Files" },
     Entry { name: "ppjn", syntax: "ppjn {pipeline};", effect: "Run the pipeline in another file on the text.", group: "Files" },
     Entry { name: "var", syntax: "var {name} = {value};", effect: "Define a mutable variable.", group: "Variables" },
     Entry { name: "val", syntax: "val {name} = {value};", effect: "Define an immutable variable.", group: "Variables" },

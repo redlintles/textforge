@@ -11,7 +11,7 @@ use crate::{
     utils::{errors::TextForgeError, validations::check_vec_len},
 };
 
-/// `inf {index} {file};` — Insert the contents of `file` at the start (index 0) or after the character at `index`.
+/// `inf {index} {file};` — Insert the contents of `file` after the character at `index` (`0` inserts at the start).
 ///
 /// Inserts the contents of a UTF-8 file into the current text, with exactly the
 /// index rules and the argument order of `ins {index} {text}`: index 0 is the

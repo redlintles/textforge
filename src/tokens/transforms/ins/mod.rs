@@ -11,7 +11,7 @@ use crate::{
     tokens::InstructionMethods,
     utils::errors::{TextForgeError, TextForgeErrorCode},
 };
-/// `ins {index} {text};` — Insert `text` at the start (index 0) or after the character at `index`.
+/// `ins {index} {text};` — Insert `text` after the character at `index` (`0` inserts at the start).
 ///
 /// Index `0` inserts `text` at the start of `input`; any other index inserts
 /// it after the character at that position (base 0). An index equal to the

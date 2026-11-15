@@ -58,6 +58,7 @@ script in [`scripts/`](../scripts) and its raw results.
 | [Engine (0.3.0)](benchmarks/engine/README.md) | Parameter binding, templates, expressions and loading, before and after the 0.3.0 engine work |
 | [Section instructions](benchmarks/on-instructions/README.md) | `onln`, `onck`, `onlni` |
 | [Built-in variables](benchmarks/builtin-variables/README.md) | Cost of the static context |
+| [Line parser (0.3.1)](benchmarks/line-parser/README.md) | `split_line` against `shell_words::split` |
 | [Line performance](line-performance-summary.md) ([full report](benchmarks/line-performance/report.md)) | The line instructions in 0.2.0 |
 | [Batch input](benchmarks/batch-io/report.md) · [Safe file I/O](benchmarks/safe-file-io/report.md) | File reading strategies |
 | [Watcher reliability](benchmarks/watcher-reliability/report.md) · [Watchers comparison](benchmarks/watchers-comparison-report.md) | Watcher overhead |
