@@ -360,9 +360,11 @@ Documentation is written in **English**: rustdoc, comments, Markdown files, comm
 
 23. **A start index or a single index that does not exist is an error.** Unlike an end index (rule 21), a start index, or the only index an instruction receives, is never corrected: if it points past the text it operates on (measured in the unit it counts, and for the `on*` family relative to the section), the instruction returns a `TextForgeError` with an `input_excerpt` (rule 20) instead of clamping or silently doing nothing. Example: `dlc 9999 10000;` on a 5-character text fails.
 
+24. **Indices are character indices.** Every index an instruction receives counts Unicode scalar values (`char`s), never bytes, and instructions convert it to a byte offset internally (rule 3). The only exception is an instruction that manipulates bytes explicitly, and its name and documentation must say so. Line and word indices follow the same logic: they count lines and words, not bytes.
+
 ### Change verification
 
-24. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
+25. **Test rigorously after every change** and check that it introduces neither new bugs nor serious performance regressions (rerun the relevant benchmark when a hot path changes). Optimization work ends with a benchmark comparing the code before and after it, recorded in `docs/benchmarks/` with a reproducible script.
 
 ---
 
