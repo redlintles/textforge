@@ -8,12 +8,13 @@ use crate::parser::params::TextForgeParamTypes;
 use crate::tokens::InstructionMethods;
 use crate::utils::validations::{check_index_against_input, check_vec_len};
 
-use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
+use crate::utils::errors::TextForgeError;
 
 /// `dla {index};` — Delete every character after `index`.
 /// Delete all characters after `index` in the specified `input`
 ///
-/// It will throw an `TextForgeError` if index does not exists in the current `input`
+/// Returns a `TextForgeError` if `index` does not exist in `input`. At the last
+/// character there is nothing after it, so the text is returned unchanged.
 ///
 /// # Example:
 ///
@@ -61,22 +62,12 @@ impl InstructionMethods for Dla {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_index_against_input(self.index, &input)?;
 
-        if let Some(byte_index) = input.char_indices().nth(self.index + 1).map(|(i, _)| i) {
-            return Ok(crate::utils::allocation::keep(input, 0..byte_index));
-        }
-
-        Err(TextForgeError::new(
-            TextForgeErrorCode::IndexOutOfRange(
-                format!(
-                    "character index {} is out of range: the text has {}",
-                    self.index,
-                    crate::utils::errors::plural(input.chars().count(), "character")
-                )
-                .into(),
-            ),
-            "",
-            crate::utils::errors::input_excerpt(&input),
-        ))
+        // The last character has nothing after it: the text is unchanged
+        // (Golden Rule 23: only an index that does not exist is an error).
+        Ok(match input.char_indices().nth(self.index + 1) {
+            Some((byte_index, _)) => crate::utils::allocation::keep(input, 0..byte_index),
+            None => input,
+        })
     }
 
     fn get_string_repr(&self) -> &'static str {

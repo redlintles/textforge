@@ -107,6 +107,9 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   messages. Error codes are unchanged.
 - The "nested too deeply" error at the top level says how to nest one more
   level with a block.
+- `dla` at the last character returns the text unchanged, since nothing
+  follows it; before, it was an `IndexOutOfRange` error although the index
+  exists (Golden Rule 23).
 
 ### Not changed (documented instead)
 

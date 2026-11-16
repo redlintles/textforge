@@ -6,7 +6,7 @@ mod tests {
     use crate::parser::params::TextForgeParamTypes;
     use crate::tokens::InstructionMethods;
     use crate::tokens::transforms::dla::Dla;
-    use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
+    use crate::utils::errors::TextForgeErrorCode;
 
     #[test]
     fn params_sets_index() {
@@ -79,24 +79,14 @@ mod tests {
     }
 
     #[test]
-    fn transform_returns_index_out_of_range_when_index_is_last_char() {
-        // current behavior:
-        // when the index points at the last char, nth(index+1) is None -> Err(IndexOutOfRange)
-        let input = "abc";
+    fn transform_keeps_the_text_when_index_is_last_char() {
+        // Before, the last index was an IndexOutOfRange error although the
+        // character exists (Golden Rule 23).
         let t = Dla::new(2); // last char
         let mut ctx = GlobalExecutionContext::new();
-
-        let got = t.transform(input.into(), Some(&mut ctx));
-
-        let expected = Err(TextForgeError::new(
-            TextForgeErrorCode::IndexOutOfRange(
-                "character index 2 is out of range: the text has 3 characters".into(),
-            ),
-            "",
-            input.to_string(),
-        ));
-
-        assert_eq!(got, expected);
+        assert_eq!(t.transform("abc".into(), Some(&mut ctx)).unwrap(), "abc");
+        assert_eq!(Dla::new(1).transform("é🍌".into(), None).unwrap(), "é🍌");
+        assert!(Dla::new(3).transform("abc".into(), None).is_err());
     }
 
     #[test]
