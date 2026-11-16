@@ -115,3 +115,35 @@ fn a_dash_is_standard_input_and_output() {
     assert_eq!(stdout(&output), "ABC");
     assert!(!files.path().join("-").exists());
 }
+
+/// Before: the whole input was read before the pipeline was loaded, so a
+/// mistake in the pipeline was reported only when standard input closed.
+#[test]
+fn a_broken_pipeline_is_reported_before_reading_the_input() {
+    let files = Files::new();
+    files.write("p.textforge", "nope;\n");
+    let mut child = Command::new(env!("CARGO_BIN_EXE_txf"))
+        .args(["-f", "p.textforge", "--no-rc"])
+        .current_dir(files.path())
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    // Standard input stays open and empty while the program runs.
+    let _stdin = child.stdin.take().unwrap();
+    let started = std::time::Instant::now();
+    let status = loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            break status;
+        }
+        if started.elapsed() > std::time::Duration::from_secs(10) {
+            child.kill().unwrap();
+            panic!("txf waited for standard input before loading the pipeline");
+        }
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    };
+    assert!(!status.success());
+    let output = child.wait_with_output().unwrap();
+    assert!(String::from_utf8_lossy(&output.stderr).contains("unknown instruction `nope`"));
+}

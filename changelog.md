@@ -164,6 +164,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `txf --input -` reads standard input and `txf --output -` prints the
   result, as usual on the command line; before, `-i -` failed and `-o -`
   wrote a file called `-`.
+- `txf` loads the pipeline before reading the input, so a mistake in the
+  pipeline is reported at once; before, it was reported only after standard
+  input had been read to the end. When the text comes from a terminal, `txf`
+  says on stderr that it is waiting for it and how to end it.
 
 ### Not changed (documented instead)
 

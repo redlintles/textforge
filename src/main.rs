@@ -4,7 +4,7 @@ use clap::{Arg, ArgAction, Command, value_parser};
 use std::{
     borrow::Cow,
     fs::OpenOptions,
-    io::{self, Read, Write},
+    io::{self, IsTerminal, Read, Write},
     path::{Path, PathBuf},
 };
 use textforge::{
@@ -262,10 +262,17 @@ fn run() -> Result<(), TextForgeError> {
     // `-` is standard input for --input and standard output for --output.
     let input = input.filter(|path| !is_dash(path));
     let output = output.filter(|path| !is_dash(path));
-    let data = read_input(input)?;
 
+    // Load the pipeline first, so a mistake in it is reported at once instead
+    // of after the whole input has been read. Before 0.3.2 the input came first.
     let (id, mut processor) = load_pipeline(textforge_mode.as_str(), file)?;
     processor.set_profile(profile.profile);
+    if input.is_none() && io::stdin().is_terminal() {
+        eprintln!(
+            "txf: reading the text from standard input; end it with Ctrl-D (Ctrl-Z, Enter on Windows) or give a file with --input"
+        );
+    }
+    let data = read_input(input)?;
     let chomp = matches.get_flag("chomp") && *read_mode != ReadMode::Line;
     let mut data = data;
     let final_newline = match chomp {
