@@ -147,6 +147,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   every instruction and writes their JSON report; `__INPUT_FILE__` is set as
   in a normal run. `utils::cli::process_with_watchers` and
   `utils::cli::watch_metrics` do the same in code.
+- `txf --help` describes the program, groups the options (input and output,
+  pipeline, diagnostics, profile and limits), shows examples and the exit
+  statuses, and names both extensions of each format; `docs/cli.md` is the
+  guide to the command line.
 
 ### Fixed
 

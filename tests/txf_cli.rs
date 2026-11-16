@@ -30,8 +30,8 @@ impl Files {
     /// Runs `txf` in this directory with `stdin` as standard input.
     fn txf(&self, args: &[&str], stdin: &str) -> Output {
         let mut child = Command::new(env!("CARGO_BIN_EXE_txf"))
-            .args(args)
             .arg("--no-rc")
+            .args(args)
             .current_dir(self.path())
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -391,5 +391,63 @@ fn the_output_file_is_replaced_atomically() {
             .status
             .code(),
         Some(0)
+    );
+}
+
+/// Before: the help said only "CLI for TextForge", had no examples, did not
+/// name the short extensions and did not explain the exit status.
+#[test]
+fn the_help_explains_the_program() {
+    let files = Files::new();
+    let long = stdout(&files.txf(&["--help"], ""));
+    for expected in [
+        "Examples:",
+        "Exit status:",
+        ".tft",
+        ".tfb",
+        "__INPUT_FILE__",
+        "Input and output",
+        "Profile and limits",
+        "compile",
+        "check",
+        "docs/cli.md",
+    ] {
+        assert!(
+            long.contains(expected),
+            "--help lacks {expected:?}:\n{long}"
+        );
+    }
+    let short = stdout(&files.txf(&["-h"], ""));
+    assert!(short.contains("Exit status: 0 success"), "{short}");
+    assert!(short.lines().count() < long.lines().count());
+}
+
+/// The profile flags belong to runs and `config show`; the other subcommands
+/// do not read `.txfrc`, so a broken one does not stop them.
+#[test]
+fn only_runs_and_config_show_read_the_profile() {
+    let files = Files::new();
+    files
+        .write("p.textforge", "tua;\n")
+        .write(".txfrc", "{\"version\": 1, \"mystery\": true}");
+    let run = |args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_txf"))
+            .args(args)
+            .current_dir(files.path())
+            .output()
+            .unwrap()
+    };
+    assert_eq!(run(&["check", "p.textforge"]).status.code(), Some(0));
+    assert_eq!(run(&["config", "show"]).status.code(), Some(2));
+    let shown = run(&["config", "show", "--no-rc", "--profile", "fast"]);
+    assert!(String::from_utf8_lossy(&shown.stdout).starts_with("profile: fast"));
+    // Flags written before the subcommand count too.
+    let shown = run(&["--no-rc", "--profile", "low-memory", "config", "show"]);
+    assert!(String::from_utf8_lossy(&shown.stdout).starts_with("profile: low-memory"));
+    assert_eq!(
+        run(&["-f", "p.textforge", "-i", "p.textforge"])
+            .status
+            .code(),
+        Some(2)
     );
 }

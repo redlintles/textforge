@@ -19,53 +19,70 @@ use textforge::{
     },
 };
 
+/// Help heading of the profile and limit flags.
+const PROFILE_HEADING: &str = "Profile and limits (never change the result)";
+
 /// Flags choosing the execution profile, shared by runs and `config show`.
 fn profile_args() -> [Arg; 6] {
     [
-        Arg::new("max_generated_bytes")
-            .long("max-generated-bytes")
-            .value_name("SIZE|unlimited")
-            .global(true)
-            .help("Largest text rpt/padl/padr may produce (default 2GiB)"),
-        Arg::new("max_iterations")
-            .long("max-iterations")
-            .value_name("N|unlimited")
-            .global(true)
-            .help("Largest iter count (default 10000000)"),
         Arg::new("profile")
             .long("profile")
             .value_name("PRESET")
             .value_parser(["balanced", "low-memory", "fast"])
-            .global(true)
-            .help("Execution profile preset (memory/speed trade-off; never changes results)"),
+            .hide_possible_values(true)
+            .help_heading(PROFILE_HEADING)
+            .help("Memory/speed preset: balanced (default), low-memory or fast"),
         Arg::new("spool_threshold")
             .long("spool-threshold")
             .value_name("SIZE")
-            .global(true)
-            .help("Override spool_threshold: bytes or e.g. 512MiB (buffered builds only)"),
+            .help_heading(PROFILE_HEADING)
+            .help("Text size kept in memory before spooling to disk, in bytes or with a unit (512MiB); only in builds with the buffered feature"),
+        Arg::new("max_generated_bytes")
+            .long("max-generated-bytes")
+            .value_name("SIZE|unlimited")
+            .help_heading(PROFILE_HEADING)
+            .help("Largest text rpt, padl and padr may produce (default 2GiB)"),
+        Arg::new("max_iterations")
+            .long("max-iterations")
+            .value_name("N|unlimited")
+            .help_heading(PROFILE_HEADING)
+            .help("Largest number of iter repetitions (default 10000000)"),
         Arg::new("config")
             .long("config")
-            .value_name("PATH")
+            .value_name("FILE")
             .value_parser(value_parser!(PathBuf))
             .conflicts_with("no_rc")
-            .global(true)
-            .help("Read this configuration file instead of ./.txfrc"),
+            .help_heading(PROFILE_HEADING)
+            .help("Read this configuration file instead of .txfrc in the current directory"),
         Arg::new("no_rc")
             .long("no-rc")
             .action(ArgAction::SetTrue)
-            .global(true)
-            .help("Do not read ./.txfrc"),
+            .help_heading(PROFILE_HEADING)
+            .help("Do not read .txfrc"),
     ]
 }
 
+/// The profile flags of `matches`. For `config show`, `outer` holds the flags
+/// written before the subcommand; those written after it win.
 fn profile_options(matches: &clap::ArgMatches) -> ProfileOptions {
+    profile_options_of(&[matches])
+}
+
+fn profile_options_of(levels: &[&clap::ArgMatches]) -> ProfileOptions {
+    let text = |name: &str| {
+        levels
+            .iter()
+            .find_map(|matches| matches.get_one::<String>(name).cloned())
+    };
     ProfileOptions {
-        profile: matches.get_one::<String>("profile").cloned(),
-        spool_threshold: matches.get_one::<String>("spool_threshold").cloned(),
-        max_generated_bytes: matches.get_one::<String>("max_generated_bytes").cloned(),
-        max_iterations: matches.get_one::<String>("max_iterations").cloned(),
-        config: matches.get_one::<PathBuf>("config").cloned(),
-        no_rc: matches.get_flag("no_rc"),
+        profile: text("profile"),
+        spool_threshold: text("spool_threshold"),
+        max_generated_bytes: text("max_generated_bytes"),
+        max_iterations: text("max_iterations"),
+        config: levels
+            .iter()
+            .find_map(|matches| matches.get_one::<PathBuf>("config").cloned()),
+        no_rc: levels.iter().any(|matches| matches.get_flag("no_rc")),
     }
 }
 
@@ -91,10 +108,14 @@ fn output_arg(help: &'static str) -> Arg {
 fn build_cli() -> Command {
     Command::new("txf")
         .version(env!("CARGO_PKG_VERSION"))
-        .about("CLI for TextForge")
-        .after_help(EXIT_STATUS_HELP)
+        .about("Run TextForge text-processing pipelines on a file or on standard input")
+        .long_about("Run a TextForge pipeline on a file or on standard input and print or save the result. A pipeline is a list of instructions, one per line, each ending with ; (tbs; rfw world Rust; tua;). Text pipelines are .textforge or .tft files; bytecode pipelines, made with `txf compile`, are .textforgebc or .tfb files.")
+        .after_help(concat!(
+            "Exit status: 0 success, 1 the pipeline failed on the text, 2 invalid arguments or configuration, 3 the pipeline could not be loaded, 4 the input could not be read or the result written.\n",
+            "Run `txf --help` for examples."
+        ))
+        .after_long_help(EXIT_STATUS_HELP)
         .subcommand_negates_reqs(true)
-        .args(profile_args())
         .subcommand(
             Command::new("compile")
                 .about("Compile a text pipeline to bytecode")
@@ -123,11 +144,12 @@ fn build_cli() -> Command {
         )
         .subcommand(
             Command::new("config")
-                .about("Inspect the engine configuration")
+                .about("Inspect the configuration: .txfrc and the profile flags")
                 .subcommand_required(true)
                 .subcommand(
                     Command::new("show")
-                        .about("Print the effective profile and where each value comes from"),
+                        .about("Print the effective profile and where each value comes from")
+                        .args(profile_args()),
                 ),
         )
         .arg(
@@ -135,19 +157,21 @@ fn build_cli() -> Command {
                 .short('f')
                 .long("file")
                 .required(true)
-                .value_name("FILE")
+                .value_name("PIPELINE")
                 .value_parser(value_parser!(PathBuf))
-                .help("The pipeline file: a .textforge text pipeline, or a .textforgebc bytecode pipeline with --mode b")
+                .help_heading("Pipeline")
+                .help("The pipeline to run: text (.textforge, .tft) or bytecode (.textforgebc, .tfb)")
         )
         .arg(
             Arg::new("input")
                 .short('i')
                 .long("input")
                 .required(false)
-                .value_name("INPUT")
+                .value_name("FILE")
                 .value_parser(value_parser!(PathBuf))
+                .help_heading("Input and output")
                 .help(
-                    "The file to process; without it, or with -, txf reads standard input"
+                    "The UTF-8 text to process; without it, or with -, txf reads standard input. The pipeline sees this path as __INPUT_FILE__"
                 )
         )
         .arg(
@@ -155,10 +179,11 @@ fn build_cli() -> Command {
                 .short('o')
                 .long("output")
                 .required(false)
-                .value_name("OUTPUT")
+                .value_name("FILE")
                 .value_parser(value_parser!(PathBuf))
+                .help_heading("Input and output")
                 .help(
-                    "The file to write the result to; without it, or with -, txf prints the result"
+                    "Where to write the result (replaced atomically); without it, or with -, txf prints the result"
                 )
         )
         .arg(
@@ -167,10 +192,11 @@ fn build_cli() -> Command {
                 .long("read-mode")
                 .default_value("all")
                 .required(false)
-                .value_name("READ_MODE")
+                .value_name("MODE")
                 .value_parser(|s: &str| s.parse::<ReadMode>())
+                .help_heading("Input and output")
                 .help(
-                    "How to feed the input to the pipeline: 'all' (default) processes it as one text, 'line' processes each line separately, and 'chunk-N' processes it in pieces of N characters"
+                    "How to feed the input to the pipeline: 'all' runs it once on the whole text; 'line' once per line, without its line break (kept as it was); 'chunk-N' once per piece of N characters. line and chunk-N run nothing on an empty input"
                 )
         )
         .arg(
@@ -182,6 +208,7 @@ fn build_cli() -> Command {
                 .value_parser(["auto", "t", "text", "b", "bytecode"])
                 .default_value("auto")
                 .hide_possible_values(true)
+                .help_heading("Pipeline")
                 .help(
                     "How to read --file: 'auto' (default) tells text from bytecode by the first bytes of the file; 't'/'text' or 'b'/'bytecode' force a format and check its extension"
                 )
@@ -191,6 +218,7 @@ fn build_cli() -> Command {
                 .long("chomp")
                 .required(false)
                 .action(ArgAction::SetTrue)
+                .help_heading("Input and output")
                 .help(
                     "Set the final line break of the input aside and put it back on the result, so instructions such as dll and ate work on the last visible character (--read-mode line always does this for every line)"
                 )
@@ -207,6 +235,7 @@ fn build_cli() -> Command {
                 .action(ArgAction::Append)
                 .requires("watch_report")
                 .conflicts_with("debug")
+                .help_heading("Diagnostics")
                 .help(format!(
                     "Record a metric after every instruction into the --watch-report file (repeatable or comma-separated; 'all' for every metric): {}",
                     watch_metrics().join(", ")
@@ -218,6 +247,7 @@ fn build_cli() -> Command {
                 .value_name("FILE")
                 .value_parser(value_parser!(PathBuf))
                 .requires("watch")
+                .help_heading("Diagnostics")
                 .help("Where --watch writes its JSON report (one row per instruction); needs --read-mode all"),
         )
         .arg(
@@ -226,10 +256,12 @@ fn build_cli() -> Command {
                 .long("debug")
                 .required(false)
                 .action(ArgAction::SetTrue)
+                .help_heading("Diagnostics")
                 .help(
-                    "Print only the step-by-step trace of the run instead of the result; with --output the result is still written to the file (default: off)"
+                    "Print the step-by-step trace of the run instead of the result; with --output the result is still written to the file"
                 )
         )
+        .args(profile_args())
 }
 
 /// Standard output that remembers when its reader has gone away.
@@ -297,7 +329,24 @@ fn at(stage: Stage) -> impl Fn(TextForgeError) -> Failure {
 }
 
 /// The text of `txf --help` after the options.
-const EXIT_STATUS_HELP: &str = "Exit status: 0 success, 1 the pipeline failed on the text, 2 invalid arguments or configuration, 3 the pipeline could not be loaded, 4 the input could not be read or the result written.";
+const EXIT_STATUS_HELP: &str = "\
+Examples:
+  txf -f clean.textforge -i in.txt -o out.txt   run a pipeline on a file
+  cat in.txt | txf -f clean.tft                 read stdin, print the result
+  txf -f trim.tft -r line -i log.txt            run it on every line
+  txf -f clean.tft -i in.txt -d                 show each step instead of the result
+  txf compile clean.textforge                   write clean.textforgebc
+  txf check *.textforge                         load pipelines without running them
+  txf config show                               print the effective profile
+
+Exit status:
+  0  success
+  1  the pipeline failed on the text
+  2  invalid arguments or configuration (.txfrc, profile flags)
+  3  the pipeline could not be loaded (missing file, syntax, validation)
+  4  the input could not be read or the result could not be written
+
+Guide: https://github.com/redlintles/textforge/blob/main/docs/cli.md";
 
 /// Runs the program and prints an error the way a person reads it
 /// (`error[12]: message`, then the instruction and the input) on standard
@@ -314,11 +363,14 @@ fn main() -> std::process::ExitCode {
 
 fn run() -> Result<(), Failure> {
     let matches = build_cli().get_matches();
-    let profile =
-        resolve_profile(&profile_options(&matches), Path::new(".")).map_err(at(Stage::Usage))?;
     let mut stdout = Stdout::new();
+    let profile_of = |options: ProfileOptions| {
+        resolve_profile(&options, Path::new(".")).map_err(at(Stage::Usage))
+    };
     match matches.subcommand() {
-        Some(("config", _)) => {
+        Some(("config", config)) => {
+            let show = config.subcommand_matches("show").unwrap_or(config);
+            let profile = profile_of(profile_options_of(&[show, &matches]))?;
             return print_result(&mut stdout, &profile.describe()).map_err(at(Stage::Io));
         }
         Some(("compile", sub)) => return convert(sub, PipelineFormat::Text, &mut stdout),
@@ -326,6 +378,7 @@ fn run() -> Result<(), Failure> {
         Some(("check", sub)) => return check(sub, &mut stdout),
         _ => {}
     }
+    let profile = profile_of(profile_options(&matches))?;
 
     let file = argument::<PathBuf>(&matches, "file").map_err(at(Stage::Usage))?;
     let input = matches.get_one::<PathBuf>("input");
@@ -590,8 +643,11 @@ mod textforge_tests {
             let m = parser
                 .try_get_matches_from(["txf", "config", "show", "--profile", "fast", "--no-rc"])
                 .unwrap();
-            assert!(m.subcommand_matches("config").is_some());
-            let options = crate::profile_options(&m);
+            let show = m
+                .subcommand_matches("config")
+                .and_then(|config| config.subcommand_matches("show"))
+                .unwrap();
+            let options = crate::profile_options(show);
             assert_eq!(options.profile.as_deref(), Some("fast"));
             assert!(options.no_rc);
             // --config and --no-rc contradict each other; runs still need --file.

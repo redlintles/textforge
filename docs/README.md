@@ -20,6 +20,7 @@ How the language and the library behave.
 | [Unicode normalization](unicode-normalization.md) | `unorm` and the four normalization forms |
 | [Execution context and built-in variables](execution-context.md) | Variables, `__LINES__`, `__PIPELINE_NAME__` and the other built-ins |
 | [Execution profiles and `.txfrc`](execution-profiles.md) | Memory use, spooling and safety limits; the `.txfrc` file |
+| [The `txf` command line](cli.md) | Options, read modes, watchers, `compile`/`decompile`/`check`, exit status |
 | [Debug output](debug-output.md) | The step-by-step trace of `process_all_with_debug` |
 | [Portable API](portable-api.md) | The owned, language-neutral API the bindings use |
 | [Portable API parity](portable-parity.md) | How each Rust method maps to the portable API |
