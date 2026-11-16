@@ -195,6 +195,42 @@ fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor)
     }
 }
 
+/// Standard output that remembers when its reader has gone away.
+///
+/// Writing to a closed pipe (`txf … | head`) fails with `BrokenPipe`. That is
+/// not an error of the run: the reader got what it wanted, so `txf` stops and
+/// exits with 0, like other Unix tools. Before 0.3.2, `print!` panicked.
+struct Stdout {
+    inner: io::StdoutLock<'static>,
+    closed: bool,
+}
+
+impl Stdout {
+    fn new() -> Self {
+        Stdout {
+            inner: io::stdout().lock(),
+            closed: false,
+        }
+    }
+
+    fn note(&mut self, error: io::Error) -> io::Error {
+        if error.kind() == io::ErrorKind::BrokenPipe {
+            self.closed = true;
+        }
+        error
+    }
+}
+
+impl Write for Stdout {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        self.inner.write(bytes).map_err(|error| self.note(error))
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.inner.flush().map_err(|error| self.note(error))
+    }
+}
+
 /// Runs the program and prints an error the way a person reads it
 /// (`error[12]: message`, then the instruction and the input) on standard
 /// error. Before 0.3.2 the error was printed as a Rust debug structure.
@@ -211,9 +247,9 @@ fn main() -> std::process::ExitCode {
 fn run() -> Result<(), TextForgeError> {
     let matches = build_cli().get_matches();
     let profile = resolve_profile(&profile_options(&matches), Path::new("."))?;
+    let mut stdout = Stdout::new();
     if matches.subcommand_matches("config").is_some() {
-        print!("{}", profile.describe());
-        return Ok(());
+        return print_result(&mut stdout, &profile.describe());
     }
 
     let file = matches.get_one::<PathBuf>("file").unwrap();
@@ -291,17 +327,20 @@ fn run() -> Result<(), TextForgeError> {
         false => String::new(),
     };
     // The pipeline sees the input file as `__INPUT_FILE__` (empty for stdin).
-    let mut stdout = io::stdout().lock();
     let log = debug.then_some(&mut stdout as &mut dyn Write);
-    let mut result = process_input(
+    let result = process_input(
         &mut processor,
         &id,
         data,
         *read_mode,
         input.map(PathBuf::as_path),
         log,
-    )?;
-    drop(stdout);
+    );
+    let mut result = match result {
+        // The trace could not be written because its reader has gone away.
+        Err(_) if stdout.closed => return Ok(()),
+        result => result?,
+    };
     result.push_str(&final_newline);
 
     match output {
@@ -335,12 +374,29 @@ fn run() -> Result<(), TextForgeError> {
         // final text, so the result is not printed a second time after it.
         // Before 0.3.2 the result followed the trace on the same stream.
         None if debug => {}
-        None => {
-            print!("{result}");
-        }
+        None => print_result(&mut stdout, &result)?,
     }
 
     Ok(())
+}
+
+/// Writes `text` to standard output; a reader that has gone away is not an
+/// error.
+fn print_result(stdout: &mut Stdout, text: &str) -> Result<(), TextForgeError> {
+    match stdout
+        .write_all(text.as_bytes())
+        .and_then(|()| stdout.flush())
+    {
+        Err(_) if stdout.closed => Ok(()),
+        Err(error) => Err(TextForgeError::new(
+            TextForgeErrorCode::FileWritingError(
+                format!("cannot write the result to standard output: {error}").into(),
+            ),
+            Cow::from("txf"),
+            Cow::from(""),
+        )),
+        Ok(()) => Ok(()),
+    }
 }
 
 #[cfg(feature = "test_access")]

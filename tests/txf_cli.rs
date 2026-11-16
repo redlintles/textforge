@@ -70,3 +70,37 @@ fn the_input_file_reaches_the_pipeline() {
     let output = files.txf(&["-f", "p.textforge"], "abc");
     assert_eq!(stdout(&output), "|abc");
 }
+
+/// Before: writing to a closed pipe panicked ("failed printing to stdout:
+/// Broken pipe") and the program exited with 101.
+#[test]
+fn a_closed_pipe_ends_the_program_quietly() {
+    let files = Files::new();
+    files.write("p.textforge", "rpt 100000;\n");
+    for extra in [&[][..], &["-d"][..]] {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_txf"))
+            .args(["-f", "p.textforge", "--no-rc"])
+            .args(extra)
+            .current_dir(files.path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(b"0123456789\n")
+            .unwrap();
+        // Read a little, then close the pipe before the program has written everything.
+        let mut out = child.stdout.take().unwrap();
+        let mut start = [0u8; 4];
+        std::io::Read::read_exact(&mut out, &mut start).unwrap();
+        drop(out);
+        let output = child.wait_with_output().unwrap();
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(!stderr.contains("panicked"), "{extra:?}: {stderr}");
+        assert_eq!(output.status.code(), Some(0), "{extra:?}: {stderr}");
+    }
+}

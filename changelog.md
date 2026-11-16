@@ -151,6 +151,9 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   and with `--debug`, as with `process_file`; before, `txf` always left it
   empty. `utils::cli::process_input` runs a pipeline the way `txf` does, with
   the input file and a destination for the trace.
+- `txf` stops quietly with status 0 when the reader of its output goes away
+  (`txf … | head`), also during `--debug`; before, it panicked with "failed
+  printing to stdout: Broken pipe".
 
 ### Not changed (documented instead)
 
