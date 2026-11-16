@@ -182,6 +182,13 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   the piece it belongs to (`=== input line 2 ===`), and the trace of a pipeline
   without instructions says that the text is unchanged instead of stopping at
   its heading.
+- `write_pipeline_to_file` and `write_to_bytecode_file` create the file when
+  it does not exist; before, they checked the destination as if it were a
+  pipeline to read, so they could only overwrite existing files ("cannot open
+  the pipeline file … No such file or directory"). `write_to_bytecode_file`
+  requires a bytecode extension (`.textforgebc` or `.tfb`), as
+  `read_from_bytecode_file` does; before, any pipeline extension was accepted.
+  `utils::validations::check_output_file_path` checks such destinations.
 
 ### Not changed (documented instead)
 

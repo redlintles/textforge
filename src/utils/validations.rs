@@ -3,9 +3,6 @@ use std::{borrow::Cow, path::Path};
 use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 
 pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeError> {
-    let allowed_extensions = ["textforge", "tft", "textforgebc", "tfb"];
-    let parsed_ext = ext.unwrap_or("tft");
-
     // canonicalize() requires the path to exist; that is fine here, because the file must be real.
     let path = path.canonicalize().map_err(|e| {
         TextForgeError::new(
@@ -17,6 +14,46 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
         )
     })?;
 
+    check_extension(&path, ext)?;
+
+    // Parent directory (redundant after canonicalize, but keeps the intent explicit)
+    let parent = path.parent().ok_or_else(|| {
+        TextForgeError::new(
+            TextForgeErrorCode::ValidationError("the pipeline path has no parent directory".into()),
+            Cow::Borrowed(""),
+            path.to_string_lossy().to_string(),
+        )
+    })?;
+
+    if !parent.exists() {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::ValidationError(
+                "the directory of the pipeline file does not exist".into(),
+            ),
+            Cow::Borrowed(""),
+            parent.to_string_lossy().to_string(),
+        ));
+    }
+
+    if path.is_dir() {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::ValidationError(
+                "the pipeline path is a directory, not a file".into(),
+            ),
+            Cow::Borrowed(""),
+            path.to_string_lossy().to_string(),
+        ));
+    }
+
+    Ok(())
+}
+
+/// The extension rules of [`check_file_path`]: with `ext`, the file must have
+/// that extension or its alias (`.tft` for `.textforge`, `.tfb` for
+/// `.textforgebc`); without it, any of the four pipeline extensions.
+fn check_extension(path: &Path, ext: Option<&str>) -> Result<(), TextForgeError> {
+    let allowed_extensions = ["textforge", "tft", "textforgebc", "tfb"];
+    let parsed_ext = ext.unwrap_or("tft");
     // Extension
     let file_ext = path.extension().and_then(|x| x.to_str()).ok_or_else(|| {
         TextForgeError::new(
@@ -61,36 +98,46 @@ pub fn check_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeEr
         ));
     }
 
-    // Parent directory (redundant after canonicalize, but keeps the intent explicit)
-    let parent = path.parent().ok_or_else(|| {
-        TextForgeError::new(
-            TextForgeErrorCode::ValidationError("the pipeline path has no parent directory".into()),
-            Cow::Borrowed(""),
-            path.to_string_lossy().to_string(),
-        )
-    })?;
-
-    if !parent.exists() {
-        return Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError(
-                "the directory of the pipeline file does not exist".into(),
-            ),
-            Cow::Borrowed(""),
-            parent.to_string_lossy().to_string(),
-        ));
-    }
-
-    if path.is_dir() {
-        return Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError(
-                "the pipeline path is a directory, not a file".into(),
-            ),
-            Cow::Borrowed(""),
-            path.to_string_lossy().to_string(),
-        ));
-    }
-
     Ok(())
+}
+
+/// Checks a path a pipeline file is about to be written to. The extension
+/// rules are those of [`check_file_path`], but the file does not have to exist
+/// yet: its directory must exist, and the path must not be a directory. Up to
+/// 0.3.2 the writers used `check_file_path`, so they could only overwrite
+/// files that already existed.
+///
+/// ```
+/// use textforge::utils::validations::check_output_file_path;
+///
+/// let directory = std::env::temp_dir();
+/// assert!(check_output_file_path(&directory.join("new-pipeline.tfb"), Some("textforgebc")).is_ok());
+/// assert!(check_output_file_path(&directory.join("new-pipeline.txt"), Some("textforgebc")).is_err());
+/// assert!(check_output_file_path(&directory.join("missing-dir/p.tft"), None).is_err());
+/// ```
+pub fn check_output_file_path(path: &Path, ext: Option<&str>) -> Result<(), TextForgeError> {
+    if path.exists() {
+        return check_file_path(path, ext);
+    }
+    let directory = match path.parent() {
+        Some(parent) if !parent.as_os_str().is_empty() => parent,
+        _ => Path::new("."),
+    };
+    if !directory.is_dir() {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::FileNotFound(
+                format!(
+                    "cannot write `{}`: the directory `{}` does not exist",
+                    path.display(),
+                    directory.display()
+                )
+                .into(),
+            ),
+            Cow::Borrowed(""),
+            path.display().to_string(),
+        ));
+    }
+    check_extension(path, ext)
 }
 
 /// Checks an inclusive character range `start..=end` (character counts, not
@@ -263,6 +310,58 @@ mod tests {
         let mut p = std::env::temp_dir();
         p.push(format!("{}_{}_{}", prefix, std::process::id(), nanos));
         p
+    }
+
+    /// Before: the pipeline writers checked the destination with
+    /// `check_file_path`, which canonicalizes it, so writing a pipeline to a
+    /// file that did not exist yet failed with "cannot open the pipeline file".
+    mod check_output_file_path_tests {
+        use super::{fs, unique_tmp_dir};
+        use crate::api::TextForgeBuilderMethods;
+        use crate::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+        use crate::utils::validations::check_output_file_path;
+
+        #[test]
+        fn writers_create_new_pipeline_files() {
+            let directory = unique_tmp_dir("writers_create");
+            fs::create_dir_all(&directory).unwrap();
+            let mut processor = TextForgeProcessor::new();
+            let id = processor
+                .create_pipeline()
+                .to_uppercase_all()
+                .unwrap()
+                .build()
+                .unwrap();
+            let text = directory.join("new.textforge");
+            processor.write_pipeline_to_file(&id, &text).unwrap();
+            let copy = processor.get_pipeline_from_file(&text).unwrap();
+            assert_eq!(processor.process_all(&copy, "ab").unwrap(), "AB");
+            #[cfg(feature = "bytecode")]
+            {
+                let bytecode = directory.join("new.tfb");
+                processor.write_to_bytecode_file(&id, &bytecode).unwrap();
+                let copy = processor.read_from_bytecode_file(&bytecode).unwrap();
+                assert_eq!(processor.process_all(&copy, "ab").unwrap(), "AB");
+                // Bytecode goes to a bytecode extension, as the reader requires.
+                assert!(
+                    processor
+                        .write_to_bytecode_file(&id, &directory.join("wrong.textforge"))
+                        .is_err()
+                );
+            }
+            fs::remove_dir_all(&directory).unwrap();
+        }
+
+        #[test]
+        fn the_directory_must_exist_and_the_path_must_not_be_one() {
+            let directory = unique_tmp_dir("output_rules");
+            assert!(check_output_file_path(&directory.join("p.tft"), None).is_err());
+            fs::create_dir_all(directory.join("d.tft")).unwrap();
+            assert!(check_output_file_path(&directory.join("d.tft"), None).is_err());
+            assert!(check_output_file_path(&directory.join("p.tft"), Some("textforge")).is_ok());
+            assert!(check_output_file_path(&directory.join("p.json"), None).is_err());
+            fs::remove_dir_all(&directory).unwrap();
+        }
     }
 
     #[cfg(test)]
