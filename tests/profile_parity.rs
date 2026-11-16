@@ -28,13 +28,13 @@ fn pipelines(processor: &mut TextForgeProcessor) -> Vec<String> {
     let text = [
         &[
             "tbs;",
-            "onlni 2 '[[__LINES__ - 1]]' apply uniqln;",
+            "onlni 1 '[[__LINES__ - 2]]' apply uniqln;",
             "ate ' {{__LINES__}}/{{__LEN_CHARS__}}';",
         ][..],
         &[
             "rmapd m add 'é' 'e';",
             "rmape m;",
-            "blk b assoc iter 3 times onln '[[__COUNTER__ + 1]]' apply tua;",
+            "blk b assoc iter 3 times onln '[[__COUNTER__]]' apply tua;",
             "cblk b;",
         ],
         &["dlc 999999 999999;"],

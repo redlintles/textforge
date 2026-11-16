@@ -11,15 +11,15 @@ mod tests {
 
     #[test]
     fn transforms_only_the_section_without_a_context() {
-        let token = Onln::new(2, tua());
+        let token = Onln::new(1, tua());
         assert_eq!(token.transform("a\nb\n".into(), None).unwrap(), "a\nB\n");
     }
 
     #[test]
     fn string_repr_and_text_line() {
-        let token = Onln::new(2, tua());
+        let token = Onln::new(1, tua());
         assert_eq!(token.get_string_repr(), "onln");
-        assert!(token.to_textforge_line().starts_with("onln 2 apply tua"));
+        assert!(token.to_textforge_line().starts_with("onln 1 apply tua"));
     }
 
     #[test]
@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn set_params_round_trips_get_params() {
-        let source = Onln::new(2, tua());
+        let source = Onln::new(1, tua());
         let mut token = Onln::default();
         token.set_params(source.get_params()).unwrap();
         assert_eq!(token.transform("a\nb\n".into(), None).unwrap(), "a\nB\n");

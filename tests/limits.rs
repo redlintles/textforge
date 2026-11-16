@@ -87,7 +87,7 @@ fn limits_reach_nested_and_joined_instructions() {
         &processor.process_all(&joined, "abc").unwrap_err()
     ));
 
-    let nested = register(&mut processor, &["onln 2 apply rpt 9;"]);
+    let nested = register(&mut processor, &["onln 1 apply rpt 9;"]);
     assert!(is_limit(
         &processor.process_all(&nested, "x\nyy").unwrap_err()
     ));

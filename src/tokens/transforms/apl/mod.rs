@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `apl {text};` — Append a line.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::apl::Apl};
@@ -21,7 +21,7 @@ pub struct Apl {
     params: Vec<TextForgeParamTypes>,
 }
 impl Apl {
-    /// Construct `apl`. Line indices are one-based.
+    /// Construct `apl`.
     pub fn new(text: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[text.to_owned().into()])?;

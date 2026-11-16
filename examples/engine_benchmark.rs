@@ -64,8 +64,7 @@ fn case(name: &str) -> Option<(String, String, usize, bool)> {
             false,
         ),
         "iter_expression" => (
-            "blk b assoc iter 20000 times onln '[[__COUNTER__ % 3 + 1]]' apply tua;\ncblk b;\n"
-                .into(),
+            "blk b assoc iter 20000 times onln '[[__COUNTER__ % 3]]' apply tua;\ncblk b;\n".into(),
             "a\nb\nc".into(),
             20,
             false,

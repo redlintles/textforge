@@ -69,8 +69,8 @@ fn file_instructions_inside_sections_see_only_the_section() {
     let piece = directory.path().join("piece.txt");
     std::fs::write(&piece, "+").unwrap();
     let lines = vec![
-        format!("onln 2 apply wtf {};", quoted(&section)),
-        format!("onln 1 apply apf {};", quoted(&piece)),
+        format!("onln 1 apply wtf {};", quoted(&section)),
+        format!("onln 0 apply apf {};", quoted(&piece)),
         format!("onck 0 1 apply inf 0 {};", quoted(&piece)),
     ];
     let mut processor = TextForgeProcessor::new();
@@ -269,7 +269,7 @@ fn ppf_prepends_through_the_dsl_builder_portable_bytecode_and_sections() {
     assert_eq!(processor.process_all(&dsl, "olá").unwrap(), "» OLÁ");
     let sections = register(
         &mut processor,
-        &[format!("onln 2 apply ppf {};", quoted(&head))],
+        &[format!("onln 1 apply ppf {};", quoted(&head))],
     );
     assert_eq!(
         processor.process_all(&sections, "a\nb\nc").unwrap(),

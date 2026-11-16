@@ -10,7 +10,11 @@ exceptions that exist for compatibility.
 | Characters (Unicode scalar values) | **0** | `dls`, `dlc`, `dla`, `dlb`, `slt`, `ins`, `inf`, `tucs`, `tlcs`, `tucc`, `tlcc`, `ctc`, `onck` |
 | Words (separated by whitespace) | **0** | `tucw`, `tlcw`, `cts`, `ctr` |
 | Matches and pieces | **0** | `rnw`, `sslt` |
-| Lines | **1** | `dln`, `dlna`, `dlnb`, `dlni`, `slnc`, `inl`, `rln`, `onln`, `onlni` |
+| Lines | **0** | `dln`, `dlna`, `dlnb`, `dlni`, `slnc`, `inl`, `rln`, `onln`, `onlni` |
+
+Every index starts at 0 (Golden Rule 22). Up to 0.3.1 line numbers started
+at 1: `dln 1;` deleted the first line, which is now `dln 0;`, and line 0 was
+an error.
 
 Ranges include both ends (`dlc 1 3` deletes three characters) and
 `start == end` selects one item.
@@ -23,7 +27,6 @@ Ranges include both ends (`dlc 1 3` deletes three characters) and
 | The **start** of a range does not exist | error | `dlc 9 12`, `slnc 9 12` |
 | The **end** of a range is past the text | the end is the last item | `dlc 1 99`, `slt 1 99`, `tucc 1 99`, `ctr 1 99`, `onck 1 99`, `dlni 2 99`, `slnc 2 99`, `onlni 2 99` |
 | `start > end` | error (`InvalidIndex` for characters and words, `InvalidParameters` for lines) | `dlc 3 1`, `dlni 3 1` |
-| Line `0` | error | `dln 0`, `slnc 0 2` |
 | Empty text where a position is needed | error | `dlc 0 3` on empty text |
 
 Line ranges clamp their end since 0.3.2; before, `dlni 2 99` was an error
@@ -45,7 +48,8 @@ an index in the sense of the table above.
   its own (`ins 0` is before the first character, `ins 1` is after the second);
   reach it with `rfw` and a pattern, or `onck 0 0 apply ate ...`. Up to 0.3.1,
   `0` inserted after the first character and the start was unreachable.
-- **`inl {line} {text}`** accepts the line count plus one, which appends.
+- **`inl {line} {text}`** accepts the line count (one past the last line), which
+  appends.
 
 ## Argument order
 

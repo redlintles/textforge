@@ -142,7 +142,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// APL — Append one logical line, preserving the final-terminator convention.
     ///
-    /// Append one logical line, preserving the final-terminator convention. Line numbers start at one; see the logical-line guide.
+    /// Append one logical line, preserving the final-terminator convention. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -159,12 +159,12 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// DLN — Delete one line, including its terminator.
     ///
-    /// Delete one line, including its terminator. Line numbers start at one; see the logical-line guide.
+    /// Delete one line, including its terminator. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().delete_line(1).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().delete_line(0).unwrap().build().unwrap();
     /// let input = "a\nb";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "b");
     /// ```
@@ -176,12 +176,12 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// DLNA — Delete lines after the given line, retaining that line and its terminator.
     ///
-    /// Delete lines after the given line, retaining that line and its terminator. Line numbers start at one; see the logical-line guide.
+    /// Delete lines after the given line, retaining that line and its terminator. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().delete_lines_after(1).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().delete_lines_after(0).unwrap().build().unwrap();
     /// let input = "a\nb";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\n");
     /// ```
@@ -196,12 +196,12 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// DLNB — Delete lines before the given line, retaining that line.
     ///
-    /// Delete lines before the given line, retaining that line. Line numbers start at one; see the logical-line guide.
+    /// Delete lines before the given line, retaining that line. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().delete_lines_before(2).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().delete_lines_before(1).unwrap().build().unwrap();
     /// let input = "a\nb";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "b");
     /// ```
@@ -216,12 +216,12 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// SLNC — Select an inclusive line interval and discard the remaining lines.
     ///
-    /// Select an inclusive line interval and discard the remaining lines. Line numbers start at one; see the logical-line guide.
+    /// Select an inclusive line interval and discard the remaining lines. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().select_lines(2, 2).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().select_lines(1, 1).unwrap().build().unwrap();
     /// let input = "a\nb\nc";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "b\n");
     /// ```
@@ -240,12 +240,12 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// DLNI — Delete an inclusive interval of lines and retain the rest.
     ///
-    /// Delete an inclusive interval of lines and retain the rest. Line numbers start at one; see the logical-line guide.
+    /// Delete an inclusive interval of lines and retain the rest. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().delete_lines_interval(2, 2).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().delete_lines_interval(1, 1).unwrap().build().unwrap();
     /// let input = "a\nb\nc";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nc");
     /// ```
@@ -262,14 +262,14 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
-    /// INL — Insert before a line; line count plus one appends a line.
+    /// INL — Insert before a line; the line count (one past the last line) appends a line.
     ///
-    /// Insert before a line; line count plus one appends a line. Line numbers start at one; see the logical-line guide.
+    /// Insert before a line; the line count (one past the last line) appends a line. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().insert_line(2, "x").unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().insert_line(1, "x").unwrap().build().unwrap();
     /// let input = "a\nb";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nx\nb");
     /// ```
@@ -288,7 +288,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// NLN — Remove all recognized line terminators without inserting spaces.
     ///
-    /// Remove all recognized line terminators without inserting spaces. Line numbers start at one; see the logical-line guide.
+    /// Remove all recognized line terminators without inserting spaces. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -305,12 +305,12 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// RLN — Replace a line content, preserving its terminator.
     ///
-    /// Replace a line content, preserving its terminator. Line numbers start at one; see the logical-line guide.
+    /// Replace a line content, preserving its terminator. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
     /// let mut processor = TextForgeProcessor::new();
-    /// let id = processor.create_pipeline().replace_line(2, "x").unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().replace_line(1, "x").unwrap().build().unwrap();
     /// let input = "a\nb";
     /// assert_eq!(processor.process_all(&id,input).unwrap(), "a\nx");
     /// ```
@@ -329,7 +329,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// PLN — Prepend one logical line.
     ///
-    /// Prepend one logical line. Line numbers start at one; see the logical-line guide.
+    /// Prepend one logical line. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -346,7 +346,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// DLE — Delete empty lines; lines containing whitespace are retained.
     ///
-    /// Delete empty lines; lines containing whitespace are retained. Line numbers start at one; see the logical-line guide.
+    /// Delete empty lines; lines containing whitespace are retained. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -363,7 +363,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// KLM — Keep lines whose content matches a regular expression.
     ///
-    /// Keep lines whose content matches a regular expression. Line numbers start at one; see the logical-line guide.
+    /// Keep lines whose content matches a regular expression. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -383,7 +383,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// DLM — Delete lines whose content matches a regular expression.
     ///
-    /// Delete lines whose content matches a regular expression. Line numbers start at one; see the logical-line guide.
+    /// Delete lines whose content matches a regular expression. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -403,7 +403,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// REVLN — Reverse line contents while preserving terminators at their original positions.
     ///
-    /// Reverse line contents while preserving terminators at their original positions. Line numbers start at one; see the logical-line guide.
+    /// Reverse line contents while preserving terminators at their original positions. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -420,7 +420,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// UNIQLN — Keep the first occurrence of each exact line content, in original order.
     ///
-    /// Keep the first occurrence of each exact line content, in original order. Line numbers start at one; see the logical-line guide.
+    /// Keep the first occurrence of each exact line content, in original order. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -437,7 +437,7 @@ pub trait TextForgeBuilderMethods: Sized {
 
     /// JOINLN — Join line contents with a separator, discarding the final terminator.
     ///
-    /// Join line contents with a separator, discarding the final terminator. Line numbers start at one; see the logical-line guide.
+    /// Join line contents with a separator, discarding the final terminator. Line numbers start at 0; see the logical-line guide.
     ///
     /// ```
     /// use textforge::api::{processor::{TextForgeProcessor,TextForgeProcessorMethods},TextForgeBuilderMethods};
@@ -2315,7 +2315,7 @@ pub trait TextForgeBuilderMethods: Sized {
         self.push_token(tok)?;
         Ok(self)
     }
-    /// ONLN — Apply one instruction to a single line (base 1).
+    /// ONLN — Apply one instruction to a single line (base 0).
     ///
     /// The instruction receives only the line content, without its terminator,
     /// so its indices are relative to the line. The terminator is preserved and
@@ -2326,7 +2326,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// use textforge::tokens::{InstructionMethods, transforms::tbs::Tbs};
     /// let mut processor = TextForgeProcessor::new();
     /// let trim: Box<dyn InstructionMethods> = Box::new(Tbs::default());
-    /// let id = processor.create_pipeline().on_line(2, trim).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().on_line(1, trim).unwrap().build().unwrap();
     /// assert_eq!(processor.process_all(&id, "  a  \n  b  \n").unwrap(), "  a  \nb\n");
     /// ```
     fn on_line(
@@ -2376,7 +2376,7 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
-    /// ONLNI — Apply one instruction to lines `start..=end` (base 1) as one block.
+    /// ONLNI — Apply one instruction to lines `start..=end` (base 0) as one block.
     ///
     /// The block keeps its inner terminators; the terminator of the last selected
     /// line is preserved outside it. The result may change the line count.
@@ -2386,7 +2386,7 @@ pub trait TextForgeBuilderMethods: Sized {
     /// use textforge::tokens::{InstructionMethods, transforms::uniqln::Uniqln};
     /// let mut processor = TextForgeProcessor::new();
     /// let unique: Box<dyn InstructionMethods> = Box::new(Uniqln::default());
-    /// let id = processor.create_pipeline().on_line_interval(1, 3, unique).unwrap().build().unwrap();
+    /// let id = processor.create_pipeline().on_line_interval(0, 2, unique).unwrap().build().unwrap();
     /// assert_eq!(processor.process_all(&id, "b\nb\na\nc").unwrap(), "b\na\nc");
     /// ```
     fn on_line_interval(

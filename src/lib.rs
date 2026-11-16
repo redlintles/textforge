@@ -62,7 +62,7 @@
 //!   a built-in such as `__LINES__`) and `[[ expression ]]` (arithmetic and
 //!   string expressions). Numeric parameters may be written as expressions too.
 //! - **Lines** are logical lines: `\n`, `\r\n` and `\r` end a line and are kept.
-//!   Characters are Unicode scalar values; indices are base 0, line numbers base 1.
+//!   Characters are Unicode scalar values; every index is base 0, line numbers included.
 //! - **Profiles** decide how much memory a run may use before spooling to disk
 //!   and the limits of instructions that multiply work (`rpt`, `padl`, `padr`,
 //!   `iter`). A profile never changes the result; a limit can only make a run fail.

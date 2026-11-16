@@ -126,21 +126,20 @@ fn len_counts_characters() {
 #[test]
 fn line_ranges_clamp_an_end_past_the_last_line() {
     let text = "a\nb\nc\n";
-    assert_eq!(ok(&["dlni 2 9;"], text), "a\n");
-    assert_eq!(ok(&["slnc 2 9;"], text), "b\nc\n");
-    assert_eq!(ok(&["onlni 2 9 apply tua;"], text), "a\nB\nC\n");
-    // The start must exist, 0 is never a line, and reversed ranges fail.
+    assert_eq!(ok(&["dlni 1 8;"], text), "a\n");
+    assert_eq!(ok(&["slnc 1 8;"], text), "b\nc\n");
+    assert_eq!(ok(&["onlni 1 8 apply tua;"], text), "a\nB\nC\n");
+    // The start must exist and reversed ranges fail.
     for line in [
-        "dlni 4 9;",
-        "slnc 4 5;",
-        "onlni 4 9 apply tua;",
-        "dlni 0 2;",
-        "slnc 3 1;",
+        "dlni 3 8;",
+        "slnc 3 4;",
+        "onlni 3 8 apply tua;",
+        "slnc 2 0;",
     ] {
         assert!(run(&[line], text).is_err(), "{line}");
     }
     // A single line that does not exist is still an error.
-    for line in ["dln 4;", "onln 4 apply tua;", "rln 4 x;", "dlna 9;"] {
+    for line in ["dln 3;", "onln 3 apply tua;", "rln 3 x;", "dlna 8;"] {
         assert!(
             matches!(
                 run(&[line], text),
@@ -187,7 +186,7 @@ fn end_stops_the_innermost_block_or_loop() {
     );
     // `ifdc` and `on*` are neither: `end` there stops what contains them.
     assert_eq!(ok(&["ifdc a do end;", "ate Z;"], "a"), "a");
-    assert_eq!(ok(&["onln 1 apply end;", "ate Z;"], "a\n"), "a\n");
+    assert_eq!(ok(&["onln 0 apply end;", "ate Z;"], "a\n"), "a\n");
     assert_eq!(
         ok(
             &[

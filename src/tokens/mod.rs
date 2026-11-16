@@ -99,7 +99,7 @@
 //! | [`jsonu`](transforms::jsonu::Jsonu) | `jsonu;` | Unescape a JSON string. |
 //! | [`unorm`](transforms::unorm::Unorm) | `unorm {mode};` | Normalize Unicode to `nfc`, `nfd`, `nfkc` or `nfkd`. |
 //!
-//! ### Lines (line numbers start at 1)
+//! ### Lines (line numbers start at 0)
 //!
 //! | Instruction | Syntax | Effect |
 //! |---|---|---|

@@ -299,7 +299,7 @@ fn bytecode_embeds_joined_pipelines_and_needs_no_files_to_run() {
     let library = write(
         directory.path(),
         "lib.textforge",
-        &["tua;", "ppjn inner.textforge;", "onln 1 apply atb '#';"],
+        &["tua;", "ppjn inner.textforge;", "onln 0 apply atb '#';"],
     );
     let main = write(
         directory.path(),
@@ -344,7 +344,7 @@ fn every_processing_mode_gives_the_same_result() {
             "cblk b;",
             "rmapd m add o 0;",
             "rmape m;",
-            "onln 2 apply tua;",
+            "onln 1 apply tua;",
         ],
     );
     let main = write(
@@ -416,7 +416,7 @@ fn builders_portable_plans_and_sections_join_pipelines() {
     let snapshot = portable.get_transform_vec(&id).unwrap();
     assert_eq!(snapshot[0].arguments, vec![Argument::Text(path.clone())]);
 
-    let line = format!("onln 2 apply ppjn '{path}';");
+    let line = format!("onln 1 apply ppjn '{path}';");
     let id = processor.add_transform(vec![read_from_text(&line).unwrap()]);
     assert_eq!(
         processor.process_all(&id, "ab\ncde\nf").unwrap(),

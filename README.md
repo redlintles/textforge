@@ -143,16 +143,16 @@ blk tidy assoc tbs;
 blk tidy assoc dle;
 cblk tidy;
 
-// Conditionals, loops and sections (onln 1: only the first line).
+// Conditionals, loops and sections (onln 0: only the first line).
 ifdc 'TODO' do apl 'has todos';
 iter 3 times ate '[[__COUNTER__]]';
-onln 1 apply tua;
+onln 0 apply tua;
 ```
 
 - Text pipelines use `.textforge` (alias `.tft`); bytecode uses `.textforgebc`
   (alias `.tfb`, `bytecode` feature).
-- Characters are Unicode scalar values and indices start at 0; line numbers
-  start at 1; `\n`, `\r\n` and `\r` all end a line and are preserved
+- Characters are Unicode scalar values; every index starts at 0, line numbers
+  included; `\n`, `\r\n` and `\r` all end a line and are preserved
   ([line semantics](docs/lines.md)).
 - A single index that does not exist is an error; the end of a range past the
   text means the last item. Patterns are regular expressions, and `$` in a
@@ -258,7 +258,7 @@ The same index, with links to each instruction's documentation, is on
 | `jsonu` | `jsonu;` | Unescape a JSON string. |
 | `unorm` | `unorm {mode};` | Normalize Unicode to `nfc`, `nfd`, `nfkc` or `nfkd`. |
 
-### Lines (line numbers start at 1)
+### Lines (line numbers start at 0)
 
 | Instruction | Syntax | Effect |
 |---|---|---|

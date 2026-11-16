@@ -24,7 +24,7 @@ fn run(pipeline: &str, input: &str) -> Result<String, String> {
         .map_err(|e| format!("{:?}", e.error_code))
 }
 
-/// Independent oracle: byte range of lines `start..=end` (LF/CRLF only),
+/// Independent oracle: byte range of lines `start..=end` (base 0, LF/CRLF only),
 /// without the final terminator of `end`.
 fn oracle_lines(input: &str, start: usize, end: usize) -> Option<Range<usize>> {
     let mut offsets = vec![0];
@@ -41,11 +41,11 @@ fn oracle_lines(input: &str, start: usize, end: usize) -> Option<Range<usize>> {
         position += content + terminator;
         offsets.push(position);
     }
-    // An end past the last line means the last line.
-    if start == 0 || start > end || start > contents.len() {
+    // Lines start at 0; an end past the last line means the last line.
+    if start > end || start >= contents.len() {
         return None;
     }
-    Some(offsets[start - 1]..contents[end.min(contents.len()) - 1])
+    Some(offsets[start]..contents[end.min(contents.len() - 1)])
 }
 
 fn oracle_chars(input: &str, start: usize, end: usize) -> Option<Range<usize>> {
@@ -95,13 +95,13 @@ const INDEXED: &[&str] = &[
     "sslt ' ' 1",
     "padl x 12",
     "padr x 12",
-    "dln 1",
-    "dlna 1",
-    "dlnb 1",
-    "slnc 1 1",
-    "dlni 1 1",
-    "inl 1 new",
-    "rln 1 new",
+    "dln 0",
+    "dlna 0",
+    "dlnb 0",
+    "slnc 0 0",
+    "dlni 0 0",
+    "inl 0 new",
+    "rln 0 new",
     "apl tail",
     "pln head",
     "revln",
@@ -154,19 +154,19 @@ fn every_indexed_instruction_matches_manual_extraction() {
 #[test]
 fn specification_examples() {
     assert_eq!(
-        run("onln 2 apply tbs;", "  a  \n  b  \n").unwrap(),
+        run("onln 1 apply tbs;", "  a  \n  b  \n").unwrap(),
         "  a  \nb\n"
     );
     assert_eq!(run("onck 1 3 apply dlf;", "abcde").unwrap(), "acde");
     assert_eq!(
-        run("onlni 1 3 apply uniqln;", "b\nb\na\nc").unwrap(),
+        run("onlni 0 2 apply uniqln;", "b\nb\na\nc").unwrap(),
         "b\na\nc"
     );
     // The section excludes the final terminator of the last selected line, so a
     // filter that removes that line leaves its preceding terminator in place,
     // exactly as `uniqln` does on the extracted block by itself.
     assert_eq!(
-        run("onlni 1 4 apply uniqln;", "b\na\nb\na\nc").unwrap(),
+        run("onlni 0 3 apply uniqln;", "b\na\nb\na\nc").unwrap(),
         "b\na\n\nc"
     );
 }
@@ -174,10 +174,10 @@ fn specification_examples() {
 #[test]
 fn indices_inside_are_relative_to_the_section() {
     assert_eq!(
-        run("onln 3 apply dlf;", "abc\ndef\nghi\n").unwrap(),
+        run("onln 2 apply dlf;", "abc\ndef\nghi\n").unwrap(),
         "abc\ndef\nhi\n"
     );
-    assert_eq!(run("onln 2 apply ins 0 X;", "ab\ncd").unwrap(), "ab\nXcd");
+    assert_eq!(run("onln 1 apply ins 0 X;", "ab\ncd").unwrap(), "ab\nXcd");
     assert_eq!(run("onck 2 4 apply tucc 0 1;", "abcdef").unwrap(), "abCDef");
 }
 
@@ -188,11 +188,11 @@ fn terminators_are_preserved_for_every_kind() {
     ] {
         let input = format!(" a {terminator} b {terminator} c ");
         assert_eq!(
-            run("onln 2 apply tbs;", &input).unwrap(),
+            run("onln 1 apply tbs;", &input).unwrap(),
             format!(" a {terminator}b{terminator} c ")
         );
         assert_eq!(
-            run("onlni 1 2 apply tbs;", &input).unwrap(),
+            run("onlni 0 1 apply tbs;", &input).unwrap(),
             format!("a {terminator} b{terminator} c ")
         );
     }
@@ -207,35 +207,33 @@ fn unicode_sections_never_split_scalars() {
         "é🍌\u{301}e👩🏽‍💻\nx"
     );
     assert_eq!(
-        run("onln 1 apply dll;", input).unwrap(),
+        run("onln 0 apply dll;", input).unwrap(),
         "é🍌e\u{301}👩🏽\u{200d}\nx"
     );
-    assert_eq!(run("onln 2 apply tua;", input).unwrap(), "é🍌e\u{301}👩🏽‍💻\nX");
+    assert_eq!(run("onln 1 apply tua;", input).unwrap(), "é🍌e\u{301}👩🏽‍💻\nX");
 }
 
 #[test]
 fn results_may_change_the_line_count() {
     assert_eq!(
-        run("onlni 1 4 apply dle;", "a\n\n\nb\nc").unwrap(),
+        run("onlni 0 3 apply dle;", "a\n\n\nb\nc").unwrap(),
         "a\nb\nc"
     );
-    assert_eq!(run("onln 2 apply dln 1;", "a\nb\nc").unwrap(), "a\n\nc");
+    assert_eq!(run("onln 1 apply dln 0;", "a\nb\nc").unwrap(), "a\n\nc");
     assert_eq!(
-        run("onlni 2 3 apply joinln '+';", "a\nb\nc\nd").unwrap(),
+        run("onlni 1 2 apply joinln '+';", "a\nb\nc\nd").unwrap(),
         "a\nb+c\nd"
     );
-    assert_eq!(run("onln 1 apply apl x;", "a\nb").unwrap(), "a\nx\nb");
+    assert_eq!(run("onln 0 apply apl x;", "a\nb").unwrap(), "a\nx\nb");
 }
 
 #[test]
 fn invalid_sections_are_errors() {
     for (pipeline, input) in [
-        ("onln 0 apply tbs;", "a"),
-        ("onln 2 apply tbs;", "a\n"),
-        ("onln 1 apply tbs;", ""),
-        ("onlni 2 1 apply tbs;", "a\nb"),
-        ("onlni 0 1 apply tbs;", "a\nb"),
-        ("onlni 3 4 apply tbs;", "a\nb"),
+        ("onln 1 apply tbs;", "a\n"),
+        ("onln 0 apply tbs;", ""),
+        ("onlni 1 0 apply tbs;", "a\nb"),
+        ("onlni 2 3 apply tbs;", "a\nb"),
         ("onck 3 1 apply tbs;", "abcd"),
         ("onck 4 9 apply tbs;", "abcd"),
         ("onck 0 0 apply tbs;", ""),
@@ -243,19 +241,19 @@ fn invalid_sections_are_errors() {
         assert!(run(pipeline, input).is_err(), "{pipeline} {input:?}");
     }
     assert_eq!(run("onck 2 99 apply tua;", "abcd").unwrap(), "abCD");
-    assert_eq!(run("onlni 1 3 apply tua;", "a\nb").unwrap(), "A\nB");
+    assert_eq!(run("onlni 0 2 apply tua;", "a\nb").unwrap(), "A\nB");
 }
 
 #[test]
 fn inner_errors_propagate() {
-    assert!(run("onln 1 apply dlc 5 9;", "ab\ncdefghijk").is_err());
+    assert!(run("onln 0 apply dlc 5 9;", "ab\ncdefghijk").is_err());
 }
 
 #[test]
 fn unchanged_sections_return_the_input_without_copying() {
     for pipeline in [
-        "onln 2 apply tbs;",
-        "onlni 1 2 apply tbs;",
+        "onln 1 apply tbs;",
+        "onlni 0 1 apply tbs;",
         "onck 0 1 apply tbs;",
     ] {
         let token = read_from_text(pipeline).unwrap();
@@ -273,7 +271,7 @@ fn unchanged_sections_return_the_input_without_copying() {
 
 #[test]
 fn owned_inputs_are_edited_in_place() {
-    let token = read_from_text("onln 2 apply tua;").unwrap();
+    let token = read_from_text("onln 1 apply tua;").unwrap();
     let mut context = GlobalExecutionContext::new();
     let output = token
         .apply_token(Cow::Owned("ab\ncd\nef".into()), &mut context)
@@ -285,7 +283,7 @@ fn owned_inputs_are_edited_in_place() {
 fn nested_instructions_share_the_execution_context() {
     let mut processor = TextForgeProcessor::new();
     let id = processor.add_transform(
-        ["var who = mundo;", "onln 2 apply ate ' {{who}}';"]
+        ["var who = mundo;", "onln 1 apply ate ' {{who}}';"]
             .iter()
             .map(|line| read_from_text(line).unwrap())
             .collect(),
@@ -303,7 +301,7 @@ fn iteration_combines_with_blocks_to_reach_each_line() {
     let mut processor = TextForgeProcessor::new();
     let id = processor.add_transform(
         [
-            "blk each assoc iter 3 times onln 2 apply ate '[[__COUNTER__]]';",
+            "blk each assoc iter 3 times onln 1 apply ate '[[__COUNTER__]]';",
             "cblk each;",
         ]
         .iter()
@@ -311,7 +309,7 @@ fn iteration_combines_with_blocks_to_reach_each_line() {
         .collect(),
     );
     assert_eq!(processor.process_all(&id, "a\nb\nc").unwrap(), "a\nb012\nc");
-    assert!(read_from_text("iter 3 times onln 1 apply tbs;").is_err());
+    assert!(read_from_text("iter 3 times onln 0 apply tbs;").is_err());
 }
 
 #[test]
@@ -319,9 +317,9 @@ fn text_lines_round_trip() {
     let mut processor = TextForgeProcessor::new();
     let id = processor.add_transform(
         [
-            "onln 2 apply tbs;",
+            "onln 1 apply tbs;",
             "onck 0 1 apply tua;",
-            "onlni 1 2 apply ate 'x y';",
+            "onlni 0 1 apply ate 'x y';",
         ]
         .iter()
         .map(|line| read_from_text(line).unwrap())
@@ -331,9 +329,9 @@ fn text_lines_round_trip() {
     assert_eq!(
         lines,
         vec![
-            "onln 2 apply tbs;\n",
+            "onln 1 apply tbs;\n",
             "onck 0 1 apply tua;\n",
-            "onlni 1 2 apply ate 'x y';\n"
+            "onlni 0 1 apply ate 'x y';\n"
         ]
     );
 }
@@ -344,13 +342,13 @@ fn bytecode_round_trip_preserves_behavior() {
     let path = directory.path().join("on.textforgebc");
     std::fs::File::create(&path).unwrap();
     let source = [
-        "onln 2 apply tbs;",
+        "onln 1 apply tbs;",
         "onck 0 1 apply tua;",
-        "onlni 1 2 apply ate '!';",
+        "onlni 0 1 apply ate '!';",
         "onln {{line}} apply dlf;",
     ];
     let mut processor = TextForgeProcessor::new();
-    let mut tokens = vec![read_from_text("val line = 1;").unwrap()];
+    let mut tokens = vec![read_from_text("val line = 0;").unwrap()];
     tokens.extend(source.iter().map(|line| read_from_text(line).unwrap()));
     let id = processor.add_transform(tokens);
     processor.write_to_bytecode_file(&id, &path).unwrap();
@@ -364,9 +362,9 @@ fn bytecode_round_trip_preserves_behavior() {
 #[test]
 fn opcodes_are_registered() {
     for (pipeline, opcode) in [
-        ("onln 1 apply tbs;", 0x52_u32),
+        ("onln 0 apply tbs;", 0x52_u32),
         ("onck 0 1 apply tbs;", 0x53),
-        ("onlni 1 1 apply tbs;", 0x54),
+        ("onlni 0 0 apply tbs;", 0x54),
     ] {
         let token = read_from_text(pipeline).unwrap();
         assert_eq!(token.get_opcode(), opcode);
@@ -378,8 +376,8 @@ fn opcodes_are_registered() {
 #[test]
 fn all_processing_modes_agree() {
     let source = [
-        "onln 2 apply tbs;",
-        "onlni 1 2 apply uniqln;",
+        "onln 1 apply tbs;",
+        "onlni 0 1 apply uniqln;",
         "onck 0 0 apply tua;",
     ];
     let input = "a\n  b  \nb\nc\n".repeat(3);
@@ -425,8 +423,8 @@ fn builder_methods_work_inside_blocks() {
     let id = processor
         .create_pipeline()
         .block_assoc("b", |block| {
-            block.on_line(1, trim())?;
-            block.on_line_interval(2, 2, trim())?;
+            block.on_line(0, trim())?;
+            block.on_line_interval(1, 1, trim())?;
             block.on_chunk(0, 0, trim())?;
             Ok(())
         })
@@ -442,7 +440,7 @@ fn builder_methods_work_inside_blocks() {
     let error = processor
         .create_pipeline()
         .if_do_contains_each("y", |body| {
-            body.on_line(1, trim())?;
+            body.on_line(0, trim())?;
             Ok(())
         })
         .unwrap()
@@ -457,12 +455,12 @@ fn portable_plans_resolve_on_instructions() {
     let mut plan = PipelinePlan::new();
     plan.add(InstructionSpec::new(
         "onln".into(),
-        vec![Argument::Number(1), trim()],
+        vec![Argument::Number(0), trim()],
     ))
     .unwrap();
     plan.add(InstructionSpec::new(
         "onlni".into(),
-        vec![Argument::Number(2), Argument::Number(2), trim()],
+        vec![Argument::Number(1), Argument::Number(1), trim()],
     ))
     .unwrap();
     plan.add(InstructionSpec::new(
@@ -560,7 +558,7 @@ fn bytecode_depth_limits_match_the_text_parser() {
     use textforge::tokens::instructions::{blk::Blk, iter::Iter};
     // Three levels inside a block are valid text; bytecode used to reject them.
     let block =
-        read_from_text("blk b assoc iter 2 times onln '[[__COUNTER__ + 1]]' apply tbs;").unwrap();
+        read_from_text("blk b assoc iter 2 times onln '[[__COUNTER__]]' apply tbs;").unwrap();
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("block.textforgebc");
     std::fs::File::create(&path).unwrap();
@@ -577,7 +575,7 @@ fn bytecode_depth_limits_match_the_text_parser() {
     let root = nested(
         Box::new(Iter::default()),
         vec![ValType::Literal(2.into())],
-        "onln 1 apply tbs;",
+        "onln 0 apply tbs;",
     );
     assert!(
         bytecode_load(root)

@@ -181,11 +181,11 @@ fn nested_instructions_are_bound_once_per_registration() {
     // execution (a regex child recompiled its pattern each time).
     for outer in [
         "iter 4 times null;",
-        "onln 1 apply null;",
-        "onlni 1 1 apply null;",
+        "onln 0 apply null;",
+        "onlni 0 0 apply null;",
         "onck 0 0 apply null;",
         "ifdc x do null;",
-        "onln '[[0 + 1]]' apply null;",
+        "onln '[[1 - 1]]' apply null;",
     ] {
         let binds = Arc::new(AtomicUsize::new(0));
         let mut processor = TextForgeProcessor::new();
@@ -221,7 +221,7 @@ fn dynamic_nested_parameters_are_still_resolved_per_execution() {
     let mut processor = TextForgeProcessor::new();
     let tokens = [
         "iter 3 times ate '{{__COUNTER__}}';",
-        "onln 1 apply ate '[[2 * 3]]';",
+        "onln 0 apply ate '[[2 * 3]]';",
     ]
     .iter()
     .map(|line| crate::text::reader::read_from_text(line).unwrap())

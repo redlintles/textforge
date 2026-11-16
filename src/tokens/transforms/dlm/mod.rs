@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `dlm {pattern};` — Delete the lines that match `pattern`.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::dlm::Dlm};
@@ -22,7 +22,7 @@ pub struct Dlm {
     params: Vec<TextForgeParamTypes>,
 }
 impl Dlm {
-    /// Construct `dlm`. Line indices are one-based.
+    /// Construct `dlm`.
     pub fn new(pattern: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[pattern.to_owned().into()])?;

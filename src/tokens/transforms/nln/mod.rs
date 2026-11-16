@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `nln;` — Remove every line terminator.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::nln::Nln};
@@ -20,7 +20,7 @@ pub struct Nln {
     params: Vec<TextForgeParamTypes>,
 }
 impl Nln {
-    /// Construct `nln`. Line indices are one-based.
+    /// Construct `nln`.
     pub fn new() -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[])?;

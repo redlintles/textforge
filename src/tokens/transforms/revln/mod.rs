@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `revln;` — Reverse the order of the lines.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::revln::Revln};
@@ -20,7 +20,7 @@ pub struct Revln {
     params: Vec<TextForgeParamTypes>,
 }
 impl Revln {
-    /// Construct `revln`. Line indices are one-based.
+    /// Construct `revln`.
     pub fn new() -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[])?;

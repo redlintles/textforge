@@ -1,10 +1,12 @@
 # Logical line operations
 
-Line numbers start at **1**. Ranges include both endpoints. A missing line,
-zero index, or reversed range returns `TextForgeError`; the end of a range
-(`dlni`, `slnc`, `onlni`) may be past the last line and then means the last
-line, as in character ranges (see [indices and ranges](indices-and-ranges.md)). `inl` additionally accepts
-line count + 1 (including position 1 in empty input).
+Line numbers start at **0**, like every other index (Golden Rule 22; up to
+0.3.1 they started at 1). Ranges include both endpoints. A missing line or a
+reversed range returns `TextForgeError`; the end of a range (`dlni`, `slnc`,
+`onlni`) may be past the last line and then means the last line, as in
+character ranges (see [indices and ranges](indices-and-ranges.md)). `inl`
+additionally accepts the line count, which appends (including position 0 in
+empty input).
 
 An empty string contains zero lines. A trailing terminator belongs to the last
 line: `a\n` is one line, `a\n\n` is two. Recognized terminators are LF, CRLF
@@ -36,14 +38,14 @@ Parameters support the existing variables and interpolation rules.
 | DSL | Rust / Python method | Purpose |
 | --- | --- | --- |
 | `apl "b"` | `append_line` | Append one logical line, preserving the final-terminator convention. |
-| `dln 1` | `delete_line` | Delete one line, including its terminator. |
-| `dlna 1` | `delete_lines_after` | Delete lines after the given line, retaining that line and its terminator. |
-| `dlnb 2` | `delete_lines_before` | Delete lines before the given line, retaining that line. |
-| `slnc 2, 2` | `select_lines` | Select an inclusive line interval and discard the remaining lines. |
-| `dlni 2, 2` | `delete_lines_interval` | Delete an inclusive interval of lines and retain the rest. |
-| `inl 2, "x"` | `insert_line` | Insert before a line; line count plus one appends a line. |
+| `dln 0` | `delete_line` | Delete one line, including its terminator. |
+| `dlna 0` | `delete_lines_after` | Delete lines after the given line, retaining that line and its terminator. |
+| `dlnb 1` | `delete_lines_before` | Delete lines before the given line, retaining that line. |
+| `slnc 1, 1` | `select_lines` | Select an inclusive line interval and discard the remaining lines. |
+| `dlni 1, 1` | `delete_lines_interval` | Delete an inclusive interval of lines and retain the rest. |
+| `inl 1, "x"` | `insert_line` | Insert before a line; the line count appends a line. |
 | `nln` | `remove_line_breaks` | Remove all recognized line terminators without inserting spaces. |
-| `rln 2, "x"` | `replace_line` | Replace a line content, preserving its terminator. |
+| `rln 1, "x"` | `replace_line` | Replace a line content, preserving its terminator. |
 | `pln "b"` | `prepend_line` | Prepend one logical line. |
 | `dle` | `delete_empty_lines` | Delete empty lines; lines containing whitespace are retained. |
 | `klm "^b$"` | `keep_lines_matching` | Keep lines whose content matches a regular expression. |
@@ -51,8 +53,8 @@ Parameters support the existing variables and interpolation rules.
 | `revln` | `reverse_lines` | Reverse line contents while preserving terminators at their original positions. |
 | `uniqln` | `unique_lines` | Keep the first occurrence of each exact line content, in original order. |
 | `joinln " "` | `join_lines` | Join line contents with a separator, discarding the final terminator. |
-| `onln 2 apply tbs` | `on_line` | Apply one instruction to one line, without its terminator. See [section instructions](on-instructions.md). |
-| `onlni 2 4 apply uniqln` | `on_line_interval` | Apply one instruction to an inclusive line interval as one block, keeping the last terminator outside. |
+| `onln 1 apply tbs` | `on_line` | Apply one instruction to one line, without its terminator. See [section instructions](on-instructions.md). |
+| `onlni 1 3 apply uniqln` | `on_line_interval` | Apply one instruction to an inclusive line interval as one block, keeping the last terminator outside. |
 
 ## Interpolation and persistence
 
@@ -66,7 +68,7 @@ raw '[0-9[:alpha:]]' x;
 ```
 
 Line numbers can be expressions or templates, resolved at execution time:
-`onln '[[__COUNTER__ + 1]]' apply tbs;` or `dln '{{first}}';`. The result must be a
+`onln '[[__COUNTER__]]' apply tbs;` or `dln '{{first}}';`. The result must be a
 non-negative integer. Direct token `transform` calls bypass pipeline interpolation. Valid regex classes
 are compiled before a pattern is considered an unresolved parameter.
 

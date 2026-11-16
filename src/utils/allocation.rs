@@ -164,17 +164,18 @@ pub(crate) fn append_line<'a>(input: Cow<'a, str>, text: &str) -> Cow<'a, str> {
     Cow::Owned(output)
 }
 
-/// Insert a logical line; the caller validates the one-based line index.
+/// Insert a logical line before line `line` (base 0; `line == count` appends);
+/// the caller validates the index.
 pub(crate) fn insert_line<'a>(input: Cow<'a, str>, line: usize, text: &str) -> Cow<'a, str> {
     let count = super::lines::lines(&input).count();
-    if line == count.saturating_add(1) {
+    if line == count {
         return append_line(input, text);
     }
     let ending = super::lines::lines(&input)
         .find_map(|(_, e)| (!e.is_empty()).then_some(e))
         .unwrap_or("\n");
     let offset: usize = super::lines::lines(&input)
-        .take(line - 1)
+        .take(line)
         .map(|(t, e)| t.len() + e.len())
         .sum();
     let mut inserted = String::with_capacity(text.len() + ending.len());

@@ -172,7 +172,7 @@ fn derived_values_follow_the_current_text() {
 fn derived_values_work_in_expressions_and_numeric_parameters() {
     // The last line, whatever the document length.
     assert_eq!(
-        run(&["onln '[[__LINES__]]' apply ate '!';"], "a\nb\nc").unwrap(),
+        run(&["onln '[[__LINES__ - 1]]' apply ate '!';"], "a\nb\nc").unwrap(),
         "a\nb\nc!"
     );
     assert_eq!(
@@ -197,11 +197,11 @@ fn derived_values_work_in_expressions_and_numeric_parameters() {
 #[test]
 fn derived_values_describe_the_section_inside_on_instructions_and_iterations() {
     assert_eq!(
-        run(&["onln 2 apply ate '={{__LEN_CHARS__}}';"], "aaaa\nbb\nc").unwrap(),
+        run(&["onln 1 apply ate '={{__LEN_CHARS__}}';"], "aaaa\nbb\nc").unwrap(),
         "aaaa\nbb=2\nc"
     );
     assert_eq!(
-        run(&["onlni 2 3 apply ate '={{__LINES__}}';"], "a\nb\nc\nd").unwrap(),
+        run(&["onlni 1 2 apply ate '={{__LINES__}}';"], "a\nb\nc\nd").unwrap(),
         "a\nb\nc=2\nd"
     );
     assert_eq!(
@@ -319,7 +319,7 @@ fn other_double_underscore_names_stay_definable() {
 fn every_processing_mode_gives_the_same_result() {
     let lines = [
         "ate ' {{__LINES__}}/{{__LEN_CHARS__}}';",
-        "onln '[[__LINES__]]' apply atb '{{__PIPELINE_NAME__}}:';",
+        "onln '[[__LINES__ - 1]]' apply atb '{{__PIPELINE_NAME__}}:';",
         "iter 2 times ate '[[__LEN_CHARS__ % 10]]';",
     ];
     let input = "um\ndois\r\ntrês 🎉";

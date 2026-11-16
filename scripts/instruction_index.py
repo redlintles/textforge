@@ -80,7 +80,7 @@ CATALOG = [
   ("jsonu", "jsonu;", "Unescape a JSON string."),
   ("unorm", "unorm {mode};", "Normalize Unicode to `nfc`, `nfd`, `nfkc` or `nfkd`."),
  ]),
- ("Lines (line numbers start at 1)", [
+ ("Lines (line numbers start at 0)", [
   ("apl", "apl {text};", "Append a line."),
   ("pln", "pln {text};", "Prepend a line."),
   ("inl", "inl {line} {text};", "Insert a line before `line` (one past the last appends)."),

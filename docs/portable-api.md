@@ -212,7 +212,7 @@ same description. See [normalization semantics](unicode-normalization.md).
 
 All sixteen line tokens use the existing `InstructionSpec`/`Argument` registry
 path; there is no second line engine in the portable facade. Numeric arguments
-are one-based line numbers. The fluent Rust method and canonical token mapping
+are zero-based line numbers. The fluent Rust method and canonical token mapping
 are listed in [the line guide](lines.md). `tests/lines.rs` checks each fluent
 method against portable descriptions, runtime variables, block and conditional
 bodies, textual parsing and persistence, big-endian bytecode, spilled buffers and

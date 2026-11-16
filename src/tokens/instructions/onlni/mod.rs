@@ -17,7 +17,7 @@ pub mod test;
 
 /// `onlni {start} {end} apply {instruction};` — Run `instruction` on lines `start..=end` as one section.
 ///
-/// Applies one instruction to lines `start..=end` (base 1, inclusive) as a
+/// Applies one instruction to lines `start..=end` (base 0, inclusive) as a
 /// single block. The instruction receives the block with its inner terminators
 /// but without the terminator of the last selected line, which is preserved
 /// outside. Indices inside the instruction are relative to the block, and the
@@ -31,7 +31,7 @@ pub mod test;
 /// use textforge::tokens::{InstructionMethods, instructions::onlni::Onlni, transforms::uniqln::Uniqln};
 ///
 /// let inner = (Box::new(Uniqln::default()) as Box<dyn InstructionMethods>).into();
-/// let token = Onlni::new(1, 3, inner);
+/// let token = Onlni::new(0, 2, inner);
 /// assert_eq!(token.transform("b\nb\na\nc".into(), None).unwrap(), "b\na\nc");
 /// ```
 #[derive(Clone, Default)]

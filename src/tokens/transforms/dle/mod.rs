@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `dle;` — Delete empty lines.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::dle::Dle};
@@ -20,7 +20,7 @@ pub struct Dle {
     params: Vec<TextForgeParamTypes>,
 }
 impl Dle {
-    /// Construct `dle`. Line indices are one-based.
+    /// Construct `dle`.
     pub fn new() -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[])?;

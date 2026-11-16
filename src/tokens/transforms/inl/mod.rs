@@ -3,8 +3,8 @@ use crate::{
     parser::params::TextForgeParamTypes,
     tokens::InstructionMethods,
     utils::{
-        errors::TextForgeError,
-        lines::{check_line, invalid, lines},
+        errors::{TextForgeError, TextForgeErrorCode},
+        lines::{invalid, lines},
         validations::check_vec_len,
     },
 };
@@ -12,11 +12,11 @@ use std::borrow::Cow;
 
 /// `inl {line} {text};` — Insert a line before `line` (one past the last appends).
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Line indices start at 0 (Golden Rule 22); shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::inl::Inl};
-/// let token = Inl::new(2, "x").unwrap();
+/// let token = Inl::new(1, "x").unwrap();
 /// assert_eq!(token.transform("a\nb".into(), None).unwrap(), "a\nx\nb");
 /// ```
 #[derive(Clone)]
@@ -26,7 +26,7 @@ pub struct Inl {
     params: Vec<TextForgeParamTypes>,
 }
 impl Inl {
-    /// Construct `inl`. Line indices are one-based.
+    /// Construct `inl`. Line indices start at 0.
     pub fn new(line: usize, text: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[line.into(), text.to_owned().into()])?;
@@ -36,9 +36,9 @@ impl Inl {
 impl Default for Inl {
     fn default() -> Self {
         Self {
-            line: 1,
+            line: 0,
             text: String::new(),
-            params: vec![1usize.into(), String::new().into()],
+            params: vec![0usize.into(), String::new().into()],
         }
     }
 }
@@ -68,13 +68,6 @@ impl InstructionMethods for Inl {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "inl", "")?;
         let line = crate::parse_args!(params, 0, Usize, "line");
-        if line == 0 {
-            return Err(crate::utils::lines::invalid(
-                "inl",
-                "Line numbers start at one",
-                "0",
-            ));
-        }
         let text = crate::parse_args!(params, 1, String, "text");
         if text.chars().any(crate::utils::lines::is_break) {
             return Err(invalid("inl", "Expected a single line", &text));
@@ -91,7 +84,21 @@ impl InstructionMethods for Inl {
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         let count = lines(&input).count();
-        check_line(self.line, count.saturating_add(1), "inl", &input)?;
+        // Any line may be inserted before, and the line count appends.
+        if self.line > count {
+            return Err(TextForgeError::new(
+                TextForgeErrorCode::IndexOutOfRange(
+                    format!(
+                        "cannot insert before line {}: the text has {} (insert before 0 to {count}; {count} appends)",
+                        self.line,
+                        crate::utils::errors::plural(count, "line")
+                    )
+                    .into(),
+                ),
+                "inl",
+                crate::utils::errors::input_excerpt(&input),
+            ));
+        }
         Ok(crate::utils::allocation::insert_line(
             input, self.line, &self.text,
         ))

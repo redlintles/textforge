@@ -5072,137 +5072,137 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dln\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dln\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"x\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"x\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"é\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"é\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"🍌\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"🍌\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5215,7 +5215,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5228,7 +5228,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5241,7 +5241,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5254,59 +5254,59 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"already_normal\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"already_normal\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5319,7 +5319,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5332,33 +5332,33 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5371,7 +5371,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5384,7 +5384,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5397,7 +5397,7 @@
   {
     "case": {
       "lines": [
-        "dln 2;"
+        "dln 1;"
       ],
       "name": "dln"
     },
@@ -5410,137 +5410,137 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlna\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlna\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlna\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlna\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"x\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"x\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"é\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"é\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"🍌\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"🍌\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5553,7 +5553,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5566,7 +5566,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5579,7 +5579,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5592,59 +5592,59 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"already_normal\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"already_normal\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5657,7 +5657,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5670,33 +5670,33 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlna\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5709,7 +5709,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5722,7 +5722,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5735,7 +5735,7 @@
   {
     "case": {
       "lines": [
-        "dlna 2;"
+        "dlna 1;"
       ],
       "name": "dlna"
     },
@@ -5748,137 +5748,137 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlnb\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlnb\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"dlnb\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlnb\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"x\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"x\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"é\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"é\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"🍌\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"🍌\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -5891,7 +5891,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -5904,7 +5904,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -5917,7 +5917,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -5930,59 +5930,59 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"already_normal\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"already_normal\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -5995,7 +5995,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -6008,33 +6008,33 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"dlnb\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -6047,7 +6047,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -6060,7 +6060,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -6073,7 +6073,7 @@
   {
     "case": {
       "lines": [
-        "dlnb 2;"
+        "dlnb 1;"
       ],
       "name": "dlnb"
     },
@@ -6086,33 +6086,33 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlni\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 0 does not exist: the text is empty\"), instruction: \"dlni\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"dlni\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 0 does not exist: the text is empty\"), instruction: \"dlni\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6125,7 +6125,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6138,7 +6138,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6151,7 +6151,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6164,7 +6164,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6177,7 +6177,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6190,7 +6190,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6203,7 +6203,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6216,7 +6216,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6229,7 +6229,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6242,7 +6242,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6255,7 +6255,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6268,7 +6268,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6281,7 +6281,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6294,7 +6294,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6307,7 +6307,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6320,7 +6320,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6333,7 +6333,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6346,7 +6346,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6359,7 +6359,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6372,7 +6372,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6385,7 +6385,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6398,7 +6398,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -6411,7 +6411,7 @@
   {
     "case": {
       "lines": [
-        "dlni 1 2;"
+        "dlni 0 1;"
       ],
       "name": "dlni"
     },
@@ -7776,33 +7776,33 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"inl\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"cannot insert before line 1: the text has 0 lines (insert before 0 to 0; 0 appends)\"), instruction: \"inl\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"inl\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"cannot insert before line 1: the text has 0 lines (insert before 0 to 0; 0 appends)\"), instruction: \"inl\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7815,7 +7815,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7828,7 +7828,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7841,7 +7841,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7854,7 +7854,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7867,7 +7867,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7880,7 +7880,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7893,7 +7893,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7906,7 +7906,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7919,7 +7919,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7932,7 +7932,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7945,7 +7945,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7958,7 +7958,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7971,7 +7971,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7984,7 +7984,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -7997,7 +7997,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8010,7 +8010,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8023,7 +8023,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8036,7 +8036,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8049,7 +8049,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8062,7 +8062,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8075,7 +8075,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8088,7 +8088,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -8101,7 +8101,7 @@
   {
     "case": {
       "lines": [
-        "inl 2 middle;"
+        "inl 1 middle;"
       ],
       "name": "inl"
     },
@@ -14224,137 +14224,137 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"rln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"rln\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text is empty\"), instruction: \"rln\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"rln\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"x\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "x",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"x\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"x\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"é\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"é\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"é\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"🍌\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "🍌",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"🍌\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"🍌\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"e\\u{301}\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "é",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"e\\u{301}\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"e\\u{301}\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14367,7 +14367,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14380,7 +14380,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14393,7 +14393,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14406,59 +14406,59 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"already_normal\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "already_normal",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"already_normal\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"already_normal\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "\"plain\"",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"\\\"plain\\\"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14471,7 +14471,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14484,33 +14484,33 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
     "input": "  \t",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 2 does not exist: the text has 1 line (valid lines 1 to 1)\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text has 1 line (valid lines 0 to 0)\"), instruction: \"rln\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14523,7 +14523,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14536,7 +14536,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -14549,7 +14549,7 @@
   {
     "case": {
       "lines": [
-        "rln 2 middle;"
+        "rln 1 middle;"
       ],
       "name": "rln"
     },
@@ -17292,33 +17292,33 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"slnc\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 0 does not exist: the text is empty\"), instruction: \"slnc\", input: \"\" }"
     },
     "owned": false
   },
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
     "input": "",
     "outcome": {
-      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 1 does not exist: the text is empty\"), instruction: \"slnc\", input: \"\" }"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"line 0 does not exist: the text is empty\"), instruction: \"slnc\", input: \"\" }"
     },
     "owned": true
   },
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17331,7 +17331,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17344,7 +17344,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17357,7 +17357,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17370,7 +17370,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17383,7 +17383,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17396,7 +17396,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17409,7 +17409,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17422,7 +17422,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17435,7 +17435,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17448,7 +17448,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17461,7 +17461,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17474,7 +17474,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17487,7 +17487,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17500,7 +17500,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17513,7 +17513,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17526,7 +17526,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17539,7 +17539,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17552,7 +17552,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17565,7 +17565,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17578,7 +17578,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17591,7 +17591,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17604,7 +17604,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },
@@ -17617,7 +17617,7 @@
   {
     "case": {
       "lines": [
-        "slnc 1 2;"
+        "slnc 0 1;"
       ],
       "name": "slnc"
     },

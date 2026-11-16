@@ -208,10 +208,10 @@ fn debug_traces_blocks_maps_iterations_and_sections() {
 #[test]
 fn debug_trace_nests_containers_inside_blocks() {
     let source =
-        "blk outer assoc iter 2 times onln 1 apply ate x;\nblk outer assoc dlf;\ncblk outer;\n";
+        "blk outer assoc iter 2 times onln 0 apply ate x;\nblk outer assoc dlf;\ncblk outer;\n";
     let (output, log) = plain_debug_log(source, "ab\ncd");
     assert_eq!(output, "bxx\ncd");
-    let expected = "▶ cblk outer  (2 instructions)\n  ▶ iter 2 times\n    ▶ onln 1  (line: 2 chars)\n      │ 1. ate x  2 → 3 chars\n    ◀ onln  5 → 6 chars (+1) · 2 → 2 lines\n    ▶ onln 1  (line: 3 chars)\n      │ 1. ate x  3 → 4 chars\n    ◀ onln  6 → 7 chars (+1) · 2 → 2 lines\n  ◀ iter  5 → 7 chars (+2) · 2 → 2 lines\n  │ 2. dlf  7 → 6 chars\n◀ outer  5 → 6 chars (+1) · 2 → 2 lines\n";
+    let expected = "▶ cblk outer  (2 instructions)\n  ▶ iter 2 times\n    ▶ onln 0  (line: 2 chars)\n      │ 1. ate x  2 → 3 chars\n    ◀ onln  5 → 6 chars (+1) · 2 → 2 lines\n    ▶ onln 0  (line: 3 chars)\n      │ 1. ate x  3 → 4 chars\n    ◀ onln  6 → 7 chars (+1) · 2 → 2 lines\n  ◀ iter  5 → 7 chars (+2) · 2 → 2 lines\n  │ 2. dlf  7 → 6 chars\n◀ outer  5 → 6 chars (+1) · 2 → 2 lines\n";
     assert!(log.contains(expected), "{log}");
 }
 
@@ -229,7 +229,7 @@ fn debug_lists_at_most_twenty_replacements() {
 fn debug_never_changes_results() {
     for source in [
         NESTED_DEBUG_PIPELINE,
-        "blk outer assoc iter 2 times onln 1 apply ate x;\ncblk outer;\n",
+        "blk outer assoc iter 2 times onln 0 apply ate x;\ncblk outer;\n",
         "rmapd m add 'é+' E;\nrmape m;\nonck 0 2 apply rev;\nonlni 1 2 apply uniqln;\n",
         "atb A;\nend;\nate B;\n",
     ] {
@@ -260,7 +260,7 @@ fn debug_lists_at_most_twenty_steps_per_container() {
     assert!(log.contains("  │ 20. ate x  19 → 20 chars\n  │ … +99980 steps\n◀ iter  0 → 100000 chars (+100000) · 0 → 1 line\n"));
 
     // Hidden containers are neither rendered nor measured.
-    let source = "blk b assoc iter 25 times onln 1 apply ate x;\ncblk b;\n";
+    let source = "blk b assoc iter 25 times onln 0 apply ate x;\ncblk b;\n";
     let (output, log) = plain_debug_log(source, "a\nb");
     assert_eq!(output, format!("a{}\nb", "x".repeat(25)));
     assert_eq!(log.matches("▶ onln").count(), 20);

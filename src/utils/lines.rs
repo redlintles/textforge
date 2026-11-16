@@ -40,24 +40,23 @@ pub(crate) fn invalid(name: &'static str, message: &str, input: &str) -> TextFor
     )
 }
 
+/// Check that line `line` (base 0, Golden Rule 22) exists in a text with
+/// `count` lines.
 pub(crate) fn check_line(
     line: usize,
     count: usize,
     name: &'static str,
     input: &str,
 ) -> Result<(), TextForgeError> {
-    if line == 0 || line > count {
+    if line >= count {
         return Err(TextForgeError::new(
             TextForgeErrorCode::IndexOutOfRange(
                 match count {
                     0 => format!("line {line} does not exist: the text is empty"),
-                    _ if line == 0 => format!(
-                        "line numbers start at 1, but line 0 was given (the text has {})",
-                        crate::utils::errors::plural(count, "line")
-                    ),
                     _ => format!(
-                        "line {line} does not exist: the text has {} (valid lines 1 to {count})",
-                        crate::utils::errors::plural(count, "line")
+                        "line {line} does not exist: the text has {} (valid lines 0 to {})",
+                        crate::utils::errors::plural(count, "line"),
+                        count - 1
                     ),
                 }
                 .into(),
@@ -69,9 +68,9 @@ pub(crate) fn check_line(
     Ok(())
 }
 
-/// Validate the inclusive line range `start..=end` of a text with `count`
-/// lines: `start` must exist, `start <= end`, and an `end` past the last line
-/// means the last line.
+/// Validate the inclusive line range `start..=end` (base 0) of a text with
+/// `count` lines: `start` must exist, `start <= end`, and an `end` past the
+/// last line means the last line.
 pub(crate) fn check_range(
     start: usize,
     end: usize,
@@ -81,11 +80,8 @@ pub(crate) fn check_range(
 ) -> Result<(), TextForgeError> {
     check_line(start, count, name, input)?;
     // An end past the last line means the last line, as character ranges
-    // clamp an end past the last character (Golden Rule 18). Before 0.3.2 it
-    // was an error. Line 0 is never valid.
-    if end == 0 {
-        check_line(end, count, name, input)?;
-    }
+    // clamp an end past the last character (Golden Rule 21). Before 0.3.2 it
+    // was an error.
     if start > end {
         return Err(invalid(
             name,
@@ -130,8 +126,8 @@ mod excerpt_test {
     fn index_errors_on_large_documents_keep_an_excerpt() {
         let document = "line\n".repeat(200_000);
         for step in [
-            "dlni 5 1;",
-            "onln 300000 apply tua;",
+            "dlni 4 0;",
+            "onln 299999 apply tua;",
             "dls 2000000;",
             "ins 2000000 x;",
         ] {

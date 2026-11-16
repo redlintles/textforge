@@ -1,5 +1,5 @@
 //! Variable names with underscores and `[[ ]]`/`{{ }}` expressions in numeric
-//! parameters (e.g. `onln '[[__COUNTER__ + 1]]' apply …`).
+//! parameters (e.g. `onln '[[__COUNTER__]]' apply …`).
 #![cfg(feature = "test_access")]
 
 use std::borrow::Cow;
@@ -47,7 +47,7 @@ fn per_line_iteration_with_an_expression() {
     // Specification §6.1.7, inside a block because of the root depth limit.
     let output = run(
         &[
-            "blk each assoc iter 3 times onln '[[__COUNTER__ + 1]]' apply tbs;",
+            "blk each assoc iter 3 times onln '[[__COUNTER__]]' apply tbs;",
             "cblk each;",
         ],
         " a \n b \n c \n d ",
@@ -60,7 +60,7 @@ fn per_line_iteration_with_an_expression() {
 fn unquoted_expressions_may_contain_spaces() {
     let output = run(
         &[
-            "blk each assoc iter 3 times onln [[__COUNTER__ + 1]] apply tbs;",
+            "blk each assoc iter 3 times onln [[__COUNTER__ + 0]] apply tbs;",
             "cblk each;",
         ],
         " a \n b \n c \n d ",
@@ -74,7 +74,7 @@ fn unquoted_expressions_may_contain_spaces() {
     );
     // Written back to text, the parameter is quoted and reads the same.
     let mut processor = TextForgeProcessor::new();
-    let id = register(&mut processor, &["val n = 1;", "onln [[n + 1]] apply tua;"]);
+    let id = register(&mut processor, &["val n = 0;", "onln [[n + 1]] apply tua;"]);
     assert_eq!(
         processor.get_text_transform_vec(&id).unwrap()[1],
         "onln '[[n + 1]]' apply tua;\n"
@@ -125,13 +125,13 @@ fn text_and_bytecode_round_trips_keep_the_expression() {
         &mut processor,
         &[
             "val n = 1;",
-            "onln '[[n + 1]]' apply tua;",
+            "onln '[[n]]' apply tua;",
             "onck '[[n - 1]]' '{{n}}' apply tua;",
         ],
     );
     assert_eq!(
         processor.get_text_transform_vec(&id).unwrap()[1],
-        "onln '[[n + 1]]' apply tua;\n"
+        "onln '[[n]]' apply tua;\n"
     );
     let input = "abc\ndef";
     let expected = processor.process_all(&id, input).unwrap();

@@ -168,19 +168,19 @@ fn dln_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .delete_line(1)
+        .delete_line(0)
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "b");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(1)];
+    let arguments: Vec<Argument> = vec![Argument::Number(0)];
     verify_environments("dln", arguments.clone(), input, "b");
     plan.add(InstructionSpec::new("dln".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "b");
     use textforge::tokens::{InstructionMethods, transforms::dln::Dln};
-    let token = Dln::new(1).unwrap();
+    let token = Dln::new(0).unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -230,19 +230,19 @@ fn dlna_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .delete_lines_after(1)
+        .delete_lines_after(0)
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "a\n");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(1)];
+    let arguments: Vec<Argument> = vec![Argument::Number(0)];
     verify_environments("dlna", arguments.clone(), input, "a\n");
     plan.add(InstructionSpec::new("dlna".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "a\n");
     use textforge::tokens::{InstructionMethods, transforms::dlna::Dlna};
-    let token = Dlna::new(1).unwrap();
+    let token = Dlna::new(0).unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -292,19 +292,19 @@ fn dlnb_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .delete_lines_before(2)
+        .delete_lines_before(1)
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "b");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(2)];
+    let arguments: Vec<Argument> = vec![Argument::Number(1)];
     verify_environments("dlnb", arguments.clone(), input, "b");
     plan.add(InstructionSpec::new("dlnb".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "b");
     use textforge::tokens::{InstructionMethods, transforms::dlnb::Dlnb};
-    let token = Dlnb::new(2).unwrap();
+    let token = Dlnb::new(1).unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -354,19 +354,19 @@ fn slnc_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .select_lines(2, 2)
+        .select_lines(1, 1)
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "b\n");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(2), Argument::Number(2)];
+    let arguments: Vec<Argument> = vec![Argument::Number(1), Argument::Number(1)];
     verify_environments("slnc", arguments.clone(), input, "b\n");
     plan.add(InstructionSpec::new("slnc".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "b\n");
     use textforge::tokens::{InstructionMethods, transforms::slnc::Slnc};
-    let token = Slnc::new(2, 2).unwrap();
+    let token = Slnc::new(1, 1).unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -416,19 +416,19 @@ fn dlni_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .delete_lines_interval(2, 2)
+        .delete_lines_interval(1, 1)
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "a\nc");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(2), Argument::Number(2)];
+    let arguments: Vec<Argument> = vec![Argument::Number(1), Argument::Number(1)];
     verify_environments("dlni", arguments.clone(), input, "a\nc");
     plan.add(InstructionSpec::new("dlni".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "a\nc");
     use textforge::tokens::{InstructionMethods, transforms::dlni::Dlni};
-    let token = Dlni::new(2, 2).unwrap();
+    let token = Dlni::new(1, 1).unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -478,19 +478,19 @@ fn inl_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .insert_line(2, "x")
+        .insert_line(1, "x")
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "a\nx\nb");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(2), Argument::Text("x".into())];
+    let arguments: Vec<Argument> = vec![Argument::Number(1), Argument::Text("x".into())];
     verify_environments("inl", arguments.clone(), input, "a\nx\nb");
     plan.add(InstructionSpec::new("inl".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "a\nx\nb");
     use textforge::tokens::{InstructionMethods, transforms::inl::Inl};
-    let token = Inl::new(2, "x").unwrap();
+    let token = Inl::new(1, "x").unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -602,19 +602,19 @@ fn rln_native_portable_text_and_bytecode() {
     let mut native = TextForgeProcessor::new();
     let id = native
         .create_pipeline()
-        .replace_line(2, "x")
+        .replace_line(1, "x")
         .unwrap()
         .build()
         .unwrap();
     assert_eq!(native.process_all(&id, input).unwrap(), "a\nx");
     let mut plan = PipelinePlan::new();
-    let arguments: Vec<Argument> = vec![Argument::Number(2), Argument::Text("x".into())];
+    let arguments: Vec<Argument> = vec![Argument::Number(1), Argument::Text("x".into())];
     verify_environments("rln", arguments.clone(), input, "a\nx");
     plan.add(InstructionSpec::new("rln".into(), arguments))
         .unwrap();
     assert_eq!(plan.compile().unwrap().process(input).unwrap(), "a\nx");
     use textforge::tokens::{InstructionMethods, transforms::rln::Rln};
-    let token = Rln::new(2, "x").unwrap();
+    let token = Rln::new(1, "x").unwrap();
     #[cfg(feature = "test_access")]
     {
         let line = token.to_textforge_line();
@@ -1163,9 +1163,9 @@ fn unicode_payloads_keep_crlf_and_join_empty_matches_remove_breaks() {
         .create_pipeline()
         .prepend_line("👩🏽‍💻e\u{301}")
         .unwrap()
-        .insert_line(2, "🍌")
+        .insert_line(1, "🍌")
         .unwrap()
-        .replace_line(3, "é")
+        .replace_line(2, "é")
         .unwrap()
         .append_line("終")
         .unwrap()
@@ -1233,13 +1233,13 @@ fn quoted_unicode_payloads_round_trip_in_both_formats() {
         ),
         (
             "inl",
-            vec![Argument::Number(1), Argument::Text(payload.into())],
+            vec![Argument::Number(0), Argument::Text(payload.into())],
             "x",
             format!("{payload}\nx"),
         ),
         (
             "rln",
-            vec![Argument::Number(1), Argument::Text(payload.into())],
+            vec![Argument::Number(0), Argument::Text(payload.into())],
             "x",
             payload.to_owned(),
         ),

@@ -278,7 +278,7 @@ pub(crate) mod fixtures {
     rmapd animals add wolf dog;
     rmape animals;
     iter 2 times ate '[[__COUNTER__]]';
-    onln 1 apply tua;
+    onln 0 apply tua;
     ";
 
     /// Expected nested trace of [`NESTED_DEBUG_PIPELINE`], shared with the
@@ -287,7 +287,7 @@ pub(crate) mod fixtures {
         "▶ cblk cleanup  (3 instructions)\n  │ 1. tbs  16 → 14 chars\n  │ 2. raw       14 → 12 chars\n  │ 3. atb #   12 → 14 chars\n◀ cleanup  16 → 14 chars (−2) · 2 → 2 lines\n\n",
         "▶ rmape animals  (2 rules)\n  │ rule 1 /cat/  'cat' → 'wolf'  @ 2..5\n  │ rule 2 /wolf/  'wolf' → 'dog'  @ 7..11\n◀ animals  14 → 14 chars (±0) · 2 → 2 lines · 2 replacements\n\n",
         "▶ iter 2 times\n  │ 1. ate 0  14 → 15 chars\n  │ 2. ate 1  15 → 16 chars\n◀ iter  14 → 16 chars (+2) · 2 → 2 lines\n\n",
-        "▶ onln 1  (line: 12 chars)\n  │ 1. tua  12 → 12 chars\n◀ onln  16 → 16 chars (±0) · 2 → 2 lines\n\n",
+        "▶ onln 0  (line: 12 chars)\n  │ 1. tua  12 → 12 chars\n◀ onln  16 → 16 chars (±0) · 2 → 2 lines\n\n",
     ];
 }
 

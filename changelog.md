@@ -6,6 +6,18 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 
 ### Behavior changes
 
+- **Line numbers start at 0**, like every other index (Golden Rule 22):
+  `dln`, `dlna`, `dlnb`, `dlni`, `slnc`, `inl`, `rln`, `onln` and `onlni`, and
+  the builder methods `delete_line`, `delete_lines_after`,
+  `delete_lines_before`, `select_lines`, `delete_lines_interval`,
+  `insert_line`, `replace_line`, `on_line` and `on_line_interval`. `dln 0;`
+  deletes the first line (before: `dln 1;`), line 0 is no longer an error,
+  `inl {count}` appends (before: `inl {count + 1}`), and the per-line idiom is
+  `onln [[__COUNTER__]]` (before: `[[__COUNTER__ + 1]]`). Every pipeline,
+  portable plan and bytecode file that uses these instructions must subtract
+  one from each line number: the stored numbers load unchanged and now select
+  the next line, or fail when the old number was the last line. Error
+  messages say "valid lines 0 to N".
 - **Interpolation delimiters are no longer deleted.** `{{`, `}}`, `[[` and `]]`
   that form no variable read or expression stay in the text, so
   `ate '{"a":{"b":1}}';` writes the whole JSON (before: `{"a":{"b":1`) and

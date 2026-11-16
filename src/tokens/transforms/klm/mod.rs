@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `klm {pattern};` — Keep the lines that match `pattern`.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::klm::Klm};
@@ -22,7 +22,7 @@ pub struct Klm {
     params: Vec<TextForgeParamTypes>,
 }
 impl Klm {
-    /// Construct `klm`. Line indices are one-based.
+    /// Construct `klm`.
     pub fn new(pattern: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[pattern.to_owned().into()])?;

@@ -92,25 +92,25 @@
   {
     "name": "dln",
     "lines": [
-      "dln 2;"
+      "dln 1;"
     ]
   },
   {
     "name": "dlna",
     "lines": [
-      "dlna 2;"
+      "dlna 1;"
     ]
   },
   {
     "name": "dlnb",
     "lines": [
-      "dlnb 2;"
+      "dlnb 1;"
     ]
   },
   {
     "name": "dlni",
     "lines": [
-      "dlni 1 2;"
+      "dlni 0 1;"
     ]
   },
   {
@@ -140,7 +140,7 @@
   {
     "name": "inl",
     "lines": [
-      "inl 2 middle;"
+      "inl 1 middle;"
     ]
   },
   {
@@ -255,7 +255,7 @@
   {
     "name": "rln",
     "lines": [
-      "rln 2 middle;"
+      "rln 1 middle;"
     ]
   },
   {
@@ -310,7 +310,7 @@
   {
     "name": "slnc",
     "lines": [
-      "slnc 1 2;"
+      "slnc 0 1;"
     ]
   },
   {
@@ -498,7 +498,7 @@
   {
     "name": "onln",
     "lines": [
-      "onln 2 apply tua;"
+      "onln 1 apply tua;"
     ]
   },
   {
@@ -510,7 +510,7 @@
   {
     "name": "onlni",
     "lines": [
-      "onlni 1 2 apply ate \"!\";"
+      "onlni 0 1 apply ate \"!\";"
     ]
   },
   {

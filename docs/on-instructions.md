@@ -5,12 +5,12 @@ replaces that part; the rest of the document is unchanged.
 
 | DSL | Rust builder | Section | Index base |
 | --- | --- | --- | --- |
-| `onln {n} apply {instruction};` | `on_line(n, inner)` | line `n` | **1**, like `dln`, `slnc`, `dlni` |
+| `onln {n} apply {instruction};` | `on_line(n, inner)` | line `n` | **0**, like `dln`, `slnc`, `dlni` |
 | `onck {start} {end} apply {instruction};` | `on_chunk(start, end, inner)` | characters `start..=end` (Unicode scalars) | **0**, like `dlc`, `slt` |
-| `onlni {start} {end} apply {instruction};` | `on_line_interval(start, end, inner)` | lines `start..=end`, as **one** block | **1** |
+| `onlni {start} {end} apply {instruction};` | `on_line_interval(start, end, inner)` | lines `start..=end`, as **one** block | **0** |
 
-> Line numbers start at **1**; character indices start at **0**. Both ranges
-> include their end.
+> Line numbers and character indices start at **0** (Golden Rule 22; up to
+> 0.3.1 line numbers started at 1). Both ranges include their end.
 
 `apply` is a syntax-only literal, dropped during parsing like `assoc` and `do`.
 Opcodes: `onln` 0x52, `onck` 0x53, `onlni` 0x54.
@@ -18,8 +18,8 @@ Opcodes: `onln` 0x52, `onck` 0x53, `onlni` 0x54.
 ## Semantics
 
 1. **The nested instruction receives only the section.** Every index it uses is
-   relative to the section: `onln 3 apply dlf;` deletes the first character of
-   line 3, not of the document. For every index-based instruction, `on* … apply X`
+   relative to the section: `onln 2 apply dlf;` deletes the first character of
+   line 2 (the third line), not of the document. For every index-based instruction, `on* … apply X`
    produces exactly what extracting the section, applying `X` to it alone and
    splicing it back produces (`tests/on_instructions.rs` checks this for the
    index-based transforms and the line family).
@@ -28,7 +28,7 @@ Opcodes: `onln` 0x52, `onck` 0x53, `onlni` 0x54.
    preserved. Terminators between lines of an `onlni` block stay inside the
    block. All terminators of [logical lines](lines.md) are recognized.
 3. **Any number of lines.** The result may have more lines, fewer, or none:
-   `onlni 10 20 apply uniqln;` and `onlni 2 50 apply dle;` change the line count.
+   `onlni 9 19 apply uniqln;` and `onlni 1 49 apply dle;` change the line count.
    The no-line-break restriction of `inl`/`rln` does not apply here.
 4. **`onln n` equals `onlni n n`.** Both use the same implementation
    (`src/utils/sections.rs`).
@@ -42,7 +42,7 @@ selected line leaves the terminator before it in place, exactly as the filter
 does on the extracted block by itself:
 
 ```text
-input: "b\na\nb\na\nc"    pipeline: onlni 1 4 apply uniqln;
+input: "b\na\nb\na\nc"    pipeline: onlni 0 3 apply uniqln;
 block: "b\na\nb\na"        uniqln → "b\na\n"
 output: "b\na\n\nc"
 ```
@@ -53,7 +53,7 @@ All errors are `TextForgeError`; nothing panics.
 
 | Instruction | Error | Same as |
 | --- | --- | --- |
-| `onln`, `onlni` | line `0`, a line (or interval start) past the end, reversed interval, empty document (zero lines); an interval **end** past the last line means the last line | `dlni`/`slnc` (identical error values) |
+| `onln`, `onlni` | a line (or interval start) past the end, reversed interval, empty document (zero lines); an interval **end** past the last line means the last line | `dlni`/`slnc` (identical error values) |
 | `onck` | `start > end` (`InvalidIndex`), `start` outside the text (`IndexOutOfRange`), empty document | `dlc`, with the documented difference below |
 | all | an error from the nested instruction | — |
 
@@ -71,19 +71,19 @@ As in `dlc`, an `end` past the last character is clamped to it.
 - `rmapd` cannot be placed inside them (directly or deeper).
 - The nesting depth limits are the parser's: the root allows **one** nested
   level, a block payload (`blk … assoc …`) allows three. So
-  `onln 1 apply tbs;` and `blk b assoc iter 3 times onln 1 apply tbs;` are valid,
-  but `iter 3 times onln 1 apply tbs;` at the root and an `on*` inside an
+  `onln 0 apply tbs;` and `blk b assoc iter 3 times onln 0 apply tbs;` are valid,
+  but `iter 3 times onln 0 apply tbs;` at the root and an `on*` inside an
   `ifdc` body at the root are rejected with `Nested token depth exceeded`.
 
 ## Applying to each line
 
 Combining `iter` and `onln` reaches lines one by one: iteration `i` sees
 `__COUNTER__ == i`, and numeric parameters accept `[[ ]]` expressions, so the
-line number is `[[__COUNTER__ + 1]]`. Because of the depth limit above, the
+line number is `[[__COUNTER__]]`. Because of the depth limit above, the
 combination runs from a block:
 
 ```text
-blk each assoc iter 3 times onln '[[__COUNTER__ + 1]]' apply tbs;
+blk each assoc iter 3 times onln '[[__COUNTER__]]' apply tbs;
 cblk each;
 ```
 

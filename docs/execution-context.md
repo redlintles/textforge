@@ -19,7 +19,7 @@ They are read like any variable: `{{__LINES__}}` in a parameter,
 `[[__LINES__ - 1]]` in an expression, or as a numeric parameter:
 
 ```text
-onln '[[__LINES__]]' apply ate '.';     // the last line, whatever the length
+onln '[[__LINES__ - 1]]' apply ate '.'; // the last line, whatever the length
 ate ' ({{__LINES__}} lines, {{__LEN_CHARS__}} chars)';
 atb '{{__PIPELINE_NAME__}}: ';
 ```

@@ -14,11 +14,11 @@ use crate::{
     },
 };
 
-/// Byte range covering lines `start..=end` (base 1) without the terminator of
+/// Byte range covering lines `start..=end` (base 0) without the terminator of
 /// the last selected line. Terminators between selected lines are included.
 ///
 /// Scans only up to the last selected line and allocates nothing. Errors match
-/// `dlni`/`slnc` exactly: a zero or missing start, a reversed range, and empty
+/// `dlni`/`slnc` exactly: a missing start, a reversed range, and empty
 /// documents; an `end` past the last line means the last line.
 pub(crate) fn line_section(
     input: &str,
@@ -26,11 +26,11 @@ pub(crate) fn line_section(
     end: usize,
     name: &'static str,
 ) -> Result<Range<usize>, TextForgeError> {
-    if start != 0 && start <= end {
+    if start <= end {
         let mut offset = 0;
         let mut section_start = None;
         let mut content_end = 0;
-        for (number, (content, terminator)) in (1..).zip(lines(input)) {
+        for (number, (content, terminator)) in (0..).zip(lines(input)) {
             if number == start {
                 section_start = Some(offset);
             }
@@ -166,22 +166,16 @@ mod test {
     #[test]
     fn line_sections_exclude_only_the_final_terminator() {
         let text = "a\r\nb\nc\u{2028}d";
-        assert_eq!(&text[line_section(text, 1, 1, "t").unwrap()], "a");
-        assert_eq!(&text[line_section(text, 2, 3, "t").unwrap()], "b\nc");
-        assert_eq!(&text[line_section(text, 4, 4, "t").unwrap()], "d");
-        assert_eq!(&text[line_section(text, 1, 4, "t").unwrap()], text);
-        assert_eq!(&"\n\n"[line_section("\n\n", 2, 2, "t").unwrap()], "");
+        assert_eq!(&text[line_section(text, 0, 0, "t").unwrap()], "a");
+        assert_eq!(&text[line_section(text, 1, 2, "t").unwrap()], "b\nc");
+        assert_eq!(&text[line_section(text, 3, 3, "t").unwrap()], "d");
+        assert_eq!(&text[line_section(text, 0, 3, "t").unwrap()], text);
+        assert_eq!(&"\n\n"[line_section("\n\n", 1, 1, "t").unwrap()], "");
     }
 
     #[test]
     fn line_section_errors_match_interval_instructions() {
-        for (text, start, end) in [
-            ("", 1, 1),
-            ("a", 0, 1),
-            ("a", 2, 3),
-            ("a", 1, 0),
-            ("a\nb", 2, 1),
-        ] {
+        for (text, start, end) in [("", 0, 0), ("a", 1, 2), ("a\nb", 1, 0)] {
             let expected = check_range(start, end, lines(text).count(), "t", text).unwrap_err();
             assert_eq!(line_section(text, start, end, "t").unwrap_err(), expected);
         }
@@ -191,10 +185,10 @@ mod test {
     #[test]
     fn an_end_past_the_last_line_selects_up_to_the_last_line() {
         let text = "a\nb\nc\n";
-        assert_eq!(&text[line_section(text, 2, 9, "t").unwrap()], "b\nc");
-        assert_eq!(&text[line_section(text, 3, 4, "t").unwrap()], "c");
-        assert_eq!(&"a\nb"[line_section("a\nb", 1, 5, "t").unwrap()], "a\nb");
-        assert!(check_range(2, 9, 3, "t", text).is_ok());
+        assert_eq!(&text[line_section(text, 1, 8, "t").unwrap()], "b\nc");
+        assert_eq!(&text[line_section(text, 2, 3, "t").unwrap()], "c");
+        assert_eq!(&"a\nb"[line_section("a\nb", 0, 4, "t").unwrap()], "a\nb");
+        assert!(check_range(1, 8, 3, "t", text).is_ok());
     }
 
     #[test]

@@ -17,7 +17,7 @@ pub mod test;
 
 /// `onln {line} apply {instruction};` — Run `instruction` on one line only.
 ///
-/// Applies one instruction to line `line` (base 1) only. The instruction
+/// Applies one instruction to line `line` (base 0) only. The instruction
 /// receives the line content without its terminator, so every index it uses is
 /// relative to that line; the terminator stays outside and is preserved. The
 /// result may contain any number of lines. `onln n` is equivalent to
@@ -28,7 +28,7 @@ pub mod test;
 /// ```rust
 /// use textforge::tokens::{InstructionMethods, instructions::onln::Onln, transforms::tbs::Tbs};
 ///
-/// let token = Onln::new(2, (Box::new(Tbs::default()) as Box<dyn InstructionMethods>).into());
+/// let token = Onln::new(1, (Box::new(Tbs::default()) as Box<dyn InstructionMethods>).into());
 /// assert_eq!(token.transform("  a  \n  b  \n".into(), None).unwrap(), "  a  \nb\n");
 /// ```
 #[derive(Clone, Default)]

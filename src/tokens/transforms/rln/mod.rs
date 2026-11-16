@@ -12,11 +12,11 @@ use std::borrow::Cow;
 
 /// `rln {line} {text};` — Replace the content of `line`, keeping its terminator.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Line indices start at 0 (Golden Rule 22); shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::rln::Rln};
-/// let token = Rln::new(2, "x").unwrap();
+/// let token = Rln::new(1, "x").unwrap();
 /// assert_eq!(token.transform("a\nb".into(), None).unwrap(), "a\nx");
 /// ```
 #[derive(Clone)]
@@ -26,7 +26,7 @@ pub struct Rln {
     params: Vec<TextForgeParamTypes>,
 }
 impl Rln {
-    /// Construct `rln`. Line indices are one-based.
+    /// Construct `rln`. Line indices start at 0.
     pub fn new(line: usize, text: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[line.into(), text.to_owned().into()])?;
@@ -36,9 +36,9 @@ impl Rln {
 impl Default for Rln {
     fn default() -> Self {
         Self {
-            line: 1,
+            line: 0,
             text: String::new(),
-            params: vec![1usize.into(), String::new().into()],
+            params: vec![0usize.into(), String::new().into()],
         }
     }
 }
@@ -68,13 +68,6 @@ impl InstructionMethods for Rln {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 2, "rln", "")?;
         let line = crate::parse_args!(params, 0, Usize, "line");
-        if line == 0 {
-            return Err(crate::utils::lines::invalid(
-                "rln",
-                "Line numbers start at one",
-                "0",
-            ));
-        }
         let text = crate::parse_args!(params, 1, String, "text");
         if text.chars().any(crate::utils::lines::is_break) {
             return Err(invalid("rln", "Expected a single line", &text));
@@ -92,10 +85,10 @@ impl InstructionMethods for Rln {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_line(self.line, lines(&input).count(), "rln", &input)?;
         let start: usize = lines(&input)
-            .take(self.line - 1)
+            .take(self.line)
             .map(|(t, e)| t.len() + e.len())
             .sum();
-        let (text, ending) = lines(&input).nth(self.line - 1).unwrap_or(("", ""));
+        let (text, ending) = lines(&input).nth(self.line).unwrap_or(("", ""));
         let end = start + text.len();
         if self.text.is_empty() && ending.is_empty() {
             let ending = lines(&input)

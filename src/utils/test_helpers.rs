@@ -136,21 +136,21 @@ pub fn build_all_tokens_pipeline_safe(
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .append_line("b")?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .delete_line(1)?
+        .delete_line(0)?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .delete_lines_after(1)?
+        .delete_lines_after(0)?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .delete_lines_before(2)?
+        .delete_lines_before(1)?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .select_lines(2, 2)?
+        .select_lines(1, 1)?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .delete_lines_interval(2, 2)?
+        .delete_lines_interval(1, 1)?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .insert_line(2, "x")?
+        .insert_line(1, "x")?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .remove_line_breaks()?
         .add_to_end("\nLINE\nLINE\nTAIL")?
-        .replace_line(2, "x")?
+        .replace_line(1, "x")?
         .add_to_end("\nLINE\nLINE\nTAIL")?
         .prepend_line("b")?
         .add_to_end("\nLINE\nLINE\nTAIL")?
@@ -167,10 +167,10 @@ pub fn build_all_tokens_pipeline_safe(
         .join_lines(" ")?
         // ========== on*: one instruction on a section ==========
         .add_to_end("\n  LINE  \nLINE\nLINE\nTAIL")?
-        .on_line(2, Box::new(Tbs::default()) as Box<dyn InstructionMethods>)?
+        .on_line(1, Box::new(Tbs::default()) as Box<dyn InstructionMethods>)?
         .on_line_interval(
-            2,
-            4,
+            1,
+            3,
             Box::new(Uniqln::default()) as Box<dyn InstructionMethods>,
         )?
         .on_chunk(

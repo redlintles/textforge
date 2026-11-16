@@ -12,11 +12,11 @@ use std::borrow::Cow;
 
 /// `dlna {line};` — Delete the lines after `line`.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Line indices start at 0 (Golden Rule 22); shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::dlna::Dlna};
-/// let token = Dlna::new(1).unwrap();
+/// let token = Dlna::new(0).unwrap();
 /// assert_eq!(token.transform("a\nb".into(), None).unwrap(), "a\n");
 /// ```
 #[derive(Clone)]
@@ -25,7 +25,7 @@ pub struct Dlna {
     params: Vec<TextForgeParamTypes>,
 }
 impl Dlna {
-    /// Construct `dlna`. Line indices are one-based.
+    /// Construct `dlna`. Line indices start at 0.
     pub fn new(line: usize) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[line.into()])?;
@@ -35,8 +35,8 @@ impl Dlna {
 impl Default for Dlna {
     fn default() -> Self {
         Self {
-            line: 1,
-            params: vec![1usize.into()],
+            line: 0,
+            params: vec![0usize.into()],
         }
     }
 }
@@ -66,13 +66,6 @@ impl InstructionMethods for Dlna {
     fn set_params(&mut self, params: &[TextForgeParamTypes]) -> Result<(), TextForgeError> {
         check_vec_len(params, 1, "dlna", "")?;
         let line = crate::parse_args!(params, 0, Usize, "line");
-        if line == 0 {
-            return Err(crate::utils::lines::invalid(
-                "dlna",
-                "Line numbers start at one",
-                "0",
-            ));
-        }
         self.line = line;
 
         self.params = params.to_vec();
@@ -85,7 +78,7 @@ impl InstructionMethods for Dlna {
     ) -> Result<Cow<'a, str>, TextForgeError> {
         check_line(self.line, lines(&input).count(), "dlna", &input)?;
         let length: usize = lines(&input)
-            .take(self.line)
+            .take(self.line + 1)
             .map(|(t, e)| t.len() + e.len())
             .sum();
         Ok(crate::utils::allocation::keep(input, 0..length))

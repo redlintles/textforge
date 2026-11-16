@@ -262,7 +262,7 @@ fn chain<'a>(
     mut input: Cow<'a, str>,
     steps: usize,
 ) -> Result<Cow<'a, str>, TextForgeError> {
-    let token = dln::Dln::new(2)?;
+    let token = dln::Dln::new(1)?;
     for _ in 0..steps {
         input = if variant == "chain_base" {
             token.transform(input, None)?
@@ -283,18 +283,18 @@ fn failure(message: &str) -> TextForgeError {
 fn baseline(case: &str, count: usize) -> Result<Box<dyn InstructionMethods>, TextForgeError> {
     Ok(match case {
         "apl" => Box::new(apl::Apl::new("added")?),
-        "dln" => Box::new(dln::Dln::new(2)?),
+        "dln" => Box::new(dln::Dln::new(1)?),
         "dln_last" => Box::new(dln::Dln::new(count)?),
-        "dlna" => Box::new(dlna::Dlna::new(2)?),
+        "dlna" => Box::new(dlna::Dlna::new(1)?),
         "dlna_last" => Box::new(dlna::Dlna::new(count)?),
-        "dlnb" => Box::new(dlnb::Dlnb::new(2)?),
-        "dlnb_first" => Box::new(dlnb::Dlnb::new(1)?),
-        "slnc" => Box::new(slnc::Slnc::new(2, 3)?),
+        "dlnb" => Box::new(dlnb::Dlnb::new(1)?),
+        "dlnb_first" => Box::new(dlnb::Dlnb::new(0)?),
+        "slnc" => Box::new(slnc::Slnc::new(1, 2)?),
         "slnc_all" => Box::new(slnc::Slnc::new(1, count)?),
-        "dlni" => Box::new(dlni::Dlni::new(2, 3)?),
-        "inl" => Box::new(inl::Inl::new(2, "added")?),
+        "dlni" => Box::new(dlni::Dlni::new(1, 2)?),
+        "inl" => Box::new(inl::Inl::new(1, "added")?),
         "inl_end" => Box::new(inl::Inl::new(count + 1, "added")?),
-        "rln" => Box::new(rln::Rln::new(2, "replaced")?),
+        "rln" => Box::new(rln::Rln::new(1, "replaced")?),
         "pln" => Box::new(pln::Pln::new("added")?),
         "nln" => Box::new(nln::Nln::new()?),
         "dle" => Box::new(dle::Dle::new()?),
@@ -450,7 +450,7 @@ fn verify() -> Result<(), Box<dyn std::error::Error>> {
                 return Err("Offset reverse mismatch".into());
             }
             if count >= 3
-                && slnc::Slnc::new(2, 3)?.transform(argument(), None)?
+                && slnc::Slnc::new(1, 2)?.transform(argument(), None)?
                     != select_exact(argument(), 2, 3)?
             {
                 return Err("Exact selection mismatch".into());

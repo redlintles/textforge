@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `joinln {separator};` — Join the lines with `separator`.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::joinln::Joinln};
@@ -21,7 +21,7 @@ pub struct Joinln {
     params: Vec<TextForgeParamTypes>,
 }
 impl Joinln {
-    /// Construct `joinln`. Line indices are one-based.
+    /// Construct `joinln`.
     pub fn new(separator: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[separator.to_owned().into()])?;

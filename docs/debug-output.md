@@ -25,7 +25,7 @@ instructions inside it, a nested trace follows the step:
   │ 2. ate 1  15 → 16 chars
 ◀ iter  14 → 16 chars (+2) · 2 → 2 lines
 
-▶ onln 1  (line: 12 chars)
+▶ onln 0  (line: 12 chars)
   │ 1. tua  12 → 12 chars
 ◀ onln  16 → 16 chars (±0) · 2 → 2 lines
 ```

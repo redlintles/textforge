@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `uniqln;` — Keep the first occurrence of each line.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::uniqln::Uniqln};
@@ -20,7 +20,7 @@ pub struct Uniqln {
     params: Vec<TextForgeParamTypes>,
 }
 impl Uniqln {
-    /// Construct `uniqln`. Line indices are one-based.
+    /// Construct `uniqln`.
     pub fn new() -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[])?;

@@ -8,7 +8,7 @@ use std::borrow::Cow;
 
 /// `pln {text};` — Prepend a line.
 ///
-/// Uses one-based indices and shared logical-line semantics. See `docs/lines.md`.
+/// Uses the shared logical-line semantics. See `docs/lines.md`.
 ///
 /// ```
 /// use textforge::tokens::{InstructionMethods, transforms::pln::Pln};
@@ -21,7 +21,7 @@ pub struct Pln {
     params: Vec<TextForgeParamTypes>,
 }
 impl Pln {
-    /// Construct `pln`. Line indices are one-based.
+    /// Construct `pln`.
     pub fn new(text: &str) -> Result<Self, TextForgeError> {
         let mut token = Self::default();
         token.set_params(&[text.to_owned().into()])?;
@@ -75,7 +75,7 @@ impl InstructionMethods for Pln {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        Ok(crate::utils::allocation::insert_line(input, 1, &self.text))
+        Ok(crate::utils::allocation::insert_line(input, 0, &self.text))
     }
 
     #[cfg(feature = "bytecode")]
