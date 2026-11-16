@@ -138,6 +138,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   `cargo install textforge --features cli` builds a `txf` that reads and
   writes bytecode; before, `--features cli,bytecode` was needed. Neither
   feature adds a dependency.
+- `txf compile PIPELINE [-o FILE]` compiles a text pipeline to bytecode (joined
+  pipelines are embedded), `txf decompile PIPELINE [-o FILE]` writes bytecode
+  back as text, and `txf check PIPELINE...` loads pipelines without running
+  them, one line per file, with status 3 when any fails.
 
 ### Fixed
 

@@ -24,6 +24,9 @@ impl Files {
         std::fs::write(path, contents).unwrap();
         self
     }
+    fn read(&self, name: &str) -> String {
+        std::fs::read_to_string(self.path().join(name)).unwrap()
+    }
     /// Runs `txf` in this directory with `stdin` as standard input.
     fn txf(&self, args: &[&str], stdin: &str) -> Output {
         let mut child = Command::new(env!("CARGO_BIN_EXE_txf"))
@@ -255,5 +258,49 @@ fn the_exit_status_says_which_step_failed() {
     assert_eq!(
         status(&["-f", "ok.textforge", "-o", "no-such-dir/out.txt"]),
         Some(4)
+    );
+}
+
+/// Before: there was no way to compile, decompile or check a pipeline from
+/// the command line.
+#[test]
+fn pipelines_can_be_compiled_decompiled_and_checked() {
+    let files = Files::new();
+    files
+        .write("lib.textforge", "tua;\n")
+        .write("p.textforge", "ppjn \"lib.textforge\";\nate !;\n")
+        .write("bad.textforge", "nope;\n");
+    let output = files.txf(&["compile", "p.textforge"], "");
+    assert_eq!(stdout(&output), "p.textforge -> p.textforgebc\n");
+    // The joined pipeline is embedded: the bytecode runs without its file.
+    std::fs::remove_file(files.path().join("lib.textforge")).unwrap();
+    assert_eq!(stdout(&files.txf(&["-f", "p.textforgebc"], "ab")), "AB!");
+    let output = files.txf(&["decompile", "p.textforgebc", "-o", "back.tft"], "");
+    assert_eq!(stdout(&output), "p.textforgebc -> back.tft\n");
+    // As text, a joined pipeline is a `ppjn` again, so its file is needed.
+    let text = files.read("back.tft");
+    assert!(
+        text.contains("ppjn") && text.contains("lib.textforge") && text.contains("ate !;"),
+        "{text}"
+    );
+    files.write("lib.textforge", "tua;\n");
+    // compile reads text, decompile reads bytecode.
+    assert_eq!(
+        files.txf(&["compile", "p.textforgebc"], "").status.code(),
+        Some(3)
+    );
+    let output = files.txf(&["check", "back.tft", "p.textforgebc", "bad.textforge"], "");
+    assert_eq!(output.status.code(), Some(3));
+    let report = String::from_utf8_lossy(&output.stdout);
+    assert!(report.contains("back.tft: ok, 2 instructions"), "{report}");
+    assert!(
+        report.contains("p.textforgebc: ok, 2 instructions"),
+        "{report}"
+    );
+    let errors = String::from_utf8_lossy(&output.stderr);
+    assert!(errors.contains("bad.textforge: "), "{errors}");
+    assert!(
+        errors.contains("1 of 3 pipelines could not be loaded"),
+        "{errors}"
     );
 }

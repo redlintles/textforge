@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use textforge::{
-    api::processor::TextForgeProcessor,
+    api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
     utils::{
         cli::{
             PipelineFormat, ProfileOptions, ReadMode, load_pipeline, process_input,
@@ -68,6 +68,25 @@ fn profile_options(matches: &clap::ArgMatches) -> ProfileOptions {
     }
 }
 
+/// The pipeline file a subcommand works on.
+fn pipeline_arg(help: &'static str) -> Arg {
+    Arg::new("pipeline")
+        .value_name("PIPELINE")
+        .required(true)
+        .value_parser(value_parser!(PathBuf))
+        .help(help)
+}
+
+/// The file a subcommand writes.
+fn output_arg(help: &'static str) -> Arg {
+    Arg::new("output")
+        .short('o')
+        .long("output")
+        .value_name("FILE")
+        .value_parser(value_parser!(PathBuf))
+        .help(help)
+}
+
 fn build_cli() -> Command {
     Command::new("txf")
         .version(env!("CARGO_PKG_VERSION"))
@@ -75,6 +94,32 @@ fn build_cli() -> Command {
         .after_help(EXIT_STATUS_HELP)
         .subcommand_negates_reqs(true)
         .args(profile_args())
+        .subcommand(
+            Command::new("compile")
+                .about("Compile a text pipeline to bytecode")
+                .long_about("Compile a text pipeline (.textforge, .tft) to bytecode. Joined pipelines (ppjn) are embedded, so the bytecode runs without their files.")
+                .arg(pipeline_arg("The text pipeline to compile"))
+                .arg(output_arg("The bytecode file to write (.textforgebc or .tfb); default: the pipeline's name with .textforgebc, next to it")),
+        )
+        .subcommand(
+            Command::new("decompile")
+                .about("Write a bytecode pipeline back as text")
+                .arg(pipeline_arg("The bytecode pipeline to read"))
+                .arg(output_arg("The text file to write (.textforge or .tft); default: the pipeline's name with .textforge, next to it")),
+        )
+        .subcommand(
+            Command::new("check")
+                .about("Load pipelines without running them and report problems")
+                .long_about("Load pipelines without running them: parse them, validate every instruction and load joined pipelines. Prints one line per pipeline; the exit status is 3 when any fails.")
+                .arg(
+                    Arg::new("pipelines")
+                        .value_name("PIPELINE")
+                        .required(true)
+                        .num_args(1..)
+                        .value_parser(value_parser!(PathBuf))
+                        .help("Pipeline files, text or bytecode"),
+                ),
+        )
         .subcommand(
             Command::new("config")
                 .about("Inspect the engine configuration")
@@ -246,8 +291,14 @@ fn run() -> Result<(), Failure> {
     let profile =
         resolve_profile(&profile_options(&matches), Path::new(".")).map_err(at(Stage::Usage))?;
     let mut stdout = Stdout::new();
-    if matches.subcommand_matches("config").is_some() {
-        return print_result(&mut stdout, &profile.describe()).map_err(at(Stage::Io));
+    match matches.subcommand() {
+        Some(("config", _)) => {
+            return print_result(&mut stdout, &profile.describe()).map_err(at(Stage::Io));
+        }
+        Some(("compile", sub)) => return convert(sub, PipelineFormat::Text, &mut stdout),
+        Some(("decompile", sub)) => return convert(sub, PipelineFormat::Bytecode, &mut stdout),
+        Some(("check", sub)) => return check(sub, &mut stdout),
+        _ => {}
     }
 
     let file = argument::<PathBuf>(&matches, "file").map_err(at(Stage::Usage))?;
@@ -343,6 +394,78 @@ fn run() -> Result<(), Failure> {
     }
 
     Ok(())
+}
+
+/// `txf compile` (from text) and `txf decompile` (from bytecode): load the
+/// pipeline in `from` and write it in the other format.
+fn convert(
+    matches: &clap::ArgMatches,
+    from: PipelineFormat,
+    stdout: &mut Stdout,
+) -> Result<(), Failure> {
+    let source = argument::<PathBuf>(matches, "pipeline").map_err(at(Stage::Usage))?;
+    let extension = match from {
+        PipelineFormat::Text => "textforgebc",
+        PipelineFormat::Bytecode => "textforge",
+    };
+    let target = matches
+        .get_one::<PathBuf>("output")
+        .cloned()
+        .unwrap_or_else(|| source.with_extension(extension));
+    let mut processor = TextForgeProcessor::new();
+    let id = load_pipeline(&mut processor, source, Some(from)).map_err(at(Stage::Load))?;
+    match from {
+        PipelineFormat::Text => processor.write_to_bytecode_file(&id, &target),
+        PipelineFormat::Bytecode => processor.write_pipeline_to_file(&id, &target),
+    }
+    .map_err(at(Stage::Io))?;
+    print_result(
+        stdout,
+        &format!("{} -> {}\n", source.display(), target.display()),
+    )
+    .map_err(at(Stage::Io))
+}
+
+/// `txf check`: load every pipeline and report each on its own line.
+fn check(matches: &clap::ArgMatches, stdout: &mut Stdout) -> Result<(), Failure> {
+    let (mut total, mut failed) = (0, 0);
+    for path in matches
+        .get_many::<PathBuf>("pipelines")
+        .into_iter()
+        .flatten()
+    {
+        total += 1;
+        let mut processor = TextForgeProcessor::new();
+        let loaded = load_pipeline(&mut processor, path, None)
+            .and_then(|id| processor.get_transform_vec(&id).map(|tokens| tokens.len()));
+        match loaded {
+            Ok(count) => {
+                let plural = if count == 1 { "" } else { "s" };
+                print_result(
+                    stdout,
+                    &format!("{}: ok, {count} instruction{plural}\n", path.display()),
+                )
+                .map_err(at(Stage::Io))?;
+            }
+            Err(error) => {
+                failed += 1;
+                eprintln!("{}: {error}", path.display());
+            }
+        }
+    }
+    if failed == 0 {
+        return Ok(());
+    }
+    Err(Failure {
+        stage: Stage::Load,
+        error: TextForgeError::new(
+            TextForgeErrorCode::ValidationError(
+                format!("{failed} of {total} pipelines could not be loaded").into(),
+            ),
+            Cow::from("txf check"),
+            Cow::from(""),
+        ),
+    })
 }
 
 /// The value of an argument that clap always fills (required or with a
