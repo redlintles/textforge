@@ -147,6 +147,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   boundary was searched from the start of the text, so the time grew with the
   square of the input size (51 MB with `chunk-65536` took 17 minutes in a
   debug build).
+- `__INPUT_FILE__` is the file given with `txf --input`, in every read mode
+  and with `--debug`, as with `process_file`; before, `txf` always left it
+  empty. `utils::cli::process_input` runs a pipeline the way `txf` does, with
+  the input file and a destination for the trace.
 
 ### Not changed (documented instead)
 

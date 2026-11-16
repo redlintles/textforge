@@ -830,14 +830,12 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
     #[cfg(feature = "buffered")]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
-        self.process_debug_via_buffer(id, input)
+        self.process_debug_from(id, input, None, &mut std::io::stdout().lock())
     }
 
     #[cfg(not(feature = "buffered"))]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
-        let (result, log) = self.debug_log(id, input)?;
-        print!("{log}"); // a single write
-        Ok(result)
+        self.process_debug_from(id, input, None, &mut std::io::stdout().lock())
     }
 
     fn process_single_with_debug(
@@ -1136,6 +1134,59 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 }
 
 impl TextForgeProcessor {
+    /// [`TextForgeProcessorMethods::process_all`] for a document read from
+    /// `input_file` (exposed to the DSL as `__INPUT_FILE__`). Takes the input
+    /// by value so the whole-document engine can work on it without a copy.
+    #[cfg(feature = "cli")]
+    pub(crate) fn process_text_from(
+        &mut self,
+        id: &str,
+        input: Cow<'_, str>,
+        input_file: Option<&Path>,
+    ) -> Result<String, TextForgeError> {
+        #[cfg(feature = "buffered")]
+        {
+            self.process_all_via_buffer(id, &input, input_file)
+        }
+        #[cfg(not(feature = "buffered"))]
+        {
+            self.run_transform_from(id, input, input_file)
+                .map(Cow::into_owned)
+                .inspect_err(|error| self.errors.add_error(error.clone()))
+        }
+    }
+
+    /// [`TextForgeProcessorMethods::process_all_with_debug`] for a document read
+    /// from `input_file`, writing the trace to `log` instead of standard output.
+    /// Nothing is written when the pipeline fails.
+    pub(crate) fn process_debug_from(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+        log: &mut (dyn Write + '_),
+    ) -> Result<String, TextForgeError> {
+        #[cfg(feature = "buffered")]
+        {
+            self.process_debug_via_buffer(id, input, input_file, log)
+        }
+        #[cfg(not(feature = "buffered"))]
+        {
+            let (result, text) = self.debug_log(id, input, input_file)?;
+            // A single write.
+            log.write_all(text.as_bytes()).map_err(|error| {
+                TextForgeError::new(
+                    TextForgeErrorCode::FileWritingError(
+                        format!("cannot write the debug log: {error}").into(),
+                    ),
+                    "processor",
+                    "",
+                )
+            })?;
+            Ok(result)
+        }
+    }
+
     /// [`TextForgeProcessorMethods::run_transform`] for a document read from
     /// `input_file` (exposed to the DSL as `__INPUT_FILE__`).
     fn run_transform_from<'a>(
@@ -1165,11 +1216,16 @@ impl TextForgeProcessor {
 impl TextForgeProcessor {
     /// Run `id` with debug output and return `(result, log)`; nested steps of
     /// `cblk`, `iter`, `on*` and `rmape` follow each top-level step.
-    fn debug_log(&mut self, id: &str, input: &str) -> Result<(String, String), TextForgeError> {
+    fn debug_log(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+    ) -> Result<(String, String), TextForgeError> {
         let dashes = 10;
 
         let (tokens, mut context) =
-            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+            match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(x) => x,
                 Err(e) => {
                     self.errors.add_error(e.clone());
@@ -1272,7 +1328,7 @@ mod debug_tests {
             .collect();
         let id = processor.add_transform(tokens);
         let input = "  cat   wolf  \nx";
-        let (output, log) = processor.debug_log(&id, input).unwrap();
+        let (output, log) = processor.debug_log(&id, input, None).unwrap();
         assert_eq!(output, processor.process_all(&id, input).unwrap());
         let ansi = regex::Regex::new("\x1b\\[[0-9;]*m").unwrap();
         let log = ansi.replace_all(&log, "");

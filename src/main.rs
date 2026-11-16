@@ -4,27 +4,17 @@ use clap::{Arg, ArgAction, Command, value_parser};
 use std::{
     borrow::Cow,
     fs::OpenOptions,
-    io::{self, Error, Read, Write},
+    io::{self, Read, Write},
     path::{Path, PathBuf},
 };
 use textforge::{
     api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
     utils::{
-        cli::{
-            ProfileOptions, process_input_by_chunks, process_input_line_by_line,
-            process_input_single_chunk, resolve_profile, split_final_newline,
-        },
+        cli::{ProfileOptions, ReadMode, process_input, resolve_profile, split_final_newline},
         errors::{TextForgeError, TextForgeErrorCode},
         validations::check_file_path,
     },
 };
-
-#[derive(Clone, Copy, PartialEq, Debug)]
-enum ReadMode {
-    All,
-    Line,
-    Chunk(usize),
-}
 
 /// Flags choosing the execution profile, shared by runs and `config show`.
 fn profile_args() -> [Arg; 6] {
@@ -129,23 +119,7 @@ fn build_cli() -> Command {
                 .default_value("all")
                 .required(false)
                 .value_name("READ_MODE")
-                .value_parser(
-                    |s: &str| -> Result<ReadMode, Error> {
-                        if s == "all" {
-                            Ok(ReadMode::All)
-                        } else if s == "line" {
-                            Ok(ReadMode::Line)
-                        } else if let Some(num) = s.strip_prefix("chunk-") {
-                            num.parse::<usize>()
-                                .map(ReadMode::Chunk)
-                                .map_err(|_|
-                                    Error::new(io::ErrorKind::InvalidInput, "the chunk size after `chunk-` must be a whole number of characters, as in chunk-4096")
-                                )
-                        } else {
-                            Err(Error::new(io::ErrorKind::InvalidInput, "unknown read mode; use all, line or chunk-N (for example chunk-4096)"))
-                        }
-                    }
-                )
+                .value_parser(|s: &str| s.parse::<ReadMode>())
                 .help(
                     "How to feed the input to the pipeline: 'all' (default) processes it as one text, 'line' processes each line separately, and 'chunk-N' processes it in pieces of N characters"
                 )
@@ -182,20 +156,6 @@ fn build_cli() -> Command {
                     "Print only the step-by-step trace of the run instead of the result; with --output the result is still written to the file (default: off)"
                 )
         )
-}
-
-fn process_by_mode(
-    read_mode: &ReadMode,
-    id: &str,
-    data: &str,
-    debug: bool,
-    processor: &mut TextForgeProcessor,
-) -> Result<String, TextForgeError> {
-    match read_mode {
-        ReadMode::All => process_input_single_chunk(processor, id, data, debug),
-        ReadMode::Line => process_input_line_by_line(processor, id, data, debug),
-        ReadMode::Chunk(s) => process_input_by_chunks(processor, id, data, *s, debug),
-    }
 }
 
 /// Loads the pipeline in `file` in the requested mode and returns its id and the
@@ -261,7 +221,7 @@ fn run() -> Result<(), TextForgeError> {
     let output = matches.get_one::<PathBuf>("output");
     let textforge_mode = matches.get_one::<String>("mode").unwrap();
     let read_mode = matches.get_one::<ReadMode>("read_mode").unwrap();
-    let debug = matches.get_one::<bool>("debug").unwrap();
+    let debug = *matches.get_one::<bool>("debug").unwrap();
 
     let data: String = match input {
         Some(path) => {
@@ -320,12 +280,29 @@ fn run() -> Result<(), TextForgeError> {
     let (id, mut processor) = load_pipeline(textforge_mode.as_str(), file)?;
     processor.set_profile(profile.profile);
     let chomp = matches.get_flag("chomp") && *read_mode != ReadMode::Line;
-    let (body, final_newline) = match chomp {
-        true => split_final_newline(&data),
-        false => (data.as_str(), ""),
+    let mut data = data;
+    let final_newline = match chomp {
+        true => {
+            let (body, final_newline) = split_final_newline(&data);
+            let (length, final_newline) = (body.len(), final_newline.to_owned());
+            data.truncate(length);
+            final_newline
+        }
+        false => String::new(),
     };
-    let mut result = process_by_mode(read_mode, &id, body, *debug, &mut processor)?;
-    result.push_str(final_newline);
+    // The pipeline sees the input file as `__INPUT_FILE__` (empty for stdin).
+    let mut stdout = io::stdout().lock();
+    let log = debug.then_some(&mut stdout as &mut dyn Write);
+    let mut result = process_input(
+        &mut processor,
+        &id,
+        data,
+        *read_mode,
+        input.map(PathBuf::as_path),
+        log,
+    )?;
+    drop(stdout);
+    result.push_str(&final_newline);
 
     match output {
         Some(p) => {
@@ -357,7 +334,7 @@ fn run() -> Result<(), TextForgeError> {
         // With --debug the trace already went to stdout and ends with the
         // final text, so the result is not printed a second time after it.
         // Before 0.3.2 the result followed the trace on the same stream.
-        None if *debug => {}
+        None if debug => {}
         None => {
             print!("{result}");
         }

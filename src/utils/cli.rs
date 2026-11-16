@@ -1,35 +1,184 @@
-//! Helpers of the `txf` program: chunked reading and profile resolution
-//! (`.txfrc`, flags). Only with the `cli` feature.
-use std::borrow::Cow;
+//! Helpers of the `txf` program: reading modes, runs with an input file and a
+//! debug destination, and profile resolution (`.txfrc`, flags). Only with the
+//! `cli` feature.
+use std::{borrow::Cow, io::Write, path::Path, str::FromStr};
 
 use crate::{
-    api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
-    utils::errors::TextForgeError,
+    api::processor::TextForgeProcessor,
+    utils::errors::{TextForgeError, TextForgeErrorCode},
 };
 
-fn process_run(
-    processor: &mut TextForgeProcessor,
-    identifier: &str,
-    input: &str,
-    debug: bool,
-) -> Result<String, TextForgeError> {
-    if debug {
-        processor.process_all_with_debug(identifier, input)
-    } else {
-        processor.process_all(identifier, input)
+/// How `txf` feeds the input to a pipeline (`--read-mode`).
+///
+/// ```
+/// use textforge::utils::cli::ReadMode;
+///
+/// assert_eq!("all".parse::<ReadMode>(), Ok(ReadMode::All));
+/// assert_eq!("line".parse::<ReadMode>(), Ok(ReadMode::Line));
+/// assert_eq!("chunk-4096".parse::<ReadMode>(), Ok(ReadMode::Chunk(4096)));
+/// assert!("chunk-0".parse::<ReadMode>().is_err());
+/// assert!("lines".parse::<ReadMode>().is_err());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ReadMode {
+    /// The whole input is one text (`all`, the default).
+    All,
+    /// The pipeline runs once per line (`line`).
+    Line,
+    /// The pipeline runs once per piece of this many characters (`chunk-N`).
+    Chunk(usize),
+}
+
+impl FromStr for ReadMode {
+    type Err = String;
+
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
+        match text {
+            "all" => Ok(ReadMode::All),
+            "line" => Ok(ReadMode::Line),
+            _ => match text.strip_prefix("chunk-") {
+                Some(number) => match number.parse::<usize>() {
+                    Ok(0) => Err("the chunk size must be at least 1 character".to_owned()),
+                    Ok(size) => Ok(ReadMode::Chunk(size)),
+                    Err(_) => Err(
+                        "the chunk size after `chunk-` must be a whole number of characters, as in chunk-4096"
+                            .to_owned(),
+                    ),
+                },
+                None => Err(
+                    "unknown read mode; use all, line or chunk-N (for example chunk-4096)"
+                        .to_owned(),
+                ),
+            },
+        }
     }
 }
 
-/// Runs a pipeline on the whole input at once.
+/// Runs pipeline `identifier` on `input` the way `txf` does.
+///
+/// `input_file` is the file the input was read from, exposed to the pipeline as
+/// `__INPUT_FILE__` (empty when `None`). With `debug`, the step-by-step trace of
+/// every run is written there; nothing is written for a run that fails.
+///
+/// ```
+/// use textforge::api::{TextForgeBuilderMethods, processor::TextForgeProcessor};
+/// use textforge::utils::cli::{ReadMode, process_input};
+///
+/// let mut processor = TextForgeProcessor::new();
+/// let id = processor.create_pipeline().add_to_beginning("> ")?.build()?;
+/// let output = process_input(&mut processor, &id, "a\nb\n".to_owned(), ReadMode::Line, None, None)?;
+/// assert_eq!(output, "> a\n> b\n");
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+/// ```
+pub fn process_input(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: String,
+    read_mode: ReadMode,
+    input_file: Option<&Path>,
+    mut debug: Option<&mut (dyn Write + '_)>,
+) -> Result<String, TextForgeError> {
+    match read_mode {
+        // An empty input still runs the pipeline: `atb`, `apl`, `ppf` and others
+        // produce text from nothing. Before 0.3.2 it returned an empty result.
+        ReadMode::All => run_piece(
+            processor,
+            identifier,
+            Cow::Owned(input),
+            input_file,
+            debug.as_deref_mut(),
+        ),
+        ReadMode::Line => {
+            // Each line is processed without its line break (`\n` or `\r\n`),
+            // which is written back as it was. Before 0.3.2 every line break
+            // became `\n` and the final one was lost.
+            let mut output = String::with_capacity(input.len());
+            for (index, line) in input.split_inclusive('\n').enumerate() {
+                let (content, line_break) = split_final_newline(line);
+                let processed = run_piece(
+                    processor,
+                    identifier,
+                    Cow::Borrowed(content),
+                    input_file,
+                    debug.as_deref_mut(),
+                )
+                .map_err(|mut e| {
+                    e.instruction = format!("input line {} › {}", index + 1, e.instruction).into();
+                    e
+                })?;
+                output.push_str(&processed);
+                output.push_str(line_break);
+            }
+            Ok(output)
+        }
+        ReadMode::Chunk(size) => {
+            if size == 0 {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::ZeroDivisionError(
+                        "the chunk size must be at least 1 character".into(),
+                    ),
+                    Cow::Borrowed("txf"),
+                    crate::utils::errors::input_excerpt(&input),
+                ));
+            }
+            let mut output = String::with_capacity(input.len());
+            for chunk in chunks(&input, size) {
+                output.push_str(&run_piece(
+                    processor,
+                    identifier,
+                    Cow::Borrowed(chunk),
+                    input_file,
+                    debug.as_deref_mut(),
+                )?);
+            }
+            Ok(output)
+        }
+    }
+}
+
+/// One run of the pipeline, with or without a trace.
+fn run_piece(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    piece: Cow<'_, str>,
+    input_file: Option<&Path>,
+    debug: Option<&mut (dyn Write + '_)>,
+) -> Result<String, TextForgeError> {
+    match debug {
+        Some(log) => processor.process_debug_from(identifier, &piece, input_file, log),
+        None => processor.process_text_from(identifier, piece, input_file),
+    }
+}
+
+/// [`process_input`] with the trace, if any, on standard output.
+fn process_to_stdout(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: &str,
+    read_mode: ReadMode,
+    debug: bool,
+) -> Result<String, TextForgeError> {
+    let mut stdout = std::io::stdout().lock();
+    let log = debug.then_some(&mut stdout as &mut dyn Write);
+    process_input(
+        processor,
+        identifier,
+        input.to_owned(),
+        read_mode,
+        None,
+        log,
+    )
+}
+
+/// Runs a pipeline on the whole input at once (`--read-mode all`), printing
+/// the trace with `debug`. See [`process_input`] to pass the input file.
 pub fn process_input_single_chunk(
     processor: &mut TextForgeProcessor,
     identifier: &str,
     input: &str,
     debug: bool,
 ) -> Result<String, TextForgeError> {
-    // An empty input still runs the pipeline: `atb`, `apl`, `ppf` and others
-    // produce text from nothing. Before 0.3.2 it returned an empty result.
-    process_run(processor, identifier, input, debug)
+    process_to_stdout(processor, identifier, input, ReadMode::All, debug)
 }
 
 /// `input` without its final line break (`\n` or `\r\n`), and that line break.
@@ -54,30 +203,20 @@ pub fn split_final_newline(input: &str) -> (&str, &str) {
     input.split_at(body.len())
 }
 
-/// Runs a pipeline on each line of the input.
+/// Runs a pipeline on each line of the input (`--read-mode line`), printing
+/// the trace with `debug`. See [`process_input`] to pass the input file.
 pub fn process_input_line_by_line(
     processor: &mut TextForgeProcessor,
     identifier: &str,
     input: &str,
     debug: bool,
 ) -> Result<String, TextForgeError> {
-    // Each line is processed without its line break (`\n` or `\r\n`), which is
-    // written back as it was. Before 0.3.2 every line break became `\n` and the
-    // final one was lost.
-    let mut output = String::with_capacity(input.len());
-    for (index, line) in input.split_inclusive('\n').enumerate() {
-        let (content, line_break) = split_final_newline(line);
-        let processed = process_run(processor, identifier, content, debug).map_err(|mut e| {
-            e.instruction = format!("input line {} › {}", index + 1, e.instruction).into();
-            e
-        })?;
-        output.push_str(&processed);
-        output.push_str(line_break);
-    }
-    Ok(output)
+    process_to_stdout(processor, identifier, input, ReadMode::Line, debug)
 }
 
-/// Runs a pipeline on consecutive chunks of the input.
+/// Runs a pipeline on consecutive chunks of `chunk_size` characters
+/// (`--read-mode chunk-N`), printing the trace with `debug`. See
+/// [`process_input`] to pass the input file.
 pub fn process_input_by_chunks(
     processor: &mut TextForgeProcessor,
     identifier: &str,
@@ -88,20 +227,13 @@ pub fn process_input_by_chunks(
     if input.is_empty() {
         return Ok(String::new());
     }
-    if chunk_size == 0 {
-        return Err(TextForgeError::new(
-            super::errors::TextForgeErrorCode::ZeroDivisionError(
-                "the chunk size must be at least 1 character".into(),
-            ),
-            Cow::Borrowed("txf"),
-            crate::utils::errors::input_excerpt(input),
-        ));
-    }
-    let mut output = String::with_capacity(input.len());
-    for chunk in chunks(input, chunk_size) {
-        output.push_str(&process_run(processor, identifier, chunk, debug)?);
-    }
-    Ok(output)
+    process_to_stdout(
+        processor,
+        identifier,
+        input,
+        ReadMode::Chunk(chunk_size),
+        debug,
+    )
 }
 
 /// `input` cut into consecutive pieces of `size` characters (the last one may
