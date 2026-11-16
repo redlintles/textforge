@@ -86,7 +86,8 @@ configuration files on their own; `ExecutionProfile::from_rc_file(path)` and
   message gives the range). A `.txfrc` cannot hold anything that changes
   results (separators, variables, regex flags, normalization modes).
 - Sizes are a number of bytes or text with `B`, `KiB`, `MiB` or `GiB`. The
-  limits also accept `"unlimited"`.
+  limits also accept `"unlimited"`. `max_iterations` is a count: a whole
+  number (or a string of digits) or `"unlimited"`, never a size with a unit.
 
 ### Precedence in `txf`
 

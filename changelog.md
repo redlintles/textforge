@@ -154,6 +154,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `txf` stops quietly with status 0 when the reader of its output goes away
   (`txf … | head`), also during `--debug`; before, it panicked with "failed
   printing to stdout: Broken pipe".
+- `max_iterations` (`.txfrc` and `txf --max-iterations`) is read as a count, as
+  `docs/txfrc.schema.json` already said: `"10KiB"` is an error instead of
+  10240 iterations, and a wrong value is explained in terms of iterations, not
+  size units. `api::profile::parse_count` parses such limits.
 
 ### Not changed (documented instead)
 

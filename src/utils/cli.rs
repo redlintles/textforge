@@ -514,11 +514,12 @@ pub fn resolve_profile(
         None => Default::default(),
     };
     let limit = |flag: &Option<String>,
+                 parse: fn(&str) -> Result<Option<u64>, TextForgeError>,
                  from_file: Option<Option<u64>>,
                  target: &mut Option<u64>|
      -> Result<ProfileSource, TextForgeError> {
         if let Some(text) = flag {
-            *target = crate::api::profile::parse_limit(text)?;
+            *target = parse(text)?;
             Ok(ProfileSource::Flag)
         } else if let Some(value) = from_file {
             *target = value;
@@ -529,11 +530,13 @@ pub fn resolve_profile(
     };
     let max_generated_bytes_source = limit(
         &options.max_generated_bytes,
+        crate::api::profile::parse_limit,
         from_file.max_generated_bytes,
         &mut profile.limits.max_generated_bytes,
     )?;
     let max_iterations_source = limit(
         &options.max_iterations,
+        crate::api::profile::parse_count,
         from_file.max_iterations,
         &mut profile.limits.max_iterations,
     )?;
