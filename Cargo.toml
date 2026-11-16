@@ -1,6 +1,6 @@
 [package]
 name = "textforge"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2024"
 description = "A Flexible scalable DSL that allows the creation of pipelines for text processing"
 license-file = "LICENSE"
@@ -57,7 +57,15 @@ cli = ["dep:clap"]
 # The `txfg` game (src/bin/txfg). Dependencies only the game needs go here.
 game = ["dep:clap"]
 
-test_access = ["default", "bytecode", "buffered", "tempfile", "watchers", "cli", "game"]
+test_access = [
+  "default",
+  "bytecode",
+  "buffered",
+  "tempfile",
+  "watchers",
+  "cli",
+  "game",
+]
 
 [[bin]]
 name = "txf"
