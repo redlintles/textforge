@@ -103,6 +103,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   in a chunk starts with `input chunk N ›`, as line mode says
   `input line N ›`. Before, `ab\r\ncd` with `chunk-3` was cut into `ab\r` and
   `\ncd`.
+- `txf` exits with a status that says what failed: 0 success, 1 the pipeline
+  failed on the text, 2 invalid arguments or configuration, 3 the pipeline
+  could not be loaded, 4 the input could not be read or the result written.
+  Before, every failure exited with 1. `txf --help` lists them.
 
 ### Added
 

@@ -228,3 +228,32 @@ fn the_pipeline_format_is_detected_from_the_file() {
     let output = files.txf(&["-f", "p.tfb", "-m", "t"], "abc");
     assert!(!output.status.success());
 }
+
+/// Before: every failure exited with 1, so a script could not tell a pipeline
+/// that rejected its text from a typo in the pipeline or a missing file.
+#[test]
+fn the_exit_status_says_which_step_failed() {
+    let files = Files::new();
+    files
+        .write("ok.textforge", "tua;\n")
+        .write("bad.textforge", "nope;\n")
+        .write("dlc.textforge", "dlc 9 9;\n");
+    let status = |args: &[&str]| files.txf(args, "abc").status.code();
+    assert_eq!(status(&["-f", "ok.textforge"]), Some(0));
+    assert_eq!(status(&["-f", "dlc.textforge"]), Some(1));
+    assert_eq!(status(&["-f", "ok.textforge", "--bogus"]), Some(2));
+    assert_eq!(
+        status(&["-f", "ok.textforge", "--max-iterations", "x"]),
+        Some(2)
+    );
+    assert_eq!(status(&["-f", "bad.textforge"]), Some(3));
+    assert_eq!(status(&["-f", "missing.textforge"]), Some(3));
+    assert_eq!(
+        status(&["-f", "ok.textforge", "-i", "missing.txt"]),
+        Some(4)
+    );
+    assert_eq!(
+        status(&["-f", "ok.textforge", "-o", "no-such-dir/out.txt"]),
+        Some(4)
+    );
+}

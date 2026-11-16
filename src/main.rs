@@ -72,6 +72,7 @@ fn build_cli() -> Command {
     Command::new("txf")
         .version(env!("CARGO_PKG_VERSION"))
         .about("CLI for TextForge")
+        .after_help(EXIT_STATUS_HELP)
         .subcommand_negates_reqs(true)
         .args(profile_args())
         .subcommand(
@@ -196,32 +197,64 @@ impl Write for Stdout {
     }
 }
 
+/// The exit status says which step failed, so scripts can tell a pipeline
+/// that rejected its text from a typing mistake or a missing file. Up to
+/// 0.3.2 every failure exited with 1.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Stage {
+    /// The pipeline failed on the text (also errors of `wtf`, `apf` and the
+    /// other file instructions while running).
+    Run = 1,
+    /// Invalid arguments or configuration (`.txfrc`, profile flags). clap
+    /// exits with this status for its own errors.
+    Usage = 2,
+    /// The pipeline file could not be read, parsed or validated.
+    Load = 3,
+    /// The input could not be read or the result could not be written.
+    Io = 4,
+}
+
+/// An error and the step it happened in.
+struct Failure {
+    stage: Stage,
+    error: TextForgeError,
+}
+
+/// `map_err` adapter that tags an error with its step.
+fn at(stage: Stage) -> impl Fn(TextForgeError) -> Failure {
+    move |error| Failure { stage, error }
+}
+
+/// The text of `txf --help` after the options.
+const EXIT_STATUS_HELP: &str = "Exit status: 0 success, 1 the pipeline failed on the text, 2 invalid arguments or configuration, 3 the pipeline could not be loaded, 4 the input could not be read or the result written.";
+
 /// Runs the program and prints an error the way a person reads it
 /// (`error[12]: message`, then the instruction and the input) on standard
 /// error. Before 0.3.2 the error was printed as a Rust debug structure.
 fn main() -> std::process::ExitCode {
     match run() {
         Ok(()) => std::process::ExitCode::SUCCESS,
-        Err(error) => {
+        Err(Failure { stage, error }) => {
             eprintln!("{error}");
-            std::process::ExitCode::FAILURE
+            std::process::ExitCode::from(stage as u8)
         }
     }
 }
 
-fn run() -> Result<(), TextForgeError> {
+fn run() -> Result<(), Failure> {
     let matches = build_cli().get_matches();
-    let profile = resolve_profile(&profile_options(&matches), Path::new("."))?;
+    let profile =
+        resolve_profile(&profile_options(&matches), Path::new(".")).map_err(at(Stage::Usage))?;
     let mut stdout = Stdout::new();
     if matches.subcommand_matches("config").is_some() {
-        return print_result(&mut stdout, &profile.describe());
+        return print_result(&mut stdout, &profile.describe()).map_err(at(Stage::Io));
     }
 
-    let file = argument::<PathBuf>(&matches, "file")?;
+    let file = argument::<PathBuf>(&matches, "file").map_err(at(Stage::Usage))?;
     let input = matches.get_one::<PathBuf>("input");
     let output = matches.get_one::<PathBuf>("output");
-    let textforge_mode = argument::<String>(&matches, "mode")?;
-    let read_mode = argument::<ReadMode>(&matches, "read_mode")?;
+    let textforge_mode = argument::<String>(&matches, "mode").map_err(at(Stage::Usage))?;
+    let read_mode = argument::<ReadMode>(&matches, "read_mode").map_err(at(Stage::Usage))?;
     let debug = matches.get_flag("debug");
 
     // `-` is standard input for --input and standard output for --output.
@@ -236,14 +269,14 @@ fn run() -> Result<(), TextForgeError> {
         _ => None,
     };
     let mut processor = TextForgeProcessor::new();
-    let id = load_pipeline(&mut processor, file, format)?;
+    let id = load_pipeline(&mut processor, file, format).map_err(at(Stage::Load))?;
     processor.set_profile(profile.profile);
     if input.is_none() && io::stdin().is_terminal() {
         eprintln!(
             "txf: reading the text from standard input; end it with Ctrl-D (Ctrl-Z, Enter on Windows) or give a file with --input"
         );
     }
-    let data = read_input(input)?;
+    let data = read_input(input).map_err(at(Stage::Io))?;
     let chomp = matches.get_flag("chomp") && *read_mode != ReadMode::Line;
     let mut data = data;
     let final_newline = match chomp {
@@ -268,7 +301,7 @@ fn run() -> Result<(), TextForgeError> {
     let mut result = match result {
         // The trace could not be written because its reader has gone away.
         Err(_) if stdout.closed => return Ok(()),
-        result => result?,
+        result => result.map_err(at(Stage::Run))?,
     };
     result.push_str(&final_newline);
 
@@ -287,23 +320,26 @@ fn run() -> Result<(), TextForgeError> {
                         Cow::from("txf"),
                         Cow::from(p.display().to_string()),
                     )
-                })?;
+                })
+                .map_err(at(Stage::Io))?;
 
-            f.write_all(result.as_bytes()).map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileWritingError(
-                        format!("cannot write the output file `{}`: {e}", p.display()).into(),
-                    ),
-                    Cow::from("txf"),
-                    Cow::from(p.display().to_string()),
-                )
-            })?;
+            f.write_all(result.as_bytes())
+                .map_err(|e| {
+                    TextForgeError::new(
+                        TextForgeErrorCode::FileWritingError(
+                            format!("cannot write the output file `{}`: {e}", p.display()).into(),
+                        ),
+                        Cow::from("txf"),
+                        Cow::from(p.display().to_string()),
+                    )
+                })
+                .map_err(at(Stage::Io))?;
         }
         // With --debug the trace already went to stdout and ends with the
         // final text, so the result is not printed a second time after it.
         // Before 0.3.2 the result followed the trace on the same stream.
         None if debug => {}
-        None => print_result(&mut stdout, &result)?,
+        None => print_result(&mut stdout, &result).map_err(at(Stage::Io))?,
     }
 
     Ok(())
