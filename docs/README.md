@@ -70,4 +70,5 @@ Internal reviews: each finding with its reproduction, the fix and the commit.
 
 - [0.3.0: `src/tokens`](audits/0.3.0-tokens-audit.md)
 - [0.3.0: section instructions, debug trace and interpolation](audits/0.3.0-on-debug-audit.md)
+- [0.3.2: the `txf` command-line program](audits/0.3.2-cli-audit.md)
 - [Python binding rules](python-binding-audit.md)
