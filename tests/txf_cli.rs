@@ -104,3 +104,14 @@ fn a_closed_pipe_ends_the_program_quietly() {
         assert_eq!(output.status.code(), Some(0), "{extra:?}: {stderr}");
     }
 }
+
+/// Before: `-i -` failed with "the input file `-` does not exist" and `-o -`
+/// wrote a file called `-`.
+#[test]
+fn a_dash_is_standard_input_and_output() {
+    let files = Files::new();
+    files.write("p.textforge", "tua;\n");
+    let output = files.txf(&["-f", "p.textforge", "-i", "-", "-o", "-"], "abc");
+    assert_eq!(stdout(&output), "ABC");
+    assert!(!files.path().join("-").exists());
+}

@@ -161,6 +161,9 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - An invalid value of `--spool-threshold`, `--max-generated-bytes` or
   `--max-iterations` names the flag (`in: --spool-threshold`); before, the
   error said `in: txfrc` although no file was involved.
+- `txf --input -` reads standard input and `txf --output -` prints the
+  result, as usual on the command line; before, `-i -` failed and `-o -`
+  wrote a file called `-`.
 
 ### Not changed (documented instead)
 

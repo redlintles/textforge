@@ -98,7 +98,7 @@ fn build_cli() -> Command {
                 .value_name("INPUT")
                 .value_parser(value_parser!(PathBuf))
                 .help(
-                    "The file to process; without it, txf reads standard input"
+                    "The file to process; without it, or with -, txf reads standard input"
                 )
         )
         .arg(
@@ -109,7 +109,7 @@ fn build_cli() -> Command {
                 .value_name("OUTPUT")
                 .value_parser(value_parser!(PathBuf))
                 .help(
-                    "The file to write the result to; without it, txf prints the result"
+                    "The file to write the result to; without it, or with -, txf prints the result"
                 )
         )
         .arg(
@@ -259,59 +259,10 @@ fn run() -> Result<(), TextForgeError> {
     let read_mode = matches.get_one::<ReadMode>("read_mode").unwrap();
     let debug = *matches.get_one::<bool>("debug").unwrap();
 
-    let data: String = match input {
-        Some(path) => {
-            if !path.exists() {
-                return Err(TextForgeError::new(
-                    TextForgeErrorCode::FileNotFound(
-                        format!("the input file `{}` does not exist", path.display()).into(),
-                    ),
-                    Cow::from("txf"),
-                    Cow::from(path.display().to_string()),
-                ));
-            }
-
-            let mut input_file = OpenOptions::new().read(true).open(path).map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileOpeningError(
-                        format!("cannot open the input file `{}`: {e}", path.display()).into(),
-                    ),
-                    Cow::from("txf"),
-                    Cow::from(path.display().to_string()),
-                )
-            })?;
-
-            let mut b = String::new();
-            input_file.read_to_string(&mut b).map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileReadingError(
-                        format!(
-                            "cannot read the input file `{}` as UTF-8 text: {e}",
-                            path.display()
-                        )
-                        .into(),
-                    ),
-                    Cow::from("txf"),
-                    Cow::from(path.display().to_string()),
-                )
-            })?;
-
-            b
-        }
-        None => {
-            let mut b = String::new();
-            io::stdin().read_to_string(&mut b).map_err(|e| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileReadingError(
-                        format!("cannot read standard input as UTF-8 text: {e}").into(),
-                    ),
-                    Cow::from("txf"),
-                    Cow::from(""),
-                )
-            })?;
-            b
-        }
-    };
+    // `-` is standard input for --input and standard output for --output.
+    let input = input.filter(|path| !is_dash(path));
+    let output = output.filter(|path| !is_dash(path));
+    let data = read_input(input)?;
 
     let (id, mut processor) = load_pipeline(textforge_mode.as_str(), file)?;
     processor.set_profile(profile.profile);
@@ -378,6 +329,61 @@ fn run() -> Result<(), TextForgeError> {
     }
 
     Ok(())
+}
+
+/// `-`, the usual name of standard input or output.
+fn is_dash(path: &Path) -> bool {
+    path.as_os_str() == "-"
+}
+
+/// The text of the input file, or of standard input without one.
+fn read_input(path: Option<&PathBuf>) -> Result<String, TextForgeError> {
+    let Some(path) = path else {
+        let mut text = String::new();
+        io::stdin().read_to_string(&mut text).map_err(|e| {
+            TextForgeError::new(
+                TextForgeErrorCode::FileReadingError(
+                    format!("cannot read standard input as UTF-8 text: {e}").into(),
+                ),
+                Cow::from("txf"),
+                Cow::from(""),
+            )
+        })?;
+        return Ok(text);
+    };
+    if !path.exists() {
+        return Err(TextForgeError::new(
+            TextForgeErrorCode::FileNotFound(
+                format!("the input file `{}` does not exist", path.display()).into(),
+            ),
+            Cow::from("txf"),
+            Cow::from(path.display().to_string()),
+        ));
+    }
+    let mut file = OpenOptions::new().read(true).open(path).map_err(|e| {
+        TextForgeError::new(
+            TextForgeErrorCode::FileOpeningError(
+                format!("cannot open the input file `{}`: {e}", path.display()).into(),
+            ),
+            Cow::from("txf"),
+            Cow::from(path.display().to_string()),
+        )
+    })?;
+    let mut text = String::new();
+    file.read_to_string(&mut text).map_err(|e| {
+        TextForgeError::new(
+            TextForgeErrorCode::FileReadingError(
+                format!(
+                    "cannot read the input file `{}` as UTF-8 text: {e}",
+                    path.display()
+                )
+                .into(),
+            ),
+            Cow::from("txf"),
+            Cow::from(path.display().to_string()),
+        )
+    })?;
+    Ok(text)
 }
 
 /// Writes `text` to standard output; a reader that has gone away is not an
