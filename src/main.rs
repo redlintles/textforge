@@ -153,7 +153,6 @@ fn build_cli() -> Command {
                 .short('d')
                 .long("debug")
                 .required(false)
-                .value_name("debug")
                 .action(ArgAction::SetTrue)
                 .help(
                     "Print only the step-by-step trace of the run instead of the result; with --output the result is still written to the file (default: off)"
@@ -218,12 +217,12 @@ fn run() -> Result<(), TextForgeError> {
         return print_result(&mut stdout, &profile.describe());
     }
 
-    let file = matches.get_one::<PathBuf>("file").unwrap();
+    let file = argument::<PathBuf>(&matches, "file")?;
     let input = matches.get_one::<PathBuf>("input");
     let output = matches.get_one::<PathBuf>("output");
-    let textforge_mode = matches.get_one::<String>("mode").unwrap();
-    let read_mode = matches.get_one::<ReadMode>("read_mode").unwrap();
-    let debug = *matches.get_one::<bool>("debug").unwrap();
+    let textforge_mode = argument::<String>(&matches, "mode")?;
+    let read_mode = argument::<ReadMode>(&matches, "read_mode")?;
+    let debug = matches.get_flag("debug");
 
     // `-` is standard input for --input and standard output for --output.
     let input = input.filter(|path| !is_dash(path));
@@ -308,6 +307,23 @@ fn run() -> Result<(), TextForgeError> {
     }
 
     Ok(())
+}
+
+/// The value of an argument that clap always fills (required or with a
+/// default). A missing one is reported instead of panicking (Golden Rule 2).
+fn argument<'a, T: Clone + Send + Sync + 'static>(
+    matches: &'a clap::ArgMatches,
+    name: &str,
+) -> Result<&'a T, TextForgeError> {
+    matches.get_one::<T>(name).ok_or_else(|| {
+        TextForgeError::new(
+            TextForgeErrorCode::InvalidArgumentNumber(
+                format!("internal error: the argument `{name}` has no value").into(),
+            ),
+            Cow::from("txf"),
+            Cow::from(""),
+        )
+    })
 }
 
 /// `-`, the usual name of standard input or output.
