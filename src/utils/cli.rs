@@ -309,6 +309,49 @@ pub fn process_with_watchers(
     processor.process_watchers_from(identifier, input, input_file, &mut watchers, report)
 }
 
+/// Writes the result of `txf --output` to `path`.
+///
+/// A regular file (or a path that does not exist yet) is replaced atomically,
+/// as `wtf` does: the text goes to a temporary file in the same directory that
+/// is then renamed over `path`, so a failure leaves the previous file intact
+/// and readers never see half a result. Other targets (`/dev/null`, a FIFO, a
+/// terminal) are written directly. Missing directories are not created. Up to
+/// 0.3.2 the file was truncated first and written in place.
+///
+/// ```
+/// use textforge::utils::cli::write_output;
+///
+/// let path = std::env::temp_dir().join(format!("output-{}.txt", std::process::id()));
+/// write_output(&path, "first")?;
+/// write_output(&path, "second")?;
+/// assert_eq!(std::fs::read_to_string(&path)?, "second");
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn write_output(path: &Path, text: &str) -> Result<(), TextForgeError> {
+    let io_error = |code: fn(Cow<'static, str>) -> TextForgeErrorCode, action: &str, e| {
+        TextForgeError::new(
+            code(format!("cannot {action} the output file `{}`: {e}", path.display()).into()),
+            Cow::Borrowed("txf"),
+            path.display().to_string(),
+        )
+    };
+    match std::fs::metadata(path) {
+        Ok(metadata) if !metadata.is_file() => {
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .open(path)
+                .map_err(|e| io_error(TextForgeErrorCode::FileOpeningError, "open", e))?;
+            file.write_all(text.as_bytes())
+                .map_err(|e| io_error(TextForgeErrorCode::FileWritingError, "write", e))
+        }
+        _ => crate::api::processor::file_io::write_atomically(path, "txf", |file| {
+            file.write_all(text.as_bytes())
+                .map_err(|e| io_error(TextForgeErrorCode::FileWritingError, "write", e))
+        }),
+    }
+}
+
 /// In a trace of `line` or `chunk` mode, the piece the next run belongs to
 /// (`=== input line 2 ===`). Before 0.3.2 the traces followed one another
 /// with nothing between them.

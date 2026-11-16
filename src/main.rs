@@ -13,6 +13,7 @@ use textforge::{
         cli::{
             PipelineFormat, ProfileOptions, ReadMode, load_pipeline, process_input,
             process_with_watchers, resolve_profile, split_final_newline, watch_metrics,
+            write_output,
         },
         errors::{TextForgeError, TextForgeErrorCode},
     },
@@ -402,35 +403,7 @@ fn run() -> Result<(), Failure> {
     result.push_str(&final_newline);
 
     match output {
-        Some(p) => {
-            let mut f = OpenOptions::new()
-                .create(true)
-                .write(true)
-                .truncate(true)
-                .open(p)
-                .map_err(|e| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::FileOpeningError(
-                            format!("cannot create the output file `{}`: {e}", p.display()).into(),
-                        ),
-                        Cow::from("txf"),
-                        Cow::from(p.display().to_string()),
-                    )
-                })
-                .map_err(at(Stage::Io))?;
-
-            f.write_all(result.as_bytes())
-                .map_err(|e| {
-                    TextForgeError::new(
-                        TextForgeErrorCode::FileWritingError(
-                            format!("cannot write the output file `{}`: {e}", p.display()).into(),
-                        ),
-                        Cow::from("txf"),
-                        Cow::from(p.display().to_string()),
-                    )
-                })
-                .map_err(at(Stage::Io))?;
-        }
+        Some(path) => write_output(path, &result).map_err(at(Stage::Io))?,
         // With --debug the trace already went to stdout and ends with the
         // final text, so the result is not printed a second time after it.
         // Before 0.3.2 the result followed the trace on the same stream.

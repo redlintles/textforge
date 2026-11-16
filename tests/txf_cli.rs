@@ -363,3 +363,33 @@ fn watchers_write_a_report() {
         Some(2)
     );
 }
+
+/// Before: `--output` was truncated before the pipeline's result was written,
+/// in place; a write error left a cut file. Now the file is replaced in one
+/// rename, and devices such as /dev/null are written directly.
+#[test]
+fn the_output_file_is_replaced_atomically() {
+    let files = Files::new();
+    files
+        .write("p.textforge", "tua;\n")
+        .write("out.txt", "old contents");
+    assert_eq!(
+        stdout(&files.txf(&["-f", "p.textforge", "-o", "out.txt"], "abc")),
+        ""
+    );
+    assert_eq!(files.read("out.txt"), "ABC");
+    // No temporary file is left behind.
+    let names: Vec<_> = std::fs::read_dir(files.path())
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .collect();
+    assert_eq!(names.len(), 2, "{names:?}");
+    #[cfg(unix)]
+    assert_eq!(
+        files
+            .txf(&["-f", "p.textforge", "-o", "/dev/null"], "abc")
+            .status
+            .code(),
+        Some(0)
+    );
+}

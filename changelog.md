@@ -211,6 +211,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   requires a bytecode extension (`.textforgebc` or `.tfb`), as
   `read_from_bytecode_file` does; before, any pipeline extension was accepted.
   `utils::validations::check_output_file_path` checks such destinations.
+- `txf --output FILE` replaces the file atomically, as `wtf` does: a failure
+  leaves the previous file intact. Before, the file was truncated and written
+  in place. Devices and FIFOs (`/dev/null`) are still written directly; as
+  with `wtf`, a replaced file gets default permissions.
+  `utils::cli::write_output` does the same in code.
 
 ### Not changed (documented instead)
 
