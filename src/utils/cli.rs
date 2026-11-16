@@ -503,7 +503,7 @@ pub fn resolve_profile(
         spool_threshold_source = ProfileSource::File(file.clone().unwrap_or_default());
     }
     if let Some(text) = &options.spool_threshold {
-        profile.spool_threshold = parse_size(text)?;
+        profile.spool_threshold = parse_size(text).map_err(from_flag("--spool-threshold"))?;
         spool_threshold_source = ProfileSource::Flag;
     }
 
@@ -514,12 +514,13 @@ pub fn resolve_profile(
         None => Default::default(),
     };
     let limit = |flag: &Option<String>,
+                 name: &'static str,
                  parse: fn(&str) -> Result<Option<u64>, TextForgeError>,
                  from_file: Option<Option<u64>>,
                  target: &mut Option<u64>|
      -> Result<ProfileSource, TextForgeError> {
         if let Some(text) = flag {
-            *target = parse(text)?;
+            *target = parse(text).map_err(from_flag(name))?;
             Ok(ProfileSource::Flag)
         } else if let Some(value) = from_file {
             *target = value;
@@ -530,12 +531,14 @@ pub fn resolve_profile(
     };
     let max_generated_bytes_source = limit(
         &options.max_generated_bytes,
+        "--max-generated-bytes",
         crate::api::profile::parse_limit,
         from_file.max_generated_bytes,
         &mut profile.limits.max_generated_bytes,
     )?;
     let max_iterations_source = limit(
         &options.max_iterations,
+        "--max-iterations",
         crate::api::profile::parse_count,
         from_file.max_iterations,
         &mut profile.limits.max_iterations,
@@ -548,6 +551,15 @@ pub fn resolve_profile(
         max_generated_bytes_source,
         max_iterations_source,
     })
+}
+
+/// Errors of a flag name the flag (`in: --spool-threshold`), not the
+/// configuration file. Before 0.3.2 they said `in: txfrc`.
+fn from_flag(flag: &'static str) -> impl Fn(TextForgeError) -> TextForgeError {
+    move |mut error| {
+        error.instruction = Cow::Borrowed(flag);
+        error
+    }
 }
 
 impl ResolvedProfile {
@@ -700,6 +712,48 @@ mod profile_tests {
             ..Default::default()
         };
         assert!(resolve_profile(&options, &directory.0).is_err());
+    }
+
+    /// Before: an invalid flag value was reported as `in: txfrc`.
+    #[test]
+    fn flag_errors_name_the_flag() {
+        let directory = Directory::new("flag-errors");
+        for (options, flag) in [
+            (
+                ProfileOptions {
+                    spool_threshold: Some("1".into()),
+                    no_rc: true,
+                    ..Default::default()
+                },
+                "--spool-threshold",
+            ),
+            (
+                ProfileOptions {
+                    max_iterations: Some("many".into()),
+                    no_rc: true,
+                    ..Default::default()
+                },
+                "--max-iterations",
+            ),
+            (
+                ProfileOptions {
+                    max_generated_bytes: Some("2 parsecs".into()),
+                    no_rc: true,
+                    ..Default::default()
+                },
+                "--max-generated-bytes",
+            ),
+        ] {
+            let error = resolve_profile(&options, &directory.0).unwrap_err();
+            assert_eq!(error.instruction, flag);
+        }
+        // A bad value in the file still names the file.
+        directory.rc(
+            ".txfrc",
+            r#"{"version": 1, "overrides": {"max_iterations": "x"}}"#,
+        );
+        let error = resolve_profile(&ProfileOptions::default(), &directory.0).unwrap_err();
+        assert_eq!(error.instruction, "txfrc");
     }
 
     #[test]

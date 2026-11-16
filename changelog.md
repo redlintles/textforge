@@ -158,6 +158,9 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   `docs/txfrc.schema.json` already said: `"10KiB"` is an error instead of
   10240 iterations, and a wrong value is explained in terms of iterations, not
   size units. `api::profile::parse_count` parses such limits.
+- An invalid value of `--spool-threshold`, `--max-generated-bytes` or
+  `--max-iterations` names the flag (`in: --spool-threshold`); before, the
+  error said `in: txfrc` although no file was involved.
 
 ### Not changed (documented instead)
 
