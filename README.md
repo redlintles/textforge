@@ -60,7 +60,7 @@ textforge = "0.3.1"
 Command-line program `txf`:
 
 ```sh
-cargo install textforge --features cli           # add ,bytecode for .textforgebc files
+cargo install textforge --features cli           # add ,buffered for spool-backed runs
 ```
 
 ## Quick start
@@ -338,7 +338,7 @@ changes the output. Pipelines can be saved and loaded as text
 | `bytecode` | Reading and writing `.textforgebc` pipelines |
 | `watchers` | Watchers and JSON execution reports |
 | `buffered` | Buffered processing (`process_*_buffered`, `TextBuffer`); pulls in `tempfile` |
-| `cli` | The `txf` program; pulls in `clap` |
+| `cli` | The `txf` program (with `bytecode` and `watchers`); pulls in `clap` |
 | `game` | The `txfg` game; pulls in `clap` |
 
 No feature is enabled by default. `test_access` exposes internals for the test

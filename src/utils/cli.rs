@@ -195,8 +195,7 @@ pub fn detect_pipeline_format(path: &Path) -> Result<PipelineFormat, TextForgeEr
 /// With `format` set to `None` the format is detected with
 /// [`detect_pipeline_format`] and any pipeline extension is accepted
 /// (`.textforge`, `.tft`, `.textforgebc`, `.tfb`); with a format, the file must
-/// have one of that format's extensions. Bytecode needs the `bytecode`
-/// feature.
+/// have one of that format's extensions.
 ///
 /// ```
 /// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
@@ -232,20 +231,8 @@ pub fn load_pipeline(
     };
     match format {
         PipelineFormat::Text => processor.get_pipeline_from_file(path),
-        #[cfg(feature = "bytecode")]
+        // The `cli` feature turns on `bytecode`.
         PipelineFormat::Bytecode => processor.read_from_bytecode_file(path),
-        #[cfg(not(feature = "bytecode"))]
-        PipelineFormat::Bytecode => Err(TextForgeError::new(
-            TextForgeErrorCode::ValidationError(
-                format!(
-                    "`{}` is a bytecode pipeline, which needs TextForge built with the `bytecode` feature",
-                    path.display()
-                )
-                .into(),
-            ),
-            Cow::Borrowed("txf"),
-            path.display().to_string(),
-        )),
     }
 }
 

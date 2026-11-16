@@ -130,6 +130,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   `--mode b`. `t`/`text` and `b`/`bytecode` still force a format.
   `utils::cli::detect_pipeline_format` and `utils::cli::load_pipeline` do the
   same in code.
+- The `cli` feature turns on `bytecode` and `watchers`, so
+  `cargo install textforge --features cli` builds a `txf` that reads and
+  writes bytecode; before, `--features cli,bytecode` was needed. Neither
+  feature adds a dependency.
 
 ### Fixed
 

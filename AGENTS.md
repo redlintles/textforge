@@ -279,7 +279,7 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 | `watchers` | Enables the reporting mechanism. |
 | `bytecode` | Enables bytecode compilation code. |
 | `buffered` | Enables buffered (spool-backed) processing; pulls in `tempfile`. |
-| `cli` | Builds the `txf` binary (`required-features`) and exposes `utils::cli`; pulls in `clap`. |
+| `cli` | Builds the `txf` binary (`required-features`) and exposes `utils::cli`; turns on `bytecode` and `watchers` and pulls in `clap`. |
 | `game` | Builds the `txfg` game (`src/bin/txfg`, `required-features`); pulls in `clap`. Dependencies only the game needs go behind this feature. |
 | `test_access` | Enables **all** features (bytecode + watchers + buffered + cli + game + test helpers). **Use only in tests.** |
 
