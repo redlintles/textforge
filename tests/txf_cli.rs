@@ -147,3 +147,17 @@ fn a_broken_pipeline_is_reported_before_reading_the_input() {
     let output = child.wait_with_output().unwrap();
     assert!(String::from_utf8_lossy(&output.stderr).contains("unknown instruction `nope`"));
 }
+
+/// Before: `--read-mode line` and `--chomp` knew only LF and CRLF, unlike the
+/// line rules of `docs/lines.md` that `__LINES__` and the line instructions use.
+#[test]
+fn line_mode_and_chomp_use_the_line_rules_of_the_engine() {
+    let files = Files::new();
+    files.write("p.textforge", "ate !;\n");
+    let output = files.txf(&["-f", "p.textforge", "-r", "line"], "a\rb\u{2028}c");
+    assert_eq!(stdout(&output), "a!\rb!\u{2028}c!");
+    let output = files.txf(&["-f", "p.textforge", "--chomp"], "abc\r");
+    assert_eq!(stdout(&output), "abc!\r");
+    let output = files.txf(&["-f", "p.textforge", "--chomp"], "abc\r\n");
+    assert_eq!(stdout(&output), "abc!\r\n");
+}

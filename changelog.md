@@ -93,6 +93,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   the line is still ordinary text; variable templates (`{{name}}`) take no
   spaces and are unchanged. See
   `docs/text-syntax.md`.
+- `txf --read-mode line` and `--chomp` recognize every line terminator of
+  `docs/lines.md` (LF, CRLF, CR, VT, FF, NEL, LS, PS), like `__LINES__` and the
+  line instructions; before, only LF and CRLF ended a line, so a file with CR
+  line breaks was one line. `utils::cli::split_final_newline` follows the same
+  rule.
 
 ### Added
 

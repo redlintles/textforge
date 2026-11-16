@@ -89,12 +89,12 @@ pub fn process_input(
             debug.as_deref_mut(),
         ),
         ReadMode::Line => {
-            // Each line is processed without its line break (`\n` or `\r\n`),
-            // which is written back as it was. Before 0.3.2 every line break
-            // became `\n` and the final one was lost.
+            // Each line is processed without its line break, which is written
+            // back as it was. Lines follow `docs/lines.md`: LF, CRLF, CR, VT,
+            // FF, NEL, LS and PS end a line, as for `__LINES__` and the line
+            // instructions. Before 0.3.2 only LF (and CRLF) did.
             let mut output = String::with_capacity(input.len());
-            for (index, line) in input.split_inclusive('\n').enumerate() {
-                let (content, line_break) = split_final_newline(line);
+            for (index, (content, line_break)) in crate::utils::lines::lines(&input).enumerate() {
                 let processed = run_piece(
                     processor,
                     identifier,
@@ -181,7 +181,11 @@ pub fn process_input_single_chunk(
     process_to_stdout(processor, identifier, input, ReadMode::All, debug)
 }
 
-/// `input` without its final line break (`\n` or `\r\n`), and that line break.
+/// `input` without its final line break, and that line break.
+///
+/// A line break is any terminator of `docs/lines.md`: LF, CRLF (taken whole),
+/// CR, VT, FF, NEL, LINE SEPARATOR or PARAGRAPH SEPARATOR. Up to 0.3.2 only LF
+/// and CRLF were recognized.
 ///
 /// Files usually end with a line break, which is a character like any other to
 /// the instructions: `dll` would delete it and `ate` would write after it.
@@ -194,12 +198,21 @@ pub fn process_input_single_chunk(
 /// assert_eq!(split_final_newline("abc\r\n"), ("abc", "\r\n"));
 /// assert_eq!(split_final_newline("a\n\n"), ("a\n", "\n"));
 /// assert_eq!(split_final_newline("abc"), ("abc", ""));
+/// assert_eq!(split_final_newline("abc\r"), ("abc", "\r"));
+/// assert_eq!(split_final_newline("abc\u{2028}"), ("abc", "\u{2028}"));
+/// assert_eq!(split_final_newline(""), ("", ""));
 /// ```
 pub fn split_final_newline(input: &str) -> (&str, &str) {
-    let body = match input.strip_suffix('\n') {
-        Some(body) => body.strip_suffix('\r').unwrap_or(body),
-        None => input,
+    let Some(last) = input.chars().next_back() else {
+        return (input, "");
     };
+    if !crate::utils::lines::is_break(last) {
+        return (input, "");
+    }
+    let mut body = &input[..input.len() - last.len_utf8()];
+    if last == '\n' {
+        body = body.strip_suffix('\r').unwrap_or(body);
+    }
     input.split_at(body.len())
 }
 
@@ -349,7 +362,7 @@ mod cli_tests {
         }
 
         /// Before 0.3.2 line mode turned `\r\n` into `\n` and dropped the last
-        /// line break.
+        /// line break; CR and the Unicode terminators did not end a line.
         #[test]
         fn line_mode_keeps_every_line_break() -> Result<(), TextForgeError> {
             let mut processor = TextForgeProcessor::new();
@@ -359,6 +372,9 @@ mod cli_tests {
                 ("a\nb", "Xa\nXb"),
                 ("a\n\nb\n", "Xa\nX\nXb\n"),
                 ("a\r\nb\n", "Xa\r\nXb\n"),
+                ("a\rb\rc", "Xa\rXb\rXc"),
+                ("a\u{2028}b\u{85}c\u{c}", "Xa\u{2028}Xb\u{85}Xc\u{c}"),
+                ("a\r\r\nb", "Xa\rX\r\nXb"),
             ] {
                 assert_eq!(
                     process_input_line_by_line(&mut processor, &id, input, false)?,

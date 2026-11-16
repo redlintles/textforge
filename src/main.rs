@@ -142,7 +142,7 @@ fn build_cli() -> Command {
                 .required(false)
                 .action(ArgAction::SetTrue)
                 .help(
-                    "Set the final line break of the input aside and put it back on the result, so instructions such as dll and ate work on the last visible character"
+                    "Set the final line break of the input aside and put it back on the result, so instructions such as dll and ate work on the last visible character (--read-mode line always does this for every line)"
                 )
         )
         .arg(
