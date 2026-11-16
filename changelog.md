@@ -178,6 +178,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   pipeline is reported at once; before, it was reported only after standard
   input had been read to the end. When the text comes from a terminal, `txf`
   says on stderr that it is waiting for it and how to end it.
+- In `txf --debug` with `--read-mode line` or `chunk-N`, each trace starts with
+  the piece it belongs to (`=== input line 2 ===`), and the trace of a pipeline
+  without instructions says that the text is unchanged instead of stopping at
+  its heading.
 
 ### Not changed (documented instead)
 

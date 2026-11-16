@@ -95,6 +95,7 @@ pub fn process_input(
             // instructions. Before 0.3.2 only LF (and CRLF) did.
             let mut output = String::with_capacity(input.len());
             for (index, (content, line_break)) in crate::utils::lines::lines(&input).enumerate() {
+                announce(debug.as_deref_mut(), "line", index)?;
                 let processed = run_piece(
                     processor,
                     identifier,
@@ -123,6 +124,7 @@ pub fn process_input(
             }
             let mut output = String::with_capacity(input.len());
             for (index, chunk) in chunks(&input, size).enumerate() {
+                announce(debug.as_deref_mut(), "chunk", index)?;
                 let processed = run_piece(
                     processor,
                     identifier,
@@ -139,6 +141,28 @@ pub fn process_input(
             Ok(output)
         }
     }
+}
+
+/// In a trace of `line` or `chunk` mode, the piece the next run belongs to
+/// (`=== input line 2 ===`). Before 0.3.2 the traces followed one another
+/// with nothing between them.
+fn announce(
+    debug: Option<&mut (dyn Write + '_)>,
+    piece: &str,
+    index: usize,
+) -> Result<(), TextForgeError> {
+    let Some(log) = debug else {
+        return Ok(());
+    };
+    writeln!(log, "=== input {piece} {} ===", index + 1).map_err(|error| {
+        TextForgeError::new(
+            TextForgeErrorCode::FileWritingError(
+                format!("cannot write the debug log: {error}").into(),
+            ),
+            "txf",
+            "",
+        )
+    })
 }
 
 /// One run of the pipeline, with or without a trace.

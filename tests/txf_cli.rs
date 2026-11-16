@@ -176,3 +176,22 @@ fn chunks_keep_crlf_whole_and_errors_name_the_chunk() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("input chunk 3 › dlc 2 2;"), "{stderr}");
 }
+
+/// Before: the traces of `line` and `chunk` mode followed one another without
+/// saying which piece they belonged to, and a pipeline without instructions
+/// printed only the heading of the trace.
+#[test]
+fn traces_name_their_piece_and_an_empty_pipeline_says_so() {
+    let files = Files::new();
+    files.write("p.textforge", "tua;\n");
+    let trace = stdout(&files.txf(&["-f", "p.textforge", "-d", "-r", "line"], "a\nb\n"));
+    let first = trace.find("=== input line 1 ===").unwrap();
+    let second = trace.find("=== input line 2 ===").unwrap();
+    assert!(first < trace.find("After: A").unwrap());
+    assert!(second < trace.find("After: B").unwrap() && first < second);
+    let trace = stdout(&files.txf(&["-f", "p.textforge", "-d", "-r", "chunk-2"], "abcd"));
+    assert!(trace.contains("=== input chunk 2 ==="), "{trace}");
+    files.write("empty.textforge", "# nothing yet\n");
+    let trace = stdout(&files.txf(&["-f", "empty.textforge", "-d"], "abc"));
+    assert!(trace.contains("no instructions"), "{trace}");
+}

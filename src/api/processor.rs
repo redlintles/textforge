@@ -1166,25 +1166,35 @@ impl TextForgeProcessor {
         input_file: Option<&Path>,
         log: &mut (dyn Write + '_),
     ) -> Result<String, TextForgeError> {
+        let log_error = |error: std::io::Error| {
+            TextForgeError::new(
+                TextForgeErrorCode::FileWritingError(
+                    format!("cannot write the debug log: {error}").into(),
+                ),
+                "processor",
+                "",
+            )
+        };
         #[cfg(feature = "buffered")]
-        {
-            self.process_debug_via_buffer(id, input, input_file, log)
-        }
+        let result = self.process_debug_via_buffer(id, input, input_file, log)?;
         #[cfg(not(feature = "buffered"))]
-        {
+        let result = {
             let (result, text) = self.debug_log(id, input, input_file)?;
             // A single write.
-            log.write_all(text.as_bytes()).map_err(|error| {
-                TextForgeError::new(
-                    TextForgeErrorCode::FileWritingError(
-                        format!("cannot write the debug log: {error}").into(),
-                    ),
-                    "processor",
-                    "",
-                )
-            })?;
-            Ok(result)
+            log.write_all(text.as_bytes()).map_err(log_error)?;
+            result
+        };
+        // Without steps the trace would end at its heading, with no `After:`
+        // holding the final text.
+        if self
+            .transforms
+            .get(id)
+            .is_some_and(|pipeline| pipeline.tokens.is_empty())
+        {
+            log.write_all(b"The pipeline has no instructions: the text is unchanged.\n")
+                .map_err(log_error)?;
         }
+        Ok(result)
     }
 
     /// [`TextForgeProcessorMethods::run_transform`] for a document read from
