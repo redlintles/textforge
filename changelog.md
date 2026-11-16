@@ -110,6 +110,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `dla` at the last character returns the text unchanged, since nothing
   follows it; before, it was an `IndexOutOfRange` error although the index
   exists (Golden Rule 23).
+- `ctr` on a text with no words (empty or only whitespace) is an
+  `IndexOutOfRange` error, like `cts` and `tucw`; before, the text was
+  returned unchanged, so the missing start word went unnoticed (Golden Rule
+  18).
 
 ### Not changed (documented instead)
 

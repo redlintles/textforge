@@ -2036,7 +2036,7 @@
     },
     "input": "",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 0 is out of range: the text has no words\"), instruction: \"ctr 0 2;\", input: \"\" }"
     },
     "owned": false
   },
@@ -2049,7 +2049,7 @@
     },
     "input": "",
     "outcome": {
-      "ok": ""
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 0 is out of range: the text has no words\"), instruction: \"ctr 0 2;\", input: \"\" }"
     },
     "owned": true
   },
@@ -2296,7 +2296,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "ok": "  \t"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 0 is out of range: the text has no words\"), instruction: \"ctr 0 2;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": false
   },
@@ -2309,7 +2309,7 @@
     },
     "input": "  \t",
     "outcome": {
-      "ok": "  \t"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 0 is out of range: the text has no words\"), instruction: \"ctr 0 2;\", input: \"\\u{2003} \\t\" }"
     },
     "owned": true
   },
@@ -2322,7 +2322,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "ok": "\r\n\r\n"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 0 is out of range: the text has no words\"), instruction: \"ctr 0 2;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": false
   },
@@ -2335,7 +2335,7 @@
     },
     "input": "\r\n\r\n",
     "outcome": {
-      "ok": "\r\n\r\n"
+      "error": "TextForgeError { error_code: IndexOutOfRange(\"word index 0 is out of range: the text has no words\"), instruction: \"ctr 0 2;\", input: \"\\r\\n\\r\\n\" }"
     },
     "owned": true
   },

@@ -70,12 +70,9 @@ impl InstructionMethods for Ctr {
         input: Cow<'a, str>,
         _: Option<&mut GlobalExecutionContext>,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        if input.trim().is_empty() {
-            return Ok(input);
-        }
-
-        // Since the user will probably not know the length of the string in the middle of the processing
-        // Better simply adjust end_index to input.len() if its bigger. instead of throwing an "hard to debug" error
+        // An end past the last word means the last word (Golden Rule 21). A
+        // text with no words has no start, so it is an error like in `cts`
+        // and `tucw` (Golden Rules 18 and 23).
 
         let mut end = self.end_index;
         let total = input.split_whitespace().count();

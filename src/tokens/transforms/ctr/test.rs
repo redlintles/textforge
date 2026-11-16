@@ -73,14 +73,18 @@ mod tests {
     }
 
     #[test]
-    fn transform_empty_input_stays_empty() {
+    fn transform_errors_on_text_without_words() {
+        // Before, empty and whitespace-only texts were returned unchanged,
+        // although `cts` and `tucw` fail there: word 0 does not exist.
         let t = Ctr::new(0, 1).unwrap();
         let mut ctx = GlobalExecutionContext::new();
-
-        assert_eq!(
-            t.transform("".into(), Some(&mut ctx)).unwrap().to_string(),
-            ""
-        );
+        for input in ["", " \t\r\n", "\u{2003}"] {
+            let error = t.transform(input.into(), Some(&mut ctx)).unwrap_err();
+            assert!(
+                matches!(error.error_code, TextForgeErrorCode::IndexOutOfRange(_)),
+                "{input:?}: {error:?}"
+            );
+        }
     }
 
     #[test]
