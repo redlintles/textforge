@@ -8,11 +8,13 @@ use std::{
     path::{Path, PathBuf},
 };
 use textforge::{
-    api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
+    api::processor::TextForgeProcessor,
     utils::{
-        cli::{ProfileOptions, ReadMode, process_input, resolve_profile, split_final_newline},
+        cli::{
+            PipelineFormat, ProfileOptions, ReadMode, load_pipeline, process_input,
+            resolve_profile, split_final_newline,
+        },
         errors::{TextForgeError, TextForgeErrorCode},
-        validations::check_file_path,
     },
 };
 
@@ -129,11 +131,12 @@ fn build_cli() -> Command {
                 .short('m')
                 .long("mode")
                 .required(false)
-                .value_name("mode")
-                .value_parser(["b", "t"])
-                .default_value("t")
+                .value_name("MODE")
+                .value_parser(["auto", "t", "text", "b", "bytecode"])
+                .default_value("auto")
+                .hide_possible_values(true)
                 .help(
-                    "How to read --file: 't' for a text pipeline (default) or 'b' for a bytecode pipeline"
+                    "How to read --file: 'auto' (default) tells text from bytecode by the first bytes of the file; 't'/'text' or 'b'/'bytecode' force a format and check its extension"
                 )
         )
         .arg(
@@ -156,43 +159,6 @@ fn build_cli() -> Command {
                     "Print only the step-by-step trace of the run instead of the result; with --output the result is still written to the file (default: off)"
                 )
         )
-}
-
-/// Loads the pipeline in `file` in the requested mode and returns its id and the
-/// processor. Mode `b` (bytecode) needs the `bytecode` feature; without it,
-/// choosing `b` fails at run time with a clear message instead of the program
-/// failing to build.
-fn load_pipeline(mode: &str, file: &Path) -> Result<(String, TextForgeProcessor), TextForgeError> {
-    match mode {
-        "b" => {
-            #[cfg(feature = "bytecode")]
-            {
-                check_file_path(file, Some("textforgebc"))?;
-                let mut processor = TextForgeProcessor::new();
-                let id = processor.read_from_bytecode_file(file)?;
-                Ok((id, processor))
-            }
-            #[cfg(not(feature = "bytecode"))]
-            {
-                Err(TextForgeError::new(
-                    TextForgeErrorCode::ValidationError(
-                        "bytecode mode (`--mode b`) needs a txf built with `--features bytecode`"
-                            .into(),
-                    ),
-                    Cow::from("txf"),
-                    Cow::from(""),
-                ))
-            }
-        }
-        "t" => {
-            check_file_path(file, Some("textforge"))?;
-            let mut processor = TextForgeProcessor::new();
-            let id = processor.get_pipeline_from_file(file)?;
-            Ok((id, processor))
-        }
-        // clap's value_parser restricts "mode" to "b" and "t".
-        _ => unreachable!("clap value_parser restricts mode to b/t"),
-    }
 }
 
 /// Standard output that remembers when its reader has gone away.
@@ -265,7 +231,13 @@ fn run() -> Result<(), TextForgeError> {
 
     // Load the pipeline first, so a mistake in it is reported at once instead
     // of after the whole input has been read. Before 0.3.2 the input came first.
-    let (id, mut processor) = load_pipeline(textforge_mode.as_str(), file)?;
+    let format = match textforge_mode.as_str() {
+        "t" | "text" => Some(PipelineFormat::Text),
+        "b" | "bytecode" => Some(PipelineFormat::Bytecode),
+        _ => None,
+    };
+    let mut processor = TextForgeProcessor::new();
+    let id = load_pipeline(&mut processor, file, format)?;
     processor.set_profile(profile.profile);
     if input.is_none() && io::stdin().is_terminal() {
         eprintln!(

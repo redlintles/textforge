@@ -125,6 +125,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   (`--check`, `--list`) and JSON results (`--save-result`). See `docs/txfg.md`.
 - `scripts/instruction_index.py` also writes the game's instruction catalog
   (`src/bin/txfg/catalog.rs`); `tests/instruction_index.rs` checks it.
+- `txf --mode auto`, the new default, tells a bytecode pipeline from a text
+  one by its first bytes, as `ppjn` does, so `-f p.tfb` works without
+  `--mode b`. `t`/`text` and `b`/`bytecode` still force a format.
+  `utils::cli::detect_pipeline_format` and `utils::cli::load_pipeline` do the
+  same in code.
 
 ### Fixed
 

@@ -195,3 +195,36 @@ fn traces_name_their_piece_and_an_empty_pipeline_says_so() {
     let trace = stdout(&files.txf(&["-f", "empty.textforge", "-d"], "abc"));
     assert!(trace.contains("no instructions"), "{trace}");
 }
+
+/// Before: a bytecode pipeline needed `--mode b`; without it, txf tried to
+/// read the bytecode as text.
+#[test]
+fn the_pipeline_format_is_detected_from_the_file() {
+    let files = Files::new();
+    files.write("p.textforge", "tua;\n");
+    let mut processor = textforge::api::processor::TextForgeProcessor::new();
+    let id = textforge::utils::cli::load_pipeline(
+        &mut processor,
+        &files.path().join("p.textforge"),
+        None,
+    )
+    .unwrap();
+    textforge::api::processor::TextForgeProcessorMethods::write_to_bytecode_file(
+        &mut processor,
+        &id,
+        &files.path().join("p.tfb"),
+    )
+    .unwrap();
+    for args in [
+        &["-f", "p.tfb"][..],
+        &["-f", "p.tfb", "-m", "b"][..],
+        &["-f", "p.tfb", "--mode", "bytecode"][..],
+        &["-f", "p.textforge"][..],
+        &["-f", "p.textforge", "-m", "t"][..],
+    ] {
+        assert_eq!(stdout(&files.txf(args, "abc")), "ABC", "{args:?}");
+    }
+    // A forced format still checks the extension.
+    let output = files.txf(&["-f", "p.tfb", "-m", "t"], "abc");
+    assert!(!output.status.success());
+}

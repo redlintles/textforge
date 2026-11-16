@@ -143,6 +143,112 @@ pub fn process_input(
     }
 }
 
+/// The two forms of a pipeline file.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PipelineFormat {
+    /// A `.textforge` (`.tft`) text pipeline.
+    Text,
+    /// A `.textforgebc` (`.tfb`) bytecode pipeline.
+    Bytecode,
+}
+
+/// The format of the pipeline file at `path`, read from its first bytes: a
+/// file that starts with the bytecode magic number is bytecode, anything else
+/// is text. `ppjn` tells them apart the same way.
+///
+/// ```
+/// use textforge::utils::cli::{PipelineFormat, detect_pipeline_format};
+///
+/// let path = std::env::temp_dir().join(format!("detect-{}.textforge", std::process::id()));
+/// std::fs::write(&path, "tua;\n")?;
+/// assert_eq!(detect_pipeline_format(&path)?, PipelineFormat::Text);
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn detect_pipeline_format(path: &Path) -> Result<PipelineFormat, TextForgeError> {
+    use std::io::Read;
+    let error = |code: TextForgeErrorCode| {
+        TextForgeError::new(code, Cow::Borrowed("txf"), path.display().to_string())
+    };
+    let file = std::fs::File::open(path).map_err(|e| {
+        error(TextForgeErrorCode::FileOpeningError(
+            format!("cannot open the pipeline file `{}`: {e}", path.display()).into(),
+        ))
+    })?;
+    let mut start = Vec::with_capacity(crate::parser::joins::BYTECODE_MAGIC.len());
+    file.take(crate::parser::joins::BYTECODE_MAGIC.len() as u64)
+        .read_to_end(&mut start)
+        .map_err(|e| {
+            error(TextForgeErrorCode::FileReadingError(
+                format!("cannot read the pipeline file `{}`: {e}", path.display()).into(),
+            ))
+        })?;
+    Ok(if start == crate::parser::joins::BYTECODE_MAGIC {
+        PipelineFormat::Bytecode
+    } else {
+        PipelineFormat::Text
+    })
+}
+
+/// Loads the pipeline file at `path` into `processor` and returns its id.
+///
+/// With `format` set to `None` the format is detected with
+/// [`detect_pipeline_format`] and any pipeline extension is accepted
+/// (`.textforge`, `.tft`, `.textforgebc`, `.tfb`); with a format, the file must
+/// have one of that format's extensions. Bytecode needs the `bytecode`
+/// feature.
+///
+/// ```
+/// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+/// use textforge::utils::cli::load_pipeline;
+///
+/// let path = std::env::temp_dir().join(format!("load-{}.tft", std::process::id()));
+/// std::fs::write(&path, "tua;\n")?;
+/// let mut processor = TextForgeProcessor::new();
+/// let id = load_pipeline(&mut processor, &path, None)?;
+/// assert_eq!(processor.process_all(&id, "abc")?, "ABC");
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn load_pipeline(
+    processor: &mut TextForgeProcessor,
+    path: &Path,
+    format: Option<PipelineFormat>,
+) -> Result<String, TextForgeError> {
+    use crate::{api::processor::TextForgeProcessorMethods, utils::validations::check_file_path};
+    let format = match format {
+        Some(format) => {
+            let extension = match format {
+                PipelineFormat::Text => "textforge",
+                PipelineFormat::Bytecode => "textforgebc",
+            };
+            check_file_path(path, Some(extension))?;
+            format
+        }
+        None => {
+            check_file_path(path, None)?;
+            detect_pipeline_format(path)?
+        }
+    };
+    match format {
+        PipelineFormat::Text => processor.get_pipeline_from_file(path),
+        #[cfg(feature = "bytecode")]
+        PipelineFormat::Bytecode => processor.read_from_bytecode_file(path),
+        #[cfg(not(feature = "bytecode"))]
+        PipelineFormat::Bytecode => Err(TextForgeError::new(
+            TextForgeErrorCode::ValidationError(
+                format!(
+                    "`{}` is a bytecode pipeline, which needs TextForge built with the `bytecode` feature",
+                    path.display()
+                )
+                .into(),
+            ),
+            Cow::Borrowed("txf"),
+            path.display().to_string(),
+        )),
+    }
+}
+
 /// In a trace of `line` or `chunk` mode, the piece the next run belongs to
 /// (`=== input line 2 ===`). Before 0.3.2 the traces followed one another
 /// with nothing between them.
