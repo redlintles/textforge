@@ -122,14 +122,19 @@ pub fn process_input(
                 ));
             }
             let mut output = String::with_capacity(input.len());
-            for chunk in chunks(&input, size) {
-                output.push_str(&run_piece(
+            for (index, chunk) in chunks(&input, size).enumerate() {
+                let processed = run_piece(
                     processor,
                     identifier,
                     Cow::Borrowed(chunk),
                     input_file,
                     debug.as_deref_mut(),
-                )?);
+                )
+                .map_err(|mut e| {
+                    e.instruction = format!("input chunk {} › {}", index + 1, e.instruction).into();
+                    e
+                })?;
+                output.push_str(&processed);
             }
             Ok(output)
         }
@@ -250,15 +255,20 @@ pub fn process_input_by_chunks(
 }
 
 /// `input` cut into consecutive pieces of `size` characters (the last one may
-/// be shorter), in one forward pass. Up to 0.3.2 every boundary was searched
-/// from the start of the text, which made chunk mode quadratic.
+/// be shorter), in one forward pass. A piece never ends between the `\r` and
+/// the `\n` of a CRLF: it takes the `\n` too, so it has `size + 1` characters.
+/// Up to 0.3.2 every boundary was searched from the start of the text, which
+/// made chunk mode quadratic, and a CRLF could be split.
 fn chunks(input: &str, size: usize) -> impl Iterator<Item = &str> {
     let mut rest = input;
     std::iter::from_fn(move || {
         if rest.is_empty() {
             return None;
         }
-        let end = rest.char_indices().nth(size).map_or(rest.len(), |(i, _)| i);
+        let mut end = rest.char_indices().nth(size).map_or(rest.len(), |(i, _)| i);
+        if rest[..end].ends_with('\r') && rest[end..].starts_with('\n') {
+            end += 1;
+        }
         let (chunk, tail) = rest.split_at(end);
         rest = tail;
         Some(chunk)
@@ -304,6 +314,10 @@ mod cli_tests {
             assert_eq!(cut("abc", 10), ["abc"]);
             assert_eq!(cut("é😀ab", 1), ["é", "😀", "a", "b"]);
             assert_eq!(cut("e\u{301}x", 1), ["e", "\u{301}", "x"]);
+            // A CRLF stays whole (before: "ab\r" and "\ncd").
+            assert_eq!(cut("ab\r\ncd", 3), ["ab\r\n", "cd"]);
+            assert_eq!(cut("\r\n\r\n", 1), ["\r\n", "\r\n"]);
+            assert_eq!(cut("a\rb", 2), ["a\r", "b"]);
             assert!(cut("", 4).is_empty());
             // One pass: a long text with small chunks is cut in linear time.
             let long = "ab".repeat(200_000);

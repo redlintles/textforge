@@ -98,6 +98,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   line instructions; before, only LF and CRLF ended a line, so a file with CR
   line breaks was one line. `utils::cli::split_final_newline` follows the same
   rule.
+- `txf --read-mode chunk-N` never ends a chunk between the `\r` and `\n` of a
+  CRLF (the chunk takes the `\n`, one character more than `N`), and an error
+  in a chunk starts with `input chunk N ›`, as line mode says
+  `input line N ›`. Before, `ab\r\ncd` with `chunk-3` was cut into `ab\r` and
+  `\ncd`.
 
 ### Added
 

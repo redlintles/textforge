@@ -161,3 +161,18 @@ fn line_mode_and_chomp_use_the_line_rules_of_the_engine() {
     let output = files.txf(&["-f", "p.textforge", "--chomp"], "abc\r\n");
     assert_eq!(stdout(&output), "abc!\r\n");
 }
+
+/// Before: a chunk could end between `\r` and `\n`, and an error in a chunk did
+/// not say which one failed (line mode says `input line N ›`).
+#[test]
+fn chunks_keep_crlf_whole_and_errors_name_the_chunk() {
+    let files = Files::new();
+    files.write("p.textforge", "atb X;\n");
+    let output = files.txf(&["-f", "p.textforge", "-r", "chunk-3"], "ab\r\ncd");
+    assert_eq!(stdout(&output), "Xab\r\nXcd");
+    files.write("q.textforge", "dlc 2 2;\n");
+    let output = files.txf(&["-f", "q.textforge", "-r", "chunk-3"], "abcdefg");
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("input chunk 3 › dlc 2 2;"), "{stderr}");
+}
