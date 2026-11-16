@@ -76,6 +76,27 @@ pub fn process_input(
     input: String,
     read_mode: ReadMode,
     input_file: Option<&Path>,
+    debug: Option<&mut (dyn Write + '_)>,
+) -> Result<String, TextForgeError> {
+    // The static context with the input file is built once for all the runs
+    // (one per line or chunk), then the pipeline gets its own back.
+    let Some(path) = input_file else {
+        return process_pieces(processor, identifier, input, read_mode, debug);
+    };
+    let previous = processor.statics_for_input(identifier, path);
+    let result = process_pieces(processor, identifier, input, read_mode, debug);
+    if let Some(previous) = previous {
+        processor.restore_statics(identifier, previous);
+    }
+    result
+}
+
+/// [`process_input`] once the input file is in the pipeline's context.
+fn process_pieces(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: String,
+    read_mode: ReadMode,
     mut debug: Option<&mut (dyn Write + '_)>,
 ) -> Result<String, TextForgeError> {
     match read_mode {
@@ -85,7 +106,6 @@ pub fn process_input(
             processor,
             identifier,
             Cow::Owned(input),
-            input_file,
             debug.as_deref_mut(),
         ),
         ReadMode::Line => {
@@ -100,7 +120,6 @@ pub fn process_input(
                     processor,
                     identifier,
                     Cow::Borrowed(content),
-                    input_file,
                     debug.as_deref_mut(),
                 )
                 .map_err(|mut e| {
@@ -129,7 +148,6 @@ pub fn process_input(
                     processor,
                     identifier,
                     Cow::Borrowed(chunk),
-                    input_file,
                     debug.as_deref_mut(),
                 )
                 .map_err(|mut e| {
@@ -379,12 +397,12 @@ fn run_piece(
     processor: &mut TextForgeProcessor,
     identifier: &str,
     piece: Cow<'_, str>,
-    input_file: Option<&Path>,
     debug: Option<&mut (dyn Write + '_)>,
 ) -> Result<String, TextForgeError> {
+    // The input file is already in the pipeline's context (see process_input).
     match debug {
-        Some(log) => processor.process_debug_from(identifier, &piece, input_file, log),
-        None => processor.process_text_from(identifier, piece, input_file),
+        Some(log) => processor.process_debug_from(identifier, &piece, None, log),
+        None => processor.process_text_from(identifier, piece, None),
     }
 }
 

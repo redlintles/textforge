@@ -1081,6 +1081,32 @@ impl TextForgeProcessor {
     }
 }
 
+#[cfg(feature = "cli")]
+impl TextForgeProcessor {
+    /// Make every run of pipeline `id` see `input_file` (`__INPUT_FILE__`) until
+    /// [`restore_statics`](Self::restore_statics) puts back the returned
+    /// context. `txf` runs a pipeline once per line or chunk; building the
+    /// context once instead of in every run (as passing the file to each run
+    /// does) keeps line mode as fast as without an input file.
+    pub(crate) fn statics_for_input(
+        &mut self,
+        id: &str,
+        input_file: &Path,
+    ) -> Option<Arc<StaticContext>> {
+        let pipeline = self.transforms.get_mut(id)?;
+        let with_file = Arc::new(pipeline.statics.with_input_file(input_file));
+        Some(std::mem::replace(&mut pipeline.statics, with_file))
+    }
+
+    /// Put back the context [`statics_for_input`](Self::statics_for_input)
+    /// returned.
+    pub(crate) fn restore_statics(&mut self, id: &str, previous: Arc<StaticContext>) {
+        if let Some(pipeline) = self.transforms.get_mut(id) {
+            pipeline.statics = previous;
+        }
+    }
+}
+
 impl TextForgeProcessor {
     /// [`TextForgeProcessorMethods::process_all`] for a document read from
     /// `input_file` (exposed to the DSL as `__INPUT_FILE__`). Takes the input
