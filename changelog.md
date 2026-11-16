@@ -143,6 +143,10 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   `IndexOutOfRange` error, like `cts` and `tucw`; before, the text was
   returned unchanged, so the missing start word went unnoticed (Golden Rule
   18).
+- `txf --read-mode chunk-N` cuts the input in one pass. Before, each chunk
+  boundary was searched from the start of the text, so the time grew with the
+  square of the input size (51 MB with `chunk-65536` took 17 minutes in a
+  debug build).
 
 ### Not changed (documented instead)
 

@@ -4,7 +4,7 @@ use std::borrow::Cow;
 
 use crate::{
     api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
-    utils::{errors::TextForgeError, transforms::get_safe_utf8_char_index},
+    utils::errors::TextForgeError,
 };
 
 fn process_run(
@@ -97,31 +97,27 @@ pub fn process_input_by_chunks(
             crate::utils::errors::input_excerpt(input),
         ));
     }
-    let character_count = input.chars().count();
-    let iterations = character_count.div_ceil(chunk_size);
-
-    let mut processed = Vec::new();
-
-    for i in 0..iterations - 1 {
-        let left_chunk_bound = get_safe_utf8_char_index(i * chunk_size, input)?;
-        let right_chunk_bound = get_safe_utf8_char_index((i + 1) * chunk_size, input)?;
-
-        let result = process_run(
-            processor,
-            identifier,
-            &input[left_chunk_bound..right_chunk_bound],
-            debug,
-        )?;
-
-        processed.push(result);
+    let mut output = String::with_capacity(input.len());
+    for chunk in chunks(input, chunk_size) {
+        output.push_str(&process_run(processor, identifier, chunk, debug)?);
     }
+    Ok(output)
+}
 
-    // Last chunk
-    let left_chunk_bound = get_safe_utf8_char_index((iterations - 1) * chunk_size, input)?;
-    let result = process_run(processor, identifier, &input[left_chunk_bound..], debug)?;
-    processed.push(result);
-
-    Ok(processed.join(""))
+/// `input` cut into consecutive pieces of `size` characters (the last one may
+/// be shorter), in one forward pass. Up to 0.3.2 every boundary was searched
+/// from the start of the text, which made chunk mode quadratic.
+fn chunks(input: &str, size: usize) -> impl Iterator<Item = &str> {
+    let mut rest = input;
+    std::iter::from_fn(move || {
+        if rest.is_empty() {
+            return None;
+        }
+        let end = rest.char_indices().nth(size).map_or(rest.len(), |(i, _)| i);
+        let (chunk, tail) = rest.split_at(end);
+        rest = tail;
+        Some(chunk)
+    })
 }
 
 #[cfg(feature = "test_access")]
@@ -149,6 +145,24 @@ mod cli_tests {
 
             assert_eq!(result, expected_output, "It works correctly");
             Ok(())
+        }
+    }
+
+    mod chunks_tests {
+        use crate::utils::cli::chunks;
+
+        #[test]
+        fn chunks_count_characters_and_keep_every_byte() {
+            let cut = |text, size| chunks(text, size).collect::<Vec<_>>();
+            assert_eq!(cut("abcdefg", 3), ["abc", "def", "g"]);
+            assert_eq!(cut("abc", 3), ["abc"]);
+            assert_eq!(cut("abc", 10), ["abc"]);
+            assert_eq!(cut("é😀ab", 1), ["é", "😀", "a", "b"]);
+            assert_eq!(cut("e\u{301}x", 1), ["e", "\u{301}", "x"]);
+            assert!(cut("", 4).is_empty());
+            // One pass: a long text with small chunks is cut in linear time.
+            let long = "ab".repeat(200_000);
+            assert_eq!(chunks(&long, 1).count(), 400_000);
         }
     }
 
