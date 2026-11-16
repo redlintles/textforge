@@ -1011,7 +1011,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         watcher_list: &mut WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
-        self.process_watchers_via_buffer(id, input, watcher_list, report_path)
+        self.process_watchers_via_buffer(id, input, None, watcher_list, report_path)
     }
 
     #[cfg(all(feature = "watchers", not(feature = "buffered")))]
@@ -1022,75 +1022,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         watcher_list: &mut WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
-        let (tokens, mut context) =
-            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
-                Ok(x) => x,
-                Err(e) => {
-                    self.errors.add_error(e.clone());
-                    return Err(e);
-                }
-            };
-        let mut local_errors = ErrorManager::default();
-
-        // The pipeline state is an Arc<str>, not a String: reusing `current_arc` from
-        // one step as the `before` of the next is an Arc::clone (a refcount bump),
-        // not a text copy. apply_transform still takes a &str
-        // (Arc<str> derefs to str, so &current_arc works).
-        let current_arc: Arc<str> = Arc::from(input);
-
-        // Holds (before, current, instruction) of the previous step until its
-        // "after" is known, which happens only after the next step runs.
-        let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
-
-        let current_arc = run_tokens(
-            tokens,
-            current_arc,
-            &mut context,
-            |_, token, current_arc, context| {
-                let before_arc = Arc::clone(&current_arc); // O(1)
-
-                let after = apply_transform(
-                    token,
-                    Cow::Borrowed(current_arc.as_ref()),
-                    &mut local_errors,
-                    context,
-                )?;
-
-                // The only whole-text copy per step: the transform's output
-                // (a new String, allocated by apply_transform itself, which is
-                // inherent to the instruction's work) must also exist as an
-                // Arc<str> to become this step's "current" and the next step's "before".
-                let current_arc: Arc<str> = Arc::from(after.as_ref());
-
-                if let Some((prev_before, prev_current, prev_instruction)) = pending.take() {
-                    let watcher_ctx = WatcherContext::new(
-                        prev_current,
-                        prev_before,
-                        Some(Arc::clone(&current_arc)), // O(1)
-                        prev_instruction,
-                    );
-                    watcher_list.run_watchers(watcher_ctx)?;
-                }
-
-                pending = Some((
-                    before_arc,
-                    Arc::clone(&current_arc), // O(1)
-                    token.to_textforge_line().to_string(),
-                ));
-                Ok(current_arc)
-            },
-        )?;
-
-        // Last instruction: there is no next step, so after = None.
-        if let Some((before, current, instruction)) = pending.take() {
-            let watcher_ctx = WatcherContext::new(current, before, None::<Arc<str>>, instruction);
-            watcher_list.run_watchers(watcher_ctx)?;
-        }
-
-        watcher_list.to_json(report_path)?;
-        watcher_list.reset();
-
-        Ok(current_arc.to_string())
+        self.process_watchers_from(id, input, None, watcher_list, report_path)
     }
 
     // -- Bytecode persistence (feature = "bytecode") --------------------
@@ -1130,6 +1062,22 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         self.set_base_dir_from_file(&identifier, path);
 
         Ok(identifier)
+    }
+}
+
+#[cfg(all(feature = "watchers", feature = "buffered", feature = "cli"))]
+impl TextForgeProcessor {
+    /// [`TextForgeProcessorMethods::process_all_with_watchers`] for a document
+    /// read from `input_file` (exposed to the DSL as `__INPUT_FILE__`).
+    pub(crate) fn process_watchers_from(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+        watcher_list: &mut WatcherList,
+        report_path: &Path,
+    ) -> Result<String, TextForgeError> {
+        self.process_watchers_via_buffer(id, input, input_file, watcher_list, report_path)
     }
 }
 
@@ -1219,6 +1167,90 @@ impl TextForgeProcessor {
                 apply_transform(token, document, &mut local_errors, context)
             },
         )
+    }
+}
+
+#[cfg(all(feature = "watchers", not(feature = "buffered")))]
+impl TextForgeProcessor {
+    /// [`TextForgeProcessorMethods::process_all_with_watchers`] for a document
+    /// read from `input_file` (exposed to the DSL as `__INPUT_FILE__`).
+    pub(crate) fn process_watchers_from(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+        watcher_list: &mut WatcherList,
+        report_path: &Path,
+    ) -> Result<String, TextForgeError> {
+        let (tokens, mut context) =
+            match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
+                Ok(x) => x,
+                Err(e) => {
+                    self.errors.add_error(e.clone());
+                    return Err(e);
+                }
+            };
+        let mut local_errors = ErrorManager::default();
+
+        // The pipeline state is an Arc<str>, not a String: reusing `current_arc` from
+        // one step as the `before` of the next is an Arc::clone (a refcount bump),
+        // not a text copy. apply_transform still takes a &str
+        // (Arc<str> derefs to str, so &current_arc works).
+        let current_arc: Arc<str> = Arc::from(input);
+
+        // Holds (before, current, instruction) of the previous step until its
+        // "after" is known, which happens only after the next step runs.
+        let mut pending: Option<(Arc<str>, Arc<str>, String)> = None;
+
+        let current_arc = run_tokens(
+            tokens,
+            current_arc,
+            &mut context,
+            |_, token, current_arc, context| {
+                let before_arc = Arc::clone(&current_arc); // O(1)
+
+                let after = apply_transform(
+                    token,
+                    Cow::Borrowed(current_arc.as_ref()),
+                    &mut local_errors,
+                    context,
+                )?;
+
+                // The only whole-text copy per step: the transform's output
+                // (a new String, allocated by apply_transform itself, which is
+                // inherent to the instruction's work) must also exist as an
+                // Arc<str> to become this step's "current" and the next step's "before".
+                let current_arc: Arc<str> = Arc::from(after.as_ref());
+
+                if let Some((prev_before, prev_current, prev_instruction)) = pending.take() {
+                    let watcher_ctx = WatcherContext::new(
+                        prev_current,
+                        prev_before,
+                        Some(Arc::clone(&current_arc)), // O(1)
+                        prev_instruction,
+                    );
+                    watcher_list.run_watchers(watcher_ctx)?;
+                }
+
+                pending = Some((
+                    before_arc,
+                    Arc::clone(&current_arc), // O(1)
+                    token.to_textforge_line().to_string(),
+                ));
+                Ok(current_arc)
+            },
+        )?;
+
+        // Last instruction: there is no next step, so after = None.
+        if let Some((before, current, instruction)) = pending.take() {
+            let watcher_ctx = WatcherContext::new(current, before, None::<Arc<str>>, instruction);
+            watcher_list.run_watchers(watcher_ctx)?;
+        }
+
+        watcher_list.to_json(report_path)?;
+        watcher_list.reset();
+
+        Ok(current_arc.to_string())
     }
 }
 

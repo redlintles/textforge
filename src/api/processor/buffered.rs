@@ -379,13 +379,14 @@ impl TextForgeProcessor {
         &mut self,
         id: &str,
         input: &str,
+        input_file: Option<&Path>,
         watchers: &mut crate::watchers::WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
         use crate::watchers::WatcherContext;
         use std::sync::Arc;
         let (tokens, mut context) =
-            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+            match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(tokens) => tokens,
                 Err(error) => {
                     self.errors.add_error(error.clone());

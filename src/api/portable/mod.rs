@@ -27,7 +27,7 @@ mod processor;
 #[cfg(feature = "buffered")]
 pub use buffered::{BufferOptions, BufferTask, PortableBuffer, StreamReader, StreamWriter};
 #[cfg(feature = "watchers")]
-mod watchers;
+pub(crate) mod watchers;
 pub use path::FilePath;
 pub use processor::{BatchPool, Features, FileTask, PortableProcessor, features};
 #[cfg(feature = "watchers")]

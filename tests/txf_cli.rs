@@ -304,3 +304,62 @@ fn pipelines_can_be_compiled_decompiled_and_checked() {
         "{errors}"
     );
 }
+
+/// Before: watchers could only be used from code.
+#[test]
+fn watchers_write_a_report() {
+    let files = Files::new();
+    files
+        .write("p.textforge", "tua;\nate !;\n")
+        .write("in.txt", "ab");
+    let output = files.txf(
+        &[
+            "-f",
+            "p.textforge",
+            "-i",
+            "in.txt",
+            "--watch",
+            "current_len_chars,line_count",
+            "--watch-report",
+            "report.json",
+        ],
+        "",
+    );
+    assert_eq!(stdout(&output), "AB!");
+    let report: serde_json::Value = serde_json::from_str(&files.read("report.json")).unwrap();
+    let text = report.to_string();
+    assert!(
+        text.contains("current_len_chars") && text.contains("line_count"),
+        "{text}"
+    );
+    // An unknown metric, a report without metrics and other read modes are usage errors.
+    let status = |args: &[&str]| files.txf(args, "ab").status.code();
+    assert_eq!(
+        status(&[
+            "-f",
+            "p.textforge",
+            "--watch",
+            "nope",
+            "--watch-report",
+            "r.json"
+        ]),
+        Some(2)
+    );
+    assert_eq!(
+        status(&["-f", "p.textforge", "--watch-report", "r.json"]),
+        Some(2)
+    );
+    assert_eq!(
+        status(&[
+            "-f",
+            "p.textforge",
+            "--watch",
+            "all",
+            "--watch-report",
+            "r.json",
+            "-r",
+            "line"
+        ]),
+        Some(2)
+    );
+}

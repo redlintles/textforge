@@ -12,7 +12,7 @@ use textforge::{
     utils::{
         cli::{
             PipelineFormat, ProfileOptions, ReadMode, load_pipeline, process_input,
-            resolve_profile, split_final_newline,
+            process_with_watchers, resolve_profile, split_final_newline, watch_metrics,
         },
         errors::{TextForgeError, TextForgeErrorCode},
     },
@@ -195,6 +195,31 @@ fn build_cli() -> Command {
                 )
         )
         .arg(
+            Arg::new("watch")
+                .long("watch")
+                .value_name("METRIC")
+                .value_delimiter(',')
+                .value_parser(clap::builder::PossibleValuesParser::new(
+                    std::iter::once("all").chain(watch_metrics()),
+                ))
+                .hide_possible_values(true)
+                .action(ArgAction::Append)
+                .requires("watch_report")
+                .conflicts_with("debug")
+                .help(format!(
+                    "Record a metric after every instruction into the --watch-report file (repeatable or comma-separated; 'all' for every metric): {}",
+                    watch_metrics().join(", ")
+                )),
+        )
+        .arg(
+            Arg::new("watch_report")
+                .long("watch-report")
+                .value_name("FILE")
+                .value_parser(value_parser!(PathBuf))
+                .requires("watch")
+                .help("Where --watch writes its JSON report (one row per instruction); needs --read-mode all"),
+        )
+        .arg(
             Arg::new("debug")
                 .short('d')
                 .long("debug")
@@ -340,15 +365,35 @@ fn run() -> Result<(), Failure> {
         false => String::new(),
     };
     // The pipeline sees the input file as `__INPUT_FILE__` (empty for stdin).
-    let log = debug.then_some(&mut stdout as &mut dyn Write);
-    let result = process_input(
-        &mut processor,
-        &id,
-        data,
-        *read_mode,
-        input.map(PathBuf::as_path),
-        log,
-    );
+    let input_file = input.map(PathBuf::as_path);
+    let result = match matches.get_one::<PathBuf>("watch_report") {
+        Some(report) => {
+            if *read_mode != ReadMode::All {
+                return Err(Failure {
+                    stage: Stage::Usage,
+                    error: TextForgeError::new(
+                        TextForgeErrorCode::ValidationError(
+                            "--watch reports one run of the pipeline, so it needs --read-mode all"
+                                .into(),
+                        ),
+                        Cow::from("--watch"),
+                        Cow::from(""),
+                    ),
+                });
+            }
+            let metrics: Vec<&str> = matches
+                .get_many::<String>("watch")
+                .into_iter()
+                .flatten()
+                .map(String::as_str)
+                .collect();
+            process_with_watchers(&mut processor, &id, &data, input_file, &metrics, report)
+        }
+        None => {
+            let log = debug.then_some(&mut stdout as &mut dyn Write);
+            process_input(&mut processor, &id, data, *read_mode, input_file, log)
+        }
+    };
     let mut result = match result {
         // The trace could not be written because its reader has gone away.
         Err(_) if stdout.closed => return Ok(()),

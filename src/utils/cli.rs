@@ -236,6 +236,79 @@ pub fn load_pipeline(
     }
 }
 
+/// The built-in metrics `txf --watch` accepts, in report order.
+///
+/// ```
+/// use textforge::utils::cli::watch_metrics;
+///
+/// assert!(watch_metrics().contains(&"line_count"));
+/// ```
+pub fn watch_metrics() -> Vec<&'static str> {
+    crate::api::portable::watchers::BUILTINS
+        .iter()
+        .map(|(name, _)| *name)
+        .collect()
+}
+
+/// Runs pipeline `identifier` on `input` with the built-in watchers `metrics`
+/// (names from [`watch_metrics`], or `all`) after every instruction, and writes
+/// their JSON report to `report`. `input_file` is exposed as `__INPUT_FILE__`.
+///
+/// ```
+/// use textforge::api::{TextForgeBuilderMethods, processor::TextForgeProcessor};
+/// use textforge::utils::cli::process_with_watchers;
+///
+/// let mut processor = TextForgeProcessor::new();
+/// let id = processor.create_pipeline().to_uppercase_all()?.build()?;
+/// let report = std::env::temp_dir().join(format!("watch-{}.json", std::process::id()));
+/// let output = process_with_watchers(&mut processor, &id, "ab", None, &["current_len_chars"], &report)?;
+/// assert_eq!(output, "AB");
+/// assert!(std::fs::read_to_string(&report)?.contains("current_len_chars"));
+/// std::fs::remove_file(&report)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn process_with_watchers(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: &str,
+    input_file: Option<&Path>,
+    metrics: &[&str],
+    report: &Path,
+) -> Result<String, TextForgeError> {
+    use crate::{
+        api::portable::watchers::BUILTINS,
+        watchers::{ExecutionWindows, WatcherList},
+    };
+    let mut watchers = WatcherList::new();
+    let wanted: Vec<&str> = if metrics.contains(&"all") {
+        watch_metrics()
+    } else {
+        metrics.to_vec()
+    };
+    for metric in wanted {
+        let (_, callback) = BUILTINS
+            .iter()
+            .find(|(name, _)| *name == metric)
+            .ok_or_else(|| {
+                TextForgeError::new(
+                    TextForgeErrorCode::WatcherNotFoundError(
+                        format!(
+                            "unknown metric `{metric}`; use all or one of: {}",
+                            watch_metrics().join(", ")
+                        )
+                        .into(),
+                    ),
+                    Cow::Borrowed("--watch"),
+                    metric.to_owned(),
+                )
+            })?;
+        let callback = *callback;
+        watchers.set_owned_watcher(metric.to_owned(), move |context| Ok(callback(context)));
+        watchers.schedule_owned_watcher(metric, ExecutionWindows::All)?;
+    }
+    processor.process_watchers_from(identifier, input, input_file, &mut watchers, report)
+}
+
 /// In a trace of `line` or `chunk` mode, the piece the next run belongs to
 /// (`=== input line 2 ===`). Before 0.3.2 the traces followed one another
 /// with nothing between them.

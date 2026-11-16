@@ -142,6 +142,11 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   pipelines are embedded), `txf decompile PIPELINE [-o FILE]` writes bytecode
   back as text, and `txf check PIPELINE...` loads pipelines without running
   them, one line per file, with status 3 when any fails.
+- `txf --watch METRIC --watch-report FILE` runs the pipeline with built-in
+  watchers (`current_len_chars`, `line_count`, `word_count`, … or `all`) after
+  every instruction and writes their JSON report; `__INPUT_FILE__` is set as
+  in a normal run. `utils::cli::process_with_watchers` and
+  `utils::cli::watch_metrics` do the same in code.
 
 ### Fixed
 
