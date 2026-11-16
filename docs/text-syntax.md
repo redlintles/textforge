@@ -25,7 +25,7 @@ escapes inside the expression follow the rules above. Variable templates
 (`{{name}}`) take no spaces and are not grouped.
 
 ```textforge
-atb "banana\nlaranja";     // adds "banana", a newline and "laranja"
+atb "banana\norange";      // adds "banana", a newline and "orange"
 raw " " "\t";              // spaces become tabs
 raw "\s+" "\n";            // one word per line
 atb 'a\nb';                // single quotes: a, backslash, n, b
@@ -36,8 +36,8 @@ klm "^\d+$";               // regex escapes reach the regex unchanged
 These fail with a `TextParsingError` instead of producing a wrong result:
 
 ```textforge
-atb banana\nlaranja;       // \n outside double quotes
-atb "banana\nlaranja;"     // the line does not end with ';' (it is inside the quotes)
+atb banana\norange;        // \n outside double quotes
+atb "banana\norange;"      // the line does not end with ';' (it is inside the quotes)
 ```
 
 ## Comments

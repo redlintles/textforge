@@ -49,7 +49,7 @@ use crate::utils::errors::{TextForgeError, TextForgeErrorCode};
 /// assert_eq!(processor.process_all(&id, "x y").unwrap(), "a\\nb x\ny");
 ///
 /// // \n outside double quotes is an error.
-/// std::fs::write(&path, "atb banana\\nlaranja;\n").unwrap();
+/// std::fs::write(&path, "atb banana\\norange;\n").unwrap();
 /// assert!(processor.get_pipeline_from_file(&path).is_err());
 /// # std::fs::remove_file(&path).unwrap();
 /// ```

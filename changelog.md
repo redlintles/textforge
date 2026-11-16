@@ -87,6 +87,12 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
     became `\n` and the final line break was lost. Errors name the input line;
   - errors are printed on stderr as `error[N]: message` with the instruction
     and the input, instead of a Rust debug structure, and the exit code is 1.
+- Text pipelines: spaces inside an unquoted expression no longer split it, so
+  `onln [[__COUNTER__ + 1]] apply tbs;` works without quotes (before: the line
+  was split at each space and failed). A `[[` with no closing `]]` later on
+  the line is still ordinary text; variable templates (`{{name}}`) take no
+  spaces and are unchanged. See
+  `docs/text-syntax.md`.
 
 ### Added
 
@@ -98,6 +104,17 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 - `utils::cli::split_final_newline`.
 - `docs/indices-and-ranges.md`: bases, out-of-range rules and their
   exceptions, argument order, regex patterns and `$` in replacement text.
+- `txfg`, the TextForge game (`game` feature,
+  `cargo install textforge --features game`): matches of rounds, each a JSON
+  game file with a start text, a goal text, the allowed instructions, a
+  pipeline size limit and a reference answer. The player builds the pipeline
+  at a prompt with `!what`, `!undo`, `!reset`, `!show_answer` and other
+  commands; rounds score 0-100 from the instructions used and the time taken.
+  Thirty built-in games, difficulty selection (`-d`), round count (`-r`), game
+  directories (`--pool`), validation and a 0-10 difficulty rating
+  (`--check`, `--list`) and JSON results (`--save-result`). See `docs/txfg.md`.
+- `scripts/instruction_index.py` also writes the game's instruction catalog
+  (`src/bin/txfg/catalog.rs`); `tests/instruction_index.rs` checks it.
 
 ### Fixed
 
@@ -131,31 +148,6 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 
 - Replacing leaves the text unchanged when nothing matches, `rnw` included
   (a match number is not an index). See `docs/indices-and-ranges.md`.
-
-## Unreleased
-
-### Behavior changes
-
-- Text pipelines: spaces inside an unquoted expression no longer split it, so
-  `onln [[__COUNTER__ + 1]] apply tbs;` works without quotes (before: the line
-  was split at each space and failed). A `[[` with no closing `]]` later on
-  the line is still ordinary text; variable templates (`{{name}}`) take no
-  spaces and are unchanged. See
-  `docs/text-syntax.md`.
-
-### Added
-
-- `txfg`, the TextForge game (`game` feature,
-  `cargo install textforge --features game`): matches of rounds, each a JSON
-  game file with a start text, a goal text, the allowed instructions, a
-  pipeline size limit and a reference answer. The player builds the pipeline
-  at a prompt with `!what`, `!undo`, `!reset`, `!show_answer` and other
-  commands; rounds score 0-100 from the instructions used and the time taken.
-  Thirty built-in games, difficulty selection (`-d`), round count (`-r`), game
-  directories (`--pool`), validation and a 0-10 difficulty rating
-  (`--check`, `--list`) and JSON results (`--save-result`). See `docs/txfg.md`.
-- `scripts/instruction_index.py` also writes the game's instruction catalog
-  (`src/bin/txfg/catalog.rs`); `tests/instruction_index.rs` checks it.
 
 ## 0.3.1 (2026-11-15)
 

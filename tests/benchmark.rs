@@ -23,7 +23,7 @@ pub mod benchmark {
             for _ in 0..runs {
                 let start = Instant::now();
 
-                let string_to_process = "Banana Laranja cheia de canja";
+                let string_to_process = "Banana Orange full of jam";
 
                 processor.process_all_with_debug(&identifier, string_to_process)?;
 
@@ -49,7 +49,7 @@ pub mod benchmark {
             for _ in 0..runs {
                 let start = Instant::now();
 
-                let string_to_process = "Banana Laranja cheia de canja";
+                let string_to_process = "Banana Orange full of jam";
 
                 processor.process_all(&identifier, string_to_process)?;
 
@@ -67,16 +67,13 @@ pub mod benchmark {
 
         let max_tolerance = no_debug_exectime * 100.0;
 
-        println!(
-            "Execução do método process_all_with_debug: {:.6}",
-            debug_exectime
-        );
-        println!("Execução do método process_all: {:.6}", no_debug_exectime);
+        println!("process_all_with_debug took {:.6} s", debug_exectime);
+        println!("process_all took {:.6} s", no_debug_exectime);
         println!("Tolerância máxima: {:.6}", max_tolerance);
 
         assert!(
             debug_exectime < max_tolerance,
-            "Overhead do debug muito alto"
+            "the debug overhead is too high"
         );
         Ok(())
     }
@@ -94,7 +91,7 @@ pub mod benchmark {
         for _ in 0..runs {
             let start = Instant::now();
 
-            let string_to_process = "Banana Laranja cheia de canja";
+            let string_to_process = "Banana Orange full of jam";
 
             let processed_string =
                 processor.process_all_with_debug(&identifier, string_to_process)?;
@@ -107,9 +104,9 @@ pub mod benchmark {
 
         let avg = total / (runs as f64);
 
-        println!("Média: {:.6} Segundos", avg);
+        println!("Average: {:.6} seconds", avg);
 
-        assert!(avg < 0.03, "Executou muito devagar");
+        assert!(avg < 0.03, "the run was too slow");
         Ok(())
     }
     #[test]
@@ -125,7 +122,7 @@ pub mod benchmark {
         for _ in 0..runs {
             let start = Instant::now();
 
-            let string_to_process = "Banana Laranja cheia de canja";
+            let string_to_process = "Banana Orange full of jam";
 
             processor.process_all(&identifier, string_to_process)?;
 
@@ -136,9 +133,9 @@ pub mod benchmark {
 
         let avg = total / (runs as f64);
 
-        println!("Média: {:.6} Segundos", avg);
+        println!("Average: {:.6} seconds", avg);
 
-        assert!(avg < 0.003, "Executou muito devagar");
+        assert!(avg < 0.003, "the run was too slow");
         Ok(())
     }
 }
