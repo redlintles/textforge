@@ -181,8 +181,12 @@ Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
   18).
 - `txf --read-mode chunk-N` cuts the input in one pass. Before, each chunk
   boundary was searched from the start of the text, so the time grew with the
-  square of the input size (51 MB with `chunk-65536` took 17 minutes in a
-  debug build).
+  square of the input size: 50 MiB with `chunk-65536` took 23.5 s (release)
+  and is now 0.31 s, as fast as `--read-mode all`; with `chunk-4096` it did
+  not finish in 300 s. See `docs/benchmarks/cli/`.
+- The line scanner shared by the line instructions, `__LINES__` and `txf
+  --read-mode line` reads bytes instead of decoding characters (`uniqln` and
+  `__LINES__` 2 to 4% faster on 50 MiB).
 - `__INPUT_FILE__` is the file given with `txf --input`, in every read mode
   and with `--debug`, as with `process_file`; before, `txf` always left it
   empty. `utils::cli::process_input` runs a pipeline the way `txf` does, with
