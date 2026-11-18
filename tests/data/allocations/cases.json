@@ -496,6 +496,13 @@
     ]
   },
   {
+    "name": "tryi",
+    "lines": [
+      "tryi dls 9999;",
+      "tryi tua;"
+    ]
+  },
+  {
     "name": "onln",
     "lines": [
       "onln 1 apply tua;"

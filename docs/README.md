@@ -22,6 +22,7 @@ How the language and the library behave.
 | [Execution profiles and `.txfrc`](execution-profiles.md) | Memory use, spooling and safety limits; the `.txfrc` file |
 | [The `txf` command line](cli.md) | Options, read modes, watchers, `compile`/`decompile`/`check`, exit status |
 | [Debug output](debug-output.md) | The step-by-step trace of `process_all_with_debug` |
+| [Error handling](error-handling.md) | Error codes, reports (trace, parameters, cause) and `tryi`, which skips an instruction that fails |
 | [Portable API](portable-api.md) | The owned, language-neutral API the bindings use |
 | [Portable API parity](portable-parity.md) | How each Rust method maps to the portable API |
 | [The `txfg` game](txfg.md) | Playing, game files, scoring and the difficulty rating |
@@ -30,7 +31,7 @@ How the language and the library behave.
 ## Releases
 
 - [Changelog](../changelog.md), with upgrade notes for each release.
-- [0.3.2 release notes](release-0.3.2.md) · [0.3.1 release notes](release-0.3.1.md) · [0.3.0 release notes](release-0.3.0.md) · [0.2.0 release notes](release-0.2.0.md)
+- [0.4.0 release notes](release-0.4.0.md) (prepared) · [0.3.2 release notes](release-0.3.2.md) · [0.3.1 release notes](release-0.3.1.md) · [0.3.0 release notes](release-0.3.0.md) · [0.2.0 release notes](release-0.2.0.md)
 - [API migration in 0.2.0](api-migration.md)
 
 ## Design notes
@@ -61,6 +62,7 @@ script in [`scripts/`](../scripts) and its raw results.
 | [Built-in variables](benchmarks/builtin-variables/README.md) | Cost of the static context |
 | [Line parser (0.3.1)](benchmarks/line-parser/README.md) | `split_line` against `shell_words::split` |
 | [Line performance](line-performance-summary.md) ([full report](benchmarks/line-performance/report.md)) | The line instructions in 0.2.0 |
+| [`tryi` and error details (0.4.0)](benchmarks/tryi/README.md) | Cost of `tryi` and of the snapshot; pipelines without `tryi` before and after |
 | [The `txf` command line](benchmarks/cli/README.md) | `txf` before and after the 0.3.2 CLI fixes: read modes, memory, 1 to 200 MiB |
 | [Batch input](benchmarks/batch-io/report.md) · [Safe file I/O](benchmarks/safe-file-io/report.md) | File reading strategies |
 | [Watcher reliability](benchmarks/watcher-reliability/report.md) · [Watchers comparison](benchmarks/watchers-comparison-report.md) | Watcher overhead |
@@ -73,4 +75,5 @@ Internal reviews: each finding with its reproduction, the fix and the commit.
 - [0.3.0: `src/tokens`](audits/0.3.0-tokens-audit.md)
 - [0.3.0: section instructions, debug trace and interpolation](audits/0.3.0-on-debug-audit.md)
 - [0.3.2: the `txf` command-line program](audits/0.3.2-cli-audit.md)
+- [0.4.0: error inventory](audits/0.4.0-error-inventory.md)
 - [Python binding rules](python-binding-audit.md)

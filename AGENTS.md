@@ -38,7 +38,7 @@ Key design facts:
 
 - **Linear DSL.** No recursion, no AST. Each instruction is a single line. High-level implementations (e.g. the Rust builder) can give the *illusion* of recursion/nesting.
 - **Trait-object architecture.** Instructions are implemented as trait objects to keep maintenance simple and to avoid giant `match` statements and enums.
-- **Published on crates.io**, current core version: `0.3.2` (see `docs/release-0.3.2.md`; earlier releases are in `docs/release-0.3.1.md` and `docs/release-0.3.0.md`).
+- **Published on crates.io**. Core version in `Cargo.toml`: `0.4.0` (release prepared, see `docs/release-0.4.0.md`); latest published: `0.3.2` (`docs/release-0.3.2.md`; earlier releases in `docs/release-0.3.1.md` and `docs/release-0.3.0.md`).
 - **Minimum Rust version** (`rust-version`): 1.89, set by the dependencies (`uuid`). The published package holds only `src/` (without bindings), `docs/txfrc.schema.json`, `README.md`, `changelog.md` and `LICENSE` (`include` in `Cargo.toml`); add a file there if library code starts reading it.
 - **Legacy name.** The project was formerly called **ATP** ("Advanced Text Processor"). Some doctests and internals still reference `atp` / `Atp*`. This is a leftover from the rename, not a separate component.
 
@@ -116,7 +116,7 @@ TextForge can be used in three ways.
 | `process_single` | Processes one instruction on a given input. |
 | `process_all` | Processes one full pipeline on a given input. |
 | `process_single_with_debug` | Like `process_single`, and prints processing info to the console. |
-| `process_all_with_debug` | Like `process_all`, and prints info for every step, plus a nested trace for `cblk`, `iter`, `onln`/`onck`/`onlni` and `rmape` (see `docs/debug-output.md`). |
+| `process_all_with_debug` | Like `process_all`, and prints info for every step, plus a nested trace for `cblk`, `iter`, `onln`/`onck`/`onlni` and `rmape`, and the errors `tryi` ignored, each where it happened and in a final summary (see `docs/debug-output.md`). |
 | `process_all_with_watchers` | Like `process_all`, with watchers enabled. |
 | `process_file` | Reads an input file, runs a pipeline and writes the result to an output file. |
 | `process_batch` | Processes multiple pipelines from different files in parallel. |
@@ -131,7 +131,7 @@ With the `bytecode` feature, `TextForgeProcessor` also exposes `write_to_bytecod
 
 ### 5.2 As a textual DSL
 
-Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. `--mode auto` (default) detects bytecode by its magic number; `-` is stdin/stdout; the pipeline is loaded before the input is read; `--read-mode line` and `--chomp` follow the line rules of `docs/lines.md`; `__INPUT_FILE__` is the `--input` path; `--output` is replaced atomically; `--watch`/`--watch-report` run the built-in watchers; `txf compile`, `decompile` and `check` convert and validate pipelines. Errors go to stderr through `Display` (`error[N]: message`) and the exit status names the step (0 ok, 1 run, 2 usage/configuration, 3 loading, 4 input/output). The guide is `docs/cli.md`; the helpers `txf` uses live in `utils::cli`. The library never reads configuration files implicitly.
+Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. `--mode auto` (default) detects bytecode by its magic number; `-` is stdin/stdout; the pipeline is loaded before the input is read; `--read-mode line` and `--chomp` follow the line rules of `docs/lines.md`; `__INPUT_FILE__` is the `--input` path; `--output` is replaced atomically; `--watch`/`--watch-report` run the built-in watchers; `txf compile`, `decompile` and `check` convert and validate pipelines. Errors go to stderr as `TextForgeError::report` (kind, trace, parameters, input, cause, hint; colored on a terminal unless `NO_COLOR`) and the exit status names the step (0 ok, 1 run, 2 usage/configuration, 3 loading, 4 input/output). The guide is `docs/cli.md`; the helpers `txf` uses live in `utils::cli`. The library never reads configuration files implicitly.
 
 ### 5.3 As a bytecode generator
 
@@ -152,7 +152,7 @@ The textual form resembles assembly, and the comparison is fair in terms of the 
 - Instructions run sequentially.
 - Structure: `{name} {params};`
 - Parameters can have different types. Some are pure **literals** that do not affect behavior and are **dropped during parsing** (e.g. `assoc`, `do`, `times`, `apply`).
-- Some instructions take one **nested instruction** as a parameter (`blk`, `ifdc`, `iter`, `onln`, `onck`, `onlni`). `ppjn` instead carries a whole joined pipeline, as an implicit parameter with no text form (`TextForgeParamTypes::Pipeline`, `SyntaxToken::Pipeline`). The root allows one nested level; a `blk` payload allows three (`MAX_DEPTH_NORMAL`/`MAX_DEPTH_ASSOC_PAYLOAD` in `src/parser/params.rs`).
+- Some instructions take one **nested instruction** as a parameter (`blk`, `ifdc`, `iter`, `onln`, `onck`, `onlni`, `tryi`). `ppjn` instead carries a whole joined pipeline, as an implicit parameter with no text form (`TextForgeParamTypes::Pipeline`, `SyntaxToken::Pipeline`). The root allows one nested level; a `blk` payload allows three (`MAX_DEPTH_NORMAL`/`MAX_DEPTH_ASSOC_PAYLOAD` in `src/parser/params.rs`).
 - **Section instructions** (`onln`, `onck`, `onlni`) give the nested instruction only part of the text, so its indices are relative to that part. Lines and characters are base 0 (rule 22). See `docs/on-instructions.md`.
 - **`ppjn {pipeline};`** runs a pipeline from another file in a new execution context (only the static context is shared; `end` is local). Its path is a literal, loaded with the outer pipeline (`src/parser/joins.rs`), relative to the file that contains it; cycles and nesting beyond `MAX_JOIN_DEPTH` are errors. Bytecode embeds the joined pipeline. See `docs/file-instructions.md`.
 - **File instructions** (`wtf`, `apf`, `ppf`, `inf`) write the current text to a file (atomically, through `write_atomically` in `src/api/processor/file_io.rs`) or read UTF-8 files into it (`read_utf8_file`). Their paths are data: interpolated at execution time and, when relative, resolved from the directory of the pipeline file (`resolve_path`; Golden Rule 25), or from the working directory for pipelines built in code. `inf {index} {file}` shares `ins {index} {text}`'s argument order and index rules (`insert_after_char`). See `docs/file-instructions.md`.
@@ -167,7 +167,9 @@ A `GlobalExecutionContext` is created at the start of each processing run. It ca
 
 **Errors**
 
-All execution errors are represented by `TextForgeError`. Most methods return a `Result` with that error type.
+All execution errors are represented by `TextForgeError`. Most methods return a `Result` with that error type. Its code has a stable number (1–31) and name; errors raised while a pipeline runs also carry `details`: the trace of instructions they left (outermost first, with `file:line`), the resolved parameters of the instruction that failed (names from `src/globals/parameter_names.rs`, generated by `scripts/instruction_index.py`) and the cause. They are added on the error path only (`TokenWrapper::locate`, `with_note` in `iter` and `cblk`). `Display` is one plain line; `report()` is the full, colored report. The safety limits are `LimitExceededError` (31), the only code `tryi` does not ignore (`TextForgeErrorCode::ignorable`). `ErrorManager` is deprecated: the processor records nothing. See `docs/error-handling.md`.
+
+**`tryi {instruction};`** runs one instruction and, when it fails, continues as if it had not run: the text is the one it received, and an instruction that runs others (`cblk`, `iter`, `ifdc`, `on*`, `tryi`) gets the variables, blocks, replacement maps and `end` back from a snapshot (`GlobalExecutionContext::snapshot`: an undo journal that records each value before its first change, so opening it copies nothing; `release` or `restore` closes it). Limits are never ignored, files written by `wtf` stay written, and the debug methods show each ignored error and a summary (`DebugTrace::ignore`); `process_all` still returns only the text.
 
 **Example pipeline**
 
@@ -420,7 +422,7 @@ Ask a human before doing any of the following:
 | `urlencoding` | `urle` and `urld` transforms. |
 | `html-escape` | `htmle` and `htmlu` transforms. |
 | `uuid` | Identifying transforms in the processor. |
-| `colored` | Debug-mode output. |
+| `colored` | Debug-mode output and the colors of error reports. |
 | `clap` | Optional; CLI construction (`cli` and `game` features). |
 | `rayon` | Parallelism in `process_batch`. |
 | `evalexpr` | Resolving math expressions in `[[ ... ]]` interpolation. |

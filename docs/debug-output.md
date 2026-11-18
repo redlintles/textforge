@@ -65,3 +65,31 @@ Guarantees:
 The instruction text in step lines uses each instruction's display form
 (`to_textforge_line`), the same text shown in `Instruction:`; it is not quoted
 for re-parsing.
+
+## Errors ignored by `tryi`
+
+When `tryi` ignores an error, the trace shows it where it happened, as the
+warning version of the error's report (kind, trace, parameters, input), and
+names the variables the snapshot put back:
+
+```text
+warning[12] IndexOutOfRange (ignored by tryi): character index 9 is out of range: the text has 2 characters (valid indices 0 to 1)
+  --> dls 9;
+
+  Trace (outermost first):
+      p.textforge:4  cblk calc;  · block `calc`, step 2 of 2
+    → p.textforge:3  dls 9;  ← failed here
+  …
+  state restored: variables total
+```
+
+Containers the failed instruction had opened are closed there. After the last
+step, the trace lists every ignored error (at most 50, then a count):
+
+```text
+1 error ignored by tryi:
+  warning[12] IndexOutOfRange at p.textforge:3: dls 9; — character index 9 is out of range: …
+```
+
+The result is the same with and without debug. See
+[error handling](error-handling.md).

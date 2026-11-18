@@ -185,7 +185,7 @@ mod tests {
         let got = t.set_params(&params);
 
         let expected = Err(crate::utils::errors::TextForgeError::new(
-            TextForgeErrorCode::TextParsingError("`(` is not a valid regular expression: regex parse error:\n    (\n    ^\nerror: unclosed group".into()),
+            TextForgeErrorCode::TextParsingError("`(` is not a valid regular expression".into()),
             "emj",
             "(".to_string(),
         ));

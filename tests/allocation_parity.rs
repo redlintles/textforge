@@ -14,7 +14,9 @@ fn all_instructions_match_the_original_for_owned_and_borrowed_inputs() {
         let result = std::panic::catch_unwind(|| workload::execute(case, input, owned));
         let outcome = match result {
             Ok(Ok(text)) => serde_json::json!({"ok":text}),
-            Ok(Err(error)) => serde_json::json!({"error":format!("{:?}",error)}),
+            // The baseline predates error details (0.4.0): compare what it has.
+            Ok(Err(error)) => serde_json::json!({"error":format!("{:?}",
+                textforge::utils::errors::TextForgeError::new(error.error_code, error.instruction, error.input))}),
             Err(_) => serde_json::json!({"panic":true}),
         };
         assert_eq!(

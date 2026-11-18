@@ -31,11 +31,12 @@ pub(crate) fn regex_error(
 ) -> TextForgeError {
     TextForgeError::new(
         TextForgeErrorCode::TextParsingError(
-            format!("`{pattern}` is not a valid regular expression: {error}").into(),
+            format!("`{pattern}` is not a valid regular expression").into(),
         ),
         instruction,
         pattern.to_owned(),
     )
+    .with_cause(error)
 }
 
 /// `count` followed by `word`, in the plural unless `count` is 1.
@@ -70,6 +71,16 @@ pub fn input_excerpt(text: &str) -> String {
 
 /// Collects the errors reported while a processor works; it can also print
 /// them or panic on the first one.
+///
+/// Deprecated since 0.4.0: the processor no longer records into it (it kept
+/// every error for the lifetime of the processor, and nothing read them).
+/// Errors ignored by [`tryi`](crate::tokens::instructions::tryi::Tryi) are
+/// kept per run and shown by the debug methods; render an error with
+/// [`TextForgeError::report`].
+#[deprecated(
+    since = "0.4.0",
+    note = "the processor no longer records errors here; use the error a method returns and TextForgeError::report"
+)]
 #[derive(Default, Clone)]
 pub struct ErrorManager {
     panic_with_error: bool,
@@ -79,7 +90,26 @@ pub struct ErrorManager {
 
 /// An error: what went wrong ([`TextForgeErrorCode`]), where (the instruction or
 /// stage) and on what (a parameter, a path or an excerpt of the text).
-#[derive(Clone, Debug, PartialEq)]
+///
+/// Errors raised while a pipeline runs also carry [`details`](Self::details):
+/// the instructions they passed through, the parameters of the instruction
+/// that failed and the cause. [`Display`] is one plain line;
+/// [`report`](Self::report) renders everything, in color on a terminal.
+///
+/// ```
+/// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+/// let mut processor = TextForgeProcessor::new();
+/// let id = processor.create_pipeline().delete_chunk(9, 9)?.build()?;
+/// let error = processor.process_all(&id, "a").unwrap_err();
+/// assert_eq!(error.error_code.get_error_code(), 12);
+/// assert!(error.to_string().starts_with("error[12] IndexOutOfRange: "));
+/// assert_eq!(error.parameters()[0].name, "start");
+/// assert_eq!(error.parameters()[0].value, "9");
+/// let report = error.report().color(false).to_string();
+/// assert!(report.contains("start = 9"));
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+/// ```
+#[derive(Clone)]
 pub struct TextForgeError {
     /// What went wrong, with a message.
     pub error_code: TextForgeErrorCode,
@@ -88,29 +118,140 @@ pub struct TextForgeError {
     /// What the error is about: a parameter, a path or an excerpt of the text
     /// (see [`input_excerpt`]).
     pub input: Cow<'static, str>,
+    /// What the run added while the error left the pipeline: trace,
+    /// parameters, cause. `None` for errors that did not pass through a
+    /// running instruction (and boxed, so a `Result` stays small).
+    pub details: Option<Box<ErrorDetails>>,
+}
+
+/// The fields, with `details` only when there are some (so an error without
+/// them prints as before 0.4.0).
+impl std::fmt::Debug for TextForgeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut debug = f.debug_struct("TextForgeError");
+        debug
+            .field("error_code", &self.error_code)
+            .field("instruction", &self.instruction)
+            .field("input", &self.input);
+        if let Some(details) = &self.details {
+            debug.field("details", details);
+        }
+        debug.finish()
+    }
+}
+
+/// Two errors are equal when their code, message, instruction and input are:
+/// [`details`](TextForgeError::details) are diagnostics and are not compared.
+impl PartialEq for TextForgeError {
+    fn eq(&self, other: &Self) -> bool {
+        self.error_code == other.error_code
+            && self.instruction == other.instruction
+            && self.input == other.input
+    }
+}
+
+/// What an error passed through and worked on, collected while it leaves the
+/// pipeline (only on the error path: a run that succeeds builds none of it).
+/// See [`TextForgeError::trace`], [`TextForgeError::parameters`] and
+/// [`TextForgeError::cause`].
+///
+/// ```
+/// use textforge::utils::errors::{TextForgeError, TextForgeErrorCode};
+/// let error = TextForgeError::new(TextForgeErrorCode::FileReadingError("cannot read `a.txt`".into()), "apf", "a.txt")
+///     .with_cause("permission denied");
+/// assert_eq!(error.details.as_ref().unwrap().cause.as_deref(), Some("permission denied"));
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct ErrorDetails {
+    /// The instructions the error passed through, **innermost first** (the
+    /// one that failed, then the `iter`, block or joined pipeline around it).
+    pub frames: Vec<TraceFrame>,
+    /// The parameters of the instruction that failed, with the values it ran
+    /// with.
+    pub parameters: Vec<ErrorParameter>,
+    /// The lower-level error behind this one (the operating system's I/O
+    /// error, the regex error, …).
+    pub cause: Option<String>,
+    /// A note for the next frame, set by the container that knows it (the
+    /// iteration of `iter`, the step of a block).
+    pending_note: Option<String>,
+}
+
+/// One instruction an error passed through. See [`ErrorDetails::frames`].
+///
+/// ```
+/// use textforge::utils::errors::TraceFrame;
+/// let frame = TraceFrame::new("dlc 9 9;", Some("clean.textforge:3".into()), None);
+/// assert_eq!(frame.location.as_deref(), Some("clean.textforge:3"));
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct TraceFrame {
+    /// The instruction as it ran (the failing one with its resolved values).
+    pub instruction: String,
+    /// `file:line` of the instruction, when the pipeline came from a file.
+    pub location: Option<String>,
+    /// What the container was doing (`__COUNTER__ = 1 (iteration 2 of 3)`).
+    pub note: Option<String>,
+}
+
+impl TraceFrame {
+    /// A frame for `instruction`, at `location`, with an optional note.
+    pub fn new(
+        instruction: impl Into<String>,
+        location: Option<String>,
+        note: Option<String>,
+    ) -> Self {
+        Self {
+            instruction: instruction.into(),
+            location,
+            note,
+        }
+    }
+}
+
+/// One parameter of the instruction that failed. See
+/// [`ErrorDetails::parameters`].
+///
+/// ```
+/// use textforge::utils::errors::ErrorParameter;
+/// let parameter = ErrorParameter::new("start", "9", Some("[[n + 1]]".into()));
+/// assert_eq!(parameter.written.as_deref(), Some("[[n + 1]]"));
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct ErrorParameter {
+    /// The name of the parameter in the instruction's syntax (`start`), or
+    /// `parameter N` when it has none.
+    pub name: String,
+    /// The value the instruction ran with, after interpolation.
+    pub value: String,
+    /// The parameter as written in the pipeline, when it differs from the
+    /// value (a variable or an expression).
+    pub written: Option<String>,
+}
+
+impl ErrorParameter {
+    /// A parameter `name` with `value`, written as `written` when it differs.
+    pub fn new(name: impl Into<String>, value: impl Into<String>, written: Option<String>) -> Self {
+        Self {
+            name: name.into(),
+            value: value.into(),
+            written,
+        }
+    }
 }
 
 impl Error for TextForgeError {}
 
+/// One plain line, without color: `error[12] IndexOutOfRange: message (in:
+/// instruction)`. Use [`TextForgeError::report`] for the full report.
 impl Display for TextForgeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Presentation only: `error[code]: message`, then where and on what.
         write!(f, "{}", self.error_code)?;
         if !self.instruction.is_empty() {
-            write!(
-                f,
-                "\n  {} {}",
-                "in:".bold().cyan(),
-                self.instruction.as_ref().cyan()
-            )?;
-        }
-        if !self.input.is_empty() {
-            write!(
-                f,
-                "\n  {} {}",
-                "input:".bold().dimmed(),
-                self.input.as_ref().dimmed()
-            )?;
+            write!(f, " (in: {})", self.instruction)?;
         }
         Ok(())
     }
@@ -127,6 +268,7 @@ impl TextForgeError {
             error_code,
             instruction: instruction.into(),
             input: input.into(),
+            details: None,
         }
     }
 
@@ -139,8 +281,271 @@ impl TextForgeError {
     pub fn input_str(&self) -> &str {
         self.input.as_ref()
     }
+
+    /// The details, created empty when the error has none yet.
+    pub(crate) fn details_mut(&mut self) -> &mut ErrorDetails {
+        self.details.get_or_insert_with(Box::default)
+    }
+
+    /// The instructions the error passed through, **outermost first**, the
+    /// last one being the instruction that failed. Empty for errors that were
+    /// not raised by a running instruction.
+    pub fn trace(&self) -> impl DoubleEndedIterator<Item = &TraceFrame> {
+        self.details
+            .iter()
+            .flat_map(|details| details.frames.iter().rev())
+    }
+
+    /// The parameters of the instruction that failed (empty when unknown).
+    pub fn parameters(&self) -> &[ErrorParameter] {
+        self.details
+            .as_ref()
+            .map_or(&[], |details| details.parameters.as_slice())
+    }
+
+    /// The lower-level error behind this one, when there is one.
+    pub fn cause(&self) -> Option<&str> {
+        self.details.as_ref()?.cause.as_deref()
+    }
+
+    /// This error, caused by `cause` (an I/O error, a regex error, …).
+    pub fn with_cause(mut self, cause: impl Display) -> Self {
+        self.details_mut().cause = Some(cause.to_string());
+        self
+    }
+
+    /// Whether [`tryi`](crate::tokens::instructions::tryi::Tryi) may ignore
+    /// this error: every error an instruction raises while it runs, except a
+    /// safety limit ([`TextForgeErrorCode::LimitExceededError`]).
+    pub fn is_ignorable(&self) -> bool {
+        self.error_code.ignorable()
+    }
+
+    /// The full report: kind, message, trace, parameters, input, cause and a
+    /// hint, in color when the terminal supports it (see [`ErrorReport`]).
+    pub fn report(&self) -> ErrorReport<'_> {
+        ErrorReport {
+            error: self,
+            ignored: false,
+            color: colored::control::SHOULD_COLORIZE.should_colorize(),
+        }
+    }
+
+    /// Note what the enclosing container was doing (the iteration, the step),
+    /// for the container's own frame; an inner container's note is kept.
+    pub(crate) fn with_note(mut self, note: impl FnOnce() -> String) -> Self {
+        let details = self.details_mut();
+        if details.pending_note.is_none() {
+            details.pending_note = Some(note());
+        }
+        self
+    }
+
+    /// Add the frame of an instruction the error is leaving (innermost
+    /// first), with the pending note, and its parameters when the instruction
+    /// is the one that failed.
+    pub(crate) fn push_frame(
+        &mut self,
+        instruction: String,
+        location: Option<String>,
+        parameters: impl FnOnce() -> Vec<ErrorParameter>,
+    ) {
+        let details = self.details_mut();
+        let note = details.pending_note.take();
+        if details.frames.is_empty() && details.parameters.is_empty() {
+            details.parameters = parameters();
+        }
+        details.frames.push(TraceFrame {
+            instruction,
+            location,
+            note,
+        });
+    }
 }
 
+/// The report of a [`TextForgeError`], from [`TextForgeError::report`]: a
+/// traceback in the manner of Python and Java, for people. Its layout may
+/// change between versions; programs should read the error's fields.
+///
+/// ```
+/// use textforge::utils::errors::{TextForgeError, TextForgeErrorCode};
+/// let error = TextForgeError::new(
+///     TextForgeErrorCode::IndexOutOfRange("index 9 is past the end".into()), "dls 9;", "abc",
+/// );
+/// let report = error.report().color(false).to_string();
+/// assert!(report.starts_with("error[12] IndexOutOfRange: index 9 is past the end"));
+/// assert!(report.contains("--> dls 9;"));
+/// assert!(error.report().ignored(true).color(false).to_string().starts_with("warning[12]"));
+/// ```
+pub struct ErrorReport<'a> {
+    error: &'a TextForgeError,
+    ignored: bool,
+    color: bool,
+}
+
+/// Widest instruction shown in a trace line.
+const MAX_TRACE_INSTRUCTION_CHARS: usize = 70;
+
+impl ErrorReport<'_> {
+    /// Report the error as one `tryi` ignored: a `warning`, and what happened
+    /// instead.
+    pub fn ignored(mut self, ignored: bool) -> Self {
+        self.ignored = ignored;
+        self
+    }
+
+    /// Color the report (`true`) or write plain text (`false`). By default it
+    /// follows `colored` (`NO_COLOR`, `CLICOLOR`, whether stdout is a terminal).
+    pub fn color(mut self, color: bool) -> Self {
+        self.color = color;
+        self
+    }
+
+    /// `text` in the SGR style `style` (`"1;31"`: bold red) when coloring.
+    /// Written directly, so `color(true)` colors whatever `colored` decides.
+    fn paint(&self, text: &str, style: &str) -> String {
+        if self.color {
+            format!("\x1b[{style}m{text}\x1b[0m")
+        } else {
+            text.to_owned()
+        }
+    }
+}
+
+/// The SGR foreground code of `color`.
+fn sgr(color: Color) -> &'static str {
+    match color {
+        Color::Red => "31",
+        Color::Yellow => "33",
+        Color::Magenta => "35",
+        _ => "39",
+    }
+}
+
+fn shorten(text: &str, max: usize) -> String {
+    let text = text.trim_end_matches(['\n', ';']).trim_end();
+    match text.char_indices().nth(max) {
+        None => format!("{text};"),
+        Some((cut, _)) => format!("{}…", &text[..cut]),
+    }
+}
+
+impl Display for ErrorReport<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let error = self.error;
+        let code = &error.error_code;
+        let (word, color) = if self.ignored {
+            ("warning", Color::Yellow)
+        } else {
+            ("error", code.severity_color())
+        };
+        let label = format!("{word}[{}]", code.get_error_code());
+        write!(
+            f,
+            "{} {}",
+            self.paint(&label, &format!("1;{}", sgr(color))),
+            self.paint(code.name(), "1")
+        )?;
+        if self.ignored {
+            write!(f, " {}", self.paint("(ignored by tryi)", "33"))?;
+        }
+        write!(f, ": {}", code.message())?;
+        if !error.instruction.is_empty() {
+            write!(f, "\n  {} {}", self.paint("-->", "1;36"), error.instruction)?;
+        }
+
+        let frames: Vec<&TraceFrame> = error.trace().collect();
+        if !frames.is_empty() {
+            // An inner instruction is on its container's source line.
+            let mut locations = Vec::with_capacity(frames.len());
+            let mut last = None;
+            for frame in &frames {
+                if frame.location.is_some() {
+                    last = frame.location.clone();
+                }
+                locations.push(last.clone().unwrap_or_default());
+            }
+            let width = locations
+                .iter()
+                .map(|l| l.chars().count())
+                .max()
+                .unwrap_or(0);
+            write!(f, "\n\n  {}", self.paint("Trace (outermost first):", "1"))?;
+            for (index, (frame, location)) in frames.iter().zip(&locations).enumerate() {
+                let failed = index + 1 == frames.len();
+                let arrow = if failed {
+                    self.paint("→", "1;31")
+                } else {
+                    " ".to_owned()
+                };
+                let location = format!("{location:<width$}");
+                write!(
+                    f,
+                    "\n    {arrow} {}{}{}",
+                    if width > 0 {
+                        format!("{}  ", self.paint(&location, "2"))
+                    } else {
+                        String::new()
+                    },
+                    self.paint(
+                        &shorten(&frame.instruction, MAX_TRACE_INSTRUCTION_CHARS),
+                        "33"
+                    ),
+                    match (&frame.note, failed) {
+                        (Some(note), _) => format!("  {}", self.paint(&format!("· {note}"), "2")),
+                        (None, true) => format!("  {}", self.paint("← failed here", "31")),
+                        (None, false) => String::new(),
+                    }
+                )?;
+            }
+        }
+
+        let parameters = error.parameters();
+        if !parameters.is_empty() {
+            let width = parameters
+                .iter()
+                .map(|p| p.name.chars().count())
+                .max()
+                .unwrap_or(0);
+            write!(f, "\n\n  {}", self.paint("Parameters:", "1"))?;
+            for parameter in parameters {
+                let name = format!("{:<width$}", parameter.name);
+                write!(f, "\n    {} = {}", self.paint(&name, "36"), parameter.value)?;
+                if let Some(written) = &parameter.written {
+                    write!(f, "   {}", self.paint(&format!("(written {written})"), "2"))?;
+                }
+            }
+        }
+
+        if !error.input.is_empty() {
+            write!(
+                f,
+                "\n\n  {} {}",
+                self.paint("Input:", "1"),
+                self.paint(&error.input.escape_debug().to_string(), "2")
+            )?;
+        }
+        if let Some(cause) = error.cause() {
+            write!(f, "\n\n  {} {cause}", self.paint("Caused by:", "1;33"))?;
+        }
+        if let Some(hint) = code.hint() {
+            write!(f, "\n\n  {} {hint}", self.paint("Hint:", "1;32"))?;
+        }
+        if self.ignored {
+            write!(
+                f,
+                "\n\n  {}",
+                self.paint(
+                    "The instruction was skipped: the text and the variables are as they were before it, and the pipeline continued.",
+                    "33",
+                )
+            )?;
+        }
+        Ok(())
+    }
+}
+
+#[allow(deprecated)]
 impl ErrorManager {
     /// Panic on the next error added.
     pub fn will_panic(&mut self, val: bool) {
@@ -279,22 +684,27 @@ pub enum TextForgeErrorCode {
     InvalidUtf8Error(Cow<'static, str>),
     /// An expression that cannot be parsed or evaluated.
     InvalidExprError(Cow<'static, str>),
+    /// A safety limit was reached (`max_iterations`, `max_generated_bytes`):
+    /// the only error [`tryi`](crate::tokens::instructions::tryi::Tryi) never
+    /// ignores. Before 0.4.0 it was a [`ValidationError`](Self::ValidationError).
+    LimitExceededError(Cow<'static, str>),
 }
 
+/// One plain line: `error[12] IndexOutOfRange: message`.
 impl Display for TextForgeErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Use severity to color the code/message, but keep raw values available via getters.
-        let severity = self.severity_color();
-
-        let label = format!("error[{}]", self.get_error_code())
-            .color(severity)
-            .bold();
-        write!(f, "{}: {}", label, self.message())
+        write!(
+            f,
+            "error[{}] {}: {}",
+            self.get_error_code(),
+            self.name(),
+            self.message()
+        )
     }
 }
 
 impl TextForgeErrorCode {
-    /// The stable number of this kind of error (1–30).
+    /// The stable number of this kind of error (1–31).
     pub fn get_error_code(&self) -> u16 {
         match self {
             Self::FileNotFound(_) => 1u16,
@@ -327,7 +737,142 @@ impl TextForgeErrorCode {
             Self::NestedBlocksNotAllowedError(_) => 28u16,
             Self::InvalidUtf8Error(_) => 29u16,
             Self::InvalidExprError(_) => 30u16,
+            Self::LimitExceededError(_) => 31u16,
         }
+    }
+
+    /// The stable name of this kind of error, as reports show it
+    /// (`IndexOutOfRange`).
+    ///
+    /// ```
+    /// use textforge::utils::errors::TextForgeErrorCode;
+    /// assert_eq!(TextForgeErrorCode::IndexOutOfRange("".into()).name(), "IndexOutOfRange");
+    /// ```
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::FileNotFound(_) => "FileNotFound",
+            Self::TokenNotFound(_) => "TokenNotFound",
+            Self::TokenArrayNotFound(_) => "TokenArrayNotFound",
+            Self::FileReadingError(_) => "FileReadingError",
+            Self::FileWritingError(_) => "FileWritingError",
+            Self::FileOpeningError(_) => "FileOpeningError",
+            Self::BytecodeNotFound(_) => "BytecodeNotFound",
+            Self::BlockNotFound(_) => "BlockNotFound",
+            Self::VariableNotFound(_) => "VariableNotFound",
+            Self::NonMutableVariableError(_) => "NonMutableVariableError",
+            Self::InvalidOperands(_) => "InvalidOperands",
+            Self::IndexOutOfRange(_) => "IndexOutOfRange",
+            Self::InvalidIndex(_) => "InvalidIndex",
+            Self::InvalidParameters(_) => "InvalidParameters",
+            Self::InvalidArgumentNumber(_) => "InvalidArgumentNumber",
+            Self::BytecodeParamNotRecognized(_) => "BytecodeParamNotRecognized",
+            Self::TextParsingError(_) => "TextParsingError",
+            Self::BytecodeParsingError(_) => "BytecodeParsingError",
+            Self::BytecodeParamParsingError(_) => "BytecodeParamParsingError",
+            Self::ValidationError(_) => "ValidationError",
+            Self::ZeroDivisionError(_) => "ZeroDivisionError",
+            Self::TryIntoFailError(_) => "TryIntoFailError",
+            Self::IncompatibleTypeError(_) => "IncompatibleTypeError",
+            Self::RequiredContextError(_) => "RequiredContextError",
+            Self::WatcherNotFoundError(_) => "WatcherNotFoundError",
+            Self::SerializationError(_) => "SerializationError",
+            Self::GenericError(_) => "GenericError",
+            Self::NestedBlocksNotAllowedError(_) => "NestedBlocksNotAllowedError",
+            Self::InvalidUtf8Error(_) => "InvalidUtf8Error",
+            Self::InvalidExprError(_) => "InvalidExprError",
+            Self::LimitExceededError(_) => "LimitExceededError",
+        }
+    }
+
+    /// Whether [`tryi`](crate::tokens::instructions::tryi::Tryi) may ignore
+    /// this kind of error when the instruction it wraps raises it. Only the
+    /// safety limits are not ignorable: the user sets them for the whole run
+    /// (`.txfrc`, `txf` flags, `ExecutionProfile`), not the pipeline. Errors
+    /// of loading (parse, validation, bytecode) never reach `tryi`, since they
+    /// happen before the pipeline runs.
+    ///
+    /// The match has no wildcard on purpose: a new code must decide.
+    ///
+    /// ```
+    /// use textforge::utils::errors::TextForgeErrorCode;
+    /// assert!(TextForgeErrorCode::IndexOutOfRange("".into()).ignorable());
+    /// assert!(!TextForgeErrorCode::LimitExceededError("".into()).ignorable());
+    /// ```
+    pub fn ignorable(&self) -> bool {
+        match self {
+            Self::LimitExceededError(_) => false,
+            Self::FileNotFound(_)
+            | Self::TokenNotFound(_)
+            | Self::TokenArrayNotFound(_)
+            | Self::FileReadingError(_)
+            | Self::FileWritingError(_)
+            | Self::FileOpeningError(_)
+            | Self::BytecodeNotFound(_)
+            | Self::BlockNotFound(_)
+            | Self::VariableNotFound(_)
+            | Self::NonMutableVariableError(_)
+            | Self::InvalidOperands(_)
+            | Self::IndexOutOfRange(_)
+            | Self::InvalidIndex(_)
+            | Self::InvalidParameters(_)
+            | Self::InvalidArgumentNumber(_)
+            | Self::BytecodeParamNotRecognized(_)
+            | Self::TextParsingError(_)
+            | Self::BytecodeParsingError(_)
+            | Self::BytecodeParamParsingError(_)
+            | Self::ValidationError(_)
+            | Self::ZeroDivisionError(_)
+            | Self::TryIntoFailError(_)
+            | Self::IncompatibleTypeError(_)
+            | Self::RequiredContextError(_)
+            | Self::WatcherNotFoundError(_)
+            | Self::SerializationError(_)
+            | Self::GenericError(_)
+            | Self::NestedBlocksNotAllowedError(_)
+            | Self::InvalidUtf8Error(_)
+            | Self::InvalidExprError(_) => true,
+        }
+    }
+
+    /// A short suggestion for this kind of error, when there is a general one
+    /// (reports print it as `Hint:`).
+    ///
+    /// ```
+    /// use textforge::utils::errors::TextForgeErrorCode;
+    /// assert!(TextForgeErrorCode::IndexOutOfRange("".into()).hint().unwrap().contains("0"));
+    /// ```
+    pub fn hint(&self) -> Option<&'static str> {
+        Some(match self {
+            Self::IndexOutOfRange(_) | Self::InvalidIndex(_) => {
+                "indices count characters, words and lines from 0; the last character is __LEN_CHARS__ - 1 and the last line __LINES__ - 1 (see docs/indices-and-ranges.md)"
+            }
+            Self::VariableNotFound(_) => {
+                "define the variable with `var` or `val` before the instruction that reads it"
+            }
+            Self::NonMutableVariableError(_) => {
+                "a variable defined with `val` cannot change; define it with `var` to change it with `mutv` or `eval`"
+            }
+            Self::BlockNotFound(_) => {
+                "define the block with `blk {name} assoc {instruction};` before `cblk`"
+            }
+            Self::TokenNotFound(_) => {
+                "the instruction index lists every instruction (README.md or the `tokens` page on docs.rs)"
+            }
+            Self::FileNotFound(_) | Self::FileOpeningError(_) => {
+                "relative paths start from the directory of the pipeline file (in code, from the working directory)"
+            }
+            Self::LimitExceededError(_) => {
+                "raise the limit or set it to \"unlimited\": .txfrc overrides, the txf flag or ExecutionProfile::limits; tryi does not ignore limits"
+            }
+            Self::InvalidExprError(_) => {
+                "an expression in [[ ]] or eval must produce an integer or text"
+            }
+            Self::NestedBlocksNotAllowedError(_) => {
+                "define each block at the top level of the pipeline"
+            }
+            Self::WatcherNotFoundError(_) => "`txf --help` lists the built-in watchers",
+            _ => return None,
+        })
     }
 
     /// Kept name, but now returns borrowed data (no allocation).
@@ -367,11 +912,12 @@ impl TextForgeErrorCode {
             | Self::SerializationError(x)
             | Self::GenericError(x)
             | Self::NestedBlocksNotAllowedError(x)
+            | Self::LimitExceededError(x)
             | Self::RequiredContextError(x) => x,
         }
     }
 
-    fn severity_color(&self) -> Color {
+    pub(crate) fn severity_color(&self) -> Color {
         match self {
             // "Hard" errors
             Self::InvalidExprError(_)
@@ -388,6 +934,7 @@ impl TextForgeErrorCode {
             | Self::SerializationError(_)
             | Self::GenericError(_)
             | Self::NestedBlocksNotAllowedError(_)
+            | Self::LimitExceededError(_)
             | Self::TextParsingError(_) => Color::Red,
             // "Missing things" / lookup failures
             Self::TryIntoFailError(_)
@@ -429,6 +976,7 @@ pub fn token_array_not_found(identifier: &str) -> impl Fn() -> TextForgeError {
 
 #[cfg(feature = "test_access")]
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use std::borrow::Cow;
@@ -471,7 +1019,7 @@ mod tests {
 
         assert_eq!(
             format!("{err}"),
-            "error[13]: invalid index\n  in: dlc\n  input: banana"
+            "error[13] InvalidIndex: invalid index (in: dlc)"
         );
     }
 
@@ -479,7 +1027,7 @@ mod tests {
     fn display_omits_empty_sections() {
         disable_colors();
         let err = TextForgeError::new(TextForgeErrorCode::GenericError("oops".into()), "", "");
-        assert_eq!(format!("{err}"), "error[27]: oops");
+        assert_eq!(format!("{err}"), "error[27] GenericError: oops");
     }
 
     // ============================================================
@@ -500,7 +1048,7 @@ mod tests {
         let code = TextForgeErrorCode::FileNotFound(Cow::Borrowed("missing file"));
         let s = format!("{code}");
 
-        assert_eq!(s, "error[1]: missing file");
+        assert_eq!(s, "error[1] FileNotFound: missing file");
     }
 
     #[test]

@@ -33,7 +33,7 @@ pub use processor::{BatchPool, Features, FileTask, PortableProcessor, features};
 #[cfg(feature = "watchers")]
 pub use watchers::{Observation, Observer, Observers};
 
-pub use error::{BindingError, ErrorStage};
+pub use error::{BindingError, BindingErrorDetails, ErrorStage};
 pub use instruction::{Argument, InstructionSpec};
 
 use crate::{

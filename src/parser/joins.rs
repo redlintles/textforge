@@ -250,7 +250,9 @@ fn parse_text(
         if trimmed.is_empty() || trimmed.starts_with("//") {
             continue;
         }
-        tokens.push(read_from_text(line).map_err(|e| in_join(e, origin, index + 1))?);
+        let mut token = read_from_text(line).map_err(|e| in_join(e, origin, index + 1))?;
+        token.set_source(origin, index + 1);
+        tokens.push(token);
         lines.push(index + 1);
     }
     Ok((tokens, lines))

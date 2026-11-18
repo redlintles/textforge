@@ -41,15 +41,8 @@ impl Sslt {
     ///
     /// Fails if `pattern` is not a valid regular expression.
     pub fn new(pattern: &str, index: usize) -> Result<Self, TextForgeError> {
-        let pattern = Regex::new(pattern).map_err(|e| {
-            TextForgeError::new(
-                TextForgeErrorCode::TextParsingError(
-                    format!("`{pattern}` is not a valid regular expression: {e}").into(),
-                ),
-                "sslt",
-                pattern.to_owned(),
-            )
-        })?;
+        let pattern = Regex::new(pattern)
+            .map_err(|e| crate::utils::errors::regex_error("sslt", pattern, e))?;
         Ok(Sslt {
             index,
             params: vec![pattern.to_string().into(), index.into()],

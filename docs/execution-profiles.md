@@ -46,10 +46,11 @@ text: `rpt 99999999999;` asks for a 100 GB result, and `iter` runs its body as
 many times as asked. Without a limit a typo exhausts memory, CPU, or — with
 `buffered`, where a large result spools to a temporary file — the disk. The
 default limits are generous and identical in every preset; past them the
-instruction fails at once with a `ValidationError` that says what was needed,
+instruction fails at once with a `LimitExceededError` (code 31; before 0.4.0,
+`ValidationError`) that says what was needed,
 the limit, and how to raise it. They apply in every processing mode, inside
 blocks, `on*` and `ppjn`, and to direct `transform` calls without a context
-(which use the defaults).
+(which use the defaults). `tryi` never ignores a limit.
 
 ```rust
 use textforge::api::{ExecutionProfile, Limits};

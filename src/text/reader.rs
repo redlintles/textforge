@@ -151,11 +151,13 @@ pub fn read_from_file(path: &Path) -> Result<Vec<TokenWrapper>, TextForgeError> 
                 if is_blank_or_comment(l.trim()) {
                     continue;
                 }
-                result.push(read_from_text(&l).map_err(|mut error| {
+                let mut token = read_from_text(&l).map_err(|mut error| {
                     error.instruction =
                         format!("{}:{} › {}", path.display(), index + 1, error.instruction).into();
                     error
-                })?);
+                })?;
+                token.set_source(&path.display().to_string(), index + 1);
+                result.push(token);
             }
             Err(error) => {
                 return Err(TextForgeError::new(

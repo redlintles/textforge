@@ -2,7 +2,7 @@ use crate::api::{TextForgeBlockMethods, TextForgeConditionalMethods};
 use crate::api::{TextForgeBuilderMethods, processor::TextForgeProcessor};
 use crate::tokens::{
     InstructionMethods,
-    transforms::{tbs::Tbs, tua::Tua, uniqln::Uniqln},
+    transforms::{dls::Dls, tbs::Tbs, tua::Tua, uniqln::Uniqln},
 };
 use crate::utils::errors::TextForgeError;
 
@@ -178,6 +178,8 @@ pub fn build_all_tokens_pipeline_safe(
             2,
             Box::new(Tua::default()) as Box<dyn InstructionMethods>,
         )?
+        // ========== tryi: skip an instruction that fails ==========
+        .try_ignore(Box::new(Dls::new(usize::MAX)) as Box<dyn InstructionMethods>)?
         // ========== files ==========
         .write_to_file(snapshot.as_str())?
         .append_file(piece.as_str())?

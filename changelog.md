@@ -2,7 +2,46 @@
 
 ## Unreleased
 
+Version 0.4.0, not yet published: robustness and diagnostics. `tryi` lets a
+pipeline go on after an instruction that fails, and every error now says what
+happened, where and with which values. It also contains the fixes of the
+`txf` audit (`docs/audits/0.3.2-cli-audit.md`). See `docs/release-0.4.0.md`.
+
+### Breaking changes
+
+- `TextForgeError` has a new public field, `details`
+  (`Option<Box<ErrorDetails>>`): code that builds it with a struct literal
+  must use `TextForgeError::new` (or add `details: None`).
+- `TextForgeErrorCode` has a new variant, `LimitExceededError` (code 31): an
+  exhaustive `match` on the codes needs an arm for it.
+- `BindingError` (portable API) has a new public field, `details`
+  (`Box<BindingErrorDetails>`).
+- `ErrorManager` and `utils::apply::apply_transform` are deprecated: the
+  processor no longer records errors in an `ErrorManager`. They still work.
+
 ### Behavior changes
+
+- `Display` of `TextForgeError` is **one plain line without color**:
+  `error[12] IndexOutOfRange: message (in: dlc 9 9;)`, and `Display` of
+  `TextForgeErrorCode` is `error[12] IndexOutOfRange: message`. Before, they
+  printed `error[12]: message` and colored `in:`/`input:` lines, so library
+  users got ANSI codes in their logs. The full report is
+  `TextForgeError::report()` (see Added).
+- The safety limits (`max_generated_bytes`, `max_iterations`) fail with
+  `LimitExceededError` (31) instead of `ValidationError` (20), so they can be
+  told apart from structural rules. The message is unchanged.
+- The I/O error of a file that cannot be opened or read, the position of
+  invalid UTF-8 and the regex error of an invalid pattern are the error's
+  `cause()` instead of part of its message: ``cannot open `a.txt` `` with the
+  cause `No such file or directory (os error 2)`, and
+  ``` `(` is not a valid regular expression ``` with the regex error as the
+  cause. Reports print both.
+- `txf` prints the full report of a failure on stderr (kind, trace with
+  `file:line`, parameters, input, cause, hint), colored on a terminal unless
+  `NO_COLOR` is set.
+- Two errors compare equal (`PartialEq`) when their code, instruction and input
+  are equal; the new details are not compared, and `Debug` shows them only
+  when there are some.
 
 - `txf --read-mode line` and `--chomp` recognize every line terminator of
   `docs/lines.md` (LF, CRLF, CR, VT, FF, NEL, LS, PS), like `__LINES__` and the
@@ -20,6 +59,37 @@
   Before, every failure exited with 1. `txf --help` lists them.
 
 ### Added
+
+- **`tryi {instruction};`** runs an instruction and, when it fails, continues
+  as if it had not run: the text is the one `tryi` received, and an
+  instruction that runs others (`cblk`, `iter`, `ifdc`, `on*`, `tryi`) gets
+  the variables, blocks, replacement maps and `end` back as they were. Safety
+  limits are never ignored, and files `wtf` wrote stay written (writing them
+  again replaces them). Builder: `try_ignore(instruction)`; portable: the
+  mnemonic `tryi`; bytecode opcode `0x5a`. See `docs/error-handling.md`.
+- The debug methods (`process_all_with_debug`, `process_single_with_debug`,
+  the buffered engine, `txf --debug`) show each error `tryi` ignored where it
+  happened, as a warning with its trace and parameters and the variables put
+  back, and list them all after the last step. `process_all` still returns
+  only the text, and a normal `txf` run prints nothing about them.
+- Errors raised while a pipeline runs carry **details**, collected only on the
+  error path: `trace()` (the instructions the error left, outermost first,
+  with `file:line` and what the container was doing, such as
+  `__COUNTER__ = 1 (iteration 2 of 3)`), `parameters()` (name, the value the
+  failing instruction ran with and how it was written) and `cause()`.
+  `with_cause` adds a cause. Types: `ErrorDetails`, `TraceFrame`,
+  `ErrorParameter`.
+- `TextForgeError::report()` renders the error as a traceback, in the manner
+  of Python and Java, colored on a terminal (`ErrorReport::color`,
+  `ErrorReport::ignored`). `TextForgeErrorCode::name()` gives the stable name
+  of each code, `hint()` a general suggestion, and `ignorable()` (also
+  `TextForgeError::is_ignorable`) whether `tryi` may ignore it.
+- `BindingErrorDetails` (portable API): `kind`, `trace`, `parameters`,
+  `cause`, `hint`, `ignorable` and the uncolored `report`.
+- `scripts/instruction_index.py` also writes the parameter names of every
+  instruction (`src/globals/parameter_names.rs`), which reports use.
+- `docs/error-handling.md`, `docs/audits/0.4.0-error-inventory.md` and
+  `docs/benchmarks/tryi/`.
 
 - `txf --mode auto`, the new default, tells a bytecode pipeline from a text
   one by its first bytes, as `ppjn` does, so `-f p.tfb` works without
@@ -45,6 +115,12 @@
   guide to the command line.
 
 ### Fixed
+
+- A processor no longer keeps a copy of every error it returns. Up to 0.3.2
+  each error was cloned into a private `ErrorManager` that nothing read, so a
+  long-lived processor grew with each failure.
+- The rustdoc of `tokens` said line numbers start at 1; they start at 0 since
+  0.3.2.
 
 - `txf --read-mode chunk-N` cuts the input in one pass. Before, each chunk
   boundary was searched from the start of the text, so the time grew with the

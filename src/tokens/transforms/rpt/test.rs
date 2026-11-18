@@ -13,7 +13,7 @@ mod tests {
             .unwrap_err();
         assert!(matches!(
             error.error_code,
-            TextForgeErrorCode::ValidationError(_)
+            TextForgeErrorCode::LimitExceededError(_)
         ));
         let message = error.error_code.message();
         assert!(
@@ -29,7 +29,7 @@ mod tests {
             .unwrap_err();
         assert!(matches!(
             error.error_code,
-            TextForgeErrorCode::ValidationError(_)
+            TextForgeErrorCode::LimitExceededError(_)
         ));
     }
 

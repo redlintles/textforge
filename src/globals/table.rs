@@ -567,6 +567,9 @@ define_token_table! {
             SyntaxDef::req(SyntaxToken::Usize), SyntaxDef::req(SyntaxToken::Usize),
             SyntaxDef::req(SyntaxToken::Literal("apply")), SyntaxDef::req(SyntaxToken::Token),
         ]),
+        ("tryi", 0x5a, || TokenRef::Shared(Arc::new(tryi::Tryi::default())), [
+            SyntaxDef::req(SyntaxToken::Token),
+        ]),
         ("ppjn", 0x58, || TokenRef::Shared(Arc::new(ppjn::Ppjn::default())), [
             SyntaxDef::req(SyntaxToken::String), SyntaxDef::req(SyntaxToken::Pipeline),
         ]),

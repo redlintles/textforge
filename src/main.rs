@@ -348,17 +348,29 @@ Exit status:
 
 Guide: https://github.com/redlintles/textforge/blob/main/docs/cli.md";
 
-/// Runs the program and prints an error the way a person reads it
-/// (`error[12]: message`, then the instruction and the input) on standard
-/// error. Before 0.3.2 the error was printed as a Rust debug structure.
+/// Runs the program and prints an error the way a person reads it on
+/// standard error: its report ([`TextForgeError::report`]), with the trace of
+/// instructions, the parameters, the input, the cause and a hint, in color on
+/// a terminal. Before 0.4.0 it was `error[12]: message` with the instruction
+/// and the input; before 0.3.2 a Rust debug structure.
 fn main() -> std::process::ExitCode {
     match run() {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(Failure { stage, error }) => {
-            eprintln!("{error}");
+            eprintln!("{}", error.report().color(stderr_in_color()));
             std::process::ExitCode::from(stage as u8)
         }
     }
+}
+
+/// Color on standard error when it is a terminal, unless `NO_COLOR` is set;
+/// `CLICOLOR_FORCE` forces it.
+fn stderr_in_color() -> bool {
+    let set = |name| std::env::var_os(name).is_some_and(|value| !value.is_empty() && value != "0");
+    if set("CLICOLOR_FORCE") {
+        return true;
+    }
+    std::env::var_os("NO_COLOR").is_none_or(|value| value.is_empty()) && io::stderr().is_terminal()
 }
 
 fn run() -> Result<(), Failure> {

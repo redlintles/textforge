@@ -85,7 +85,6 @@ impl TextForgeProcessor {
         input: TextBuffer,
     ) -> Result<TextBuffer, TextForgeError> {
         self.run_buffered(id, input, None)
-            .inspect_err(|error| self.errors.add_error(error.clone()))
     }
 
     /// Parse and execute one textual instruction against a single owned document.
@@ -95,12 +94,11 @@ impl TextForgeProcessor {
         instruction: &str,
         input: TextBuffer,
     ) -> Result<TextBuffer, TextForgeError> {
-        let result = crate::text::reader::read_from_text(instruction).and_then(|token| {
+        crate::text::reader::read_from_text(instruction).and_then(|token| {
             let mut context = GlobalExecutionContext::new();
             context.set_limits(self.profile.limits);
             token.apply_buffered(input, &mut context)
-        });
-        result.inspect_err(|error| self.errors.add_error(error.clone()))
+        })
     }
 
     /// Read a file with bounded UTF-8 validation and process it as one document.
@@ -112,9 +110,8 @@ impl TextForgeProcessor {
         options: TextBufferOptions,
     ) -> Result<TextBuffer, TextForgeError> {
         let path = path.as_ref();
-        let result = TextBuffer::from_file(path, options)
-            .and_then(|input| self.run_buffered(id, input, Some(path)));
-        result.inspect_err(|error| self.errors.add_error(error.clone()))
+        TextBuffer::from_file(path, options)
+            .and_then(|input| self.run_buffered(id, input, Some(path)))
     }
 
     /// Execute independent documents sequentially, preserving result order and
@@ -207,10 +204,9 @@ impl TextForgeProcessor {
         input: &str,
         input_file: Option<&Path>,
     ) -> Result<String, TextForgeError> {
-        let result = TextBuffer::from_text(input, self.adapter_options())
+        TextBuffer::from_text(input, self.adapter_options())
             .and_then(|input| self.run_buffered(id, input.retain_materialized(), input_file))
-            .and_then(TextBuffer::into_string);
-        result.inspect_err(|error| self.errors.add_error(error.clone()))
+            .and_then(TextBuffer::into_string)
     }
 
     // Preserve Rayon scheduling and per-task error isolation. Write each completed
@@ -274,7 +270,7 @@ impl TextForgeProcessor {
         input_file: Option<&Path>,
         destination: &mut (dyn Write + '_),
     ) -> Result<String, TextForgeError> {
-        let result = (|| {
+        (|| {
             let options = self.adapter_options();
             let mut log = tempfile::SpooledTempFile::new_in(
                 options.memory_threshold(),
@@ -285,8 +281,7 @@ impl TextForgeProcessor {
             log.rewind().map_err(adapter_io)?;
             std::io::copy(&mut log, destination).map_err(adapter_io)?;
             output.into_string()
-        })();
-        result.inspect_err(|error| self.errors.add_error(error.clone()))
+        })()
     }
 
     fn run_buffered_debug(
@@ -301,7 +296,7 @@ impl TextForgeProcessor {
         context.enable_trace();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
-        run_tokens(
+        let result = run_tokens(
             tokens,
             input,
             &mut context,
@@ -331,7 +326,7 @@ impl TextForgeProcessor {
                     };
                     input = bound
                         .transform_buffered(input, Some(context))
-                        .map_err(|error| token.locate(error))?;
+                        .map_err(|error| token.locate_bound(error, bound.as_ref()))?;
                     write!(log, "Step: [{}] => [{}]\n{}\n\tBlock Instruction: {}\t\tBlock Name: {}\n\t\t\tCurrent instructions Associated to this Block:\n{}",
                     counter.to_string().blue(), (counter + 1).to_string().blue(),
                     "Block Declaration: ".green(), line.yellow(), name.green(),
@@ -348,7 +343,7 @@ impl TextForgeProcessor {
                     write_document(&mut input, log, "\x1b[31m")?;
                     input = bound
                         .transform_buffered(input, Some(context))
-                        .map_err(|error| token.locate(error))?;
+                        .map_err(|error| token.locate_bound(error, bound.as_ref()))?;
                     log.write_all(b"\nAfter: ").map_err(adapter_io)?;
                     write_document(&mut input, log, "\x1b[32m")?;
                     log.write_all(b"\n\n").map_err(adapter_io)?;
@@ -365,7 +360,11 @@ impl TextForgeProcessor {
                 }
                 Ok(input)
             },
-        )
+        )?;
+        if let Some(summary) = context.ignored_summary() {
+            write!(log, "----------\n\n{summary}").map_err(adapter_io)?;
+        }
+        Ok(result)
     }
 }
 
@@ -389,7 +388,6 @@ impl TextForgeProcessor {
             match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(tokens) => tokens,
                 Err(error) => {
-                    self.errors.add_error(error.clone());
                     return Err(error);
                 }
             };

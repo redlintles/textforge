@@ -1,0 +1,52 @@
+[
+  {
+    "workload": "20 MiB, five instructions",
+    "before_s": 0.20861754899988227,
+    "after_s": 0.20599452700002985
+  },
+  {
+    "workload": "300,000 iterations of tua",
+    "before_s": 0.011059813999963808,
+    "after_s": 0.012119907999931456
+  },
+  {
+    "workload": "300,000 iterations of tryi tua (succeeds)",
+    "before_s": null,
+    "after_s": 0.016103339999972377
+  },
+  {
+    "workload": "300,000 iterations of tryi dls 99 (fails, ignored)",
+    "before_s": null,
+    "after_s": 0.27471535700010463
+  },
+  {
+    "workload": "100,000 \u00d7 cblk, 0 variables",
+    "before_s": 0.010069597999972757,
+    "after_s": 0.011497107999957734
+  },
+  {
+    "workload": "100,000 \u00d7 tryi cblk, 0 variables",
+    "before_s": null,
+    "after_s": 0.02705107399992812
+  },
+  {
+    "workload": "100,000 \u00d7 cblk, 10 variables",
+    "before_s": 0.011135376000083852,
+    "after_s": 0.01172406000000592
+  },
+  {
+    "workload": "100,000 \u00d7 tryi cblk, 10 variables",
+    "before_s": null,
+    "after_s": 0.09563737300004505
+  },
+  {
+    "workload": "100,000 \u00d7 cblk, 1000 variables",
+    "before_s": 0.01328391900005954,
+    "after_s": 0.013879094000003533
+  },
+  {
+    "workload": "100,000 \u00d7 tryi cblk, 1000 variables",
+    "before_s": null,
+    "after_s": 6.475789000999839
+  }
+]

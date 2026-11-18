@@ -351,3 +351,59 @@ fn runtime_regex_failures_are_structured_execution_errors() {
     assert_eq!(error.stage, ErrorStage::Execution);
     assert!(!error.message.is_empty());
 }
+
+#[test]
+fn tryi_plans_match_the_builder_and_execution_errors_carry_their_details() {
+    use textforge::tokens::{InstructionMethods, transforms::dls::Dls};
+    let delete = |index| {
+        operation(
+            "tryi",
+            vec![Argument::Instruction(Box::new(operation(
+                "dls",
+                vec![Argument::Number(index)],
+            )))],
+        )
+    };
+    let mut plan = PipelinePlan::new();
+    plan.add(delete(9)).unwrap();
+    plan.add(delete(0)).unwrap();
+    let portable = plan.compile().unwrap().process("abc").unwrap();
+    let mut processor = TextForgeProcessor::new();
+    let skip: Box<dyn InstructionMethods> = Box::new(Dls::new(9));
+    let first: Box<dyn InstructionMethods> = Box::new(Dls::new(0));
+    let id = processor
+        .create_pipeline()
+        .try_ignore(skip)
+        .unwrap()
+        .try_ignore(first)
+        .unwrap()
+        .build()
+        .unwrap();
+    assert_eq!(portable, processor.process_all(&id, "abc").unwrap());
+    assert_eq!(portable, "bc");
+
+    let mut plan = PipelinePlan::new();
+    plan.add(operation("dls", vec![Argument::Number(9)]))
+        .unwrap();
+    let error: BindingError = plan.compile().unwrap().process("abc").unwrap_err();
+    assert_eq!(error.stage, ErrorStage::Execution);
+    assert_eq!(
+        (error.code, error.details.kind.as_str()),
+        (12, "IndexOutOfRange")
+    );
+    assert_eq!(error.details.parameters[0].name, "index");
+    assert_eq!(error.details.parameters[0].value, "9");
+    assert_eq!(
+        error.details.trace.last().unwrap().instruction.trim_end(),
+        "dls 9;"
+    );
+    assert!(error.details.ignorable);
+    assert!(error.details.hint.is_some());
+    assert!(
+        error
+            .details
+            .report
+            .starts_with("error[12] IndexOutOfRange: ")
+    );
+    assert!(!error.details.report.contains('\u{1b}'));
+}

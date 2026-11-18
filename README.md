@@ -34,10 +34,14 @@ parallel batches or documents larger than memory.
 
 ## Highlights
 
-- **89 instructions**: edits, deletions, regular-expression replacements, case
+- **90 instructions**: edits, deletions, regular-expression replacements, case
   and word transforms, encodings, Unicode normalization, logical lines and files.
 - **Control flow**: variables and expressions, blocks, conditionals, loops,
-  sections (`onln`, `onck`, `onlni`) and pipeline joins (`ppjn`).
+  sections (`onln`, `onck`, `onlni`), pipeline joins (`ppjn`) and `tryi`,
+  which skips an instruction that fails and leaves no trace of it.
+- **Errors you can read**: each error names its kind, the instructions that led
+  to it with their file and line, and the values the failing instruction ran
+  with, like a Python or Java traceback.
 - **Portable pipelines**: `.textforge` text files you can version and review,
   and `.textforgebc` bytecode that loads without parsing.
 - **Large inputs**: batches in parallel (`rayon`), and buffered processing that
@@ -54,7 +58,7 @@ Library (Rust 1.89 or newer):
 
 ```toml
 [dependencies]
-textforge = "0.3.2"
+textforge = "0.4.0"
 ```
 
 Command-line program `txf`:
@@ -112,7 +116,9 @@ puts it back on the result, so `dll` or `ate` act on the last visible
 character. `--debug` prints each step, and `--watch` records metrics into a
 JSON report. `txf compile` writes bytecode, `txf decompile` writes it back as
 text and `txf check` loads pipelines without running them. Errors are printed
-on stderr as `error[N]: message`, and the exit status says which step failed.
+on stderr as a report with the error's kind, the trace of instructions that
+led to it, their file and line, and the parameters of the one that failed;
+the exit status says which step failed.
 `--profile`, `--spool-threshold`, `--max-generated-bytes` and
 `--max-iterations` tune resources and limits; a `.txfrc` file in the current
 directory can set them, and `txf config show` prints the effective
@@ -314,6 +320,7 @@ The same index, with links to each instruction's documentation, is on
 | `onln` | `onln {line} apply {instruction};` | Run `instruction` on one line only. |
 | `onck` | `onck {start} {end} apply {instruction};` | Run `instruction` on the characters `start..=end` only. |
 | `onlni` | `onlni {start} {end} apply {instruction};` | Run `instruction` on lines `start..=end` as one section. |
+| `tryi` | `tryi {instruction};` | Run `instruction`; if it fails, skip it (text and variables unchanged) and continue. |
 | `rmapd` | `rmapd {map} add {pattern} {text};` | Add a rule to replacement map `map`. |
 | `end` | `end;` | Stop the pipeline (or the current block or loop). |
 | `null` | `null;` | Do nothing. |
