@@ -461,10 +461,10 @@ impl TokenWrapper {
         bound: &dyn InstructionMethods,
     ) -> TextForgeError {
         let bound = self.describe_bound(bound);
-        self.locate_with(error, Some(Box::new(bound)))
+        self.locate_with(error, Some(bound))
     }
 
-    fn locate_with(&self, mut error: TextForgeError, bound: Option<Box<Bound>>) -> TextForgeError {
+    fn locate_with(&self, mut error: TextForgeError, bound: Option<Bound>) -> TextForgeError {
         if error.instruction.is_empty() {
             error.instruction = self.unresolved_line().into();
         }
@@ -477,14 +477,6 @@ impl TokenWrapper {
         };
         error.push_frame(line, self.source_location(), || parameters);
         error
-    }
-
-    fn failed(
-        &self,
-        error: TextForgeError,
-        bound: &dyn InstructionMethods,
-    ) -> (TextForgeError, Option<Box<Bound>>) {
-        (error, Some(Box::new(self.describe_bound(bound))))
     }
 
     /// The line and parameters of `bound`, this instruction bound to the
@@ -524,21 +516,20 @@ impl TokenWrapper {
         input: Cow<'a, str>,
         context: &mut GlobalExecutionContext,
     ) -> Result<Cow<'a, str>, TextForgeError> {
-        self.apply_unlocated(input, context)
-            .map_err(|(error, bound)| self.locate_with(error, bound))
+        self.apply_located(input, context)
     }
 
-    /// Bind and run; a failure of the bound instruction carries what it was
-    /// bound to (built on the error path only).
-    fn apply_unlocated<'a>(
+    /// Bind and run; an error is located here, with what the instruction was
+    /// bound to when it failed after binding (built on the error path only).
+    fn apply_located<'a>(
         &self,
         input: Cow<'a, str>,
         context: &mut GlobalExecutionContext,
-    ) -> Result<Cow<'a, str>, (TextForgeError, Option<Box<Bound>>)> {
+    ) -> Result<Cow<'a, str>, TextForgeError> {
         if let Some(prepared) = &self.prepared {
             return prepared
                 .transform(input, Some(context))
-                .map_err(|error| self.failed(error, prepared.as_ref()));
+                .map_err(|error| self.locate_bound(error, prepared.as_ref()));
         }
         let parsed_params = ValType::resolve_variables(
             self.token.as_ref(),
@@ -547,20 +538,20 @@ impl TokenWrapper {
             context,
             CurrentText::Str(&input),
         )
-        .map_err(|error| (error, None))?;
+        .map_err(|error| self.locate(error))?;
         if let Some(memo) = &self.memo {
             let token = self
                 .bind_memoized(memo, parsed_params)
-                .map_err(|error| (error, None))?;
+                .map_err(|error| self.locate(error))?;
             return token
                 .transform(input, Some(context))
-                .map_err(|error| self.failed(error, token.as_ref()));
+                .map_err(|error| self.locate_bound(error, token.as_ref()));
         }
         let mut t = self.token.clone();
         t.set_params(&parsed_params)
-            .map_err(|error| (error, None))?;
+            .map_err(|error| self.locate(error))?;
         t.transform(input, Some(context))
-            .map_err(|error| self.failed(error, t.as_ref()))
+            .map_err(|error| self.locate_bound(error, t.as_ref()))
     }
 
     /// Bind `params`, reusing the memo's last binding when they are the same.
@@ -628,20 +619,19 @@ impl TokenWrapper {
         input: crate::api::TextBuffer,
         context: &mut GlobalExecutionContext,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
-        self.apply_buffered_unlocated(input, context)
-            .map_err(|(error, bound)| self.locate_with(error, bound))
+        self.apply_buffered_located(input, context)
     }
 
     #[cfg(feature = "buffered")]
-    fn apply_buffered_unlocated(
+    fn apply_buffered_located(
         &self,
         mut input: crate::api::TextBuffer,
         context: &mut GlobalExecutionContext,
-    ) -> Result<crate::api::TextBuffer, (TextForgeError, Option<Box<Bound>>)> {
+    ) -> Result<crate::api::TextBuffer, TextForgeError> {
         if let Some(prepared) = &self.prepared {
             return prepared
                 .transform_buffered(input, Some(context))
-                .map_err(|error| self.failed(error, prepared.as_ref()));
+                .map_err(|error| self.locate_bound(error, prepared.as_ref()));
         }
         let params = ValType::resolve_variables(
             self.token.as_ref(),
@@ -650,20 +640,22 @@ impl TokenWrapper {
             context,
             CurrentText::Buffer(std::cell::RefCell::new(&mut input)),
         )
-        .map_err(|error| (error, None))?;
+        .map_err(|error| self.locate(error))?;
         if let Some(memo) = &self.memo {
             let token = self
                 .bind_memoized(memo, params)
-                .map_err(|error| (error, None))?;
+                .map_err(|error| self.locate(error))?;
             return token
                 .transform_buffered(input, Some(context))
-                .map_err(|error| self.failed(error, token.as_ref()));
+                .map_err(|error| self.locate_bound(error, token.as_ref()));
         }
         let mut token = self.token.clone();
-        token.set_params(&params).map_err(|error| (error, None))?;
+        token
+            .set_params(&params)
+            .map_err(|error| self.locate(error))?;
         token
             .transform_buffered(input, Some(context))
-            .map_err(|error| self.failed(error, token.as_ref()))
+            .map_err(|error| self.locate_bound(error, token.as_ref()))
     }
 
     pub fn to_text_line_resolved(

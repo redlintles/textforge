@@ -68,6 +68,35 @@ mod tests {
     }
 
     #[test]
+    fn a_snapshot_copies_nothing_until_the_context_changes() {
+        use crate::context::execution_context::{VarEntry, VarValues};
+        let mut context = GlobalExecutionContext::new();
+        for index in 0..1000 {
+            let entry = VarEntry {
+                value: VarValues::Usize(index),
+                mutable: true,
+            };
+            context.add_var(&format!("v{index}"), entry).unwrap();
+        }
+        // Nothing changed: nothing to compare or report.
+        let snapshot = context.snapshot();
+        assert!(context.restore(snapshot).is_empty());
+        let snapshot = context.snapshot();
+        context.get_mut_var("v7").unwrap().value = VarValues::Usize(70);
+        let entry = VarEntry {
+            value: VarValues::Usize(1),
+            mutable: true,
+        };
+        context.add_var("new", entry).unwrap();
+        assert_eq!(context.restore(snapshot), vec!["new", "v7"]);
+        assert!(context.get_var("new").is_err());
+        assert!(matches!(
+            context.get_var("v7").unwrap().value,
+            VarValues::Usize(7)
+        ));
+    }
+
+    #[test]
     fn the_inner_instruction_is_parsed_and_written_back() {
         let token = read_from_text("tryi dlc 9 9;").unwrap();
         assert_eq!(token.get_string_repr(), "tryi");

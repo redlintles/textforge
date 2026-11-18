@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{
     context::{
         debug_trace::{plural, within},
-        execution_context::{GlobalContextMethods, GlobalExecutionContext},
+        execution_context::GlobalExecutionContext,
     },
     parse_args,
     parser::params::TextForgeParamTypes,
@@ -57,7 +57,7 @@ impl InstructionMethods for Cblk {
         let context = context.ok_or_else(|| {
             crate::utils::errors::context_required("cblk", "find the block it runs")
         })?;
-        let tokens = context.take_block(&self.block_name)?;
+        let tokens = context.take_shared_block(&self.block_name)?;
         let result = within(
             context,
             |_| {
@@ -92,7 +92,7 @@ impl InstructionMethods for Cblk {
         context.is_halted = false;
 
         // On error the block stays taken, as before (see the cblk tests).
-        context.put_block(&self.block_name, tokens);
+        context.put_shared_block(&self.block_name, tokens);
         Ok(result)
     }
 

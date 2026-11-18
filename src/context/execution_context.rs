@@ -63,12 +63,48 @@ impl ReplacementLog {
     }
 }
 
-/// What [`GlobalExecutionContext::snapshot`] saves.
+/// A `tryi` snapshot, from [`GlobalExecutionContext::snapshot`]: the state of
+/// `end`, and a level of the undo journal, which records the value before
+/// the first change of each variable, block and replacement map while the
+/// snapshot is open. Nothing is copied when it opens, and without an open
+/// snapshot a change costs one check. Give it back with `restore` (the
+/// instruction failed) or `release` (it succeeded), innermost first.
+#[must_use]
 pub(crate) struct Snapshot {
-    variables: HashMap<String, VarEntry>,
-    blocks: HashMap<String, Vec<TokenWrapper>>,
-    replace_maps: HashMap<String, Vec<(std::sync::Arc<regex::Regex>, String)>>,
     is_halted: bool,
+}
+
+/// One value before its first change under an open snapshot.
+enum Undo {
+    Variable(String, Option<VarEntry>),
+    Block(String, Option<Arc<Vec<TokenWrapper>>>),
+    ReplaceMap(String, Option<Vec<(Arc<regex::Regex>, String)>>),
+}
+
+/// What a snapshot level already recorded, so each name is recorded once.
+#[derive(Default)]
+struct Level {
+    mark: usize,
+    /// Names recorded: variables, blocks, replacement maps.
+    recorded: [std::collections::HashSet<String>; 3],
+}
+
+#[derive(Default)]
+struct UndoJournal {
+    entries: Vec<Undo>,
+    levels: Vec<Level>,
+}
+
+impl UndoJournal {
+    /// Whether the change of `name` (of kind `kind`) must be recorded: a
+    /// snapshot is open and the name was not recorded since.
+    fn wants(&mut self, kind: usize, name: &str) -> bool {
+        match self.levels.last_mut() {
+            None => false,
+            Some(level) if level.recorded[kind].contains(name) => false,
+            Some(level) => level.recorded[kind].insert(name.to_owned()),
+        }
+    }
 }
 
 fn same_value(a: &VarValues, b: &VarValues) -> bool {
@@ -93,8 +129,11 @@ pub struct VarEntry {
 // Some tokens could access this object for additional data
 pub struct GlobalExecutionContext {
     variables: HashMap<String, VarEntry>,
-    blocks: HashMap<String, Vec<TokenWrapper>>,
+    /// Shared, so `cblk` and the undo journal hold a block without copying it.
+    blocks: HashMap<String, Arc<Vec<TokenWrapper>>>,
     replace_maps: HashMap<String, Vec<(std::sync::Arc<regex::Regex>, String)>>,
+    /// What changed since each open `tryi` snapshot (see [`Snapshot`]).
+    undo: UndoJournal,
     pub is_halted: bool,
     /// Nested step trace; `Some` only during debug processing.
     trace: Option<DebugTrace>,
@@ -142,7 +181,10 @@ pub trait GlobalContextMethods {
     // It would require a more complex implementation. but would help optimizing textforge in the future. This will remove data that will no longer be used from the context.
     #[cfg(feature = "test_access")]
     fn clean_context(&mut self) {}
+    // `cblk` uses the shared forms (`take_shared_block`); these stay for tests.
+    #[cfg_attr(not(feature = "test_access"), allow(dead_code))]
     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError>;
+    #[cfg_attr(not(feature = "test_access"), allow(dead_code))]
     fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>);
     fn halt(&mut self) -> bool;
 }
@@ -154,6 +196,7 @@ impl GlobalExecutionContext {
         regex: std::sync::Arc<regex::Regex>,
         replacement: String,
     ) {
+        self.record_replace_map(name);
         let rules = self.replace_maps.entry(name.to_owned()).or_default();
         if let Some(rule) = rules
             .iter_mut()
@@ -272,47 +315,152 @@ impl GlobalExecutionContext {
     /// blocks, replacement maps and whether `end` ran. `tryi` takes it before
     /// an instruction that runs others and gives it back when that
     /// instruction fails, so a failed instruction leaves no trace.
-    pub(crate) fn snapshot(&self) -> Snapshot {
+    pub(crate) fn snapshot(&mut self) -> Snapshot {
+        self.undo.levels.push(Level {
+            mark: self.undo.entries.len(),
+            recorded: Default::default(),
+        });
         Snapshot {
-            variables: self.variables.clone(),
-            blocks: self.blocks.clone(),
-            replace_maps: self.replace_maps.clone(),
             is_halted: self.is_halted,
         }
     }
 
-    /// Put back a [`Snapshot`]; returns the names of the variables that had
-    /// changed (for the debug trace), sorted.
+    /// Close the innermost snapshot and keep the changes; an enclosing
+    /// snapshot keeps what this one recorded.
+    pub(crate) fn release(&mut self, snapshot: Snapshot) {
+        let _ = snapshot;
+        let Some(level) = self.undo.levels.pop() else {
+            return;
+        };
+        match self.undo.levels.last_mut() {
+            Some(outer) => {
+                for (outer, inner) in outer.recorded.iter_mut().zip(level.recorded) {
+                    outer.extend(inner);
+                }
+            }
+            None => self.undo.entries.clear(),
+        }
+    }
+
+    // Called on every change of the context: the check that no snapshot is
+    // open is inlined, the recording is not.
+    #[inline(always)]
+    fn record_variable(&mut self, name: &str) {
+        if !self.undo.levels.is_empty() {
+            self.record_variable_slow(name);
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn record_variable_slow(&mut self, name: &str) {
+        if self.undo.wants(0, name) {
+            let before = self.variables.get(name).cloned();
+            self.undo
+                .entries
+                .push(Undo::Variable(name.to_owned(), before));
+        }
+    }
+
+    #[inline(always)]
+    fn record_block(&mut self, name: &str) {
+        if !self.undo.levels.is_empty() {
+            self.record_block_slow(name);
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn record_block_slow(&mut self, name: &str) {
+        if self.undo.wants(1, name) {
+            let before = self.blocks.get(name).cloned();
+            self.undo.entries.push(Undo::Block(name.to_owned(), before));
+        }
+    }
+
+    fn record_replace_map(&mut self, name: &str) {
+        if self.undo.wants(2, name) {
+            let before = self.replace_maps.get(name).cloned();
+            self.undo
+                .entries
+                .push(Undo::ReplaceMap(name.to_owned(), before));
+        }
+    }
+
+    /// Close the innermost snapshot and undo what changed since it opened;
+    /// returns the names of the variables whose value it put back (for the
+    /// debug trace), sorted.
     pub(crate) fn restore(&mut self, snapshot: Snapshot) -> Vec<String> {
-        let mut changed: Vec<String> = self
-            .variables
-            .iter()
-            .filter(|(name, entry)| {
-                snapshot
-                    .variables
-                    .get(*name)
-                    .is_none_or(|before| !same_value(&before.value, &entry.value))
-            })
-            .map(|(name, _)| name.clone())
-            .chain(
-                snapshot
-                    .variables
-                    .keys()
-                    .filter(|name| !self.variables.contains_key(*name))
-                    .cloned(),
-            )
-            .collect();
-        changed.sort();
-        self.variables = snapshot.variables;
-        self.blocks = snapshot.blocks;
-        self.replace_maps = snapshot.replace_maps;
         self.is_halted = snapshot.is_halted;
+        let Some(level) = self.undo.levels.pop() else {
+            return Vec::new();
+        };
+        let mut changed = Vec::new();
+        // Newest first: the oldest record of a name is applied last.
+        while self.undo.entries.len() > level.mark {
+            let Some(entry) = self.undo.entries.pop() else {
+                break;
+            };
+            match entry {
+                Undo::Variable(name, before) => {
+                    let current = self.variables.get(&name);
+                    let same = match (current, &before) {
+                        (Some(current), Some(before)) => same_value(&current.value, &before.value),
+                        (None, None) => true,
+                        _ => false,
+                    };
+                    if !same && !changed.contains(&name) {
+                        changed.push(name.clone());
+                    }
+                    match before {
+                        Some(entry) => self.variables.insert(name, entry),
+                        None => self.variables.remove(&name),
+                    };
+                }
+                Undo::Block(name, before) => {
+                    match before {
+                        Some(block) => self.blocks.insert(name, block),
+                        None => self.blocks.remove(&name),
+                    };
+                }
+                Undo::ReplaceMap(name, before) => {
+                    match before {
+                        Some(rules) => self.replace_maps.insert(name, rules),
+                        None => self.replace_maps.remove(&name),
+                    };
+                }
+            }
+        }
+        if self.undo.levels.is_empty() {
+            self.undo.entries.clear();
+        }
+        changed.sort();
         changed
+    }
+
+    /// Take block `block_id` out to run it, shared, so the undo journal
+    /// keeps it without copying its instructions. While it runs the block is
+    /// out of the map, so a block cannot run itself.
+    pub(crate) fn take_shared_block(
+        &mut self,
+        block_id: &str,
+    ) -> Result<Arc<Vec<TokenWrapper>>, TextForgeError> {
+        self.record_block(block_id);
+        self.blocks
+            .remove(block_id)
+            .ok_or_else(|| block_not_found(block_id))
+    }
+
+    /// Put back a block taken with [`Self::take_shared_block`].
+    pub(crate) fn put_shared_block(&mut self, block_id: &str, block: Arc<Vec<TokenWrapper>>) {
+        self.record_block(block_id);
+        self.blocks.insert(block_id.to_owned(), block);
     }
 
     /// Remove a variable and return its entry, if it was defined.
     /// Used by instructions that temporarily shadow a variable.
     pub(crate) fn take_var(&mut self, id: &str) -> Option<VarEntry> {
+        self.record_variable(id);
         self.variables.remove(id)
     }
 
@@ -321,6 +469,7 @@ impl GlobalExecutionContext {
             variables: HashMap::new(),
             blocks: HashMap::new(),
             replace_maps: HashMap::new(),
+            undo: UndoJournal::default(),
             is_halted: false,
             trace: None,
             static_ctx: StaticContext::shared_default(),
@@ -432,34 +581,19 @@ impl GlobalContextMethods for GlobalExecutionContext {
     }
 
     fn add_to_block(&mut self, block_id: &str, token: TokenWrapper) -> Result<(), TextForgeError> {
-        match self.blocks.get_mut(block_id) {
-            Some(tokens) => {
-                tokens.push(token);
-            }
-            None => {
-                let block_vec = vec![token];
-
-                self.blocks.insert(block_id.to_string(), block_vec);
-            }
-        }
+        self.record_block(block_id);
+        Arc::make_mut(self.blocks.entry(block_id.to_owned()).or_default()).push(token);
 
         Ok(())
     }
 
     fn take_block(&mut self, block_id: &str) -> Result<Vec<TokenWrapper>, TextForgeError> {
-        self.blocks.remove(block_id).ok_or_else(|| {
-            TextForgeError::new(
-                TextForgeErrorCode::BlockNotFound(
-                    format!("no block is named `{block_id}`; define it with `blk` before running it with `cblk`").into(),
-                ),
-                "",
-                block_id.to_string(),
-            )
-        })
+        self.take_shared_block(block_id)
+            .map(|block| Arc::try_unwrap(block).unwrap_or_else(|shared| shared.as_ref().clone()))
     }
 
     fn put_block(&mut self, block_id: &str, block: Vec<TokenWrapper>) {
-        self.blocks.insert(block_id.to_string(), block);
+        self.put_shared_block(block_id, Arc::new(block));
     }
 
     fn get_formatted_block_items(&mut self, block_id: &str) -> Result<String, TextForgeError> {
@@ -507,11 +641,13 @@ impl GlobalContextMethods for GlobalExecutionContext {
     }
 
     fn add_var(&mut self, id: &str, var_entry: VarEntry) -> Result<(), TextForgeError> {
+        self.record_variable(id);
         self.variables.insert(id.to_string(), var_entry);
         Ok(())
     }
     fn rm_var(&mut self, var_id: &str) -> Result<(), TextForgeError> {
         let var_id_owned = var_id.to_owned();
+        self.record_variable(var_id);
 
         self.variables.remove(var_id).ok_or_else(|| {
             TextForgeError::new(
@@ -540,6 +676,7 @@ impl GlobalContextMethods for GlobalExecutionContext {
     }
 
     fn get_mut_var(&mut self, var_id: &str) -> Result<&mut VarEntry, TextForgeError> {
+        self.record_variable(var_id);
         let v = self.variables.get_mut(var_id).ok_or_else(|| {
             TextForgeError::new(
                 TextForgeErrorCode::VariableNotFound(
@@ -564,4 +701,17 @@ impl GlobalContextMethods for GlobalExecutionContext {
             ))
         }
     }
+}
+
+fn block_not_found(block_id: &str) -> TextForgeError {
+    TextForgeError::new(
+        TextForgeErrorCode::BlockNotFound(
+            format!(
+                "no block is named `{block_id}`; define it with `blk` before running it with `cblk`"
+            )
+            .into(),
+        ),
+        "",
+        block_id.to_string(),
+    )
 }

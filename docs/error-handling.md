@@ -104,9 +104,16 @@ The text needs nothing: an instruction receives it and returns a new one, so
 before it fails: in the example above, `mutv` ran before `dlc` failed. Without
 a snapshot the text would say "the block did not run" and `total` would say
 "it ran halfway", and in a loop the value would depend on the iteration that
-failed. So `tryi` saves the context before such an instruction and puts it
-back on failure. Other instructions fail before they change anything (their
-parameters are resolved first), so they take no snapshot.
+failed. So `tryi` opens a snapshot before such an instruction and puts the
+context back on failure. Other instructions fail before they change anything
+(their parameters are resolved first), so they take no snapshot.
+
+A snapshot copies nothing when it opens: while it is open, the context records
+the value of each variable, block and replacement map before its first change
+(an undo journal, `GlobalExecutionContext::snapshot`), and a failure puts
+those values back, newest first. Without an open snapshot a change costs one
+check. Copying the variables instead cost 65 µs per `tryi cblk` with 1,000
+variables; the journal costs the same with 0 or 1,000.
 
 A failed `cblk` used to lose its block (the block was taken out to run it).
 Inside `tryi` the block is put back, so it can run again.
@@ -157,9 +164,9 @@ Errors ignored inside a joined pipeline (`ppjn`) appear in the same trace.
   like `iter iter …`).
 - Only errors raised **while the instruction runs** reach `tryi`; a pipeline
   that does not parse or validate fails when it is loaded.
-- Cost: none for pipelines without `tryi`; one check for a simple instruction;
-  a copy of the variables, blocks and maps for an instruction that runs others
-  (see [the benchmark](benchmarks/tryi/README.md)).
+- Cost: nothing measurable for pipelines without `tryi`; for an instruction
+  that runs others, about 0.1 µs to open and close the snapshot, whatever the
+  number of variables (see [the benchmark](benchmarks/tryi/README.md)).
 
 ## The `ErrorManager`
 

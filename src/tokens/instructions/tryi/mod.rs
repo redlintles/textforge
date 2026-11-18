@@ -118,8 +118,6 @@ impl InstructionMethods for Tryi {
                 }),
         };
         match outcome {
-            Ok(Some(result)) => Ok(result),
-            Ok(None) => Ok(input),
             Err(error) if error.is_ignorable() => {
                 let restored = snapshot
                     .map(|snapshot| context.restore(snapshot))
@@ -129,7 +127,15 @@ impl InstructionMethods for Tryi {
                 }
                 Ok(input)
             }
-            Err(error) => Err(error),
+            outcome => {
+                if let Some(snapshot) = snapshot {
+                    context.release(snapshot);
+                }
+                match outcome? {
+                    Some(result) => Ok(result),
+                    None => Ok(input),
+                }
+            }
         }
     }
 
