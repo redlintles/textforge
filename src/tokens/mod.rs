@@ -11,7 +11,7 @@
 //!
 //! Every instruction of the language, grouped by what it does. Parameters in
 //! braces may be quoted (`'a b'`), and string parameters accept `{{ }}` and
-//! `[[ ]]` interpolation. Character indices start at 0, line numbers at 1, and
+//! `[[ ]]` interpolation. Every index starts at 0 (characters, words and lines), and
 //! ranges such as `start..=end` are inclusive.
 //! <!-- instruction-index:begin -->
 //!

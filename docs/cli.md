@@ -106,9 +106,16 @@ presets are in [execution profiles](execution-profiles.md).
 | 3 | The pipeline could not be loaded: missing file, wrong extension, syntax, validation, a joined pipeline |
 | 4 | The input could not be read or the result could not be written |
 
-Errors are printed on stderr as `error[N]: message`, followed by where
-(`in:`) and on what (`input:`) the error happened; `N` is the stable code of
-`TextForgeErrorCode`.
+Errors are printed on stderr as a report: `error[N] Name: message`, where it
+happened (`-->`), the trace of instructions from the outermost to the one that
+failed (with `file:line`), the parameters of that instruction with the values
+it ran with, the input, the cause and a hint. It is colored on a terminal;
+`NO_COLOR` turns the color off and `CLICOLOR_FORCE` forces it. `N` is the
+stable code of `TextForgeErrorCode`. See [error handling](error-handling.md).
+
+Errors ignored by `tryi` do not change the exit status (0) and print nothing
+in a normal run; `--debug` shows each one where it happened, as a warning,
+and lists them at the end of the trace.
 
 ## From Rust
 
