@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.2 (2026-11-15)
+
 Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.
 
 ### Behavior changes
