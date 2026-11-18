@@ -38,7 +38,7 @@ Key design facts:
 
 - **Linear DSL.** No recursion, no AST. Each instruction is a single line. High-level implementations (e.g. the Rust builder) can give the *illusion* of recursion/nesting.
 - **Trait-object architecture.** Instructions are implemented as trait objects to keep maintenance simple and to avoid giant `match` statements and enums.
-- **Published on crates.io**, current core version: `0.3.2` (see `docs/release-0.3.2.md`; earlier releases are in `docs/release-0.3.1.md` and `docs/release-0.3.0.md`).
+- **Published on crates.io**. Core version in `Cargo.toml`: `0.4.0` (release prepared, see `docs/release-0.4.0.md`); latest published: `0.3.2` (`docs/release-0.3.2.md`; earlier releases in `docs/release-0.3.1.md` and `docs/release-0.3.0.md`).
 - **Minimum Rust version** (`rust-version`): 1.89, set by the dependencies (`uuid`). The published package holds only `src/` (without bindings), `docs/txfrc.schema.json`, `README.md`, `changelog.md` and `LICENSE` (`include` in `Cargo.toml`); add a file there if library code starts reading it.
 - **Legacy name.** The project was formerly called **ATP** ("Advanced Text Processor"). Some doctests and internals still reference `atp` / `Atp*`. This is a leftover from the rename, not a separate component.
 

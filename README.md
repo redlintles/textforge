@@ -58,7 +58,7 @@ Library (Rust 1.89 or newer):
 
 ```toml
 [dependencies]
-textforge = "0.3.2"
+textforge = "0.4.0"
 ```
 
 Command-line program `txf`:
