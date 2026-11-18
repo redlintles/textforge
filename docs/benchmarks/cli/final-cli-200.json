@@ -1,0 +1,108 @@
+{
+  "machine": {
+    "cpu": "x86_64",
+    "cpus": 12,
+    "python": "3.11.2"
+  },
+  "base": "/target/cli-base-cli/release/txf",
+  "new": "/target/cli-new-cli/release/txf",
+  "runs": 3,
+  "cases": [
+    {
+      "size_mib": 200,
+      "pipeline": "upper",
+      "mode": "all",
+      "base": {
+        "median_s": 1.1412281539996911,
+        "min_s": 1.0155540220002877,
+        "peak_mib": 404
+      },
+      "new": {
+        "median_s": 1.2293078349994175,
+        "min_s": 1.1164006599992717,
+        "peak_mib": 405
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 200,
+      "pipeline": "squash",
+      "mode": "all",
+      "base": {
+        "median_s": 2.268991098000697,
+        "min_s": 2.267620556998736,
+        "peak_mib": 387
+      },
+      "new": {
+        "median_s": 2.6592923870011873,
+        "min_s": 2.6575563690003037,
+        "peak_mib": 388
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 200,
+      "pipeline": "upper",
+      "mode": "line",
+      "base": {
+        "median_s": 1.1926489489997039,
+        "min_s": 1.1911003109999,
+        "peak_mib": 405
+      },
+      "new": {
+        "median_s": 1.2025359079998452,
+        "min_s": 1.1990026959992974,
+        "peak_mib": 405
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 200,
+      "pipeline": "trim-mark",
+      "mode": "line",
+      "base": {
+        "median_s": 1.2786484799999016,
+        "min_s": 1.255650204999256,
+        "peak_mib": 391
+      },
+      "new": {
+        "median_s": 1.3144341570005054,
+        "min_s": 1.3052912310013198,
+        "peak_mib": 391
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 200,
+      "pipeline": "upper",
+      "mode": "chunk-65536",
+      "base": {
+        "timeout": 300.0
+      },
+      "new": {
+        "median_s": 1.2641819620002934,
+        "min_s": 1.2264521639990562,
+        "peak_mib": 405
+      },
+      "same_output": null
+    },
+    {
+      "size_mib": 200,
+      "pipeline": "upper",
+      "mode": "chunk-4096",
+      "base": {
+        "timeout": 300.0
+      },
+      "new": {
+        "median_s": 1.2156762049999088,
+        "min_s": 1.1844449210002495,
+        "peak_mib": 405
+      },
+      "same_output": null
+    }
+  ],
+  "startup_ms": {
+    "base": 5.501741999978549,
+    "new": 5.480226499457785
+  }
+}

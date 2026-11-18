@@ -36,7 +36,7 @@ fn adapters_preserve_legacy_transforms_context_and_halt() {
                     .unwrap();
             assert_eq!(
                 processor
-                    .run_buffered_debug(&id, document, &mut log)
+                    .run_buffered_debug(&id, document, None, &mut log)
                     .unwrap()
                     .into_string()
                     .unwrap(),
@@ -178,7 +178,7 @@ fn plain_debug_log(source: &str, input: &str) -> (String, String) {
     let document =
         TextBuffer::from_text(input, TextBufferOptions::new(1, std::env::temp_dir())).unwrap();
     let output = processor
-        .run_buffered_debug(&id, document, &mut log)
+        .run_buffered_debug(&id, document, None, &mut log)
         .unwrap()
         .into_string()
         .unwrap();

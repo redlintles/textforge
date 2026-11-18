@@ -1,38 +1,447 @@
-//! Helpers of the `txf` program: chunked reading and profile resolution
-//! (`.txfrc`, flags). Only with the `cli` feature.
-use std::borrow::Cow;
+//! Helpers of the `txf` program: reading modes, runs with an input file and a
+//! debug destination, and profile resolution (`.txfrc`, flags). Only with the
+//! `cli` feature.
+use std::{borrow::Cow, io::Write, path::Path, str::FromStr};
 
 use crate::{
-    api::processor::{TextForgeProcessor, TextForgeProcessorMethods},
-    utils::{errors::TextForgeError, transforms::get_safe_utf8_char_index},
+    api::processor::TextForgeProcessor,
+    utils::errors::{TextForgeError, TextForgeErrorCode},
 };
 
-fn process_run(
-    processor: &mut TextForgeProcessor,
-    identifier: &str,
-    input: &str,
-    debug: bool,
-) -> Result<String, TextForgeError> {
-    if debug {
-        processor.process_all_with_debug(identifier, input)
-    } else {
-        processor.process_all(identifier, input)
+/// How `txf` feeds the input to a pipeline (`--read-mode`).
+///
+/// ```
+/// use textforge::utils::cli::ReadMode;
+///
+/// assert_eq!("all".parse::<ReadMode>(), Ok(ReadMode::All));
+/// assert_eq!("line".parse::<ReadMode>(), Ok(ReadMode::Line));
+/// assert_eq!("chunk-4096".parse::<ReadMode>(), Ok(ReadMode::Chunk(4096)));
+/// assert!("chunk-0".parse::<ReadMode>().is_err());
+/// assert!("lines".parse::<ReadMode>().is_err());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ReadMode {
+    /// The whole input is one text (`all`, the default).
+    All,
+    /// The pipeline runs once per line (`line`).
+    Line,
+    /// The pipeline runs once per piece of this many characters (`chunk-N`).
+    Chunk(usize),
+}
+
+impl FromStr for ReadMode {
+    type Err = String;
+
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
+        match text {
+            "all" => Ok(ReadMode::All),
+            "line" => Ok(ReadMode::Line),
+            _ => match text.strip_prefix("chunk-") {
+                Some(number) => match number.parse::<usize>() {
+                    Ok(0) => Err("the chunk size must be at least 1 character".to_owned()),
+                    Ok(size) => Ok(ReadMode::Chunk(size)),
+                    Err(_) => Err(
+                        "the chunk size after `chunk-` must be a whole number of characters, as in chunk-4096"
+                            .to_owned(),
+                    ),
+                },
+                None => Err(
+                    "unknown read mode; use all, line or chunk-N (for example chunk-4096)"
+                        .to_owned(),
+                ),
+            },
+        }
     }
 }
 
-/// Runs a pipeline on the whole input at once.
+/// Runs pipeline `identifier` on `input` the way `txf` does.
+///
+/// `input_file` is the file the input was read from, exposed to the pipeline as
+/// `__INPUT_FILE__` (empty when `None`). With `debug`, the step-by-step trace of
+/// every run is written there; nothing is written for a run that fails.
+///
+/// ```
+/// use textforge::api::{TextForgeBuilderMethods, processor::TextForgeProcessor};
+/// use textforge::utils::cli::{ReadMode, process_input};
+///
+/// let mut processor = TextForgeProcessor::new();
+/// let id = processor.create_pipeline().add_to_beginning("> ")?.build()?;
+/// let output = process_input(&mut processor, &id, "a\nb\n".to_owned(), ReadMode::Line, None, None)?;
+/// assert_eq!(output, "> a\n> b\n");
+/// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+/// ```
+pub fn process_input(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: String,
+    read_mode: ReadMode,
+    input_file: Option<&Path>,
+    debug: Option<&mut (dyn Write + '_)>,
+) -> Result<String, TextForgeError> {
+    // The static context with the input file is built once for all the runs
+    // (one per line or chunk), then the pipeline gets its own back.
+    let Some(path) = input_file else {
+        return process_pieces(processor, identifier, input, read_mode, debug);
+    };
+    let previous = processor.statics_for_input(identifier, path);
+    let result = process_pieces(processor, identifier, input, read_mode, debug);
+    if let Some(previous) = previous {
+        processor.restore_statics(identifier, previous);
+    }
+    result
+}
+
+/// [`process_input`] once the input file is in the pipeline's context.
+fn process_pieces(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: String,
+    read_mode: ReadMode,
+    mut debug: Option<&mut (dyn Write + '_)>,
+) -> Result<String, TextForgeError> {
+    match read_mode {
+        // An empty input still runs the pipeline: `atb`, `apl`, `ppf` and others
+        // produce text from nothing. Before 0.3.2 it returned an empty result.
+        ReadMode::All => run_piece(
+            processor,
+            identifier,
+            Cow::Owned(input),
+            debug.as_deref_mut(),
+        ),
+        ReadMode::Line => {
+            // Each line is processed without its line break, which is written
+            // back as it was. Lines follow `docs/lines.md`: LF, CRLF, CR, VT,
+            // FF, NEL, LS and PS end a line, as for `__LINES__` and the line
+            // instructions. Before 0.3.2 only LF (and CRLF) did.
+            let mut output = String::with_capacity(input.len());
+            for (index, (content, line_break)) in crate::utils::lines::lines(&input).enumerate() {
+                announce(debug.as_deref_mut(), "line", index)?;
+                let processed = run_piece(
+                    processor,
+                    identifier,
+                    Cow::Borrowed(content),
+                    debug.as_deref_mut(),
+                )
+                .map_err(|mut e| {
+                    e.instruction = format!("input line {} › {}", index + 1, e.instruction).into();
+                    e
+                })?;
+                output.push_str(&processed);
+                output.push_str(line_break);
+            }
+            Ok(output)
+        }
+        ReadMode::Chunk(size) => {
+            if size == 0 {
+                return Err(TextForgeError::new(
+                    TextForgeErrorCode::ZeroDivisionError(
+                        "the chunk size must be at least 1 character".into(),
+                    ),
+                    Cow::Borrowed("txf"),
+                    crate::utils::errors::input_excerpt(&input),
+                ));
+            }
+            let mut output = String::with_capacity(input.len());
+            for (index, chunk) in chunks(&input, size).enumerate() {
+                announce(debug.as_deref_mut(), "chunk", index)?;
+                let processed = run_piece(
+                    processor,
+                    identifier,
+                    Cow::Borrowed(chunk),
+                    debug.as_deref_mut(),
+                )
+                .map_err(|mut e| {
+                    e.instruction = format!("input chunk {} › {}", index + 1, e.instruction).into();
+                    e
+                })?;
+                output.push_str(&processed);
+            }
+            Ok(output)
+        }
+    }
+}
+
+/// The two forms of a pipeline file.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PipelineFormat {
+    /// A `.textforge` (`.tft`) text pipeline.
+    Text,
+    /// A `.textforgebc` (`.tfb`) bytecode pipeline.
+    Bytecode,
+}
+
+/// The format of the pipeline file at `path`, read from its first bytes: a
+/// file that starts with the bytecode magic number is bytecode, anything else
+/// is text. `ppjn` tells them apart the same way.
+///
+/// ```
+/// use textforge::utils::cli::{PipelineFormat, detect_pipeline_format};
+///
+/// let path = std::env::temp_dir().join(format!("detect-{}.textforge", std::process::id()));
+/// std::fs::write(&path, "tua;\n")?;
+/// assert_eq!(detect_pipeline_format(&path)?, PipelineFormat::Text);
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn detect_pipeline_format(path: &Path) -> Result<PipelineFormat, TextForgeError> {
+    use std::io::Read;
+    let error = |code: TextForgeErrorCode| {
+        TextForgeError::new(code, Cow::Borrowed("txf"), path.display().to_string())
+    };
+    let file = std::fs::File::open(path).map_err(|e| {
+        error(TextForgeErrorCode::FileOpeningError(
+            format!("cannot open the pipeline file `{}`: {e}", path.display()).into(),
+        ))
+    })?;
+    let mut start = Vec::with_capacity(crate::parser::joins::BYTECODE_MAGIC.len());
+    file.take(crate::parser::joins::BYTECODE_MAGIC.len() as u64)
+        .read_to_end(&mut start)
+        .map_err(|e| {
+            error(TextForgeErrorCode::FileReadingError(
+                format!("cannot read the pipeline file `{}`: {e}", path.display()).into(),
+            ))
+        })?;
+    Ok(if start == crate::parser::joins::BYTECODE_MAGIC {
+        PipelineFormat::Bytecode
+    } else {
+        PipelineFormat::Text
+    })
+}
+
+/// Loads the pipeline file at `path` into `processor` and returns its id.
+///
+/// With `format` set to `None` the format is detected with
+/// [`detect_pipeline_format`] and any pipeline extension is accepted
+/// (`.textforge`, `.tft`, `.textforgebc`, `.tfb`); with a format, the file must
+/// have one of that format's extensions.
+///
+/// ```
+/// use textforge::api::processor::{TextForgeProcessor, TextForgeProcessorMethods};
+/// use textforge::utils::cli::load_pipeline;
+///
+/// let path = std::env::temp_dir().join(format!("load-{}.tft", std::process::id()));
+/// std::fs::write(&path, "tua;\n")?;
+/// let mut processor = TextForgeProcessor::new();
+/// let id = load_pipeline(&mut processor, &path, None)?;
+/// assert_eq!(processor.process_all(&id, "abc")?, "ABC");
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn load_pipeline(
+    processor: &mut TextForgeProcessor,
+    path: &Path,
+    format: Option<PipelineFormat>,
+) -> Result<String, TextForgeError> {
+    use crate::{api::processor::TextForgeProcessorMethods, utils::validations::check_file_path};
+    let format = match format {
+        Some(format) => {
+            let extension = match format {
+                PipelineFormat::Text => "textforge",
+                PipelineFormat::Bytecode => "textforgebc",
+            };
+            check_file_path(path, Some(extension))?;
+            format
+        }
+        None => {
+            check_file_path(path, None)?;
+            detect_pipeline_format(path)?
+        }
+    };
+    match format {
+        PipelineFormat::Text => processor.get_pipeline_from_file(path),
+        // The `cli` feature turns on `bytecode`.
+        PipelineFormat::Bytecode => processor.read_from_bytecode_file(path),
+    }
+}
+
+/// The built-in metrics `txf --watch` accepts, in report order.
+///
+/// ```
+/// use textforge::utils::cli::watch_metrics;
+///
+/// assert!(watch_metrics().contains(&"line_count"));
+/// ```
+pub fn watch_metrics() -> Vec<&'static str> {
+    crate::api::portable::watchers::BUILTINS
+        .iter()
+        .map(|(name, _)| *name)
+        .collect()
+}
+
+/// Runs pipeline `identifier` on `input` with the built-in watchers `metrics`
+/// (names from [`watch_metrics`], or `all`) after every instruction, and writes
+/// their JSON report to `report`. `input_file` is exposed as `__INPUT_FILE__`.
+///
+/// ```
+/// use textforge::api::{TextForgeBuilderMethods, processor::TextForgeProcessor};
+/// use textforge::utils::cli::process_with_watchers;
+///
+/// let mut processor = TextForgeProcessor::new();
+/// let id = processor.create_pipeline().to_uppercase_all()?.build()?;
+/// let report = std::env::temp_dir().join(format!("watch-{}.json", std::process::id()));
+/// let output = process_with_watchers(&mut processor, &id, "ab", None, &["current_len_chars"], &report)?;
+/// assert_eq!(output, "AB");
+/// assert!(std::fs::read_to_string(&report)?.contains("current_len_chars"));
+/// std::fs::remove_file(&report)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn process_with_watchers(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: &str,
+    input_file: Option<&Path>,
+    metrics: &[&str],
+    report: &Path,
+) -> Result<String, TextForgeError> {
+    use crate::{
+        api::portable::watchers::BUILTINS,
+        watchers::{ExecutionWindows, WatcherList},
+    };
+    let mut watchers = WatcherList::new();
+    let wanted: Vec<&str> = if metrics.contains(&"all") {
+        watch_metrics()
+    } else {
+        metrics.to_vec()
+    };
+    for metric in wanted {
+        let (_, callback) = BUILTINS
+            .iter()
+            .find(|(name, _)| *name == metric)
+            .ok_or_else(|| {
+                TextForgeError::new(
+                    TextForgeErrorCode::WatcherNotFoundError(
+                        format!(
+                            "unknown metric `{metric}`; use all or one of: {}",
+                            watch_metrics().join(", ")
+                        )
+                        .into(),
+                    ),
+                    Cow::Borrowed("--watch"),
+                    metric.to_owned(),
+                )
+            })?;
+        let callback = *callback;
+        watchers.set_owned_watcher(metric.to_owned(), move |context| Ok(callback(context)));
+        watchers.schedule_owned_watcher(metric, ExecutionWindows::All)?;
+    }
+    processor.process_watchers_from(identifier, input, input_file, &mut watchers, report)
+}
+
+/// Writes the result of `txf --output` to `path`.
+///
+/// A regular file (or a path that does not exist yet) is replaced atomically,
+/// as `wtf` does: the text goes to a temporary file in the same directory that
+/// is then renamed over `path`, so a failure leaves the previous file intact
+/// and readers never see half a result. Other targets (`/dev/null`, a FIFO, a
+/// terminal) are written directly. Missing directories are not created. Up to
+/// 0.3.2 the file was truncated first and written in place.
+///
+/// ```
+/// use textforge::utils::cli::write_output;
+///
+/// let path = std::env::temp_dir().join(format!("output-{}.txt", std::process::id()));
+/// write_output(&path, "first")?;
+/// write_output(&path, "second")?;
+/// assert_eq!(std::fs::read_to_string(&path)?, "second");
+/// std::fs::remove_file(&path)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn write_output(path: &Path, text: &str) -> Result<(), TextForgeError> {
+    let io_error = |code: fn(Cow<'static, str>) -> TextForgeErrorCode, action: &str, e| {
+        TextForgeError::new(
+            code(format!("cannot {action} the output file `{}`: {e}", path.display()).into()),
+            Cow::Borrowed("txf"),
+            path.display().to_string(),
+        )
+    };
+    match std::fs::metadata(path) {
+        Ok(metadata) if !metadata.is_file() => {
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .open(path)
+                .map_err(|e| io_error(TextForgeErrorCode::FileOpeningError, "open", e))?;
+            file.write_all(text.as_bytes())
+                .map_err(|e| io_error(TextForgeErrorCode::FileWritingError, "write", e))
+        }
+        _ => crate::api::processor::file_io::write_atomically(path, "txf", |file| {
+            file.write_all(text.as_bytes())
+                .map_err(|e| io_error(TextForgeErrorCode::FileWritingError, "write", e))
+        }),
+    }
+}
+
+/// In a trace of `line` or `chunk` mode, the piece the next run belongs to
+/// (`=== input line 2 ===`). Before 0.3.2 the traces followed one another
+/// with nothing between them.
+fn announce(
+    debug: Option<&mut (dyn Write + '_)>,
+    piece: &str,
+    index: usize,
+) -> Result<(), TextForgeError> {
+    let Some(log) = debug else {
+        return Ok(());
+    };
+    writeln!(log, "=== input {piece} {} ===", index + 1).map_err(|error| {
+        TextForgeError::new(
+            TextForgeErrorCode::FileWritingError(
+                format!("cannot write the debug log: {error}").into(),
+            ),
+            "txf",
+            "",
+        )
+    })
+}
+
+/// One run of the pipeline, with or without a trace.
+fn run_piece(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    piece: Cow<'_, str>,
+    debug: Option<&mut (dyn Write + '_)>,
+) -> Result<String, TextForgeError> {
+    // The input file is already in the pipeline's context (see process_input).
+    match debug {
+        Some(log) => processor.process_debug_from(identifier, &piece, None, log),
+        None => processor.process_text_from(identifier, piece, None),
+    }
+}
+
+/// [`process_input`] with the trace, if any, on standard output.
+fn process_to_stdout(
+    processor: &mut TextForgeProcessor,
+    identifier: &str,
+    input: &str,
+    read_mode: ReadMode,
+    debug: bool,
+) -> Result<String, TextForgeError> {
+    let mut stdout = std::io::stdout().lock();
+    let log = debug.then_some(&mut stdout as &mut dyn Write);
+    process_input(
+        processor,
+        identifier,
+        input.to_owned(),
+        read_mode,
+        None,
+        log,
+    )
+}
+
+/// Runs a pipeline on the whole input at once (`--read-mode all`), printing
+/// the trace with `debug`. See [`process_input`] to pass the input file.
 pub fn process_input_single_chunk(
     processor: &mut TextForgeProcessor,
     identifier: &str,
     input: &str,
     debug: bool,
 ) -> Result<String, TextForgeError> {
-    // An empty input still runs the pipeline: `atb`, `apl`, `ppf` and others
-    // produce text from nothing. Before 0.3.2 it returned an empty result.
-    process_run(processor, identifier, input, debug)
+    process_to_stdout(processor, identifier, input, ReadMode::All, debug)
 }
 
-/// `input` without its final line break (`\n` or `\r\n`), and that line break.
+/// `input` without its final line break, and that line break.
+///
+/// A line break is any terminator of `docs/lines.md`: LF, CRLF (taken whole),
+/// CR, VT, FF, NEL, LINE SEPARATOR or PARAGRAPH SEPARATOR. Up to 0.3.2 only LF
+/// and CRLF were recognized.
 ///
 /// Files usually end with a line break, which is a character like any other to
 /// the instructions: `dll` would delete it and `ate` would write after it.
@@ -45,39 +454,38 @@ pub fn process_input_single_chunk(
 /// assert_eq!(split_final_newline("abc\r\n"), ("abc", "\r\n"));
 /// assert_eq!(split_final_newline("a\n\n"), ("a\n", "\n"));
 /// assert_eq!(split_final_newline("abc"), ("abc", ""));
+/// assert_eq!(split_final_newline("abc\r"), ("abc", "\r"));
+/// assert_eq!(split_final_newline("abc\u{2028}"), ("abc", "\u{2028}"));
+/// assert_eq!(split_final_newline(""), ("", ""));
 /// ```
 pub fn split_final_newline(input: &str) -> (&str, &str) {
-    let body = match input.strip_suffix('\n') {
-        Some(body) => body.strip_suffix('\r').unwrap_or(body),
-        None => input,
+    let Some(last) = input.chars().next_back() else {
+        return (input, "");
     };
+    if !crate::utils::lines::is_break(last) {
+        return (input, "");
+    }
+    let mut body = &input[..input.len() - last.len_utf8()];
+    if last == '\n' {
+        body = body.strip_suffix('\r').unwrap_or(body);
+    }
     input.split_at(body.len())
 }
 
-/// Runs a pipeline on each line of the input.
+/// Runs a pipeline on each line of the input (`--read-mode line`), printing
+/// the trace with `debug`. See [`process_input`] to pass the input file.
 pub fn process_input_line_by_line(
     processor: &mut TextForgeProcessor,
     identifier: &str,
     input: &str,
     debug: bool,
 ) -> Result<String, TextForgeError> {
-    // Each line is processed without its line break (`\n` or `\r\n`), which is
-    // written back as it was. Before 0.3.2 every line break became `\n` and the
-    // final one was lost.
-    let mut output = String::with_capacity(input.len());
-    for (index, line) in input.split_inclusive('\n').enumerate() {
-        let (content, line_break) = split_final_newline(line);
-        let processed = process_run(processor, identifier, content, debug).map_err(|mut e| {
-            e.instruction = format!("input line {} › {}", index + 1, e.instruction).into();
-            e
-        })?;
-        output.push_str(&processed);
-        output.push_str(line_break);
-    }
-    Ok(output)
+    process_to_stdout(processor, identifier, input, ReadMode::Line, debug)
 }
 
-/// Runs a pipeline on consecutive chunks of the input.
+/// Runs a pipeline on consecutive chunks of `chunk_size` characters
+/// (`--read-mode chunk-N`), printing the trace with `debug`. See
+/// [`process_input`] to pass the input file.
 pub fn process_input_by_chunks(
     processor: &mut TextForgeProcessor,
     identifier: &str,
@@ -88,40 +496,34 @@ pub fn process_input_by_chunks(
     if input.is_empty() {
         return Ok(String::new());
     }
-    if chunk_size == 0 {
-        return Err(TextForgeError::new(
-            super::errors::TextForgeErrorCode::ZeroDivisionError(
-                "the chunk size must be at least 1 character".into(),
-            ),
-            Cow::Borrowed("txf"),
-            crate::utils::errors::input_excerpt(input),
-        ));
-    }
-    let character_count = input.chars().count();
-    let iterations = character_count.div_ceil(chunk_size);
+    process_to_stdout(
+        processor,
+        identifier,
+        input,
+        ReadMode::Chunk(chunk_size),
+        debug,
+    )
+}
 
-    let mut processed = Vec::new();
-
-    for i in 0..iterations - 1 {
-        let left_chunk_bound = get_safe_utf8_char_index(i * chunk_size, input)?;
-        let right_chunk_bound = get_safe_utf8_char_index((i + 1) * chunk_size, input)?;
-
-        let result = process_run(
-            processor,
-            identifier,
-            &input[left_chunk_bound..right_chunk_bound],
-            debug,
-        )?;
-
-        processed.push(result);
-    }
-
-    // Last chunk
-    let left_chunk_bound = get_safe_utf8_char_index((iterations - 1) * chunk_size, input)?;
-    let result = process_run(processor, identifier, &input[left_chunk_bound..], debug)?;
-    processed.push(result);
-
-    Ok(processed.join(""))
+/// `input` cut into consecutive pieces of `size` characters (the last one may
+/// be shorter), in one forward pass. A piece never ends between the `\r` and
+/// the `\n` of a CRLF: it takes the `\n` too, so it has `size + 1` characters.
+/// Up to 0.3.2 every boundary was searched from the start of the text, which
+/// made chunk mode quadratic, and a CRLF could be split.
+fn chunks(input: &str, size: usize) -> impl Iterator<Item = &str> {
+    let mut rest = input;
+    std::iter::from_fn(move || {
+        if rest.is_empty() {
+            return None;
+        }
+        let mut end = rest.char_indices().nth(size).map_or(rest.len(), |(i, _)| i);
+        if rest[..end].ends_with('\r') && rest[end..].starts_with('\n') {
+            end += 1;
+        }
+        let (chunk, tail) = rest.split_at(end);
+        rest = tail;
+        Some(chunk)
+    })
 }
 
 #[cfg(feature = "test_access")]
@@ -149,6 +551,28 @@ mod cli_tests {
 
             assert_eq!(result, expected_output, "It works correctly");
             Ok(())
+        }
+    }
+
+    mod chunks_tests {
+        use crate::utils::cli::chunks;
+
+        #[test]
+        fn chunks_count_characters_and_keep_every_byte() {
+            let cut = |text, size| chunks(text, size).collect::<Vec<_>>();
+            assert_eq!(cut("abcdefg", 3), ["abc", "def", "g"]);
+            assert_eq!(cut("abc", 3), ["abc"]);
+            assert_eq!(cut("abc", 10), ["abc"]);
+            assert_eq!(cut("é😀ab", 1), ["é", "😀", "a", "b"]);
+            assert_eq!(cut("e\u{301}x", 1), ["e", "\u{301}", "x"]);
+            // A CRLF stays whole (before: "ab\r" and "\ncd").
+            assert_eq!(cut("ab\r\ncd", 3), ["ab\r\n", "cd"]);
+            assert_eq!(cut("\r\n\r\n", 1), ["\r\n", "\r\n"]);
+            assert_eq!(cut("a\rb", 2), ["a\r", "b"]);
+            assert!(cut("", 4).is_empty());
+            // One pass: a long text with small chunks is cut in linear time.
+            let long = "ab".repeat(200_000);
+            assert_eq!(chunks(&long, 1).count(), 400_000);
         }
     }
 
@@ -203,7 +627,7 @@ mod cli_tests {
         }
 
         /// Before 0.3.2 line mode turned `\r\n` into `\n` and dropped the last
-        /// line break.
+        /// line break; CR and the Unicode terminators did not end a line.
         #[test]
         fn line_mode_keeps_every_line_break() -> Result<(), TextForgeError> {
             let mut processor = TextForgeProcessor::new();
@@ -213,6 +637,9 @@ mod cli_tests {
                 ("a\nb", "Xa\nXb"),
                 ("a\n\nb\n", "Xa\nX\nXb\n"),
                 ("a\r\nb\n", "Xa\r\nXb\n"),
+                ("a\rb\rc", "Xa\rXb\rXc"),
+                ("a\u{2028}b\u{85}c\u{c}", "Xa\u{2028}Xb\u{85}Xc\u{c}"),
+                ("a\r\r\nb", "Xa\rX\r\nXb"),
             ] {
                 assert_eq!(
                     process_input_line_by_line(&mut processor, &id, input, false)?,
@@ -357,7 +784,7 @@ pub fn resolve_profile(
         spool_threshold_source = ProfileSource::File(file.clone().unwrap_or_default());
     }
     if let Some(text) = &options.spool_threshold {
-        profile.spool_threshold = parse_size(text)?;
+        profile.spool_threshold = parse_size(text).map_err(from_flag("--spool-threshold"))?;
         spool_threshold_source = ProfileSource::Flag;
     }
 
@@ -368,11 +795,13 @@ pub fn resolve_profile(
         None => Default::default(),
     };
     let limit = |flag: &Option<String>,
+                 name: &'static str,
+                 parse: fn(&str) -> Result<Option<u64>, TextForgeError>,
                  from_file: Option<Option<u64>>,
                  target: &mut Option<u64>|
      -> Result<ProfileSource, TextForgeError> {
         if let Some(text) = flag {
-            *target = crate::api::profile::parse_limit(text)?;
+            *target = parse(text).map_err(from_flag(name))?;
             Ok(ProfileSource::Flag)
         } else if let Some(value) = from_file {
             *target = value;
@@ -383,11 +812,15 @@ pub fn resolve_profile(
     };
     let max_generated_bytes_source = limit(
         &options.max_generated_bytes,
+        "--max-generated-bytes",
+        crate::api::profile::parse_limit,
         from_file.max_generated_bytes,
         &mut profile.limits.max_generated_bytes,
     )?;
     let max_iterations_source = limit(
         &options.max_iterations,
+        "--max-iterations",
+        crate::api::profile::parse_count,
         from_file.max_iterations,
         &mut profile.limits.max_iterations,
     )?;
@@ -399,6 +832,15 @@ pub fn resolve_profile(
         max_generated_bytes_source,
         max_iterations_source,
     })
+}
+
+/// Errors of a flag name the flag (`in: --spool-threshold`), not the
+/// configuration file. Before 0.3.2 they said `in: txfrc`.
+fn from_flag(flag: &'static str) -> impl Fn(TextForgeError) -> TextForgeError {
+    move |mut error| {
+        error.instruction = Cow::Borrowed(flag);
+        error
+    }
 }
 
 impl ResolvedProfile {
@@ -551,6 +993,48 @@ mod profile_tests {
             ..Default::default()
         };
         assert!(resolve_profile(&options, &directory.0).is_err());
+    }
+
+    /// Before: an invalid flag value was reported as `in: txfrc`.
+    #[test]
+    fn flag_errors_name_the_flag() {
+        let directory = Directory::new("flag-errors");
+        for (options, flag) in [
+            (
+                ProfileOptions {
+                    spool_threshold: Some("1".into()),
+                    no_rc: true,
+                    ..Default::default()
+                },
+                "--spool-threshold",
+            ),
+            (
+                ProfileOptions {
+                    max_iterations: Some("many".into()),
+                    no_rc: true,
+                    ..Default::default()
+                },
+                "--max-iterations",
+            ),
+            (
+                ProfileOptions {
+                    max_generated_bytes: Some("2 parsecs".into()),
+                    no_rc: true,
+                    ..Default::default()
+                },
+                "--max-generated-bytes",
+            ),
+        ] {
+            let error = resolve_profile(&options, &directory.0).unwrap_err();
+            assert_eq!(error.instruction, flag);
+        }
+        // A bad value in the file still names the file.
+        directory.rc(
+            ".txfrc",
+            r#"{"version": 1, "overrides": {"max_iterations": "x"}}"#,
+        );
+        let error = resolve_profile(&ProfileOptions::default(), &directory.0).unwrap_err();
+        assert_eq!(error.instruction, "txfrc");
     }
 
     #[test]

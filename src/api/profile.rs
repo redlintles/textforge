@@ -286,6 +286,39 @@ pub fn parse_limit(text: &str) -> Result<Option<u64>, TextForgeError> {
     parse_bytes(text).map(Some)
 }
 
+/// Parse a count limit (`max_iterations`): `"unlimited"` or a whole number,
+/// without units. Returns `None` for unlimited. Up to 0.3.2 counts went
+/// through the size parser, so `"10KiB"` meant 10240 iterations.
+///
+/// ```
+/// use textforge::api::profile::parse_count;
+///
+/// assert_eq!(parse_count("1000").unwrap(), Some(1000));
+/// assert_eq!(parse_count(" unlimited ").unwrap(), None);
+/// assert!(parse_count("10KiB").is_err());
+/// assert!(parse_count("many").is_err());
+/// ```
+pub fn parse_count(text: &str) -> Result<Option<u64>, TextForgeError> {
+    let trimmed = text.trim();
+    if trimmed.eq_ignore_ascii_case("unlimited") {
+        return Ok(None);
+    }
+    if trimmed.is_empty() || !trimmed.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(invalid(
+            &format!(
+                "`{text}` is not a number of iterations; write a whole number (for example 1000000) or unlimited"
+            ),
+            text,
+        ));
+    }
+    trimmed.parse::<u64>().map(Some).map_err(|_| {
+        invalid(
+            &format!("`{text}` is too large for a number of iterations"),
+            text,
+        )
+    })
+}
+
 fn parse_bytes(text: &str) -> Result<u64, TextForgeError> {
     let text = text.trim();
     let split = text
@@ -400,16 +433,18 @@ impl RcFile {
 
     /// The limit overrides in the file.
     pub fn limits(&self) -> Result<LimitOverrides, TextForgeError> {
-        let read = |size: &Option<Size>| -> Result<Option<Option<u64>>, TextForgeError> {
+        let read = |size: &Option<Size>,
+                    parse: fn(&str) -> Result<Option<u64>, TextForgeError>|
+         -> Result<Option<Option<u64>>, TextForgeError> {
             match size {
                 None => Ok(None),
                 Some(Size::Bytes(value)) => Ok(Some(Some(*value))),
-                Some(Size::Text(text)) => parse_limit(text).map(Some),
+                Some(Size::Text(text)) => parse(text).map(Some),
             }
         };
         Ok(LimitOverrides {
-            max_generated_bytes: read(&self.overrides.max_generated_bytes)?,
-            max_iterations: read(&self.overrides.max_iterations)?,
+            max_generated_bytes: read(&self.overrides.max_generated_bytes, parse_limit)?,
+            max_iterations: read(&self.overrides.max_iterations, parse_count)?,
         })
     }
 
@@ -504,6 +539,29 @@ mod tests {
         );
         assert!(
             RcFile::parse(r#"{"version": 1, "overrides": {"max_iterations": "lots"}}"#).is_err()
+        );
+    }
+
+    /// Before: `max_iterations` was parsed as a size, so `"10KiB"` meant 10240
+    /// iterations and `"lots"` was answered with a message about size units.
+    #[test]
+    fn iteration_limits_are_counts_without_units() {
+        let rc =
+            RcFile::parse(r#"{"version": 1, "overrides": {"max_iterations": "250"}}"#).unwrap();
+        assert_eq!(rc.profile().unwrap().limits.max_iterations, Some(250));
+        for wrong in ["10KiB", "5 MiB", "lots", "", "-3"] {
+            let text = format!(r#"{{"version": 1, "overrides": {{"max_iterations": "{wrong}"}}}}"#);
+            let error = RcFile::parse(&text)
+                .and_then(|rc| rc.profile())
+                .expect_err(wrong);
+            assert!(error.to_string().contains("iterations"), "{wrong}: {error}");
+        }
+        // Byte limits still take units.
+        let rc = RcFile::parse(r#"{"version": 1, "overrides": {"max_generated_bytes": "10KiB"}}"#)
+            .unwrap();
+        assert_eq!(
+            rc.profile().unwrap().limits.max_generated_bytes,
+            Some(10 * KIB)
         );
     }
 

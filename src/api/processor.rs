@@ -830,14 +830,12 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
     #[cfg(feature = "buffered")]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
-        self.process_debug_via_buffer(id, input)
+        self.process_debug_from(id, input, None, &mut std::io::stdout().lock())
     }
 
     #[cfg(not(feature = "buffered"))]
     fn process_all_with_debug(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
-        let (result, log) = self.debug_log(id, input)?;
-        print!("{log}"); // a single write
-        Ok(result)
+        self.process_debug_from(id, input, None, &mut std::io::stdout().lock())
     }
 
     fn process_single_with_debug(
@@ -1013,7 +1011,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         watcher_list: &mut WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
-        self.process_watchers_via_buffer(id, input, watcher_list, report_path)
+        self.process_watchers_via_buffer(id, input, None, watcher_list, report_path)
     }
 
     #[cfg(all(feature = "watchers", not(feature = "buffered")))]
@@ -1024,8 +1022,194 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         watcher_list: &mut WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
+        self.process_watchers_from(id, input, None, watcher_list, report_path)
+    }
+
+    // -- Bytecode persistence (feature = "bytecode") --------------------
+    //
+    // Only read/write `.textforgebc`; never process input directly.
+
+    #[cfg(feature = "bytecode")]
+    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), TextForgeError> {
+        let tokens = match self
+            .transforms
+            .get(id)
+            .map(|pipeline| &pipeline.tokens)
+            .ok_or_else(token_array_not_found(id))
+        {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        write_bytecode_to_file(path, tokens.to_vec())
+    }
+
+    #[cfg(feature = "bytecode")]
+    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, TextForgeError> {
+        let tokens = match read_bytecode_from_file(path) {
+            Ok(x) => x,
+            Err(e) => {
+                self.errors.add_error(e.clone());
+                return Err(e);
+            }
+        };
+
+        let identifier = self.add_transform(tokens.to_vec());
+        self.name_after_file(&identifier, path);
+        self.set_base_dir_from_file(&identifier, path);
+
+        Ok(identifier)
+    }
+}
+
+#[cfg(all(feature = "watchers", feature = "buffered", feature = "cli"))]
+impl TextForgeProcessor {
+    /// [`TextForgeProcessorMethods::process_all_with_watchers`] for a document
+    /// read from `input_file` (exposed to the DSL as `__INPUT_FILE__`).
+    pub(crate) fn process_watchers_from(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+        watcher_list: &mut WatcherList,
+        report_path: &Path,
+    ) -> Result<String, TextForgeError> {
+        self.process_watchers_via_buffer(id, input, input_file, watcher_list, report_path)
+    }
+}
+
+#[cfg(feature = "cli")]
+impl TextForgeProcessor {
+    /// Make every run of pipeline `id` see `input_file` (`__INPUT_FILE__`) until
+    /// [`restore_statics`](Self::restore_statics) puts back the returned
+    /// context. `txf` runs a pipeline once per line or chunk; building the
+    /// context once instead of in every run (as passing the file to each run
+    /// does) keeps line mode as fast as without an input file.
+    pub(crate) fn statics_for_input(
+        &mut self,
+        id: &str,
+        input_file: &Path,
+    ) -> Option<Arc<StaticContext>> {
+        let pipeline = self.transforms.get_mut(id)?;
+        let with_file = Arc::new(pipeline.statics.with_input_file(input_file));
+        Some(std::mem::replace(&mut pipeline.statics, with_file))
+    }
+
+    /// Put back the context [`statics_for_input`](Self::statics_for_input)
+    /// returned.
+    pub(crate) fn restore_statics(&mut self, id: &str, previous: Arc<StaticContext>) {
+        if let Some(pipeline) = self.transforms.get_mut(id) {
+            pipeline.statics = previous;
+        }
+    }
+}
+
+impl TextForgeProcessor {
+    /// [`TextForgeProcessorMethods::process_all`] for a document read from
+    /// `input_file` (exposed to the DSL as `__INPUT_FILE__`). Takes the input
+    /// by value so the whole-document engine can work on it without a copy.
+    #[cfg(feature = "cli")]
+    pub(crate) fn process_text_from(
+        &mut self,
+        id: &str,
+        input: Cow<'_, str>,
+        input_file: Option<&Path>,
+    ) -> Result<String, TextForgeError> {
+        #[cfg(feature = "buffered")]
+        {
+            self.process_all_via_buffer(id, &input, input_file)
+        }
+        #[cfg(not(feature = "buffered"))]
+        {
+            self.run_transform_from(id, input, input_file)
+                .map(Cow::into_owned)
+                .inspect_err(|error| self.errors.add_error(error.clone()))
+        }
+    }
+
+    /// [`TextForgeProcessorMethods::process_all_with_debug`] for a document read
+    /// from `input_file`, writing the trace to `log` instead of standard output.
+    /// Nothing is written when the pipeline fails.
+    pub(crate) fn process_debug_from(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+        log: &mut (dyn Write + '_),
+    ) -> Result<String, TextForgeError> {
+        let log_error = |error: std::io::Error| {
+            TextForgeError::new(
+                TextForgeErrorCode::FileWritingError(
+                    format!("cannot write the debug log: {error}").into(),
+                ),
+                "processor",
+                "",
+            )
+        };
+        #[cfg(feature = "buffered")]
+        let result = self.process_debug_via_buffer(id, input, input_file, log)?;
+        #[cfg(not(feature = "buffered"))]
+        let result = {
+            let (result, text) = self.debug_log(id, input, input_file)?;
+            // A single write.
+            log.write_all(text.as_bytes()).map_err(log_error)?;
+            result
+        };
+        // Without steps the trace would end at its heading, with no `After:`
+        // holding the final text.
+        if self
+            .transforms
+            .get(id)
+            .is_some_and(|pipeline| pipeline.tokens.is_empty())
+        {
+            log.write_all(b"The pipeline has no instructions: the text is unchanged.\n")
+                .map_err(log_error)?;
+        }
+        Ok(result)
+    }
+
+    /// [`TextForgeProcessorMethods::run_transform`] for a document read from
+    /// `input_file` (exposed to the DSL as `__INPUT_FILE__`).
+    fn run_transform_from<'a>(
+        &self,
+        id: &str,
+        input: Cow<'a, str>,
+        input_file: Option<&Path>,
+    ) -> Result<Cow<'a, str>, TextForgeError> {
         let (tokens, mut context) =
-            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+            Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
+
+        // A local, throwaway ErrorManager, not the shared self.errors
+        let mut local_errors = ErrorManager::default();
+
+        run_tokens(
+            tokens,
+            input,
+            &mut context,
+            |_, token, document, context| {
+                apply_transform(token, document, &mut local_errors, context)
+            },
+        )
+    }
+}
+
+#[cfg(all(feature = "watchers", not(feature = "buffered")))]
+impl TextForgeProcessor {
+    /// [`TextForgeProcessorMethods::process_all_with_watchers`] for a document
+    /// read from `input_file` (exposed to the DSL as `__INPUT_FILE__`).
+    pub(crate) fn process_watchers_from(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+        watcher_list: &mut WatcherList,
+        report_path: &Path,
+    ) -> Result<String, TextForgeError> {
+        let (tokens, mut context) =
+            match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(x) => x,
                 Err(e) => {
                     self.errors.add_error(e.clone());
@@ -1094,82 +1278,22 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
 
         Ok(current_arc.to_string())
     }
-
-    // -- Bytecode persistence (feature = "bytecode") --------------------
-    //
-    // Only read/write `.textforgebc`; never process input directly.
-
-    #[cfg(feature = "bytecode")]
-    fn write_to_bytecode_file(&mut self, id: &str, path: &Path) -> Result<(), TextForgeError> {
-        let tokens = match self
-            .transforms
-            .get(id)
-            .map(|pipeline| &pipeline.tokens)
-            .ok_or_else(token_array_not_found(id))
-        {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        write_bytecode_to_file(path, tokens.to_vec())
-    }
-
-    #[cfg(feature = "bytecode")]
-    fn read_from_bytecode_file(&mut self, path: &Path) -> Result<String, TextForgeError> {
-        let tokens = match read_bytecode_from_file(path) {
-            Ok(x) => x,
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                return Err(e);
-            }
-        };
-
-        let identifier = self.add_transform(tokens.to_vec());
-        self.name_after_file(&identifier, path);
-        self.set_base_dir_from_file(&identifier, path);
-
-        Ok(identifier)
-    }
-}
-
-impl TextForgeProcessor {
-    /// [`TextForgeProcessorMethods::run_transform`] for a document read from
-    /// `input_file` (exposed to the DSL as `__INPUT_FILE__`).
-    fn run_transform_from<'a>(
-        &self,
-        id: &str,
-        input: Cow<'a, str>,
-        input_file: Option<&Path>,
-    ) -> Result<Cow<'a, str>, TextForgeError> {
-        let (tokens, mut context) =
-            Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
-
-        // A local, throwaway ErrorManager, not the shared self.errors
-        let mut local_errors = ErrorManager::default();
-
-        run_tokens(
-            tokens,
-            input,
-            &mut context,
-            |_, token, document, context| {
-                apply_transform(token, document, &mut local_errors, context)
-            },
-        )
-    }
 }
 
 #[cfg(not(feature = "buffered"))]
 impl TextForgeProcessor {
     /// Run `id` with debug output and return `(result, log)`; nested steps of
     /// `cblk`, `iter`, `on*` and `rmape` follow each top-level step.
-    fn debug_log(&mut self, id: &str, input: &str) -> Result<(String, String), TextForgeError> {
+    fn debug_log(
+        &mut self,
+        id: &str,
+        input: &str,
+        input_file: Option<&Path>,
+    ) -> Result<(String, String), TextForgeError> {
         let dashes = 10;
 
         let (tokens, mut context) =
-            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+            match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(x) => x,
                 Err(e) => {
                     self.errors.add_error(e.clone());
@@ -1272,7 +1396,7 @@ mod debug_tests {
             .collect();
         let id = processor.add_transform(tokens);
         let input = "  cat   wolf  \nx";
-        let (output, log) = processor.debug_log(&id, input).unwrap();
+        let (output, log) = processor.debug_log(&id, input, None).unwrap();
         assert_eq!(output, processor.process_all(&id, input).unwrap());
         let ansi = regex::Regex::new("\x1b\\[[0-9;]*m").unwrap();
         let log = ansi.replace_all(&log, "");

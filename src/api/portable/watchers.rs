@@ -191,7 +191,7 @@ fn watcher_error(error: TextForgeError) -> BindingError {
 /// # }
 /// ```
 type Builtin = (&'static str, fn(WatcherContext) -> String);
-const BUILTINS: &[Builtin] = &[
+pub(crate) const BUILTINS: &[Builtin] = &[
     (
         "current_len_bytes",
         crate::watchers::default_watchers::current_len_bytes,

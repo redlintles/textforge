@@ -1,0 +1,206 @@
+{
+  "machine": {
+    "cpu": "x86_64",
+    "cpus": 12,
+    "python": "3.11.2"
+  },
+  "base": "/target/cli-base-cli/release/txf",
+  "new": "/target/cli-new-cli/release/txf",
+  "runs": 5,
+  "cases": [
+    {
+      "size_mib": 1,
+      "pipeline": "upper",
+      "mode": "all",
+      "base": {
+        "median_s": 0.010639549000188708,
+        "min_s": 0.010611607000100776,
+        "peak_mib": 15
+      },
+      "new": {
+        "median_s": 0.010606847999952151,
+        "min_s": 0.010578174000329454,
+        "peak_mib": 16
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 1,
+      "pipeline": "squash",
+      "mode": "all",
+      "base": {
+        "median_s": 0.021566843999607954,
+        "min_s": 0.01586336400032451,
+        "peak_mib": 16
+      },
+      "new": {
+        "median_s": 0.020834007998928428,
+        "min_s": 0.020743028000651975,
+        "peak_mib": 16
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 1,
+      "pipeline": "upper",
+      "mode": "line",
+      "base": {
+        "median_s": 0.010661619999154937,
+        "min_s": 0.010588662998998188,
+        "peak_mib": 16
+      },
+      "new": {
+        "median_s": 0.01064298500023142,
+        "min_s": 0.010571431999778724,
+        "peak_mib": 16
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 1,
+      "pipeline": "trim-mark",
+      "mode": "line",
+      "base": {
+        "median_s": 0.010616855999614927,
+        "min_s": 0.010607758998958161,
+        "peak_mib": 16
+      },
+      "new": {
+        "median_s": 0.010656219999873429,
+        "min_s": 0.010594463999950676,
+        "peak_mib": 16
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 1,
+      "pipeline": "upper",
+      "mode": "chunk-65536",
+      "base": {
+        "median_s": 0.02088455100056308,
+        "min_s": 0.020846752000579727,
+        "peak_mib": 16
+      },
+      "new": {
+        "median_s": 0.010609513001327286,
+        "min_s": 0.010590197000055923,
+        "peak_mib": 16
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 1,
+      "pipeline": "upper",
+      "mode": "chunk-4096",
+      "base": {
+        "median_s": 0.15367275499920652,
+        "min_s": 0.15338395700018737,
+        "peak_mib": 16
+      },
+      "new": {
+        "median_s": 0.010587241000393988,
+        "min_s": 0.01053837000108615,
+        "peak_mib": 16
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 50,
+      "pipeline": "upper",
+      "mode": "all",
+      "base": {
+        "median_s": 0.2851605539999582,
+        "min_s": 0.27579199399951904,
+        "peak_mib": 105
+      },
+      "new": {
+        "median_s": 0.29062010800043936,
+        "min_s": 0.28010673400058295,
+        "peak_mib": 105
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 50,
+      "pipeline": "squash",
+      "mode": "all",
+      "base": {
+        "median_s": 0.5662523619994317,
+        "min_s": 0.5605609949998325,
+        "peak_mib": 100
+      },
+      "new": {
+        "median_s": 0.6731063289989834,
+        "min_s": 0.6714302569998836,
+        "peak_mib": 101
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 50,
+      "pipeline": "upper",
+      "mode": "line",
+      "base": {
+        "median_s": 0.301255055999718,
+        "min_s": 0.2954007749995071,
+        "peak_mib": 105
+      },
+      "new": {
+        "median_s": 0.3069229679986165,
+        "min_s": 0.30073057700064965,
+        "peak_mib": 105
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 50,
+      "pipeline": "trim-mark",
+      "mode": "line",
+      "base": {
+        "median_s": 0.321402843001124,
+        "min_s": 0.31636254899967753,
+        "peak_mib": 101
+      },
+      "new": {
+        "median_s": 0.3313677940004709,
+        "min_s": 0.32649999099885463,
+        "peak_mib": 102
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 50,
+      "pipeline": "upper",
+      "mode": "chunk-65536",
+      "base": {
+        "median_s": 23.541350277000674,
+        "min_s": 23.159869595998316,
+        "peak_mib": 155
+      },
+      "new": {
+        "median_s": 0.310413076000259,
+        "min_s": 0.3054473729989695,
+        "peak_mib": 105
+      },
+      "same_output": true
+    },
+    {
+      "size_mib": 50,
+      "pipeline": "upper",
+      "mode": "chunk-4096",
+      "base": {
+        "timeout": 300.0
+      },
+      "new": {
+        "median_s": 0.3112828379998973,
+        "min_s": 0.3008122369992634,
+        "peak_mib": 105
+      },
+      "same_output": null
+    }
+  ],
+  "startup_ms": {
+    "base": 5.511181499059603,
+    "new": 5.520503500520135
+  }
+}

@@ -2,6 +2,96 @@
 
 ## Unreleased
 
+### Behavior changes
+
+- `txf --read-mode line` and `--chomp` recognize every line terminator of
+  `docs/lines.md` (LF, CRLF, CR, VT, FF, NEL, LS, PS), like `__LINES__` and the
+  line instructions; before, only LF and CRLF ended a line, so a file with CR
+  line breaks was one line. `utils::cli::split_final_newline` follows the same
+  rule.
+- `txf --read-mode chunk-N` never ends a chunk between the `\r` and `\n` of a
+  CRLF (the chunk takes the `\n`, one character more than `N`), and an error
+  in a chunk starts with `input chunk N ›`, as line mode says
+  `input line N ›`. Before, `ab\r\ncd` with `chunk-3` was cut into `ab\r` and
+  `\ncd`.
+- `txf` exits with a status that says what failed: 0 success, 1 the pipeline
+  failed on the text, 2 invalid arguments or configuration, 3 the pipeline
+  could not be loaded, 4 the input could not be read or the result written.
+  Before, every failure exited with 1. `txf --help` lists them.
+
+### Added
+
+- `txf --mode auto`, the new default, tells a bytecode pipeline from a text
+  one by its first bytes, as `ppjn` does, so `-f p.tfb` works without
+  `--mode b`. `t`/`text` and `b`/`bytecode` still force a format.
+  `utils::cli::detect_pipeline_format` and `utils::cli::load_pipeline` do the
+  same in code.
+- The `cli` feature turns on `bytecode` and `watchers`, so
+  `cargo install textforge --features cli` builds a `txf` that reads and
+  writes bytecode; before, `--features cli,bytecode` was needed. Neither
+  feature adds a dependency.
+- `txf compile PIPELINE [-o FILE]` compiles a text pipeline to bytecode (joined
+  pipelines are embedded), `txf decompile PIPELINE [-o FILE]` writes bytecode
+  back as text, and `txf check PIPELINE...` loads pipelines without running
+  them, one line per file, with status 3 when any fails.
+- `txf --watch METRIC --watch-report FILE` runs the pipeline with built-in
+  watchers (`current_len_chars`, `line_count`, `word_count`, … or `all`) after
+  every instruction and writes their JSON report; `__INPUT_FILE__` is set as
+  in a normal run. `utils::cli::process_with_watchers` and
+  `utils::cli::watch_metrics` do the same in code.
+- `txf --help` describes the program, groups the options (input and output,
+  pipeline, diagnostics, profile and limits), shows examples and the exit
+  statuses, and names both extensions of each format; `docs/cli.md` is the
+  guide to the command line.
+
+### Fixed
+
+- `txf --read-mode chunk-N` cuts the input in one pass. Before, each chunk
+  boundary was searched from the start of the text, so the time grew with the
+  square of the input size: 50 MiB with `chunk-65536` took 23.5 s (release)
+  and is now 0.31 s, as fast as `--read-mode all`; with `chunk-4096` it did
+  not finish in 300 s. See `docs/benchmarks/cli/`.
+- The line scanner shared by the line instructions, `__LINES__` and `txf
+  --read-mode line` reads bytes instead of decoding characters (`uniqln` and
+  `__LINES__` 2 to 4% faster on 50 MiB).
+- `__INPUT_FILE__` is the file given with `txf --input`, in every read mode
+  and with `--debug`, as with `process_file`; before, `txf` always left it
+  empty. `utils::cli::process_input` runs a pipeline the way `txf` does, with
+  the input file and a destination for the trace.
+- `txf` stops quietly with status 0 when the reader of its output goes away
+  (`txf … | head`), also during `--debug`; before, it panicked with "failed
+  printing to stdout: Broken pipe".
+- `max_iterations` (`.txfrc` and `txf --max-iterations`) is read as a count, as
+  `docs/txfrc.schema.json` already said: `"10KiB"` is an error instead of
+  10240 iterations, and a wrong value is explained in terms of iterations, not
+  size units. `api::profile::parse_count` parses such limits.
+- An invalid value of `--spool-threshold`, `--max-generated-bytes` or
+  `--max-iterations` names the flag (`in: --spool-threshold`); before, the
+  error said `in: txfrc` although no file was involved.
+- `txf --input -` reads standard input and `txf --output -` prints the
+  result, as usual on the command line; before, `-i -` failed and `-o -`
+  wrote a file called `-`.
+- `txf` loads the pipeline before reading the input, so a mistake in the
+  pipeline is reported at once; before, it was reported only after standard
+  input had been read to the end. When the text comes from a terminal, `txf`
+  says on stderr that it is waiting for it and how to end it.
+- In `txf --debug` with `--read-mode line` or `chunk-N`, each trace starts with
+  the piece it belongs to (`=== input line 2 ===`), and the trace of a pipeline
+  without instructions says that the text is unchanged instead of stopping at
+  its heading.
+- `write_pipeline_to_file` and `write_to_bytecode_file` create the file when
+  it does not exist; before, they checked the destination as if it were a
+  pipeline to read, so they could only overwrite existing files ("cannot open
+  the pipeline file … No such file or directory"). `write_to_bytecode_file`
+  requires a bytecode extension (`.textforgebc` or `.tfb`), as
+  `read_from_bytecode_file` does; before, any pipeline extension was accepted.
+  `utils::validations::check_output_file_path` checks such destinations.
+- `txf --output FILE` replaces the file atomically, as `wtf` does: a failure
+  leaves the previous file intact. Before, the file was truncated and written
+  in place. Devices and FIFOs (`/dev/null`) are still written directly; as
+  with `wtf`, a replaced file gets default permissions.
+  `utils::cli::write_output` does the same in code.
+
 ## 0.3.2 (2026-11-15)
 
 Fixes for problems found by using the published 0.3.1 `txf` on everyday tasks.

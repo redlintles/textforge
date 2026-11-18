@@ -131,7 +131,7 @@ With the `bytecode` feature, `TextForgeProcessor` also exposes `write_to_bytecod
 
 ### 5.2 As a textual DSL
 
-Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. `--read-mode line` keeps every line break, `--chomp` sets the final line break of the input aside and restores it on the result, an empty input still runs the pipeline, and errors go to stderr through `Display` (`error[N]: message`). The library never reads configuration files implicitly.
+Hand-written `.textforge` files, shareable and processed through the CLI utility **`txf`**. `txf` alone reads `.txfrc` (JSON: `version`, `profile`, `overrides` with `spool_threshold`, `max_generated_bytes`, `max_iterations`; schema in `docs/txfrc.schema.json`) and accepts `--profile`, `--spool-threshold`, `--max-generated-bytes`, `--max-iterations`, `--config` and `--no-rc`; `txf config show` prints the effective profile. `--mode auto` (default) detects bytecode by its magic number; `-` is stdin/stdout; the pipeline is loaded before the input is read; `--read-mode line` and `--chomp` follow the line rules of `docs/lines.md`; `__INPUT_FILE__` is the `--input` path; `--output` is replaced atomically; `--watch`/`--watch-report` run the built-in watchers; `txf compile`, `decompile` and `check` convert and validate pipelines. Errors go to stderr through `Display` (`error[N]: message`) and the exit status names the step (0 ok, 1 run, 2 usage/configuration, 3 loading, 4 input/output). The guide is `docs/cli.md`; the helpers `txf` uses live in `utils::cli`. The library never reads configuration files implicitly.
 
 ### 5.3 As a bytecode generator
 
@@ -279,7 +279,7 @@ Watchers are an optional feature (`watchers`). They are small functions that run
 | `watchers` | Enables the reporting mechanism. |
 | `bytecode` | Enables bytecode compilation code. |
 | `buffered` | Enables buffered (spool-backed) processing; pulls in `tempfile`. |
-| `cli` | Builds the `txf` binary (`required-features`) and exposes `utils::cli`; pulls in `clap`. |
+| `cli` | Builds the `txf` binary (`required-features`) and exposes `utils::cli`; turns on `bytecode` and `watchers` and pulls in `clap`. |
 | `game` | Builds the `txfg` game (`src/bin/txfg`, `required-features`); pulls in `clap`. Dependencies only the game needs go behind this feature. |
 | `test_access` | Enables **all** features (bytecode + watchers + buffered + cli + game + test helpers). **Use only in tests.** |
 

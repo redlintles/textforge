@@ -271,6 +271,8 @@ impl TextForgeProcessor {
         &mut self,
         id: &str,
         input: &str,
+        input_file: Option<&Path>,
+        destination: &mut (dyn Write + '_),
     ) -> Result<String, TextForgeError> {
         let result = (|| {
             let options = self.adapter_options();
@@ -279,11 +281,9 @@ impl TextForgeProcessor {
                 options.spill_directory(),
             );
             let input = TextBuffer::from_text(input, options)?.retain_materialized();
-            let output = self.run_buffered_debug(id, input, &mut log)?;
+            let output = self.run_buffered_debug(id, input, input_file, &mut log)?;
             log.rewind().map_err(adapter_io)?;
-            let stdout = std::io::stdout();
-            let mut stdout = stdout.lock();
-            std::io::copy(&mut log, &mut stdout).map_err(adapter_io)?;
+            std::io::copy(&mut log, destination).map_err(adapter_io)?;
             output.into_string()
         })();
         result.inspect_err(|error| self.errors.add_error(error.clone()))
@@ -293,10 +293,11 @@ impl TextForgeProcessor {
         &self,
         id: &str,
         input: TextBuffer,
+        input_file: Option<&Path>,
         log: &mut impl Write,
     ) -> Result<TextBuffer, TextForgeError> {
         let (tokens, mut context) =
-            Self::pipeline_run(&self.transforms, id, None, self.profile.limits)?;
+            Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
         context.enable_trace();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
@@ -378,13 +379,14 @@ impl TextForgeProcessor {
         &mut self,
         id: &str,
         input: &str,
+        input_file: Option<&Path>,
         watchers: &mut crate::watchers::WatcherList,
         report_path: &Path,
     ) -> Result<String, TextForgeError> {
         use crate::watchers::WatcherContext;
         use std::sync::Arc;
         let (tokens, mut context) =
-            match Self::pipeline_run(&self.transforms, id, None, self.profile.limits) {
+            match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(tokens) => tokens,
                 Err(error) => {
                     self.errors.add_error(error.clone());

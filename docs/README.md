@@ -20,6 +20,7 @@ How the language and the library behave.
 | [Unicode normalization](unicode-normalization.md) | `unorm` and the four normalization forms |
 | [Execution context and built-in variables](execution-context.md) | Variables, `__LINES__`, `__PIPELINE_NAME__` and the other built-ins |
 | [Execution profiles and `.txfrc`](execution-profiles.md) | Memory use, spooling and safety limits; the `.txfrc` file |
+| [The `txf` command line](cli.md) | Options, read modes, watchers, `compile`/`decompile`/`check`, exit status |
 | [Debug output](debug-output.md) | The step-by-step trace of `process_all_with_debug` |
 | [Portable API](portable-api.md) | The owned, language-neutral API the bindings use |
 | [Portable API parity](portable-parity.md) | How each Rust method maps to the portable API |
@@ -60,6 +61,7 @@ script in [`scripts/`](../scripts) and its raw results.
 | [Built-in variables](benchmarks/builtin-variables/README.md) | Cost of the static context |
 | [Line parser (0.3.1)](benchmarks/line-parser/README.md) | `split_line` against `shell_words::split` |
 | [Line performance](line-performance-summary.md) ([full report](benchmarks/line-performance/report.md)) | The line instructions in 0.2.0 |
+| [The `txf` command line](benchmarks/cli/README.md) | `txf` before and after the 0.3.2 CLI fixes: read modes, memory, 1 to 200 MiB |
 | [Batch input](benchmarks/batch-io/report.md) · [Safe file I/O](benchmarks/safe-file-io/report.md) | File reading strategies |
 | [Watcher reliability](benchmarks/watcher-reliability/report.md) · [Watchers comparison](benchmarks/watchers-comparison-report.md) | Watcher overhead |
 | [Revision comparison](benchmarks/comparison-report.md) · [Buffered comparison](benchmarks/buffered-comparison-report.md) · [Steps 3–5](benchmarks/steps-345/report.md) · [Follow-up notes](benchmarks/internal-improvements.md) | Earlier revision-to-revision comparisons |
@@ -70,4 +72,5 @@ Internal reviews: each finding with its reproduction, the fix and the commit.
 
 - [0.3.0: `src/tokens`](audits/0.3.0-tokens-audit.md)
 - [0.3.0: section instructions, debug trace and interpolation](audits/0.3.0-on-debug-audit.md)
+- [0.3.2: the `txf` command-line program](audits/0.3.2-cli-audit.md)
 - [Python binding rules](python-binding-audit.md)

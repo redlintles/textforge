@@ -60,7 +60,7 @@ textforge = "0.3.2"
 Command-line program `txf`:
 
 ```sh
-cargo install textforge --features cli           # add ,bytecode for .textforgebc files
+cargo install textforge --features cli           # add ,buffered for spool-backed runs
 ```
 
 ## Quick start
@@ -104,14 +104,19 @@ let output = processor.process_all(&id, "  hello world  ")?;
 txf --file clean.textforge --input input.txt --output output.txt
 ```
 
-Without `--output` the result goes to stdout, and without `--input` the text
-comes from stdin. `--read-mode line` runs the pipeline on each line, keeping
+Without `--output` (or with `-`) the result goes to stdout, and without
+`--input` the text comes from stdin. Bytecode pipelines are recognized by
+their first bytes. `--read-mode line` runs the pipeline on each line, keeping
 every line break; `--chomp` sets the final line break of the input aside and
 puts it back on the result, so `dll` or `ate` act on the last visible
-character. Errors are printed on stderr as `error[N]: message`. `--profile`, `--spool-threshold`,
-`--max-generated-bytes` and `--max-iterations` tune resources and limits; a
-`.txfrc` file in the current directory can set them, and `txf config show`
-prints the effective configuration. See
+character. `--debug` prints each step, and `--watch` records metrics into a
+JSON report. `txf compile` writes bytecode, `txf decompile` writes it back as
+text and `txf check` loads pipelines without running them. Errors are printed
+on stderr as `error[N]: message`, and the exit status says which step failed.
+`--profile`, `--spool-threshold`, `--max-generated-bytes` and
+`--max-iterations` tune resources and limits; a `.txfrc` file in the current
+directory can set them, and `txf config show` prints the effective
+configuration. See [the `txf` guide](docs/cli.md) and
 [execution profiles](docs/execution-profiles.md).
 
 ### Learning by playing
@@ -338,7 +343,7 @@ changes the output. Pipelines can be saved and loaded as text
 | `bytecode` | Reading and writing `.textforgebc` pipelines |
 | `watchers` | Watchers and JSON execution reports |
 | `buffered` | Buffered processing (`process_*_buffered`, `TextBuffer`); pulls in `tempfile` |
-| `cli` | The `txf` program; pulls in `clap` |
+| `cli` | The `txf` program (with `bytecode` and `watchers`); pulls in `clap` |
 | `game` | The `txfg` game; pulls in `clap` |
 
 No feature is enabled by default. `test_access` exposes internals for the test

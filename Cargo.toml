@@ -52,8 +52,10 @@ default = []
 bytecode = []
 watchers = []
 buffered = ["tempfile"]
-# The `txf` command-line program and its helpers (`utils::cli`).
-cli = ["dep:clap"]
+# The `txf` command-line program and its helpers (`utils::cli`). It reads and
+# writes bytecode and runs watchers, so it turns those features on (neither
+# adds a dependency).
+cli = ["dep:clap", "bytecode", "watchers"]
 # The `txfg` game (src/bin/txfg). Dependencies only the game needs go here.
 game = ["dep:clap"]
 

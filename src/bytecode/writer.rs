@@ -2,14 +2,14 @@ use std::{fs::OpenOptions, io::Write, path::Path};
 
 use crate::{
     parser::resolve_var::TokenWrapper,
-    utils::{errors::TextForgeError, validations::check_file_path},
+    utils::{errors::TextForgeError, validations::check_output_file_path},
 };
 
 pub fn write_bytecode_to_file(
     path: &Path,
     tokens: Vec<TokenWrapper>,
 ) -> Result<(), TextForgeError> {
-    check_file_path(path, None)?;
+    check_output_file_path(path, Some("textforgebc"))?;
 
     let mut file = match OpenOptions::new()
         .create(true)
