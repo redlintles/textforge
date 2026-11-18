@@ -9,7 +9,7 @@ use crate::{
     parser::params::{MAX_DEPTH_ASSOC_PAYLOAD, TextForgeParamTypes},
     tokens::{InstructionMethods, instructions::null::Null},
     utils::{
-        errors::{TextForgeError, TextForgeErrorCode},
+        errors::{ErrorParameter, TextForgeError, TextForgeErrorCode},
         expr::{interpolate_with, is_numeric_template},
         regexes::VAR_REF_RE,
         template::Template,
@@ -57,6 +57,48 @@ pub struct TokenWrapper {
     prepared: Option<Arc<dyn InstructionMethods>>,
     compiled: Option<Arc<CompiledParams>>,
     memo: Option<Arc<BindingMemo>>,
+    /// The file and line the instruction was read from, for error traces.
+    source: Option<Arc<SourceLine>>,
+}
+
+/// Where an instruction was written: `file:line`.
+#[derive(Debug)]
+struct SourceLine {
+    file: String,
+    line: usize,
+}
+
+/// The instruction that failed, as it was bound: its line with the values it
+/// ran with, and its parameters. Built only on the error path.
+pub(crate) struct Bound {
+    line: String,
+    parameters: Vec<ErrorParameter>,
+}
+
+/// Longest parameter value an error report shows.
+const MAX_PARAMETER_CHARS: usize = 60;
+
+fn describe_value(value: &TextForgeParamTypes) -> Option<String> {
+    let text = match value {
+        TextForgeParamTypes::String(text) => {
+            let shown: String = text.chars().take(MAX_PARAMETER_CHARS).collect();
+            let more = text.chars().count().saturating_sub(MAX_PARAMETER_CHARS);
+            let suffix = if more > 0 {
+                format!("… +{more} characters")
+            } else {
+                String::new()
+            };
+            format!("\"{}\"{suffix}", shown.escape_debug())
+        }
+        TextForgeParamTypes::Usize(number) => number.to_string(),
+        TextForgeParamTypes::Token(token) => token
+            .to_textforge_line()
+            .trim_end_matches(['\n', ';'])
+            .to_owned(),
+        TextForgeParamTypes::VarRef(name) => format!("{{{{{name}}}}}"),
+        _ => return None,
+    };
+    Some(text)
 }
 
 /// The last binding of an instruction whose parameters are dynamic, kept for
@@ -151,6 +193,7 @@ impl Clone for TokenWrapper {
             prepared: self.prepared.clone(),
             compiled: self.compiled.clone(),
             memo: self.memo.clone(),
+            source: self.source.clone(),
         }
     }
 }
@@ -163,6 +206,7 @@ impl Default for TokenWrapper {
             prepared: None,
             compiled: None,
             memo: None,
+            source: None,
         }
     }
 }
@@ -188,6 +232,7 @@ impl From<Box<dyn InstructionMethods>> for TokenWrapper {
             prepared: None,
             compiled: None,
             memo: None,
+            source: None,
         }
     }
 }
@@ -325,6 +370,7 @@ impl TokenWrapper {
                 prepared: None,
                 compiled: None,
                 memo: None,
+                source: None,
             },
             None => {
                 let token_params = token
@@ -339,6 +385,7 @@ impl TokenWrapper {
                     prepared: None,
                     compiled: None,
                     memo: None,
+                    source: None,
                 }
             }
         }
@@ -366,16 +413,110 @@ impl TokenWrapper {
         bind().map_err(|error| self.locate(error))
     }
 
-    /// Name this instruction in an error that does not say where it happened:
-    /// its source line (`dls 9;`), or its mnemonic when it has no text form.
-    pub(crate) fn locate(&self, mut error: TextForgeError) -> TextForgeError {
-        if error.instruction.is_empty() {
-            error.instruction = match self.to_text_line_unresolved() {
-                Ok(line) => line.trim_end().to_owned().into(),
-                Err(_) => self.get_string_repr().into(),
-            };
+    /// Record the file and line this instruction was read from.
+    /// Nested instructions (the body of `iter`, a block's instruction) share
+    /// the line.
+    pub(crate) fn set_source(&mut self, file: &str, line: usize) {
+        let source = Arc::new(SourceLine {
+            file: file.to_owned(),
+            line,
+        });
+        let mut pending = vec![self];
+        while let Some(wrapper) = pending.pop() {
+            wrapper.source = Some(Arc::clone(&source));
+            for parameter in &mut wrapper.params {
+                if let ValType::Literal(TextForgeParamTypes::Token(child)) = parameter {
+                    pending.push(child);
+                }
+            }
         }
+    }
+
+    /// `file:line` of this instruction, when it was read from a file.
+    pub(crate) fn source_location(&self) -> Option<String> {
+        self.source
+            .as_ref()
+            .map(|source| format!("{}:{}", source.file, source.line))
+    }
+
+    fn unresolved_line(&self) -> String {
+        match self.to_text_line_unresolved() {
+            Ok(line) => line.trim_end().to_owned(),
+            Err(_) => self.get_string_repr().to_owned(),
+        }
+    }
+
+    /// Name this instruction in an error that does not say where it happened:
+    /// its source line (`dls 9;`), or its mnemonic when it has no text form;
+    /// and add its frame to the error's trace.
+    pub(crate) fn locate(&self, error: TextForgeError) -> TextForgeError {
+        self.locate_with(error, None)
+    }
+
+    /// [`Self::locate`] for an instruction that failed after binding
+    /// `bound`: its frame shows the values it ran with, and its parameters.
+    pub(crate) fn locate_bound(
+        &self,
+        error: TextForgeError,
+        bound: &dyn InstructionMethods,
+    ) -> TextForgeError {
+        let bound = self.describe_bound(bound);
+        self.locate_with(error, Some(Box::new(bound)))
+    }
+
+    fn locate_with(&self, mut error: TextForgeError, bound: Option<Box<Bound>>) -> TextForgeError {
+        if error.instruction.is_empty() {
+            error.instruction = self.unresolved_line().into();
+        }
+        // The instruction that failed shows the values it ran with; a
+        // container around it shows its line as written.
+        let failed_here = error.trace().next().is_none();
+        let (line, parameters) = match bound {
+            Some(bound) if failed_here => (bound.line, bound.parameters),
+            _ => (self.unresolved_line(), Vec::new()),
+        };
+        error.push_frame(line, self.source_location(), || parameters);
         error
+    }
+
+    fn failed(
+        &self,
+        error: TextForgeError,
+        bound: &dyn InstructionMethods,
+    ) -> (TextForgeError, Option<Box<Bound>>) {
+        (error, Some(Box::new(self.describe_bound(bound))))
+    }
+
+    /// The line and parameters of `bound`, this instruction bound to the
+    /// values it ran with; the parameters as written come from `self`.
+    pub(crate) fn describe_bound(&self, bound: &dyn InstructionMethods) -> Bound {
+        let names = crate::globals::parameter_names::parameter_names(self.get_string_repr());
+        let parameters = bound
+            .get_params()
+            .iter()
+            .enumerate()
+            .filter_map(|(index, value)| {
+                let value = describe_value(value)?;
+                let name = names.get(index).map_or_else(
+                    || format!("parameter {}", index + 1),
+                    |name| (*name).to_owned(),
+                );
+                let written = match self.params.get(index) {
+                    Some(ValType::VarRef(variable)) => Some(format!("{{{{{variable}}}}}")),
+                    Some(ValType::Literal(TextForgeParamTypes::String(text)))
+                        if ["{{", "[["].iter().any(|marker| text.contains(marker)) =>
+                    {
+                        Some(format!("\"{}\"", text.escape_debug()))
+                    }
+                    _ => None,
+                };
+                Some(ErrorParameter::new(name, value, written))
+            })
+            .collect();
+        Bound {
+            line: bound.to_textforge_line().trim_end().to_owned(),
+            parameters,
+        }
     }
 
     pub fn apply_token<'a>(
@@ -384,16 +525,20 @@ impl TokenWrapper {
         context: &mut GlobalExecutionContext,
     ) -> Result<Cow<'a, str>, TextForgeError> {
         self.apply_unlocated(input, context)
-            .map_err(|error| self.locate(error))
+            .map_err(|(error, bound)| self.locate_with(error, bound))
     }
 
+    /// Bind and run; a failure of the bound instruction carries what it was
+    /// bound to (built on the error path only).
     fn apply_unlocated<'a>(
         &self,
         input: Cow<'a, str>,
         context: &mut GlobalExecutionContext,
-    ) -> Result<Cow<'a, str>, TextForgeError> {
+    ) -> Result<Cow<'a, str>, (TextForgeError, Option<Box<Bound>>)> {
         if let Some(prepared) = &self.prepared {
-            return prepared.transform(input, Some(context));
+            return prepared
+                .transform(input, Some(context))
+                .map_err(|error| self.failed(error, prepared.as_ref()));
         }
         let parsed_params = ValType::resolve_variables(
             self.token.as_ref(),
@@ -401,15 +546,21 @@ impl TokenWrapper {
             self.compiled.as_deref(),
             context,
             CurrentText::Str(&input),
-        )?;
+        )
+        .map_err(|error| (error, None))?;
         if let Some(memo) = &self.memo {
-            return self
-                .bind_memoized(memo, parsed_params)?
-                .transform(input, Some(context));
+            let token = self
+                .bind_memoized(memo, parsed_params)
+                .map_err(|error| (error, None))?;
+            return token
+                .transform(input, Some(context))
+                .map_err(|error| self.failed(error, token.as_ref()));
         }
         let mut t = self.token.clone();
-        t.set_params(&parsed_params)?;
+        t.set_params(&parsed_params)
+            .map_err(|error| (error, None))?;
         t.transform(input, Some(context))
+            .map_err(|error| self.failed(error, t.as_ref()))
     }
 
     /// Bind `params`, reusing the memo's last binding when they are the same.
@@ -463,7 +614,7 @@ impl TokenWrapper {
         let bound = self.bind_for_debug(context, CurrentText::Str(&input))?;
         let output = bound
             .transform(input, Some(context))
-            .map_err(|error| self.locate(error))?;
+            .map_err(|error| self.locate_bound(error, bound.as_ref()))?;
         if let Some(trace) = context.trace_mut() {
             let line = bound.to_textforge_line();
             trace.step(mark, Some((&line, before, output.chars().count())));
@@ -478,7 +629,7 @@ impl TokenWrapper {
         context: &mut GlobalExecutionContext,
     ) -> Result<crate::api::TextBuffer, TextForgeError> {
         self.apply_buffered_unlocated(input, context)
-            .map_err(|error| self.locate(error))
+            .map_err(|(error, bound)| self.locate_with(error, bound))
     }
 
     #[cfg(feature = "buffered")]
@@ -486,9 +637,11 @@ impl TokenWrapper {
         &self,
         mut input: crate::api::TextBuffer,
         context: &mut GlobalExecutionContext,
-    ) -> Result<crate::api::TextBuffer, TextForgeError> {
+    ) -> Result<crate::api::TextBuffer, (TextForgeError, Option<Box<Bound>>)> {
         if let Some(prepared) = &self.prepared {
-            return prepared.transform_buffered(input, Some(context));
+            return prepared
+                .transform_buffered(input, Some(context))
+                .map_err(|error| self.failed(error, prepared.as_ref()));
         }
         let params = ValType::resolve_variables(
             self.token.as_ref(),
@@ -496,15 +649,21 @@ impl TokenWrapper {
             self.compiled.as_deref(),
             context,
             CurrentText::Buffer(std::cell::RefCell::new(&mut input)),
-        )?;
+        )
+        .map_err(|error| (error, None))?;
         if let Some(memo) = &self.memo {
-            return self
-                .bind_memoized(memo, params)?
-                .transform_buffered(input, Some(context));
+            let token = self
+                .bind_memoized(memo, params)
+                .map_err(|error| (error, None))?;
+            return token
+                .transform_buffered(input, Some(context))
+                .map_err(|error| self.failed(error, token.as_ref()));
         }
         let mut token = self.token.clone();
-        token.set_params(&params)?;
-        token.transform_buffered(input, Some(context))
+        token.set_params(&params).map_err(|error| (error, None))?;
+        token
+            .transform_buffered(input, Some(context))
+            .map_err(|error| self.failed(error, token.as_ref()))
     }
 
     pub fn to_text_line_resolved(

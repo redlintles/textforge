@@ -42,7 +42,7 @@ pub struct ExecutionProfile {
 /// Limits on instructions whose cost grows with a parameter, so a typo such
 /// as `rpt 99999999999;` fails quickly instead of exhausting memory, disk or
 /// CPU. Within the limits results are never affected; past them the
-/// instruction fails with a `ValidationError` naming the limit. `None` means
+/// instruction fails with a `LimitExceededError` naming the limit. `None` means
 /// unlimited. The defaults are generous and the same in every preset; raise or
 /// remove them in `.txfrc` (`overrides`) or with the `txf` flags.
 ///
@@ -133,7 +133,7 @@ fn exceeded(
     limit: u64,
 ) -> TextForgeError {
     TextForgeError::new(
-        TextForgeErrorCode::ValidationError(
+        TextForgeErrorCode::LimitExceededError(
             format!(
                 "`{instruction}` needs {needed}, but the {limit_name} limit is {limit}; raise or remove the limit with overrides.{limit_name} in .txfrc (\"unlimited\"), the txf flag, or ExecutionProfile::limits"
             )

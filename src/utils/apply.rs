@@ -1,11 +1,18 @@
 use std::borrow::Cow;
 
+#[allow(deprecated)]
+use crate::utils::errors::ErrorManager;
 use crate::{
-    context::execution_context::GlobalExecutionContext,
-    parser::resolve_var::TokenWrapper,
-    utils::errors::{ErrorManager, TextForgeError},
+    context::execution_context::GlobalExecutionContext, parser::resolve_var::TokenWrapper,
+    utils::errors::TextForgeError,
 };
 
+/// Applies `token` to `input` and records its error in `error_manager`.
+///
+/// Deprecated since 0.4.0, with [`ErrorManager`]: call
+/// `TokenWrapper::apply_token` instead.
+#[deprecated(since = "0.4.0", note = "call TokenWrapper::apply_token")]
+#[allow(deprecated)]
 pub fn apply_transform<'a>(
     token: &TokenWrapper,
     input: Cow<'a, str>,

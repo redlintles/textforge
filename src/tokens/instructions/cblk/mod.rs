@@ -73,8 +73,17 @@ impl InstructionMethods for Cblk {
             |result, context| {
                 // Same halting rule as the root: nothing in the block runs
                 // after `end`.
-                run_tokens(&tokens, result, context, |_, token, result, context| {
-                    token.apply_nested(result, context)
+                run_tokens(&tokens, result, context, |index, token, result, context| {
+                    token.apply_nested(result, context).map_err(|error| {
+                        error.with_note(|| {
+                            format!(
+                                "block `{}`, step {} of {}",
+                                self.block_name,
+                                index + 1,
+                                tokens.len()
+                            )
+                        })
+                    })
                 })
             },
         )?;

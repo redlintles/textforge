@@ -219,7 +219,8 @@ mod tests {
                     .unwrap_err();
                 assert!(matches!(
                     error.error_code,
-                    crate::utils::errors::TextForgeErrorCode::ValidationError(_)
+                    crate::utils::errors::TextForgeErrorCode::LimitExceededError(_)
+                        | crate::utils::errors::TextForgeErrorCode::ValidationError(_)
                 ));
             }
         }

@@ -60,7 +60,11 @@ impl Iter {
                 break;
             }
             context.get_mut_var(COUNTER)?.value = VarValues::Usize(i);
-            result = self.inner.apply_nested(result, context)?;
+            result = self.inner.apply_nested(result, context).map_err(|error| {
+                error.with_note(|| {
+                    format!("__COUNTER__ = {i} (iteration {} of {})", i + 1, self.times)
+                })
+            })?;
         }
         // The loop is all `end` stops: the instruction after `iter` runs.
         // Before 0.3.2 it stopped the whole pipeline.

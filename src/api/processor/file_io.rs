@@ -35,35 +35,33 @@ pub(crate) fn read_utf8_file(
     let mut file = File::open(path).map_err(|error| {
         TextForgeError::new(
             TextForgeErrorCode::FileOpeningError(
-                format!("cannot open `{}`: {error}", path.display()).into(),
+                format!("cannot open `{}`", path.display()).into(),
             ),
             location,
             path.display().to_string(),
         )
+        .with_cause(error)
     })?;
     let mut bytes = Vec::new();
     file.read_to_end(&mut bytes).map_err(|error| {
         TextForgeError::new(
             TextForgeErrorCode::FileReadingError(
-                format!("cannot read `{}`: {error}", path.display()).into(),
+                format!("cannot read `{}`", path.display()).into(),
             ),
             location,
             path.display().to_string(),
         )
+        .with_cause(error)
     })?;
     String::from_utf8(bytes).map_err(|error| {
         TextForgeError::new(
             TextForgeErrorCode::InvalidUtf8Error(
-                format!(
-                    "`{}` is not UTF-8 text: {}",
-                    path.display(),
-                    error.utf8_error()
-                )
-                .into(),
+                format!("`{}` is not UTF-8 text", path.display()).into(),
             ),
             location,
             path.to_string_lossy().into_owned(),
         )
+        .with_cause(error.utf8_error())
     })
 }
 

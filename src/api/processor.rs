@@ -34,10 +34,8 @@ use crate::context::static_context::StaticContext;
 use crate::parser::resolve_var::TokenWrapper;
 use crate::text::reader::read_from_file;
 use crate::text::writer::write_to_file;
-use crate::utils::apply::{apply_transform, run_tokens};
-use crate::utils::errors::{
-    ErrorManager, TextForgeError, TextForgeErrorCode, token_array_not_found,
-};
+use crate::utils::apply::run_tokens;
+use crate::utils::errors::{TextForgeError, TextForgeErrorCode, token_array_not_found};
 
 /// Registers pipelines and runs them.
 ///
@@ -109,7 +107,6 @@ pub struct TextForgeProcessor {
     /// Engine resources; never changes results.
     #[cfg_attr(not(feature = "buffered"), allow(dead_code))]
     profile: ExecutionProfile,
-    errors: ErrorManager,
 }
 
 /// A registered pipeline: its instructions and the static context shared by
@@ -141,8 +138,9 @@ struct RegisteredPipeline {
 ///
 /// ## Errors
 ///
-/// Methods return [`TextForgeError`]; the processor also keeps a copy of the
-/// errors it reports.
+/// Methods return [`TextForgeError`]; print one for a person with
+/// [`TextForgeError::report`]. Before 0.4.0 the processor also kept a copy of
+/// every error in a private `ErrorManager` that nothing read.
 pub trait TextForgeProcessorMethods {
     // -----------------------------------------------------------------
     // Pipeline persistence (text format)
@@ -260,17 +258,13 @@ pub trait TextForgeProcessorMethods {
     // Processing — the only methods that run a pipeline against input
     // -----------------------------------------------------------------
 
-    /// Executes a registered transform against `input` and returns the result, without
-    /// recording anything into `self.errors`.
+    /// Executes a registered transform against `input` and returns the result.
     ///
     /// This is the shared low-level execution primitive behind
     /// [`process_all`](Self::process_all) and [`process_batch`](Self::process_batch): both
-    /// look up `id`, then run each token in order over a fresh, local `ErrorManager` and
-    /// `GlobalExecutionContext`.
-    ///
-    /// Prefer `process_all` when you want failures recorded in the processor's error log;
-    /// use `run_transform` directly when you want execution without touching `self.errors`
-    /// (e.g. read-only access, as in `process_batch`, which only borrows `&self`).
+    /// look up `id`, then run each token in order over a fresh
+    /// `GlobalExecutionContext`. It only borrows `&self`, so concurrent runs
+    /// share nothing.
     ///
     /// # Errors
     /// Returns `Err` if:
@@ -287,12 +281,8 @@ pub trait TextForgeProcessorMethods {
     /// Semantics:
     /// - `result` starts as `input`
     /// - for each token `t` in the transform:
-    ///   - `result = parse_token(t, result, &mut self.errors)?`
+    ///   - `result = t.apply_token(result, context)?`
     /// - returns the final `result`
-    ///
-    /// `parse_token` is used instead of calling `token.transform` directly because it can
-    /// integrate with your parsing/diagnostics/error flow (and will likely be where conditional
-    /// execution, blocks, etc. plug in later).
     ///
     /// # Parameters
     /// - `id`: Transform identifier.
@@ -512,13 +502,11 @@ impl Default for TextForgeProcessor {
 impl TextForgeProcessor {
     /// Creates a new empty processor.
     ///
-    /// - No transforms are registered initially.
-    /// - The internal `ErrorManager` is initialized with `Default`.
+    /// No transforms are registered initially.
     pub fn new() -> Self {
         TextForgeProcessor {
             transforms: HashMap::new(),
             profile: ExecutionProfile::balanced(),
-            errors: ErrorManager::default(),
         }
     }
 
@@ -658,7 +646,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         {
             Ok(x) => x,
             Err(e) => {
-                self.errors.add_error(e.clone());
                 return Err(e);
             }
         };
@@ -685,7 +672,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         let tokens = match tokens {
             Ok(x) => x,
             Err(e) => {
-                self.errors.add_error(e.clone());
                 return Err(e);
             }
         };
@@ -805,10 +791,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
     fn process_all(&mut self, id: &str, input: &str) -> Result<String, TextForgeError> {
         match self.run_transform(id, Cow::from(input)) {
             Ok(result) => Ok(result.into_owned()),
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
 
@@ -821,10 +804,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         context.set_limits(self.profile.limits);
         match token.apply_token(Cow::from(input), &mut context) {
             Ok(x) => Ok(x.to_string()),
-            Err(e) => {
-                self.errors.add_error(e.clone());
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
 
@@ -849,7 +829,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         let output = match token.apply_token(Cow::from(input), &mut ctx) {
             Ok(x) => x,
             Err(e) => {
-                self.errors.add_error(e.clone());
                 return Err(e);
             }
         };
@@ -883,8 +862,7 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         #[cfg(not(feature = "buffered"))]
         let result = self
             .run_transform_from(pipeline_id, Cow::Owned(input), Some(file_path))
-            .map(Cow::into_owned)
-            .inspect_err(|error| self.errors.add_error(error.clone()))?;
+            .map(Cow::into_owned)?;
         #[cfg(feature = "buffered")]
         let result = self.process_all_via_buffer(pipeline_id, &input, Some(file_path))?;
 
@@ -1039,7 +1017,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         {
             Ok(x) => x,
             Err(e) => {
-                self.errors.add_error(e.clone());
                 return Err(e);
             }
         };
@@ -1052,7 +1029,6 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         let tokens = match read_bytecode_from_file(path) {
             Ok(x) => x,
             Err(e) => {
-                self.errors.add_error(e.clone());
                 return Err(e);
             }
         };
@@ -1126,7 +1102,6 @@ impl TextForgeProcessor {
         {
             self.run_transform_from(id, input, input_file)
                 .map(Cow::into_owned)
-                .inspect_err(|error| self.errors.add_error(error.clone()))
         }
     }
 
@@ -1182,16 +1157,11 @@ impl TextForgeProcessor {
         let (tokens, mut context) =
             Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits)?;
 
-        // A local, throwaway ErrorManager, not the shared self.errors
-        let mut local_errors = ErrorManager::default();
-
         run_tokens(
             tokens,
             input,
             &mut context,
-            |_, token, document, context| {
-                apply_transform(token, document, &mut local_errors, context)
-            },
+            |_, token, document, context| token.apply_token(document, context),
         )
     }
 }
@@ -1212,15 +1182,12 @@ impl TextForgeProcessor {
             match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(x) => x,
                 Err(e) => {
-                    self.errors.add_error(e.clone());
                     return Err(e);
                 }
             };
-        let mut local_errors = ErrorManager::default();
-
         // The pipeline state is an Arc<str>, not a String: reusing `current_arc` from
         // one step as the `before` of the next is an Arc::clone (a refcount bump),
-        // not a text copy. apply_transform still takes a &str
+        // not a text copy. apply_token still takes a &str
         // (Arc<str> derefs to str, so &current_arc works).
         let current_arc: Arc<str> = Arc::from(input);
 
@@ -1235,15 +1202,10 @@ impl TextForgeProcessor {
             |_, token, current_arc, context| {
                 let before_arc = Arc::clone(&current_arc); // O(1)
 
-                let after = apply_transform(
-                    token,
-                    Cow::Borrowed(current_arc.as_ref()),
-                    &mut local_errors,
-                    context,
-                )?;
+                let after = token.apply_token(Cow::Borrowed(current_arc.as_ref()), context)?;
 
                 // The only whole-text copy per step: the transform's output
-                // (a new String, allocated by apply_transform itself, which is
+                // (a new String, allocated by the instruction itself, which is
                 // inherent to the instruction's work) must also exist as an
                 // Arc<str> to become this step's "current" and the next step's "before".
                 let current_arc: Arc<str> = Arc::from(after.as_ref());
@@ -1296,7 +1258,6 @@ impl TextForgeProcessor {
             match Self::pipeline_run(&self.transforms, id, input_file, self.profile.limits) {
                 Ok(x) => x,
                 Err(e) => {
-                    self.errors.add_error(e.clone());
                     return Err(e);
                 }
             };
@@ -1306,7 +1267,6 @@ impl TextForgeProcessor {
         log.push_str(&"-".repeat(dashes));
         log.push_str("\n\n");
         context.enable_trace();
-        let errors = &mut self.errors;
 
         let result = run_tokens(
             tokens,
@@ -1315,14 +1275,12 @@ impl TextForgeProcessor {
             |index, token, result, context| {
                 let counter = index as i64;
                 let bound = token
-                    .bind_for_debug(context, crate::context::builtins::CurrentText::Str(&result))
-                    .inspect_err(|error| errors.add_error(error.clone()))?;
+                    .bind_for_debug(context, crate::context::builtins::CurrentText::Str(&result))?;
                 let line = bound.to_textforge_line();
                 let red_result = result.red();
                 let temp = bound
                     .transform(result, Some(context))
-                    .map_err(|error| token.locate(error))
-                    .inspect_err(|error| errors.add_error(error.clone()))?;
+                    .map_err(|error| token.locate_bound(error, bound.as_ref()))?;
 
                 if token.get_string_repr() == "blk" {
                     let v = match bound.get_params().first() {
