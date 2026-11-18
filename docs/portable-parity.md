@@ -227,3 +227,21 @@ instruction is `Argument::Instruction`, the same mechanism `iter` and `ifdc`
 use. No new portable type or method is needed. `tests/on_instructions.rs`
 checks portable plans against the fluent builder. Bindings are not updated yet;
 that requires maintainer approval. See [section instructions](on-instructions.md).
+
+## Ignoring errors and error details (0.4.0)
+
+Rust `try_ignore(inner)` maps to the `InstructionSpec` mnemonic `tryi` with one
+`Argument::Instruction`, the mechanism `iter` and `ifdc` use; no new portable
+method is needed. `PortableProcessor::process_all_with_debug` shows the errors
+`tryi` ignored, as the Rust method does.
+
+`BindingError::details` (`BindingErrorDetails`) carries what `TextForgeError`
+gained: `kind` (the code's name),
+`trace` (outermost first), `parameters` (name, value, as written), `cause`,
+`hint`, `ignorable` and `report` (the uncolored report `txf` prints). They are
+owned data, filled by `BindingError::from_core`; adapters expose them as
+fields of the target language's error. The safety limits have their own code,
+31 (`LimitExceededError`), which was 20 (`ValidationError`) before 0.4.0.
+`tests/portable.rs` checks a `tryi` plan against the builder and the details
+of an execution error. Bindings are not updated yet; that requires maintainer
+approval. See [error handling](error-handling.md).
