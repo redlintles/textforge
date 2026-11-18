@@ -2407,6 +2407,34 @@ pub trait TextForgeBuilderMethods: Sized {
         Ok(self)
     }
 
+    /// TRYI — Run one instruction and, if it fails, skip it
+    /// (`tryi {instruction};`).
+    ///
+    /// When the instruction fails, the pipeline continues with the text and the
+    /// variables as they were before it; a safety limit is never ignored. The
+    /// debug methods show each ignored error. See
+    /// [`Tryi`](crate::tokens::instructions::tryi::Tryi).
+    ///
+    /// ```
+    /// use textforge::api::{processor::{TextForgeProcessor, TextForgeProcessorMethods}, TextForgeBuilderMethods};
+    /// use textforge::tokens::{InstructionMethods, transforms::dls::Dls};
+    /// let mut processor = TextForgeProcessor::new();
+    /// let delete: Box<dyn InstructionMethods> = Box::new(Dls::new(9));
+    /// let id = processor.create_pipeline().try_ignore(delete)?.build()?;
+    /// assert_eq!(processor.process_all(&id, "abc")?, "abc");
+    /// # Ok::<(), textforge::utils::errors::TextForgeError>(())
+    /// ```
+    fn try_ignore(&mut self, inner: impl Into<TokenWrapper>) -> Result<&mut Self, TextForgeError> {
+        let token = TokenWrapper::new(
+            Box::new(tryi::Tryi::default()),
+            Some(vec![ValType::Literal(TextForgeParamTypes::Token(
+                inner.into(),
+            ))]),
+        );
+        self.push_token(token)?;
+        Ok(self)
+    }
+
     /// PPJN — Run a whole pipeline from another file (text or bytecode) on the
     /// current text, in a new execution context, and continue with its result.
     ///

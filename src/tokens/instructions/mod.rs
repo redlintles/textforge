@@ -26,6 +26,8 @@ pub mod onlni;
 pub mod ppjn;
 /// `rmapd {map} add {pattern} {text};` — Add a rule to replacement map `map`.
 pub mod rmapd;
+/// `tryi {instruction};` — Run `instruction`; if it fails, skip it (text and variables unchanged) and continue.
+pub mod tryi;
 /// `val {name} = {value};` — Define an immutable variable.
 pub mod val;
 /// `var {name} = {value};` — Define a mutable variable.

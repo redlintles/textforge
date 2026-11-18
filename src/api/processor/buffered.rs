@@ -296,7 +296,7 @@ impl TextForgeProcessor {
         context.enable_trace();
         log.write_all(b"PROCESSING STEP BY STEP:\n----------\n\n")
             .map_err(adapter_io)?;
-        run_tokens(
+        let result = run_tokens(
             tokens,
             input,
             &mut context,
@@ -360,7 +360,11 @@ impl TextForgeProcessor {
                 }
                 Ok(input)
             },
-        )
+        )?;
+        if let Some(summary) = context.ignored_summary() {
+            write!(log, "----------\n\n{summary}").map_err(adapter_io)?;
+        }
+        Ok(result)
     }
 }
 

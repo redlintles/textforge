@@ -843,6 +843,9 @@ impl TextForgeProcessorMethods for TextForgeProcessor {
         for nested in ctx.take_trace_lines() {
             println!("{nested}");
         }
+        if let Some(summary) = ctx.ignored_summary() {
+            print!("{summary}");
+        }
 
         Ok(output.to_string())
     }
@@ -1335,6 +1338,11 @@ impl TextForgeProcessor {
                 Ok(temp)
             },
         )?;
+        if let Some(summary) = context.ignored_summary() {
+            log.push_str(&"-".repeat(dashes));
+            log.push_str("\n\n");
+            log.push_str(&summary);
+        }
 
         Ok((result.into_owned(), log))
     }

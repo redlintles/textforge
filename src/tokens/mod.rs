@@ -150,6 +150,7 @@
 //! | [`onln`](instructions::onln::Onln) | `onln {line} apply {instruction};` | Run `instruction` on one line only. |
 //! | [`onck`](instructions::onck::Onck) | `onck {start} {end} apply {instruction};` | Run `instruction` on the characters `start..=end` only. |
 //! | [`onlni`](instructions::onlni::Onlni) | `onlni {start} {end} apply {instruction};` | Run `instruction` on lines `start..=end` as one section. |
+//! | [`tryi`](instructions::tryi::Tryi) | `tryi {instruction};` | Run `instruction`; if it fails, skip it (text and variables unchanged) and continue. |
 //! | [`rmapd`](instructions::rmapd::Rmapd) | `rmapd {map} add {pattern} {text};` | Add a rule to replacement map `map`. |
 //! | [`end`](instructions::end::End) | `end;` | Stop the pipeline (or the current block or loop). |
 //! | [`null`](instructions::null::Null) | `null;` | Do nothing. |

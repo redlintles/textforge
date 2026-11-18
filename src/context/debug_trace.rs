@@ -58,11 +58,19 @@ struct Frame {
     hidden: bool,
 }
 
+/// Most errors ignored by `tryi` the final summary lists; the rest are
+/// counted.
+pub(crate) const MAX_SUMMARIZED_IGNORED: usize = 50;
+
 /// Rendered nested trace lines plus the open containers.
 #[derive(Default)]
 pub(crate) struct DebugTrace {
     lines: Vec<String>,
     frames: Vec<Frame>,
+    /// One line per error ignored by `tryi` (at most
+    /// [`MAX_SUMMARIZED_IGNORED`]), for the summary after the run.
+    ignored: Vec<String>,
+    ignored_total: usize,
 }
 
 impl DebugTrace {
@@ -192,6 +200,78 @@ impl DebugTrace {
             let line = format!("{}│ {}", self.indent(), text.dimmed());
             self.lines.push(line);
         }
+    }
+
+    /// How many containers are open, so `tryi` can close the ones a failed
+    /// instruction left open ([`Self::ignore`]).
+    pub(crate) fn depth(&self) -> usize {
+        self.frames.len()
+    }
+
+    /// Show an error `tryi` ignored where it happened: its report as a
+    /// warning, and the variables put back. Containers the failed instruction
+    /// opened (deeper than `depth`) are closed, and the error joins the
+    /// summary.
+    pub(crate) fn ignore(&mut self, depth: usize, error: &TextForgeError, restored: &[String]) {
+        self.frames.truncate(depth);
+        self.ignored_total += 1;
+        if self.ignored.len() < MAX_SUMMARIZED_IGNORED {
+            let location = error
+                .trace()
+                .rev()
+                .find_map(|frame| frame.location.clone())
+                .map(|location| format!(" at {location}"))
+                .unwrap_or_default();
+            let instruction = error
+                .trace()
+                .last()
+                .map_or(error.instruction.as_ref(), |frame| {
+                    frame.instruction.as_str()
+                })
+                .trim_end_matches([';', '\n']);
+            self.ignored.push(format!(
+                "warning[{}] {}{location}: {instruction}; — {}",
+                error.error_code.get_error_code(),
+                error.error_code.name(),
+                error.error_code.message()
+            ));
+        }
+        if !self.will_show() {
+            return;
+        }
+        let indent = self.indent();
+        let report = error.report().ignored(true).to_string();
+        self.lines
+            .extend(report.lines().map(|line| format!("{indent}{line}")));
+        if !restored.is_empty() {
+            let line = format!("state restored: variables {}", restored.join(", "));
+            self.lines.push(format!("{indent}  {}", line.dimmed()));
+        }
+    }
+
+    /// The summary of the errors `tryi` ignored during the run, or `None`
+    /// when it ignored none.
+    pub(crate) fn ignored_summary(&self) -> Option<String> {
+        if self.ignored_total == 0 {
+            return None;
+        }
+        let mut summary = format!(
+            "{} ignored by tryi:\n",
+            crate::utils::errors::plural(self.ignored_total, "error")
+        )
+        .yellow()
+        .bold()
+        .to_string();
+        for line in &self.ignored {
+            summary.push_str(&format!("  {line}\n"));
+        }
+        if self.ignored_total > self.ignored.len() {
+            summary.push_str(&format!(
+                "  … +{} more\n",
+                self.ignored_total - self.ignored.len()
+            ));
+        }
+        Some(summary)
     }
 
     /// Rendered lines since the last call, leaving open containers untouched.

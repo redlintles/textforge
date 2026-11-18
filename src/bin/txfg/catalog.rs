@@ -104,6 +104,7 @@ pub const CATALOG: &[Entry] = &[
     Entry { name: "onln", syntax: "onln {line} apply {instruction};", effect: "Run `instruction` on one line only.", group: "Control flow" },
     Entry { name: "onck", syntax: "onck {start} {end} apply {instruction};", effect: "Run `instruction` on the characters `start..=end` only.", group: "Control flow" },
     Entry { name: "onlni", syntax: "onlni {start} {end} apply {instruction};", effect: "Run `instruction` on lines `start..=end` as one section.", group: "Control flow" },
+    Entry { name: "tryi", syntax: "tryi {instruction};", effect: "Run `instruction`; if it fails, skip it (text and variables unchanged) and continue.", group: "Control flow" },
     Entry { name: "rmapd", syntax: "rmapd {map} add {pattern} {text};", effect: "Add a rule to replacement map `map`.", group: "Control flow" },
     Entry { name: "end", syntax: "end;", effect: "Stop the pipeline (or the current block or loop).", group: "Control flow" },
     Entry { name: "null", syntax: "null;", effect: "Do nothing.", group: "Control flow" },

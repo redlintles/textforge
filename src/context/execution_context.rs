@@ -63,8 +63,28 @@ impl ReplacementLog {
     }
 }
 
+/// What [`GlobalExecutionContext::snapshot`] saves.
+pub(crate) struct Snapshot {
+    variables: HashMap<String, VarEntry>,
+    blocks: HashMap<String, Vec<TokenWrapper>>,
+    replace_maps: HashMap<String, Vec<(std::sync::Arc<regex::Regex>, String)>>,
+    is_halted: bool,
+}
+
+fn same_value(a: &VarValues, b: &VarValues) -> bool {
+    match (a, b) {
+        (VarValues::String(a), VarValues::String(b)) => a == b,
+        (VarValues::Usize(a), VarValues::Usize(b)) => a == b,
+        (VarValues::Token(a), VarValues::Token(b)) => {
+            a.to_textforge_line() == b.to_textforge_line()
+        }
+        _ => false,
+    }
+}
+
 // First thought of a simple hashmap, but it wouldn't suffice my needs
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct VarEntry {
     pub value: VarValues,
     pub mutable: bool,
@@ -248,6 +268,48 @@ impl GlobalExecutionContext {
         Ok(Cow::Owned(output))
     }
 
+    /// The state an instruction can change besides the text: variables,
+    /// blocks, replacement maps and whether `end` ran. `tryi` takes it before
+    /// an instruction that runs others and gives it back when that
+    /// instruction fails, so a failed instruction leaves no trace.
+    pub(crate) fn snapshot(&self) -> Snapshot {
+        Snapshot {
+            variables: self.variables.clone(),
+            blocks: self.blocks.clone(),
+            replace_maps: self.replace_maps.clone(),
+            is_halted: self.is_halted,
+        }
+    }
+
+    /// Put back a [`Snapshot`]; returns the names of the variables that had
+    /// changed (for the debug trace), sorted.
+    pub(crate) fn restore(&mut self, snapshot: Snapshot) -> Vec<String> {
+        let mut changed: Vec<String> = self
+            .variables
+            .iter()
+            .filter(|(name, entry)| {
+                snapshot
+                    .variables
+                    .get(*name)
+                    .is_none_or(|before| !same_value(&before.value, &entry.value))
+            })
+            .map(|(name, _)| name.clone())
+            .chain(
+                snapshot
+                    .variables
+                    .keys()
+                    .filter(|name| !self.variables.contains_key(*name))
+                    .cloned(),
+            )
+            .collect();
+        changed.sort();
+        self.variables = snapshot.variables;
+        self.blocks = snapshot.blocks;
+        self.replace_maps = snapshot.replace_maps;
+        self.is_halted = snapshot.is_halted;
+        changed
+    }
+
     /// Remove a variable and return its entry, if it was defined.
     /// Used by instructions that temporarily shadow a variable.
     pub(crate) fn take_var(&mut self, id: &str) -> Option<VarEntry> {
@@ -355,6 +417,11 @@ impl GlobalExecutionContext {
             .as_mut()
             .map(DebugTrace::take_lines)
             .unwrap_or_default()
+    }
+
+    /// The summary of the errors `tryi` ignored in this debug run, if any.
+    pub(crate) fn ignored_summary(&self) -> Option<String> {
+        self.trace.as_ref().and_then(DebugTrace::ignored_summary)
     }
 }
 

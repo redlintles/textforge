@@ -314,6 +314,7 @@ The same index, with links to each instruction's documentation, is on
 | `onln` | `onln {line} apply {instruction};` | Run `instruction` on one line only. |
 | `onck` | `onck {start} {end} apply {instruction};` | Run `instruction` on the characters `start..=end` only. |
 | `onlni` | `onlni {start} {end} apply {instruction};` | Run `instruction` on lines `start..=end` as one section. |
+| `tryi` | `tryi {instruction};` | Run `instruction`; if it fails, skip it (text and variables unchanged) and continue. |
 | `rmapd` | `rmapd {map} add {pattern} {text};` | Add a rule to replacement map `map`. |
 | `end` | `end;` | Stop the pipeline (or the current block or loop). |
 | `null` | `null;` | Do nothing. |
